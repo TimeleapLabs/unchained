@@ -1,0 +1,27 @@
+{
+  "name": "@kenshi.io/unchained",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "bin": {
+    "unchained": "index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "enquirer": "^2.4.1",
+    "ethers": "^6.8.1",
+    "hyperswarm": "^4.7.9",
+    "safe-stable-stringify": "^2.4.3",
+    "winston": "^3.11.0",
+    "y-leveldb": "^0.1.2",
+    "yaml": "^2.3.4",
+    "yjs": "^13.6.10"
+  },
+  "type": "module"
+}
