@@ -2,11 +2,12 @@
 
 import { program } from "commander";
 import { startAction } from "./lib/cli/actions/start.js";
+import { version } from "./lib/constants.js";
 
 program
   .name("unchained")
   .description("Kenshi Unchained CLI Node")
-  .version("0.1.0");
+  .version(version);
 
 program
   .command("start")
