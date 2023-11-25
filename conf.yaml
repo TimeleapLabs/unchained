@@ -1,3 +1,5 @@
 log: silly
 store: ~/.unchained
 privateKey: dummy
+rpc:
+  eth: https://eth.llamarpc.com

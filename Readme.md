@@ -14,6 +14,8 @@ Quick-start config file:
 log: silly
 store: ~/.unchained
 privateKey: dummy
+rpc:
+  eth: https://eth.llamarpc.com
 ```
 
 Start and join the network:
