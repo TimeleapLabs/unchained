@@ -6,9 +6,9 @@ To run a Kenshi Unchained validator, you need to install Node.js. Follow the
 installation instructions for your platform on the Node.js
 [official installation](https://nodejs.org/en/download/package-manager) page.
 
-## Install the Unchained Software
+## Install the Unchained Client
 
-The easiest way to get started is to install the Unchained software globally.
+The easiest way to get started is to install the Unchained client globally.
 On windows, run this command in CMD:
 
 ```bash
@@ -20,6 +20,10 @@ On Linux, MacOS, and BSD, run this command in terminal:
 ```bash
 sudo npm i -g @kenshi.io/unchained
 ```
+
+### Updates
+
+To update the Unchained client, you can re-run the installation command above.
 
 ## Configuration
 
