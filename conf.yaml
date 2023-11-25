@@ -2,4 +2,5 @@ log: info
 store: ~/.unchained
 privateKey: dummy
 rpc:
-  eth: https://eth.llamarpc.com
+  ethereum: https://eth.llamarpc.com
+  avalanche_fuji: https://ava-testnet.public.blastapi.io/ext/bc/C/rpc

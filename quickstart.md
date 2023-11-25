@@ -48,9 +48,12 @@ the following modifications if required:
   to be writable. It's safe to leave it as is.
 - `privateKey` is not used in this release, it can be any string value. Leave it
   as is.
-- `rpc.eth`: You need to modify the `eth` RPC address from
-  `https://eth.llamarpc.com` to the one of your choice. You can find a list of
-  Ethereum RPC nodes on [Chainlist](https://chainlist.org/chain/1)
+- `rpc.ethereum`: You need to modify the `ethereum` RPC address to the one of your
+  choice. You can find a list of Ethereum RPC nodes on
+  [Chainlist](https://chainlist.org/chain/1)
+- `rpc.avalanche_fuji`: You need to modify the `avalanche_fuji` RPC address to one
+  of your choice. You can find a list of Avalanche Fuji RPC nodes on
+  [Chainlist](https://chainlist.org/chain/43113)
 
 ## Starting the Unchained Validator
 
