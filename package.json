@@ -17,6 +17,7 @@
     "enquirer": "^2.4.1",
     "ethers": "^6.8.1",
     "hyperswarm": "^4.7.9",
+    "ora": "^7.0.1",
     "safe-stable-stringify": "^2.4.3",
     "winston": "^3.11.0",
     "y-leveldb": "^0.1.2",

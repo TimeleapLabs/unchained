@@ -1,4 +1,4 @@
-log: silly
+log: info
 store: ~/.unchained
 privateKey: dummy
 rpc:
