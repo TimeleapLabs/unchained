@@ -1,6 +1,6 @@
 log: info
 store: ~/.unchained
-name: KNS Validator
+name: Change me
 rpc:
   ethereum: https://eth.llamarpc.com
   avalanche_fuji: https://ava-testnet.public.blastapi.io/ext/bc/C/rpc

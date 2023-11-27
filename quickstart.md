@@ -33,6 +33,7 @@ config:
 ```yaml
 log: info
 store: ~/.unchained
+name: Change me
 rpc:
   ethereum: https://eth.llamarpc.com
 ```
@@ -45,12 +46,14 @@ the following modifications if required:
   messages.
 - `store` is where the validator stores the data it needs to operate. It needs
   to be writable. It's safe to leave it as is.
+- `name` this name will be associated with your validator node, and is published to
+  all peers.
 - `rpc.ethereum`: You need to modify the `ethereum` RPC address to the one of your
   choice. You can find a list of Ethereum RPC nodes on
-  [Chainlist](https://chainlist.org/chain/1)
+  [Chainlist](https://chainlist.org/chain/1).
 - `rpc.avalanche_fuji`: You need to modify the `avalanche_fuji` RPC address to one
   of your choice. You can find a list of Avalanche Fuji RPC nodes on
-  [Chainlist](https://chainlist.org/chain/43113)
+  [Chainlist](https://chainlist.org/chain/43113).
 
 ## Starting the Unchained Validator
 
