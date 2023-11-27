@@ -34,7 +34,7 @@ config:
 log: info
 store: ~/.unchained
 rpc:
-  eth: https://eth.llamarpc.com
+  ethereum: https://eth.llamarpc.com
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
