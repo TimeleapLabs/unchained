@@ -14,7 +14,6 @@
   "license": "BUSL-1.1",
   "dependencies": {
     "@chainsafe/bls": "^7.1.2",
-    "@chainsafe/blst": "^0.2.9",
     "base-ex": "^0.8.1",
     "commander": "^11.1.0",
     "enquirer": "^2.4.1",
@@ -29,5 +28,8 @@
     "yaml": "^2.3.4",
     "yjs": "^13.6.10"
   },
-  "type": "module"
+  "type": "module",
+  "optionalDependencies": {
+    "@chainsafe/blst": "^0.2.9"
+  }
 }
