@@ -33,7 +33,6 @@ config:
 ```yaml
 log: info
 store: ~/.unchained
-privateKey: dummy
 rpc:
   eth: https://eth.llamarpc.com
 ```
@@ -46,8 +45,6 @@ the following modifications if required:
   messages.
 - `store` is where the validator stores the data it needs to operate. It needs
   to be writable. It's safe to leave it as is.
-- `privateKey` is not used in this release, it can be any string value. Leave it
-  as is.
 - `rpc.ethereum`: You need to modify the `ethereum` RPC address to the one of your
   choice. You can find a list of Ethereum RPC nodes on
   [Chainlist](https://chainlist.org/chain/1)
