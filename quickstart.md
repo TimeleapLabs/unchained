@@ -9,13 +9,14 @@ installation instructions for your platform on the Node.js
 ## Install the Unchained Client
 
 The easiest way to get started is to install the Unchained client globally.
-On windows, run this command in CMD:
+On windows, Linux, MacOS, and BSD, run this command in CMD or terminal:
 
 ```bash
 npm i -g @kenshi.io/unchained
 ```
 
-On Linux, MacOS, and BSD, run this command in terminal:
+Note: On UNIX-like operating systems, you might need to run this command with
+`sudo`:
 
 ```bash
 sudo npm i -g @kenshi.io/unchained
