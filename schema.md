@@ -40,9 +40,10 @@ the following payload schema:
       "chain": "ethereum"
     },
   },
-  "signature": "aggregated signature of the request block",
-  "signers": [
-    // Array of public keys who have signed the packet
+  "signature": "Signature of the request block",
+  "signer": "Public key of the signer",
+  "seen": [
+    // Array of public keys who have seen the packet with this signature
   ]
 }
 ```
