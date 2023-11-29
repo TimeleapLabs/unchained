@@ -19,11 +19,13 @@
     "enquirer": "^2.4.1",
     "ethers": "^6.8.1",
     "hyperswarm": "^4.7.9",
+    "iso-websocket": "^0.1.6",
     "latest-version": "^7.0.0",
     "ora": "^7.0.1",
     "safe-stable-stringify": "^2.4.3",
     "semver": "^7.5.4",
     "winston": "^3.11.0",
+    "ws": "^8.14.2",
     "y-leveldb": "^0.1.2",
     "yaml": "^2.3.4",
     "yjs": "^13.6.10"
