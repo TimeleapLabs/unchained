@@ -40,7 +40,7 @@ log: info
 store: ~/.unchained
 name: Change me
 rpc:
-  ethereum: https://eth.llamarpc.com
+  ethereum: https://ethereum.publicnode.com
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -59,6 +59,8 @@ the following modifications if required:
 - `rpc.avalanche_fuji`: You need to modify the `avalanche_fuji` RPC address to one
   of your choice. You can find a list of Avalanche Fuji RPC nodes on
   [Chainlist](https://chainlist.org/chain/43113).
+
+ You can also use RPC nodes that start with 'wss://' instead of 'https://'.
 
 ## Starting the Unchained Validator
 
