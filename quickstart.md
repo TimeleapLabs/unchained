@@ -72,6 +72,12 @@ where you saved the above configuration file:
 unchained start conf.yaml
 ```
 
+If you are running the 'start' command for the first time, you also need to pass '--generate" to generate a random secret key. This key will be saved to the configuraion file and you won't have to generate a new key every time.
+
+```bash
+unchained start conf.yaml --generate
+```
+
 ## Help
 
 Running the following command in CMD or terminal should give you a list of
