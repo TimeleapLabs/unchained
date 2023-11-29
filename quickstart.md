@@ -24,7 +24,11 @@ sudo npm i -g @kenshi.io/unchained
 
 ### Updates
 
-To update the Unchained client, you can re-run the installation command above.
+To update the Unchained client, you can re-run the installation command above. Adding '@latest' to the end would result in installing the latest version.
+
+```bash
+sudo npm i -g @kenshi.io/unchained@latest
+```
 
 ## Configuration
 
