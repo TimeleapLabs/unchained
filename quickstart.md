@@ -24,7 +24,7 @@ sudo npm i -g @kenshi.io/unchained
 
 ### Updates
 
-To update the Unchained client, you can re-run the installation command above. Adding '@latest' to the end would result in installing the latest version.
+To update the Unchained client, you can re-run the installation command above. Adding `@latest` to the end would result in installing the latest version.
 
 ```bash
 sudo npm i -g @kenshi.io/unchained@latest
@@ -60,7 +60,7 @@ the following modifications if required:
   of your choice. You can find a list of Avalanche Fuji RPC nodes on
   [Chainlist](https://chainlist.org/chain/43113).
 
- You can also use RPC nodes that start with 'wss://' instead of 'https://'.
+ You can also use RPC nodes that start with `wss://` instead of `https://`.
 
 ## Starting the Unchained Validator
 
@@ -72,7 +72,7 @@ where you saved the above configuration file:
 unchained start conf.yaml
 ```
 
-If you are running the 'start' command for the first time, you also need to pass '--generate" to generate a random secret key. This key will be saved to the configuraion file and you won't have to generate a new key every time.
+If you are running the `start` command for the first time, you also need to pass `--generate` to generate a random secret key. This key will be saved to the configuraion file and you won't have to generate a new key every time.
 
 ```bash
 unchained start conf.yaml --generate
