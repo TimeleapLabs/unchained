@@ -2,5 +2,5 @@ log: info
 store: ~/.unchained
 name: Change me
 rpc:
-  ethereum: https://eth.llamarpc.com
+  ethereum: https://ethereum.publicnode.com
   avalanche_fuji: https://ava-testnet.public.blastapi.io/ext/bc/C/rpc
