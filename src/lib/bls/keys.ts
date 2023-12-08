@@ -23,9 +23,9 @@ export const makeKeys = (): KeyPair => {
   return getPair(secretKey);
 };
 
-export const loadKeys = (config: EncodedKeyPair): KeyPair => {
-  const decoded = decodeKeys(config);
-  const secretKey = bls.SecretKey.fromBytes(decoded.secretKey);
+export const loadKeys = (encodedSecretKey: string): KeyPair => {
+  const decoded = Buffer.from(encoder.decode(encodedSecretKey));
+  const secretKey = bls.SecretKey.fromBytes(decoded);
   return getPair(secretKey);
 };
 
