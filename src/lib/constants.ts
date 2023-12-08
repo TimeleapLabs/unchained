@@ -16,6 +16,11 @@ export const config: Config = {
   rpc: {
     ethereum: "https://ethereum.publicnode.com",
   },
+  database: {
+    url: "",
+    name: "unchained",
+  },
+  secretKey: "",
 };
 
 export const rpcMethods: StringAnyObject = {};

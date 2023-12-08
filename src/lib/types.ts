@@ -14,11 +14,18 @@ interface RPCList {
   ethereum: string;
 }
 
+interface DatabaseConfig {
+  url: string;
+  name: string;
+}
+
 export interface Config {
   name: string;
   log: string;
   store: string;
   rpc: RPCList;
+  database: DatabaseConfig;
+  secretKey: string;
 }
 
 export interface MetaData {
