@@ -33,9 +33,11 @@ sudo npm i -g @kenshi.io/unchained@latest
 
 ## MongoDB
 
-To run the Unchained client, you need to have an instance of MongoDB running.
-You can either run your own, or make a subscription to a cloud service. You can
-get a free subscription for the Unchained testnet on
+Note: Skip this step if you're planning to run a lite node.
+
+To run a full node, you need to have an instance of MongoDB. You can either run
+your own, or make a subscription to a cloud service. You can get a free
+subscription for the Unchained testnet on
 [MongoDB Atlas](https://www.mongodb.com/pricing) or
 [OVH](https://www.ovhcloud.com/en/public-cloud/mongodb/). You can also get $200
 free credits on [Digital Ocean](https://try.digitalocean.com/freetrialoffer/).
@@ -49,8 +51,8 @@ config:
 
 ```yaml
 log: info
-store: ~/.unchained
 name: Change me
+lite: true
 rpc:
   ethereum: https://ethereum.publicnode.com
 database:
@@ -61,21 +63,20 @@ database:
 Save the above configuration in a file named `conf.yaml` on your system and make
 the following modifications if required:
 
-- `log` defines the validator log level. Change it to `silly` or `debug` to see
+- `log`: Defines the validator log level. Change it to `silly` or `debug` to see
   all messages. Leaving this at `info` level gives you all the important
   messages.
-- `store` is where the validator stores the data it needs to operate. It needs
-  to be writable. It's safe to leave it as is.
-- `name` this name will be associated with your validator node, and is published to
+- `name`: This name will be associated with your validator node, and is published to
   all peers.
+- `lite`: To run a lite node, set this to `true`, otherwise set it to `false`.
 - `rpc.ethereum`: You need to modify the `ethereum` RPC address to the one of your
   choice. You can find a list of Ethereum RPC nodes on
   [Chainlist](https://chainlist.org/chain/1).
 - `database.url`: Your
   [MongoDB connection string](https://www.mongodb.com/docs/manual/reference/connection-string/)
-  goes here.
+  goes here. Ignore this if you're running a lite node.
 - `database.name`: Name of the database to choose. If unsure, leave the default
-  value.
+  value. Ignore this if you're running a lite node.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 

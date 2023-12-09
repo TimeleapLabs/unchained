@@ -23,7 +23,8 @@ export interface Config {
   name: string;
   log: string;
   rpc: RPCList;
-  database: DatabaseConfig;
+  lite: boolean;
+  database?: DatabaseConfig;
   secretKey: string;
 }
 
