@@ -16,7 +16,7 @@ const uniswapArgs: [UniswapArgs, string, [number, number], boolean] = [
   true,
 ];
 
-export const run = (): void => {
+export const runTasks = (): void => {
   runAtNextInterval(async () => {
     try {
       const payload = await runWithRetries(uniswap.work, uniswapArgs);
