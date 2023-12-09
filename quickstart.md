@@ -44,6 +44,49 @@ free credits on [Digital Ocean](https://try.digitalocean.com/freetrialoffer/).
 
 Contact us on [Telegram](https://t.me/kenshi) if you need help with this step.
 
+### MongoDB Atlas
+
+If you want to use MongoDB Atlas, there is a great tutorial you can watch on the
+[official MongoDB YouTube channel](https://www.youtube.com/watch?v=jXgJyuBeb_o).
+
+### Installing MongoDB Locally
+
+If you want to install MongoDB locally, first follow the official MongoDB
+installation
+[instructions](https://www.mongodb.com/docs/manual/administration/install-community/),
+then use the following url in your Unchained config file:
+
+```
+mongodb://localhost:27017/<database>
+```
+
+Replace `<database>` with the name of the database you want to use (for example,
+`unchained`).
+
+#### Securing Your Local MongoDB
+
+To secure your local MongoDB installation, you should first enable DB
+authentication. To do so, follow the guide
+[here](https://www.mongodb.com/docs/manual/tutorial/enable-authentication/). If
+you're not sure which method to choose, go with the SCRAM method.
+
+Once access control is enable, you should create a new user for your Unchained
+database. To do so, follow the guide
+[here](https://www.mongodb.com/docs/manual/tutorial/create-users#configure-users-for-self-hosted-deployments). Be sure to take note
+of your password.
+
+Once done, you can use the following connection string in you Unchained config
+file:
+
+```
+mongodb://<user>:<password>@localhost:27017/<database>
+```
+
+Replace `user` with your username, replace `<password>` with a
+[url-encoded](https://www.urlencoder.io/) version of your password. Replace
+`<database>` with the name of the database you want to use for Unchained. Your
+user needs `readWrite` access to this database.
+
 ## Configuration
 
 You need a configuration file to get started. You can start with the following
