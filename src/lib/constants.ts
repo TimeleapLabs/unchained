@@ -1,7 +1,7 @@
 import { sha } from "./utils/hash.js";
 import { State, Keys, Config, StringAnyObject } from "./types.js";
 
-export const version = "0.7.0";
+export const version = "0.7.1";
 export const protocolVersion = "0.5.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
@@ -20,6 +20,7 @@ export const config: Config = {
     name: "unchained",
   },
   secretKey: "",
+  lite: false,
 };
 
 export const rpcMethods: StringAnyObject = {};

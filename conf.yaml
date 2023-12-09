@@ -1,5 +1,4 @@
 log: info
-store: ~/.unchained
 name: Change me
 rpc:
   ethereum: https://ethereum.publicnode.com

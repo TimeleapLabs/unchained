@@ -2,12 +2,14 @@ import { config } from "../constants.js";
 import { MongoClient, Db } from "mongodb";
 import { logger } from "../logger/index.js";
 
+import assert from "node:assert";
 import * as assetPrices from "./collections/AssetPrice.js";
 
 export let db: Db;
 export let client: MongoClient;
 
 export const initDB = async () => {
+  assert(config.database, "Database settings not set");
   client = new MongoClient(config.database.url);
   try {
     await client.connect();
