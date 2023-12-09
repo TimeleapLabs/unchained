@@ -12,7 +12,7 @@ import assert from "node:assert";
 
 interface StartOptions {
   log?: string;
-  store?: string;
+  lite?: boolean;
   generate?: boolean;
 }
 
@@ -29,6 +29,7 @@ export const startAction = async (
   }
 
   logger.level = options.log || config.log || "info";
+  config.lite = options.lite || config.lite || false;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
@@ -61,18 +62,21 @@ export const startAction = async (
     return process.exit(1);
   }
 
-  if (!config.database?.url) {
+  if (!config.lite && !config.database?.url) {
     logger.error("Database URL is not provided.");
     return process.exit(1);
   }
 
-  if (!config.database?.name) {
-    config.database.name = "unchained";
+  if (!config.lite && !config.database?.name) {
+    config.database = { url: config.database?.url || "", name: "unchained" };
   }
 
   Object.assign(globalConfig, config);
 
-  await initDB();
+  if (!config.lite) {
+    await initDB();
+  }
+
   runTasks();
   startSwarm();
 };

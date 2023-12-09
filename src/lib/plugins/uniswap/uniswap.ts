@@ -93,27 +93,29 @@ const setAttestations = async (
       signers,
       signature: aggregatedSignature,
     });
-    assetPrices.updateOne(
-      {
-        block: request.data.block,
-        asset: "ethereum",
-        source: "uniswap-ethereum",
-      },
-      {
-        $set: {
-          price: request.data.price,
-          signature: aggregatedSignature,
-          signers,
-        },
-        $setOnInsert: {
-          timestamp: new Date(), // FIXME
+    if (!config.lite) {
+      assetPrices.updateOne(
+        {
+          block: request.data.block,
           asset: "ethereum",
           source: "uniswap-ethereum",
-          block: request.data.block,
         },
-      },
-      { upsert: true }
-    );
+        {
+          $set: {
+            price: request.data.price,
+            signature: aggregatedSignature,
+            signers,
+          },
+          $setOnInsert: {
+            timestamp: new Date(), // FIXME
+            asset: "ethereum",
+            source: "uniswap-ethereum",
+            block: request.data.block,
+          },
+        },
+        { upsert: true }
+      );
+    }
     const { length } = signers;
     if (length > 1) {
       const { block, price } = request.data;
