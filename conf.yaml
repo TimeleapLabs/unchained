@@ -3,4 +3,6 @@ store: ~/.unchained
 name: Change me
 rpc:
   ethereum: https://ethereum.publicnode.com
-  avalanche_fuji: https://ava-testnet.public.blastapi.io/ext/bc/C/rpc
+database:
+  url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
+  name: unchained

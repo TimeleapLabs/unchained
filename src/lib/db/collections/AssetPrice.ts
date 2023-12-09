@@ -3,7 +3,7 @@ import { Collection, Db } from "mongodb";
 export interface AssetPrice {
   timestamp: Date;
   block: number;
-  price: BigInt;
+  price: number;
   asset: string;
   source: string;
   signature: string;
@@ -12,6 +12,7 @@ export interface AssetPrice {
 
 export let assetPrices: Collection<AssetPrice>;
 
-export const initCollection = (db: Db) => {
+export const initCollection = async (db: Db) => {
   assetPrices = db.collection<AssetPrice>("assetPrices");
+  await assetPrices.createIndex({ block: -1, asset: 1 });
 };

@@ -67,7 +67,7 @@ export const startAction = async (
   }
 
   if (!config.database?.name) {
-    config.database.name = "Unchained";
+    config.database.name = "unchained";
   }
 
   Object.assign(globalConfig, config);
