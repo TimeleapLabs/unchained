@@ -22,7 +22,6 @@ interface DatabaseConfig {
 export interface Config {
   name: string;
   log: string;
-  store: string;
   rpc: RPCList;
   database: DatabaseConfig;
   secretKey: string;

@@ -9,6 +9,7 @@ import { encoder } from "../../bls/keys.js";
 import { WebSocketLike } from "ethers";
 import { Config } from "../../types.js";
 import { WebSocket } from "unws";
+import { assetPrices } from "../../db/collections/AssetPrice.js";
 
 const cache = new Map<number, number>();
 const attestations = new Map<string, any>(); // Replace 'any' with a more specific type if available
@@ -64,7 +65,11 @@ const setEarlyAttestations = (
   }
 };
 
-const setAttestations = (request: any, signer: string, signature: string) => {
+const setAttestations = async (
+  request: any,
+  signer: string,
+  signature: string
+) => {
   const hash = hashObject(request);
   const stored = attestations.get(hash) || { signers: [], request };
   const early = earlyAttestations.get(hash) || { signers: [] };
@@ -88,6 +93,27 @@ const setAttestations = (request: any, signer: string, signature: string) => {
       signers,
       signature: aggregatedSignature,
     });
+    assetPrices.updateOne(
+      {
+        block: request.data.block,
+        asset: "ethereum",
+        source: "uniswap-ethereum",
+      },
+      {
+        $set: {
+          price: request.data.price,
+          signature: aggregatedSignature,
+          signers,
+        },
+        $setOnInsert: {
+          timestamp: new Date(), // FIXME
+          asset: "ethereum",
+          source: "uniswap-ethereum",
+          block: request.data.block,
+        },
+      },
+      { upsert: true }
+    );
     const { length } = signers;
     if (length > 1) {
       const { block, price } = request.data;
@@ -169,7 +195,7 @@ export const work = async (
     const data = { block, price };
     const request = { method: "uniswapAttest", data, parameters };
     const payload = blsAttest(request);
-    setAttestations(request, payload.signer, payload.signature);
+    await setAttestations(request, payload.signer, payload.signature);
     return payload;
   } catch (error) {
     logger.warn("Could not get the Ethereum price. Check your RPC.");
@@ -196,7 +222,7 @@ export const attest = async ({
   if (price !== data.price) {
     return false;
   }
-  setAttestations(request, signer, signature);
+  await setAttestations(request, signer, signature);
   return true;
 };
 
