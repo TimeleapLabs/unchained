@@ -1,12 +1,13 @@
 import { logger } from "../../logger/index.js";
-import { start } from "../../swarm/index.js";
+import { startSwarm } from "../../swarm/index.js";
 import { parse, stringify } from "yaml";
 import { readFileSync, writeFileSync } from "fs";
-import { untilde } from "../../utils/untilde.js";
 import { checkForUpdates } from "../../update.js";
 import { makeKeys, encodeKeys, loadKeys, encoder } from "../../bls/keys.js";
 import { keys, config as globalConfig, nameRegex } from "../../constants.js";
-import { run } from "../../daemon/index.js";
+import { runTasks } from "../../daemon/index.js";
+import { Config } from "../../types.js";
+import { initDB } from "../../db/db.js";
 import assert from "node:assert";
 
 interface StartOptions {
@@ -20,7 +21,7 @@ export const startAction = async (
   options: StartOptions
 ) => {
   const configContent = readFileSync(configFile).toString();
-  const config = configContent ? { ...parse(configContent) } : null;
+  const config: Config = configContent ? { ...parse(configContent) } : null;
 
   if (!config) {
     logger.error("Invalid config file");
@@ -43,9 +44,7 @@ export const startAction = async (
 
   await checkForUpdates();
 
-  Object.assign(keys, loadKeys(config));
-  Object.assign(globalConfig, config);
-
+  Object.assign(keys, loadKeys(config.secretKey));
   assert(keys.publicKey !== undefined, "No public key available");
 
   if (!config.name) {
@@ -62,6 +61,18 @@ export const startAction = async (
     return process.exit(1);
   }
 
-  run();
-  start();
+  if (!config.database?.url) {
+    logger.error("Database URL is not provided.");
+    return process.exit(1);
+  }
+
+  if (!config.database?.name) {
+    config.database.name = "unchained";
+  }
+
+  Object.assign(globalConfig, config);
+
+  await initDB();
+  runTasks();
+  startSwarm();
 };

@@ -1,7 +1,7 @@
 import { sha } from "./utils/hash.js";
 import { State, Keys, Config, StringAnyObject } from "./types.js";
 
-export const version = "0.6.0";
+export const version = "0.7.0";
 export const protocolVersion = "0.5.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
@@ -12,10 +12,14 @@ export const keys: Keys = {};
 export const config: Config = {
   name: "Change Me",
   log: "info",
-  store: "~/.unchained",
   rpc: {
     ethereum: "https://ethereum.publicnode.com",
   },
+  database: {
+    url: "",
+    name: "unchained",
+  },
+  secretKey: "",
 };
 
 export const rpcMethods: StringAnyObject = {};

@@ -24,11 +24,23 @@ sudo npm i -g @kenshi.io/unchained
 
 ### Updates
 
-To update the Unchained client, you can re-run the installation command above. Adding `@latest` to the end would result in installing the latest version.
+To update the Unchained client, you can re-run the installation command above.
+Adding `@latest` to the end would result in installing the latest version.
 
 ```bash
 sudo npm i -g @kenshi.io/unchained@latest
 ```
+
+## MongoDB
+
+To run the Unchained client, you need to have an instance of MongoDB running.
+You can either run your own, or make a subscription to a cloud service. You can
+get a free subscription for the Unchained testnet on
+[MongoDB Atlas](https://www.mongodb.com/pricing) or
+[OVH](https://www.ovhcloud.com/en/public-cloud/mongodb/). You can also get $200
+free credits on [Digital Ocean](https://try.digitalocean.com/freetrialoffer/).
+
+Contact us on [Telegram](https://t.me/kenshi) if you need help with this step.
 
 ## Configuration
 
@@ -41,6 +53,9 @@ store: ~/.unchained
 name: Change me
 rpc:
   ethereum: https://ethereum.publicnode.com
+database:
+  url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
+  name: unchained
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -56,11 +71,13 @@ the following modifications if required:
 - `rpc.ethereum`: You need to modify the `ethereum` RPC address to the one of your
   choice. You can find a list of Ethereum RPC nodes on
   [Chainlist](https://chainlist.org/chain/1).
-- `rpc.avalanche_fuji`: You need to modify the `avalanche_fuji` RPC address to one
-  of your choice. You can find a list of Avalanche Fuji RPC nodes on
-  [Chainlist](https://chainlist.org/chain/43113).
+- `database.url`: Your
+  [MongoDB connection string](https://www.mongodb.com/docs/manual/reference/connection-string/)
+  goes here.
+- `database.name`: Name of the database to choose. If unsure, leave the default
+  value.
 
- You can also use RPC nodes that start with `wss://` instead of `https://`.
+You can also use RPC nodes that start with `wss://` instead of `https://`.
 
 ## Starting the Unchained Validator
 

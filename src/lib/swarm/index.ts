@@ -114,7 +114,7 @@ export const discover = (): void => {
   });
 };
 
-export const start = (): void => {
+export const startSwarm = (): void => {
   logger.info(`Starting the node: ${swarm.keyPair.publicKey.toString("hex")}`);
   spinner.start();
   discover();
