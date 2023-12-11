@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  unchained:
+    image: ghcr.io/kenshitech/unchained:latest
+    container_name: unchained
+    volumes:
+      - ./conf.yaml:/app/conf.yaml
+    depends_on:
+      - mongodb
+    restart: always
+  mongodb:
+    image: mongodb/mongodb-community-server:7.0.4-ubuntu2204
+    container_name: mongodb
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data/db
+    restart: always
