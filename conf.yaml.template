@@ -1,5 +1,5 @@
 log: info
-name: Change me
+name: <name>
 rpc:
   ethereum: https://ethereum.publicnode.com
 database:
