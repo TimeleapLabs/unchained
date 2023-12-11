@@ -8,4 +8,4 @@ WORKDIR /app
 RUN npm i -g @kenshi.io/unchained@${UNCHAINED_VERSION} && \
     unchained --version
 
-ENTRYPOINT ["unchained", "start", "./config/unchained.yml", "--generate"]
+ENTRYPOINT ["unchained", "start", "conf.yaml", "--generate"]
