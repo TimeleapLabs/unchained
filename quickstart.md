@@ -1,15 +1,58 @@
 # Quick Start
 
-## Prerequisites
+## Using Docker
+
+Running Unchained with Docker is straightforward. Make sure you
+[have Docker installed](https://docs.docker.com/engine/install/).
+Then, head over to the
+[Unchained release page](https://github.com/KenshiTech/unchained/releases)
+on GitHub, find the latest Docker release file (file name ends with
+`-docker.zip`), download it, and uncompress it.
+
+Once done, head to the uncompressed directory and use one of the following
+commands in your favorite terminal emulator.
+
+### Start Node
+
+To start the node, run this command while in the release directory:
+
+```bash
+./scripts/start_node.sh
+```
+
+### Stop Node
+
+To stop the node, run this command while in the release directory:
+
+```bash
+./scripts/stop_node.sh
+```
+
+### View Node
+
+To view the node, run this command while in the release directory:
+
+```bash
+./scripts/view_node.sh
+```
+
+## Installing Locally
+
+Follow these instructions if you want to install Unchained and its dependencies
+locally, on a
+[RaspberryPi](https://forum.kenshi.io/t/how-to-set-up-your-unchained-node-on-raspberry-pi/132),
+on a server, or on your computer/laptop.
+
+### Prerequisites
 
 To run a Kenshi Unchained validator, you need to install Node.js. Follow the
 installation instructions for your platform on the Node.js
 [official installation](https://nodejs.org/en/download/package-manager) page.
 
-## Install the Unchained Client
+### Install the Unchained Client
 
-The easiest way to get started is to install the Unchained client globally.
-On windows, Linux, MacOS, and BSD, run this command in CMD or terminal:
+The easiest way to get the Unchained client is to install it globally. On
+windows, Linux, MacOS, and BSD, run this command in CMD or terminal:
 
 ```bash
 npm i -g @kenshi.io/unchained
@@ -22,7 +65,7 @@ Note: On UNIX-like operating systems, you might need to run this command with
 sudo npm i -g @kenshi.io/unchained
 ```
 
-### Updates
+#### Updates
 
 To update the Unchained client, you can re-run the installation command above.
 Adding `@latest` to the end would result in installing the latest version.
@@ -31,7 +74,7 @@ Adding `@latest` to the end would result in installing the latest version.
 sudo npm i -g @kenshi.io/unchained@latest
 ```
 
-## MongoDB
+### MongoDB
 
 Note: Skip this step if you're planning to run a lite node.
 
@@ -44,12 +87,12 @@ free credits on [Digital Ocean](https://try.digitalocean.com/freetrialoffer/).
 
 Contact us on [Telegram](https://t.me/kenshi) if you need help with this step.
 
-### MongoDB Atlas
+#### MongoDB Atlas
 
 If you want to use MongoDB Atlas, there is a great tutorial you can watch on the
 [official MongoDB YouTube channel](https://www.youtube.com/watch?v=jXgJyuBeb_o).
 
-### Installing MongoDB Locally
+#### Installing MongoDB Locally
 
 If you want to install MongoDB locally, first follow the official MongoDB
 installation
@@ -63,7 +106,7 @@ mongodb://localhost:27017/<database>
 Replace `<database>` with the name of the database you want to use (for example,
 `unchained`).
 
-#### Securing Your Local MongoDB
+##### Securing Your Local MongoDB
 
 To secure your local MongoDB installation, you should first enable DB
 authentication. To do so, follow the guide
@@ -87,7 +130,7 @@ Replace `user` with your username, replace `<password>` with a
 `<database>` with the name of the database you want to use for Unchained. Your
 user needs `readWrite` access to this database.
 
-## Configuration
+### Configuration
 
 You need a configuration file to get started. You can start with the following
 config:
