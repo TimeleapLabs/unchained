@@ -37,11 +37,12 @@ const makeReleaseFile = (name, files) => {
 await makeReleaseNotes();
 mkdirSync("./release", { recursive: true });
 makeReleaseFile("docker", [
-  { source: "docker/compose.yml", target: "compose.yml" },
+  { source: "docker/compose.yaml", target: "compose.yaml" },
   { source: "docker/Dockerfile", target: "Dockerfile" },
-  { source: "docker/start_node.sh", target: "scripts/start_node.sh" },
-  { source: "docker/stop_node.sh", target: "scripts/stop_node.sh" },
-  { source: "docker/view_node.sh", target: "scripts/view_node.sh" },
+  { source: "docker/scripts/start_node.sh", target: "scripts/start_node.sh" },
+  { source: "docker/scripts/stop_node.sh", target: "scripts/stop_node.sh" },
+  { source: "docker/scripts/view_node.sh", target: "scripts/view_node.sh" },
   { source: ".env.template", target: ".env.template" },
   { source: "conf.yaml.template", target: "conf.yaml.template" },
+  { source: "LICENSE", target: "LICENSE" },
 ]);
