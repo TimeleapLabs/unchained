@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker compose stop
+UID_GID="$(id -u):$(id -g)" docker compose stop
