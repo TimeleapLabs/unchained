@@ -4,6 +4,19 @@ import { execSync } from "child_process";
 
 const packageJson = JSON.parse(readFileSync("./package.json"));
 
+const releaseTemplate = (changes) => `\
+Unchained is a decentralized, peer-to-peer network for data validation.
+Unchained nodes work to validate data together and are rewarded in KNS tokens.
+The validated data can then be queried by consumer in exchange for KNS tokens.
+Learn more about Unchained [here](https://kenshi.io/docs/unchained).
+
+Have any questions? Ask in the [forum](https://forum.kenshi.io/c/unchained),
+in our [chat](https://t.me/KenshiTech/85602), or send us an
+[email](mailto:hi@kenshi.io).
+
+${changes}
+  `;
+
 const makeReleaseNotes = async () => {
   const url =
     "https://app.whatthediff.ai/changelog/github/KenshiTech/unchained.json";
@@ -12,11 +25,7 @@ const makeReleaseNotes = async () => {
   const wtd = notes.changelog.data[0];
 
   const changes = wtd.comment.replace(/^## PR Summary/, "## Changes");
-  const release = `\
-# Unchained ${packageJson.version}
-
-${changes}
-`;
+  const release = releaseTemplate(changes);
 
   writeFileSync("./release-notes.md", release);
 };
