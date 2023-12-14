@@ -4,15 +4,23 @@ import { execSync } from "child_process";
 
 const packageJson = JSON.parse(readFileSync("./package.json"));
 
-const releaseTemplate = (changes) => `\
-Unchained is a decentralized, peer-to-peer network for data validation.
-Unchained nodes work to validate data together and are rewarded in KNS tokens.
-The validated data can then be queried by consumer in exchange for KNS tokens.
-Learn more about Unchained [here](https://kenshi.io/docs/unchained).
+const about = [
+  "Unchained is a decentralized, peer-to-peer network for data validation.",
+  "Unchained nodes work to validate data together and are rewarded in KNS tokens.",
+  "The validated data can then be queried by consumer in exchange for KNS tokens.",
+  "Learn more about Unchained [here](https://kenshi.io/docs/unchained).",
+].join(" ");
 
-Have any questions? Ask in the [forum](https://forum.kenshi.io/c/unchained),
-in our [chat](https://t.me/KenshiTech/85602), or send us an
-[email](mailto:hi@kenshi.io).
+const questions = [
+  "Have any questions? Ask in the [forum](https://forum.kenshi.io/c/unchained),",
+  "in our [chat](https://t.me/KenshiTech/85602), or send us an",
+  "[email](mailto:hi@kenshi.io).",
+].join(" ");
+
+const releaseTemplate = (changes) => `\
+${about}
+
+${questions}
 
 ${changes}
   `;
