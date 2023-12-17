@@ -1,7 +1,6 @@
 .DS_Store
 node_modules
-conf.*.private.yaml
-conf.yaml
+conf.*.yaml
 .env
 dist
 data

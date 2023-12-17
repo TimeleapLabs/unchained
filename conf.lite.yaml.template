@@ -1,0 +1,5 @@
+log: info
+lite: true
+name: <name>
+rpc:
+  ethereum: https://ethereum.publicnode.com
