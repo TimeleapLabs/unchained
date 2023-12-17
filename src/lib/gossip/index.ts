@@ -1,18 +1,9 @@
 import { gossipMethods, errors, keys, sockets } from "../constants.js";
-import { attest, verify } from "../bls/index.js";
 import { encoder } from "../bls/keys.js";
-import { logger } from "../logger/index.js";
-import { MetaData, NodeSystemError } from "../types.js";
+import { Gossip, GossipRequest, MetaData, NodeSystemError } from "../types.js";
 
 import crypto from "crypto";
 import assert from "node:assert";
-
-export interface GossipPayload {
-  request: any;
-  signature: string;
-  signer: string;
-  seen: string[];
-}
 
 const randomIndex = (length: number): number => {
   if (length <= 0) {
@@ -36,12 +27,10 @@ const gossipTo = async (nodes: MetaData[], data: any): Promise<void> => {
   await Promise.all(promises).catch(() => null);
 };
 
-export const gossip = async ({
-  request,
-  signature,
-  signer,
-  seen,
-}: GossipPayload): Promise<void> => {
+export const gossip = async (
+  request: GossipRequest<any>,
+  seen: string[]
+): Promise<void> => {
   if (sockets.size === 0) {
     return;
   }
@@ -50,13 +39,7 @@ export const gossip = async ({
   if (seen.includes(publicKey)) {
     return;
   }
-  const payload = {
-    type: "gossip",
-    request,
-    signature,
-    signer,
-    seen: [...seen, publicKey],
-  };
+  const payload = { type: "gossip", request, seen: [...seen, publicKey] };
   const values = Array.from(sockets.values()) as MetaData[];
   const nodes = values.filter(
     (node) => node.publicKey && !seen.includes(node.publicKey)
@@ -73,45 +56,27 @@ export const gossip = async ({
   }
 };
 
-const verifyGossip = (incoming: any, connection: MetaData): boolean => {
-  if (!connection.publicKey) {
-    return false;
-  }
-  if (verify(incoming)) {
-    logger.debug(
-      `Successfully verified packet sent by ${connection.publicKey}`
-    );
-    return true;
-  } else {
-    logger.warn(`Couldn't verify packet sent by ${connection.publicKey}`);
-    return false;
-  }
-};
-
 export const processGossip = async (
-  incoming: any,
+  incoming: Gossip<unknown>,
   connection: MetaData
 ): Promise<void | { error?: string | number }> => {
   try {
-    if (!verifyGossip(incoming, connection)) {
-      return;
-    }
+    // TODO: We should detect and slash nodes if they send wrong data
+    const { method: methodName } = incoming.request;
 
-    const { method } = incoming.request;
-
-    if (!(method in gossipMethods)) {
+    /**
+     * INFO: we're using `hasOwnProperty` instead of `in` to prevent attacks
+     * where a peer can access the internal properties of `gossipMethods`.
+     */
+    if (!gossipMethods.hasOwnProperty(methodName)) {
       return { error: errors.E_NOT_FOUND };
     }
 
-    const ok = await gossipMethods[method].call(null, incoming, connection);
-    if (!ok) {
-      return;
-    }
-
-    const payload = attest(incoming.request);
+    const method = gossipMethods[methodName];
+    const payload = await method(incoming, connection);
 
     if (payload) {
-      await gossip({ ...payload, seen: incoming.seen });
+      await gossip(payload, incoming.seen);
     }
   } catch (error) {
     const systemError = error as NodeSystemError;

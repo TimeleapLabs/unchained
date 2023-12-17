@@ -52,6 +52,16 @@ export interface StringAnyObject {
   [key: string]: any;
 }
 
+export interface GossipMethod<T> {
+  (incoming: Gossip<T>, metadata: MetaData):
+    | Promise<GossipRequest<T>>
+    | GossipRequest<T>;
+}
+
+export interface StringGossipMethodObject<T> {
+  [key: string]: GossipMethod<T>;
+}
+
 export interface AssetPriceMetric {
   block: number;
 }
@@ -70,11 +80,11 @@ export interface GossipRequest<T> {
   dataset: string;
   metric: T;
   signature: string;
+  signer: string;
 }
 
 export interface Gossip<T> {
   type: "gossip";
   request: GossipRequest<T>;
-  origin: string;
   seen: string[];
 }
