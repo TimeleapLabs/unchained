@@ -4,3 +4,5 @@ conf.*.yaml
 .env
 dist
 data
+release
+release-notes.md

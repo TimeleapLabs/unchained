@@ -1,0 +1,33 @@
+name: Make release
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - docker
+
+jobs:
+  push-store-image:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "."
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@main
+
+      - name: "Run release script"
+        run: npm i && node scripts/gh-release.js
+
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+
+      - name: "Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release-notes.md
+          files: ./release/*.zip
+          name: Unchained v${{ steps.package-version.outputs.current-version }}
+          tag_name: v${{ steps.package-version.outputs.current-version }}
