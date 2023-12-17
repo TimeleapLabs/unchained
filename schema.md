@@ -32,9 +32,9 @@ the following payload schema:
     "method": "assetPrice", // gossip method to call
     "dataset": "ethereum::uniswap::ethereum", // chain::source::asset
     "metric": { "block": "18670546" }, // M -> V metric
-    "signature": "Singature" // Hash { metric, value }, then sign
+    "signature": "Singature", // Hash { metric, value }, then sign
+    "signer": "Public key of the signer",
   },
-  "origin": "Public key of the signer",
   "seen": [] // Array of public keys who have seen the packet with this signature
 }
 ```

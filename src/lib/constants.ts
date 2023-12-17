@@ -1,5 +1,11 @@
 import { sha } from "./utils/hash.js";
-import { State, Keys, Config, StringAnyObject } from "./types.js";
+import {
+  State,
+  Keys,
+  Config,
+  StringAnyObject,
+  StringGossipMethodObject,
+} from "./types.js";
 
 export const version = "0.7.1";
 export const protocolVersion = "0.5.0";
@@ -24,7 +30,7 @@ export const config: Config = {
 };
 
 export const rpcMethods: StringAnyObject = {};
-export const gossipMethods: StringAnyObject = {};
+export const gossipMethods: StringGossipMethodObject<any> = {};
 
 export const errors = {
   E_NOT_FOUND: 404,
