@@ -1,0 +1,7 @@
+log: info
+name: <name>
+rpc:
+  ethereum: https://ethereum.publicnode.com
+database:
+  url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
+  name: unchained

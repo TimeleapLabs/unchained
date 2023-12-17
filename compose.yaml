@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  unchained_local:
+    image: ghcr.io/kenshitech/unchained:latest
+    container_name: unchained_local
+    hostname: unchained_local
+    user: "${UID_GID}"
+    volumes:
+      - ./conf.local.yaml:/app/conf.yaml
+    depends_on:
+      - mongodb
+    profiles: ["local"]
+    restart: always
+
+  mongodb:
+    image: mongodb/mongodb-community-server:7.0.4-ubuntu2204
+    container_name: mongodb
+    hostname: mongodb
+    user: "${UID_GID}"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data/db
+    profiles: ["local"]
+    restart: always
+
+  unchained_lite:
+    image: ghcr.io/kenshitech/unchained:latest
+    container_name: unchained_lite
+    hostname: unchained_lite
+    user: "${UID_GID}"
+    volumes:
+      - ./conf.lite.yaml:/app/conf.yaml
+    profiles: ["lite"]
+    restart: always
+
+  unchained_atlas:
+    image: ghcr.io/kenshitech/unchained:latest
+    container_name: unchained_atlas
+    hostname: unchained_atlas
+    user: "${UID_GID}"
+    volumes:
+      - ./conf.atlas.yaml:/app/conf.yaml
+    profiles: ["atlas"]
+    restart: always
