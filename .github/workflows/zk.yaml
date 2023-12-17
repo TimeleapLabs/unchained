@@ -31,6 +31,5 @@ jobs:
       - name: "Release"
         uses: softprops/action-gh-release@v1
         with:
-          body_path: release-notes.md
           files: ./zk/bin/*
           name: Unchained zk Tools v${{ steps.package-version.outputs.current-version }}
