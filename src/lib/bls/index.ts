@@ -4,6 +4,8 @@ import { keys } from "../constants.js";
 import stringify from "json-canon";
 import assert from "node:assert";
 
+import { GossipSignatureInput, SignatureItem } from "../types.js";
+
 export const sign = (data: any): string => {
   assert(keys.secretKey !== undefined, "No secret key in config");
   const json = stringify(data);
@@ -12,24 +14,24 @@ export const sign = (data: any): string => {
 };
 
 export const attest = (
-  request: any
-): { request: any; signature: string; signer: string } => {
+  payload: GossipSignatureInput<any, any>
+): SignatureItem => {
   assert(keys.publicKey !== undefined, "No public key in config");
   const signer = encoder.encode(keys.publicKey.toBytes());
-  const signature = sign(request);
-  return { request, signature, signer };
+  const signature = sign(payload);
+  return { signer, signature };
 };
 
 export const verify = ({
   signer,
   signature,
-  request,
+  data,
 }: {
   signer: string;
   signature: string;
-  request: any;
+  data: any;
 }): boolean => {
-  const message = Buffer.from(stringify(request), "utf8");
+  const message = Buffer.from(stringify(data), "utf8");
   const publicKey = bls.PublicKey.fromBytes(
     Buffer.from(encoder.decode(signer))
   );

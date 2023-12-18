@@ -53,9 +53,10 @@ export interface StringAnyObject {
 }
 
 export interface GossipMethod<T> {
-  (incoming: Gossip<T>, metadata: MetaData):
-    | Promise<GossipRequest<T>>
-    | GossipRequest<T>;
+  (payload: GossipRequest<T>):
+    | Promise<GossipRequest<T> | null>
+    | GossipRequest<T>
+    | null;
 }
 
 export interface StringGossipMethodObject<T> {
@@ -87,4 +88,9 @@ export interface Gossip<T> {
   type: "gossip";
   request: GossipRequest<T>;
   seen: string[];
+}
+
+export interface SignatureItem {
+  signer: string;
+  signature: string;
 }
