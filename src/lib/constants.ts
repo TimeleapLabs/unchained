@@ -7,7 +7,7 @@ import {
   StringGossipMethodObject,
 } from "./types.js";
 
-export const version = "0.8.0";
+export const version = "0.8.2";
 export const protocolVersion = "0.8.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
