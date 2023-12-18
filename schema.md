@@ -30,20 +30,20 @@ the following payload schema:
   "type": "gossip",
   "request": {
     "method": "assetPrice", // gossip method to call
-    "data": { // data to gossip
-      "price": "2033.85831990604",
-      "block": "18670546"
-    },
-    "parameters": { // gossip parameters
-      "asset": "ethereum",
-      "source": "uniswap",
-      "chain": "ethereum"
-    },
+    "dataset": "ethereum::uniswap::ethereum", // chain::source::asset
+    "metric": { "block": "18670546" }, // M -> V metric
+    "signature": "Singature", // Hash { metric, value }, then sign
+    "signer": "Public key of the signer",
   },
-  "signature": "Signature of the request block",
-  "signer": "Public key of the signer",
-  "seen": [
-    // Array of public keys who have seen the packet with this signature
-  ]
+  "seen": [] // Array of public keys who have seen the packet with this signature
+}
+```
+
+Signature data format:
+
+```JSON
+{
+  "metric": { "block": "18670546" },
+  "value": { "price": "$2229.8986944638564" }
 }
 ```
