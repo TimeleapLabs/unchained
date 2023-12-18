@@ -71,13 +71,13 @@ swarm.on("connection", async (socket: Duplex, info: { publicKey: Buffer }) => {
       const result = await processRpc(message);
       try {
         await socket.write(JSON.stringify(result));
-      } catch (err) {
-        const error = err as NodeSystemError;
-        const info = error.code || error.errno || error.message;
+      } catch (error) {
+        const err = error as NodeSystemError;
+        const info = err.code || err.errno || err.message;
         logger.error(`Socket error with peer ${meta.name}: ${info}`);
       }
     } else if (message.type === "gossip") {
-      await processGossip(message, meta);
+      await processGossip(message);
     }
   });
 

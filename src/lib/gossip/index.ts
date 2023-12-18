@@ -57,8 +57,7 @@ export const gossip = async (
 };
 
 export const processGossip = async (
-  incoming: Gossip<unknown>,
-  connection: MetaData
+  incoming: Gossip<unknown>
 ): Promise<void | { error?: string | number }> => {
   try {
     // TODO: We should detect and slash nodes if they send wrong data
@@ -73,7 +72,7 @@ export const processGossip = async (
     }
 
     const method = gossipMethods[methodName];
-    const payload = await method(incoming, connection);
+    const payload = await method(incoming.request);
 
     if (payload) {
       await gossip(payload, incoming.seen);
