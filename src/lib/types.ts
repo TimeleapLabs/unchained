@@ -51,3 +51,46 @@ export interface NodeSystemError extends Error {
 export interface StringAnyObject {
   [key: string]: any;
 }
+
+export interface GossipMethod<T> {
+  (payload: GossipRequest<T>):
+    | Promise<GossipRequest<T> | null>
+    | GossipRequest<T>
+    | null;
+}
+
+export interface StringGossipMethodObject<T> {
+  [key: string]: GossipMethod<T>;
+}
+
+export interface AssetPriceMetric {
+  block: number;
+}
+
+export interface AssetPriceValue {
+  price: number;
+}
+
+export interface GossipSignatureInput<MT, VT> {
+  metric: MT;
+  value: VT;
+}
+
+export interface GossipRequest<T> {
+  method: string;
+  dataset: string;
+  metric: T;
+  signature: string;
+  signer: string;
+}
+
+export interface Gossip<T> {
+  type: "gossip";
+  request: GossipRequest<T>;
+  seen: string[];
+}
+
+export interface SignatureItem {
+  signer: string;
+  signature: string;
+}
