@@ -1,7 +1,8 @@
 import * as uniswap from "../plugins/uniswap/uniswap.js";
-import { gossip, GossipPayload } from "../gossip/index.js";
+import { gossip } from "../gossip/index.js";
 import { runAtNextInterval } from "../utils/time.js";
 import { runWithRetries, CALLERROR, TIMEOUT } from "../utils/retry.js";
+import { GossipRequest } from "../types.js";
 
 interface UniswapArgs {
   blockchain: string;
@@ -19,15 +20,9 @@ const uniswapArgs: [UniswapArgs, string, [number, number], boolean] = [
 export const runTasks = (): void => {
   runAtNextInterval(async () => {
     try {
-      const payload = await runWithRetries(uniswap.work, uniswapArgs);
-      if (payload && payload !== CALLERROR && payload !== TIMEOUT) {
-        const {
-          request,
-          signer,
-          seen = [],
-          signature,
-        } = payload as GossipPayload;
-        await gossip({ request, signer, signature, seen });
+      const result = await runWithRetries(uniswap.work, uniswapArgs);
+      if (result && !(result instanceof Symbol)) {
+        await gossip(result, []);
       }
     } catch (error) {
       // Handle the error or log it
