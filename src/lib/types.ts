@@ -5,9 +5,9 @@ export interface State {
   connected: boolean;
 }
 
-export interface Keys {
-  publicKey?: PublicKey;
-  secretKey?: SecretKey;
+export interface KeyPair {
+  publicKey: PublicKey;
+  secretKey: SecretKey;
 }
 
 interface RPCList {
