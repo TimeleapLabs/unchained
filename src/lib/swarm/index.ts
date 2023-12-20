@@ -70,7 +70,7 @@ swarm.on("connection", async (socket: Duplex, info: { publicKey: Buffer }) => {
     } else if (message.type === "call") {
       const result = await processRpc(message);
       try {
-        await socket.write(JSON.stringify(result));
+        socket.write(JSON.stringify(result));
       } catch (error) {
         const err = error as NodeSystemError;
         const info = err.code || err.errno || err.message;
@@ -100,7 +100,7 @@ swarm.on("connection", async (socket: Duplex, info: { publicKey: Buffer }) => {
       type: "call",
       request: { method: "introduce", args: {} },
     });
-    await socket.write(introducePayload);
+    socket.write(introducePayload);
   } catch (error) {}
 });
 
