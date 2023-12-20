@@ -16,6 +16,7 @@ program
   .option("--log <level>", "log level")
   .option("--lite", "run in lite mode")
   .option("--generate", "generate a secret key")
+  .option("--gossip <size>", "set gossip bucket size")
   .action(startAction);
 
 program.parse();

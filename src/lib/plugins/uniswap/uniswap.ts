@@ -36,9 +36,25 @@ const ws = (endpoint: string): WebSocketLike =>
     retry: { forever: true },
   }) as WebSocketLike;
 
-const getProvider = (config: Config) => {
-  if (!provider) {
-    const endpoint = config.rpc.ethereum;
+let currentProvider: number = 0;
+
+const getNextConnectionUrl = (config: Config): string => {
+  if (typeof config.rpc.ethereum === "string") {
+    return config.rpc.ethereum;
+  } else {
+    if (currentProvider > config.rpc.ethereum.length) {
+      currentProvider = 0;
+    }
+    return config.rpc.ethereum[currentProvider++];
+  }
+};
+
+const getProvider = (config: Config, fresh: boolean = false) => {
+  if (fresh || !provider) {
+    if (fresh) {
+      provider?.destroy();
+    }
+    const endpoint = getNextConnectionUrl(config);
     provider = endpoint.startsWith("wss://")
       ? new ethers.WebSocketProvider(ws(endpoint))
       : new ethers.JsonRpcProvider(endpoint);
@@ -264,7 +280,9 @@ export const work = async (
       ...signed,
     };
   } catch (error) {
-    logger.warn("Could not get the Ethereum price. Check your RPC.");
+    logger.warn("Could not get the Ethereum price.");
+    logger.warn("Getting a new RPC connection.");
+    getProvider(config, true);
     throw error;
   }
 };
