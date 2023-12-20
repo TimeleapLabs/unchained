@@ -1,12 +1,7 @@
 import bls from "@chainsafe/bls";
 import { Base58 } from "base-ex";
-
-import { SecretKey, PublicKey } from "@chainsafe/bls/types";
-
-interface KeyPair {
-  secretKey: SecretKey;
-  publicKey: PublicKey;
-}
+import { KeyPair } from "../types.js";
+import { SecretKey } from "@chainsafe/bls/types";
 
 interface EncodedKeyPair {
   secretKey: string;
