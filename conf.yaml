@@ -1,7 +1,13 @@
 log: info
 name: Change me
+lite: true
+gossip: 5
 rpc:
-  ethereum: https://ethereum.publicnode.com
+  ethereum:
+    - https://ethereum.publicnode.com
+    - https://eth.llamarpc.com
+    - wss://ethereum.publicnode.com
+    - https://eth.rpc.blxrbdn.com
 database:
   url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
   name: unchained
