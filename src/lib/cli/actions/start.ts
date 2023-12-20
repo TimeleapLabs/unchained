@@ -14,6 +14,7 @@ interface StartOptions {
   log?: string;
   lite?: boolean;
   generate?: boolean;
+  gossip?: string;
 }
 
 export const startAction = async (
@@ -30,6 +31,7 @@ export const startAction = async (
 
   logger.level = options.log || config.log || "info";
   config.lite = options.lite || config.lite || false;
+  config.gossip = parseInt(options.gossip || "0") || config.gossip || 5;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
