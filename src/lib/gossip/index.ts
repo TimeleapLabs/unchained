@@ -1,4 +1,4 @@
-import { gossipMethods, errors, keys, sockets } from "../constants.js";
+import { gossipMethods, errors, keys, sockets, config } from "../constants.js";
 import { encoder } from "../bls/keys.js";
 import { Gossip, GossipRequest, MetaData, NodeSystemError } from "../types.js";
 
@@ -27,6 +27,15 @@ const gossipTo = async (nodes: MetaData[], data: any): Promise<void> => {
   await Promise.all(promises).catch(() => null);
 };
 
+const randomDistinct = (length: number, count: number): number[] => {
+  const set = new Set<number>();
+  while (set.size < count) {
+    const random = randomIndex(length);
+    set.add(random);
+  }
+  return [...set];
+};
+
 export const gossip = async (
   request: GossipRequest<any>,
   seen: string[]
@@ -47,11 +56,11 @@ export const gossip = async (
   if (!nodes.length) {
     return;
   }
-  if (nodes.length <= 3) {
+  if (nodes.length <= config.gossip) {
     await gossipTo(nodes, payload);
   } else {
-    const random = new Array(3).fill(null).map(() => randomIndex(nodes.length));
-    const chosen = [...new Set(random)].map((index) => nodes[index]);
+    const indexes = randomDistinct(nodes.length, config.gossip);
+    const chosen = indexes.map((index) => nodes[index]);
     await gossipTo(chosen, payload);
   }
 };
