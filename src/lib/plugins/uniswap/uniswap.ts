@@ -8,6 +8,7 @@ import { encoder } from "../../bls/keys.js";
 import { WebSocketLike } from "ethers";
 import { WebSocket } from "unws";
 import { assetPrices } from "../../db/collections/AssetPrice.js";
+import { addOnePoint } from "../../score/index.js";
 
 import assert from "assert";
 
@@ -174,6 +175,10 @@ const setAttestations = async (
     ({ signer }) => !currentSignatures.includes(signer)
   );
 
+  for (const { signer } of newSignatureSet) {
+    addOnePoint(signer);
+  }
+
   const newSignatures = newSignatureSet.map((item) => item.signature);
   const currentAggregation = stored.aggregated || "";
   const signatureList = [currentAggregation, ...newSignatures].filter(Boolean);
@@ -193,6 +198,8 @@ const setAttestations = async (
   if (size > 1) {
     printAttestations(size, block, price, signersSet);
   }
+
+  earlyAttestations.set(block, []);
 
   for (const [key] of attestations.entries()) {
     // FIXME: Security problem where a validator can reset another

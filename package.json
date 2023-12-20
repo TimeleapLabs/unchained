@@ -1,6 +1,6 @@
 {
   "name": "@kenshi.io/unchained",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "@chainsafe/bls": "^7.1.2",
     "base-ex": "^0.8.1",
     "commander": "^11.1.0",
+    "console-table-printer": "^2.11.2",
     "enquirer": "^2.4.1",
     "ethers": "^6.8.1",
     "hyperswarm": "^4.7.9",
@@ -24,6 +25,7 @@
     "json-canon": "^1.0.1",
     "latest-version": "^7.0.0",
     "mongodb": "^6.3.0",
+    "node-cron": "^3.0.3",
     "ora": "^7.0.1",
     "semver": "^7.5.4",
     "unws": "^0.2.4",
@@ -36,6 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.4",
+    "@types/node-cron": "^3.0.11",
     "@types/semver": "^7.5.6",
     "@types/winston": "^2.4.4",
     "@types/ws": "^8.5.10",
