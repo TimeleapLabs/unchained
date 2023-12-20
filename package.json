@@ -1,11 +1,12 @@
 {
   "name": "@kenshi.io/unchained",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "lint": "tslint -p tsconfig.json"
+    "lint": "tslint -p tsconfig.json",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "bin": {

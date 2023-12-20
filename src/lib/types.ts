@@ -11,7 +11,7 @@ export interface KeyPair {
 }
 
 interface RPCList {
-  ethereum: string;
+  ethereum: string | string[];
 }
 
 interface DatabaseConfig {
@@ -26,6 +26,7 @@ export interface Config {
   lite: boolean;
   database?: DatabaseConfig;
   secretKey: string;
+  gossip: number;
 }
 
 export interface MetaData {
