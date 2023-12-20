@@ -1,7 +1,7 @@
 import { sha } from "./utils/hash.js";
 import {
   State,
-  Keys,
+  KeyPair,
   Config,
   StringAnyObject,
   StringGossipMethodObject,
@@ -13,7 +13,7 @@ export const protocolVersion = "0.8.0";
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
 
 export const sockets = new Map();
-export const keys: Keys = {};
+export const keys: KeyPair = Object({});
 
 export const config: Config = {
   name: "Change Me",
