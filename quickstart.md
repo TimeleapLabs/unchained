@@ -9,31 +9,92 @@ Then, head over to the
 on GitHub, find the latest Docker release file (file name ends with
 `-docker.zip`), download it, and uncompress it.
 
-Once done, head to the uncompressed directory and use one of the following
-commands in your favorite terminal emulator.
+Once done, head to the uncompressed directory.
 
-### Start Node
+### Node types
+The docker deployment is compatible with the 3 different node types:
+- local
+- lite
+- atlas
+
+Choose which node type you'd like to run on your machine.
+
+### Configuration
+
+#### Local node
+
+Make a copy of the environment template:
+
+```bash
+cp .env.template .env
+```
+
+Edit the newly created file with a username and password of your choice for MongoDB.
+
+Make a copy of the local configuration template:
+
+```bash
+cp conf.local.yaml.template conf.local.yaml
+```
+
+Edit it and set a name for your node with the `name` variable, set the MongoDB username and password to the ones you defined in the previous step, and the url of the MongoDB local instance to `mongodb`.
+
+#### Lite node
+
+Make a copy of the lite configuration template:
+
+```bash
+cp conf.lite.yaml.template conf.lite.yaml
+```
+
+Edit it and set a name for your node with the `name` variable,
+
+#### Atlas node
+
+Make a copy of the atlas configuration template:
+
+```bash
+cp conf.atlas.yaml.template conf.atlas.yaml
+```
+
+Edit it and set a name for your node with the `name` variable, set the MongoDB u
+sername, password and url to the ones of your MongoDB Atlas instance.
+
+### Managing your node
+
+Use one of the following commands in your favorite terminal emulator.
+
+#### Start Node
 
 To start the node, run this command while in the release directory:
 
 ```bash
-./scripts/start_node.sh
+./unchained.sh [node] up -d
 ```
 
-### Stop Node
+#### Stop Node
 
 To stop the node, run this command while in the release directory:
 
 ```bash
-./scripts/stop_node.sh
+./unchained.sh [node] stop
 ```
 
-### View Node
+#### View Node
 
 To view the node, run this command while in the release directory:
 
 ```bash
-./scripts/view_node.sh
+./unchained.sh [node] logs -f
+```
+
+#### Update Node
+
+To update the node to the latest docker image version, run this command while in the release directory:
+
+```bash
+./unchained.sh [node] pull
+./unchained.sh [node] up -d --force-recreate
 ```
 
 ## Installing Locally
