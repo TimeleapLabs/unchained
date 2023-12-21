@@ -17,6 +17,11 @@ program
   .option("--lite", "run in lite mode")
   .option("--generate", "generate a secret key")
   .option("--gossip <size>", "set gossip bucket size")
+  .option("--max-peers <max>", "set max allowed active peer connections")
+  .option(
+    "--parallel-peers <parallel>",
+    "set max allowed parallel peer connections"
+  )
   .action(startAction);
 
 program.parse();
