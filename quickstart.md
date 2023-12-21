@@ -19,7 +19,7 @@ The docker deployment is compatible with the 3 different node types:
 
 Choose which node type you'd like to run on your machine.
 
-### Configuration
+### Configuring your node
 
 #### Local node
 
@@ -61,7 +61,7 @@ Edit the newly created file. Set a name for your node. Set the MongoDB username,
 
 ### Managing your node
 
-Use one of the following commands in your favorite terminal emulator.
+To manage your node, use the following commands in your favorite terminal emulator.
 
 #### Start Node
 
