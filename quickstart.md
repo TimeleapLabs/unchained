@@ -94,9 +94,9 @@ config:
 
 ```yaml
 log: info
-name: Change me
+name: <name>
 lite: true
-gossip: 5
+gossip: 24
 rpc:
   ethereum:
     - https://ethereum.publicnode.com
@@ -106,6 +106,9 @@ rpc:
 database:
   url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
   name: unchained
+peers:
+  max: 512
+  parallel: 16
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -138,10 +141,40 @@ where you saved the above configuration file:
 unchained start conf.yaml
 ```
 
-If you are running the `start` command for the first time, you also need to pass `--generate` to generate a random secret key. This key will be saved to the configuraion file and you won't have to generate a new key every time.
+If you are running the `start` command for the first time, you also need to pass
+`--generate` to generate a random secret key. This key will be saved to the
+configuraion file and you won't have to generate a new key every time.
 
 ```bash
 unchained start conf.yaml --generate
+```
+
+## Max Open Sockets
+
+Depending on your OS and OS configuration, you might run into issues if you have
+too many peers connected. Follow the guides below to increase the maximum open
+connections limit on your OS.
+
+### MacOS
+
+To increase the limit on MacOS, run these commands:
+
+```bash
+sudo sysctl kern.maxfiles=2000000 kern.maxfilesperproc=2000000
+echo "ulimit -Hn 2000000" >> ~/.zshrc
+echo "ulimit -Sn 2000000" >> ~/.zshrc
+source ~/.zshrc
+```
+
+### Linux
+
+To increase the limit on Linux, run these commands:
+
+```bash
+sudo sysctl -w fs.nr_open=33554432
+echo "ulimit -Hn 33554432" >> ~/.bashrc
+echo "ulimit -Sn 33554432" >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ## Help
