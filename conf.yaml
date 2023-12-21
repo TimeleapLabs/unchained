@@ -1,5 +1,5 @@
 log: info
-name: Change me
+name: <name>
 lite: true
 gossip: 5
 rpc:
@@ -11,3 +11,6 @@ rpc:
 database:
   url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
   name: unchained
+peers:
+  max: 512
+  parallel: 16
