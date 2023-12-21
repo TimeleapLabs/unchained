@@ -28,6 +28,10 @@ export const config: Config = {
   secretKey: "",
   lite: false,
   gossip: 5,
+  peers: {
+    max: 512,
+    parallel: 16,
+  },
 };
 
 export const rpcMethods: StringAnyObject = {};

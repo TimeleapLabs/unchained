@@ -15,6 +15,8 @@ interface StartOptions {
   lite?: boolean;
   generate?: boolean;
   gossip?: string;
+  maxPeers?: string;
+  parallelPeers?: string;
 }
 
 export const startAction = async (
@@ -31,7 +33,14 @@ export const startAction = async (
 
   logger.level = options.log || config.log || "info";
   config.lite = options.lite || config.lite || false;
-  config.gossip = parseInt(options.gossip || "0") || config.gossip || 5;
+
+  config.gossip =
+    parseInt(options.gossip || "0") || config.gossip || globalConfig.gossip;
+
+  config.peers ||= globalConfig.peers;
+  config.peers.max = parseInt(options.maxPeers || "0") || config.peers.max;
+  config.peers.parallel =
+    parseInt(options.parallelPeers || "0") || config.peers.parallel;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
