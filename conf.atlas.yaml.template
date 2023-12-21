@@ -1,6 +1,5 @@
 log: info
 name: <name>
-lite: true
 gossip: 24
 rpc:
   ethereum:

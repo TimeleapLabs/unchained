@@ -1,4 +1,8 @@
 .DS_Store
 node_modules
-conf.*.private.yaml
+conf.*.yaml
+.env
 dist
+data
+release
+release-notes.md

@@ -1,0 +1,13 @@
+log: info
+lite: true
+name: <name>
+gossip: 24
+rpc:
+  ethereum:
+    - https://ethereum.publicnode.com
+    - https://eth.llamarpc.com
+    - wss://ethereum.publicnode.com
+    - https://eth.rpc.blxrbdn.com
+peers:
+  max: 512
+  parallel: 16

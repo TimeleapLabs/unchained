@@ -1,15 +1,136 @@
 # Quick Start
 
-## Prerequisites
+Follow the guide on this page to run either a full or a lite node:
+
+- **Lite nodes** are nodes that only validate data, but they don't store any of
+  the validated datapoints. It's easier to set up a lite node than a full node.
+- **Full nodes** are nodes that validate data, and store the validated data for
+  future queries. Full nodes require extra steps to set up, and need more
+  resources. You can either store the validated data on a local MongoDB
+  instance, or use DBaaS such as MongoDB Atlas.
+
+You can setup a node using a docker deployment or local deployment:
+
+- **Docker deployment** requires Docker and makes the installation and
+  management of the node straighforward.
+- **Local deployment** runs Unchained locally on your machine and requires you
+  to manually setup Unchained.
+
+## Using Docker
+
+Running Unchained with Docker is straightforward. Make sure you
+[have Docker installed](https://docs.docker.com/engine/install/).
+Then, head over to the
+[Unchained release page](https://github.com/KenshiTech/unchained/releases)
+on GitHub, find the latest Docker release file (file name ends with
+`-docker.zip`), download it, and uncompress it.
+
+Once done, head to the uncompressed release directory.
+
+### Node types
+
+The docker deployment is compatible with the 3 different node types:
+
+- local
+- lite
+- atlas
+
+Choose which node type you'd like to run on your machine.
+
+### Configuring your node
+
+#### Local node
+
+Make a copy of the environment template:
+
+```bash
+cp .env.template .env
+```
+
+Edit the newly created file with a username and password of your choice for MongoDB.
+
+Make a copy of the local configuration template:
+
+```bash
+cp conf.local.yaml.template conf.local.yaml
+```
+
+Edit the newly created file. Set a name for your node. Set the MongoDB username and password to the ones you defined in the previous step, and the url of the MongoDB local instance to `mongodb`.
+
+#### Lite node
+
+Make a copy of the lite configuration template:
+
+```bash
+cp conf.lite.yaml.template conf.lite.yaml
+```
+
+Edit the newly created file and set a name for your node.
+
+#### Atlas node
+
+Make a copy of the atlas configuration template:
+
+```bash
+cp conf.atlas.yaml.template conf.atlas.yaml
+```
+
+Edit the newly created file. Set a name for your node. Set the MongoDB username, password and url to the ones of your MongoDB Atlas instance.
+
+### Managing your node
+
+To manage your node, use the following commands in your favorite terminal emulator.
+
+#### Start Node
+
+To start the node, run this command while in the release directory:
+
+```bash
+./unchained.sh [node] up -d
+```
+
+#### Stop Node
+
+To stop the node, run this command while in the release directory:
+
+```bash
+./unchained.sh [node] stop
+```
+
+#### View Node
+
+To view the node, run this command while in the release directory:
+
+```bash
+./unchained.sh [node] logs -f
+```
+
+#### Update Node
+
+To update the node to the latest docker image version, run this command while in the release directory:
+
+```bash
+./unchained.sh [node] pull
+./unchained.sh [node] up -d --force-recreate
+```
+
+## Installing Locally
+
+Follow these instructions if you want to install Unchained and its dependencies
+locally, on a
+[RaspberryPi](https://forum.kenshi.io/t/how-to-set-up-your-unchained-node-on-raspberry-pi/132),
+on a server, or on your computer/laptop.
+
+### Prerequisites
 
 To run a Kenshi Unchained validator, you need to install Node.js. Follow the
 installation instructions for your platform on the Node.js
 [official installation](https://nodejs.org/en/download/package-manager) page.
 
-## Install the Unchained Client
+### Install the Unchained Client
 
-The easiest way to get started is to install the Unchained client globally.
-On windows, Linux, MacOS, and BSD, run this command in CMD or terminal:
+The easiest way to get the Unchained client is to install it globally. On
+windows, Linux, MacOS, and BSD, run this command in CMD or terminal:
 
 ```bash
 npm i -g @kenshi.io/unchained
@@ -22,7 +143,7 @@ Note: On UNIX-like operating systems, you might need to run this command with
 sudo npm i -g @kenshi.io/unchained
 ```
 
-### Updates
+#### Updates
 
 To update the Unchained client, you can re-run the installation command above.
 Adding `@latest` to the end would result in installing the latest version.
@@ -31,7 +152,7 @@ Adding `@latest` to the end would result in installing the latest version.
 sudo npm i -g @kenshi.io/unchained@latest
 ```
 
-## MongoDB
+### MongoDB
 
 Note: Skip this step if you're planning to run a lite node.
 
@@ -44,12 +165,12 @@ free credits on [Digital Ocean](https://try.digitalocean.com/freetrialoffer/).
 
 Contact us on [Telegram](https://t.me/kenshi) if you need help with this step.
 
-### MongoDB Atlas
+#### MongoDB Atlas
 
 If you want to use MongoDB Atlas, there is a great tutorial you can watch on the
 [official MongoDB YouTube channel](https://www.youtube.com/watch?v=jXgJyuBeb_o).
 
-### Installing MongoDB Locally
+#### Installing MongoDB Locally
 
 If you want to install MongoDB locally, first follow the official MongoDB
 installation
@@ -63,7 +184,7 @@ mongodb://localhost:27017/<database>
 Replace `<database>` with the name of the database you want to use (for example,
 `unchained`).
 
-#### Securing Your Local MongoDB
+##### Securing Your Local MongoDB
 
 To secure your local MongoDB installation, you should first enable DB
 authentication. To do so, follow the guide
@@ -87,7 +208,7 @@ Replace `user` with your username, replace `<password>` with a
 `<database>` with the name of the database you want to use for Unchained. Your
 user needs `readWrite` access to this database.
 
-## Configuration
+### Configuration
 
 You need a configuration file to get started. You can start with the following
 config:
