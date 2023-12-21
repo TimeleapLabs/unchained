@@ -1,5 +1,21 @@
 # Quick Start
 
+Follow the guide on this page to run either a full or a lite node:
+
+- **Lite nodes** are nodes that only validate data, but they don't store any of
+  the validated datapoints. It's easier to set up a lite node than a full node.
+- **Full nodes** are nodes that validate data, and store the validated data for
+  future queries. Full nodes require extra steps to set up, and need more
+  resources. You can either store the validated data on a local MongoDB
+  instance, or use DBaaS such as MongoDB Atlas.
+
+You can setup a node using a docker deployment or local deployment:
+
+- **Docker deployment** requires Docker and makes the installation and
+  management of the node straighforward.
+- **Local deployment** runs Unchained locally on your machine and requires you
+  to manually setup Unchained.
+
 ## Using Docker
 
 Running Unchained with Docker is straightforward. Make sure you
@@ -12,7 +28,9 @@ on GitHub, find the latest Docker release file (file name ends with
 Once done, head to the uncompressed release directory.
 
 ### Node types
+
 The docker deployment is compatible with the 3 different node types:
+
 - local
 - lite
 - atlas
