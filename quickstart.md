@@ -203,7 +203,7 @@ file:
 mongodb://<user>:<password>@localhost:27017/<database>
 ```
 
-Replace `user` with your username, replace `<password>` with a
+Replace `<user>` with your username, replace `<password>` with a
 [url-encoded](https://www.urlencoder.io/) version of your password. Replace
 `<database>` with the name of the database you want to use for Unchained. Your
 user needs `readWrite` access to this database.
