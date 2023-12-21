@@ -37,7 +37,7 @@ Make a copy of the local configuration template:
 cp conf.local.yaml.template conf.local.yaml
 ```
 
-Edit it and set a name for your node with the `name` variable, set the MongoDB username and password to the ones you defined in the previous step, and the url of the MongoDB local instance to `mongodb`.
+Edit it and set a name for your node, and set the MongoDB username and password to the ones you defined in the previous step, and the url of the MongoDB local instance to `mongodb`.
 
 #### Lite node
 
@@ -47,7 +47,7 @@ Make a copy of the lite configuration template:
 cp conf.lite.yaml.template conf.lite.yaml
 ```
 
-Edit it and set a name for your node with the `name` variable,
+Edit it and set a name for your node.
 
 #### Atlas node
 
@@ -57,7 +57,7 @@ Make a copy of the atlas configuration template:
 cp conf.atlas.yaml.template conf.atlas.yaml
 ```
 
-Edit it and set a name for your node with the `name` variable, set the MongoDB u
+Edit it and set a name for your node, and set the MongoDB u
 sername, password and url to the ones of your MongoDB Atlas instance.
 
 ### Managing your node
