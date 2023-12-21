@@ -1,7 +1,7 @@
 log: info
-name: Change me
+name: <name>
 lite: true
-gossip: 5
+gossip: 24
 rpc:
   ethereum:
     - https://ethereum.publicnode.com
@@ -11,3 +11,6 @@ rpc:
 database:
   url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
   name: unchained
+peers:
+  max: 512
+  parallel: 16

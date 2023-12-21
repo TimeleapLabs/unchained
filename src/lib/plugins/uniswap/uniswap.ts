@@ -206,6 +206,8 @@ const setAttestations = async (
     signatures: [...newSignatureSet, ...stored.signatures],
   });
 
+  earlyAttestations.set(block, []);
+
   if (!config.lite) {
     await updateAssetPrice(block, price, aggregated, [...signersSet]);
   }
@@ -214,8 +216,6 @@ const setAttestations = async (
   if (size > 1) {
     printAttestations(size, block, price, signersSet);
   }
-
-  earlyAttestations.set(block, []);
 
   for (const [key] of attestations.entries()) {
     // FIXME: Security problem where a validator can reset another

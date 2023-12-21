@@ -19,6 +19,11 @@ interface DatabaseConfig {
   name: string;
 }
 
+interface PeerConfig {
+  max: number;
+  parallel: number;
+}
+
 export interface Config {
   name: string;
   log: string;
@@ -27,6 +32,7 @@ export interface Config {
   database?: DatabaseConfig;
   secretKey: string;
   gossip: number;
+  peers: PeerConfig;
 }
 
 export interface MetaData {

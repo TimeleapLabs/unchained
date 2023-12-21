@@ -5,6 +5,8 @@ import { sockets, keys } from "../constants.js";
 import { encodeKeys } from "../bls/keys.js";
 
 export const printScores = () => {
+  const map = resetAllScores();
+
   const table = new Table({
     columns: [
       { name: "peer", title: "Peer", alignment: "left", color: "blue" },
@@ -20,7 +22,7 @@ export const printScores = () => {
     [...sockets.entries()].map(([_, { publicKey, name }]) => [publicKey, name])
   );
 
-  for (const [peer, score] of getAllScores()) {
+  for (const [peer, score] of getAllScores(map)) {
     if (peer === thisNode) {
       continue;
     }
@@ -37,6 +39,4 @@ export const printScores = () => {
   const sprint = Math.ceil(new Date().valueOf() / 300000);
   logger.info(`Scores for sprint ${sprint} are:`);
   table.printTable();
-
-  resetAllScores();
 };
