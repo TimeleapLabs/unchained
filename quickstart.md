@@ -137,13 +137,21 @@ config:
 
 ```yaml
 log: info
-name: Change me
+name: <name>
 lite: true
+gossip: 24
 rpc:
-  ethereum: https://ethereum.publicnode.com
+  ethereum:
+    - https://ethereum.publicnode.com
+    - https://eth.llamarpc.com
+    - wss://ethereum.publicnode.com
+    - https://eth.rpc.blxrbdn.com
 database:
   url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
   name: unchained
+peers:
+  max: 512
+  parallel: 16
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -155,8 +163,8 @@ the following modifications if required:
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
 - `lite`: To run a lite node, set this to `true`, otherwise set it to `false`.
-- `rpc.ethereum`: You need to modify the `ethereum` RPC address to the one of your
-  choice. You can find a list of Ethereum RPC nodes on
+- `gossip`: Gossip number represents the number of other nodes that you node will gossip with to validate a piece of data. It is set to `5` by default, but you can change it if you wish. Setting it to `0` is the equivalent of not running a node at all.
+- `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when issues are detected with the RPC connection. You can find a list of Ethereum RPC nodes on
   [Chainlist](https://chainlist.org/chain/1).
 - `database.url`: Your
   [MongoDB connection string](https://www.mongodb.com/docs/manual/reference/connection-string/)
@@ -176,10 +184,40 @@ where you saved the above configuration file:
 unchained start conf.yaml
 ```
 
-If you are running the `start` command for the first time, you also need to pass `--generate` to generate a random secret key. This key will be saved to the configuraion file and you won't have to generate a new key every time.
+If you are running the `start` command for the first time, you also need to pass
+`--generate` to generate a random secret key. This key will be saved to the
+configuraion file and you won't have to generate a new key every time.
 
 ```bash
 unchained start conf.yaml --generate
+```
+
+## Max Open Sockets
+
+Depending on your OS and OS configuration, you might run into issues if you have
+too many peers connected. Follow the guides below to increase the maximum open
+connections limit on your OS.
+
+### MacOS
+
+To increase the limit on MacOS, run these commands:
+
+```bash
+sudo sysctl kern.maxfiles=2000000 kern.maxfilesperproc=2000000
+echo "ulimit -Hn 2000000" >> ~/.zshrc
+echo "ulimit -Sn 2000000" >> ~/.zshrc
+source ~/.zshrc
+```
+
+### Linux
+
+To increase the limit on Linux, run these commands:
+
+```bash
+sudo sysctl -w fs.nr_open=33554432
+echo "ulimit -Hn 33554432" >> ~/.bashrc
+echo "ulimit -Sn 33554432" >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ## Help

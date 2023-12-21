@@ -7,7 +7,7 @@ import {
   StringGossipMethodObject,
 } from "./types.js";
 
-export const version = "0.8.4";
+export const version = "0.8.5";
 export const protocolVersion = "0.8.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
@@ -27,7 +27,11 @@ export const config: Config = {
   },
   secretKey: "",
   lite: false,
-  gossip: 5,
+  gossip: 24,
+  peers: {
+    max: 512,
+    parallel: 16,
+  },
 };
 
 export const rpcMethods: StringAnyObject = {};
