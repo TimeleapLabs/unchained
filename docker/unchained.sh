@@ -15,6 +15,18 @@ usage() {
   echo "  To view logs of a node: $0 local logs -f"
 }
 
+if ! command -v docker &> /dev/null
+then
+  echo "Error: docker could not be found on your system!"
+  exit 1
+fi
+
+if ! docker compose version &> /dev/null
+then
+  echo "Error: docker compose could not be found on your system!"
+  exit 1
+fi
+
 if [ ! $1 == 'local' ] && [ ! $1 == 'atlas' ] && [ ! $1 == 'lite' ] || [ -z $2 ]; then
   usage
   exit 1
