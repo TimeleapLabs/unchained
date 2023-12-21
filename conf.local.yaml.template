@@ -2,7 +2,11 @@ log: info
 name: <name>
 gossip: 24
 rpc:
-  ethereum: https://ethereum.publicnode.com
+  ethereum:
+    - https://ethereum.publicnode.com
+    - https://eth.llamarpc.com
+    - wss://ethereum.publicnode.com
+    - https://eth.rpc.blxrbdn.com
 database:
   url: mongodb://<user>:<pass>@<url>/?retryWrites=true&w=majority
   name: unchained
