@@ -27,7 +27,7 @@ export const config: Config = {
   },
   secretKey: "",
   lite: false,
-  gossip: 5,
+  gossip: 24,
   peers: {
     max: 512,
     parallel: 16,

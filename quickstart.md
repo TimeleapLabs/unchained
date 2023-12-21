@@ -96,7 +96,7 @@ config:
 log: info
 name: <name>
 lite: true
-gossip: 5
+gossip: 24
 rpc:
   ethereum:
     - https://ethereum.publicnode.com
