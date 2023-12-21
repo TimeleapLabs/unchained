@@ -9,7 +9,7 @@ Then, head over to the
 on GitHub, find the latest Docker release file (file name ends with
 `-docker.zip`), download it, and uncompress it.
 
-Once done, head to the uncompressed directory.
+Once done, head to the uncompressed release directory.
 
 ### Node types
 The docker deployment is compatible with the 3 different node types:
