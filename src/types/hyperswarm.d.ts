@@ -12,6 +12,7 @@ declare module "hyperswarm" {
   }
 
   class HyperSwarm extends EventEmitter {
+    constructor(opts?: { maxPeers?: number; maxParallel?: number });
     join(topic: Buffer | string): Discovery;
     on(
       event: "connection",
