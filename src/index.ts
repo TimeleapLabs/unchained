@@ -2,6 +2,7 @@
 
 import { program } from "commander";
 import { startAction } from "./lib/cli/actions/start.js";
+import { addressAction } from "./lib/cli/actions/address.js";
 import { version } from "./lib/constants.js";
 
 program
@@ -23,5 +24,13 @@ program
     "set max allowed parallel peer connections"
   )
   .action(startAction);
+
+program
+  .command("address")
+  .description("print the public Unchained address of a config file")
+  .argument("<config>", "config file in YAML format")
+  .option("--generate", "generate a secret key")
+  .option("--ci", "run in ci mode")
+  .action(addressAction);
 
 program.parse();

@@ -27,6 +27,7 @@ const attestations = new Map<number, Attestation>();
 const earlyAttestations = new Map<number, SignatureItem[]>();
 
 let provider: ethers.Provider | undefined;
+let getNewRpc: boolean = false;
 
 const CACHE_SIZE = 50;
 
@@ -49,10 +50,11 @@ const getNextConnectionUrl = (config: Config): string => {
   }
 };
 
-const getProvider = (config: Config, fresh: boolean = false) => {
-  if (fresh || !provider) {
-    if (fresh) {
+const getProvider = (config: Config) => {
+  if (getNewRpc || !provider) {
+    if (getNewRpc) {
       provider?.destroy();
+      getNewRpc = false;
     }
     const endpoint = getNextConnectionUrl(config);
     provider = endpoint.startsWith("wss://")
@@ -282,7 +284,7 @@ export const work = async (
   } catch (error) {
     logger.warn("Could not get the Ethereum price.");
     logger.warn("Getting a new RPC connection.");
-    getProvider(config, true);
+    getNewRpc = true;
     throw error;
   }
 };
