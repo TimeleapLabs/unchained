@@ -125,7 +125,9 @@ export const startSwarm = (): void => {
     maxParallel: config.peers.parallel,
     maxPeers: config.peers.max,
   });
-  logger.info(`Starting the node: ${swarm.keyPair.publicKey.toString("hex")}`);
+  logger.info(
+    `Noise public key is: ${swarm.keyPair.publicKey.toString("hex")}`
+  );
   spinner.start();
   setupEventListeners();
   discover();
