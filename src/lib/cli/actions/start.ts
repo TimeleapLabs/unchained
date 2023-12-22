@@ -19,11 +19,20 @@ interface StartOptions {
   parallelPeers?: string;
 }
 
+const safeReadConfig = (configFile: string): string | null => {
+  try {
+    const configContent = readFileSync(configFile).toString();
+    return configContent;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const startAction = async (
   configFile: string,
   options: StartOptions
 ) => {
-  const configContent = readFileSync(configFile).toString();
+  const configContent = safeReadConfig(configFile);
   const config: Config = configContent ? { ...parse(configContent) } : null;
 
   if (!config) {
@@ -59,10 +68,13 @@ export const startAction = async (
   Object.assign(keys, loadKeys(config.secretKey));
   assert(keys.publicKey !== undefined, "No public key available");
 
+  const address = encoder.encode(keys.publicKey.toBytes());
+  logger.info(`Unchained public address is ${address}`);
+
   if (!config.name) {
     logger.warn("Node name not found in config");
     logger.warn("Using the first 8 letters of your public key");
-    config.name = encoder.encode(keys.publicKey.toBytes()).slice(0, 8);
+    config.name = address.slice(0, 8);
   } else if (config.name.length > 24) {
     logger.error("Node name cannot be more than 24 characters");
     return process.exit(1);
