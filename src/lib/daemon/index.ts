@@ -1,8 +1,8 @@
 import * as uniswap from "../plugins/uniswap/uniswap.js";
 import { gossip } from "../gossip/index.js";
 import { runWithRetries } from "../utils/retry.js";
-import { schedule } from "node-cron";
 import { printScores } from "../score/print.js";
+import { Cron } from "croner";
 
 interface UniswapArgs {
   blockchain: string;
@@ -18,7 +18,7 @@ const uniswapArgs: [UniswapArgs, string, [number, number], boolean] = [
 ];
 
 export const runTasks = (): void => {
-  schedule("*/5 * * * * *", async () => {
+  Cron("*/5 * * * * *", async () => {
     try {
       const result = await runWithRetries(uniswap.work, uniswapArgs);
       if (result && !(result instanceof Symbol)) {
@@ -27,13 +27,13 @@ export const runTasks = (): void => {
     } catch (error) {
       // Handle the error or log it
     }
-  }).start();
+  });
 
-  schedule("0 */5 * * * *", async () => {
+  Cron("0 */5 * * * *", async () => {
     try {
       printScores();
     } catch (error) {
       // Handle the error or log it
     }
-  }).start();
+  });
 };
