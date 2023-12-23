@@ -4,6 +4,7 @@ import { runWithRetries } from "../utils/retry.js";
 import { printScores } from "../score/print.js";
 import { syncNodeNames } from "../metadata/index.js";
 import { Cron } from "croner";
+import { config } from "../constants.js";
 
 interface UniswapArgs {
   blockchain: string;
@@ -38,11 +39,13 @@ export const runTasks = (): void => {
     }
   });
 
-  Cron("0 */1 * * * *", async () => {
-    try {
-      syncNodeNames();
-    } catch (error) {
-      // Handle the error or log it
-    }
-  });
+  if (!config.lite) {
+    Cron("0 */1 * * * *", async () => {
+      try {
+        syncNodeNames();
+      } catch (error) {
+        // Handle the error or log it
+      }
+    });
+  }
 };
