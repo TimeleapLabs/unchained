@@ -40,6 +40,7 @@ export const addressAction = async (
     const newKeys = makeKeys();
     const encodedKeys = encodeKeys(newKeys);
     config.secretKey = encodedKeys.secretKey;
+    config.publicKey = encodedKeys.publicKey;
     const serialized = stringify(config);
     writeFileSync(configFile, serialized);
   }
