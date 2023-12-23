@@ -42,7 +42,6 @@ export const runTasks = (): void => {
     try {
       syncNodeNames();
     } catch (error) {
-      console.trace(error);
       // Handle the error or log it
     }
   });
