@@ -9,6 +9,7 @@ import { WebSocketLike } from "ethers";
 import { WebSocket } from "unws";
 import { assetPrices } from "../../db/collections/AssetPrice.js";
 import { addOnePoint } from "../../score/index.js";
+import { debounce } from "../../utils/debounce.js";
 
 import assert from "assert";
 
@@ -92,34 +93,37 @@ const setEarlyAttestations = (
   }
 };
 
-const updateAssetPrice = async (
-  block: number,
-  price: number,
-  aggregated: string,
-  signers: string[]
-) => {
-  await assetPrices.updateOne(
-    {
-      block,
-      asset: "ethereum",
-      source: "uniswap-ethereum",
-    },
-    {
-      $set: {
-        price,
-        signature: aggregated,
-        signers,
-      },
-      $setOnInsert: {
-        timestamp: new Date(), // FIXME
+const updateAssetPrice = debounce(
+  async (
+    block: number,
+    price: number,
+    aggregated: string,
+    signers: string[]
+  ) => {
+    await assetPrices.updateOne(
+      {
+        block,
         asset: "ethereum",
         source: "uniswap-ethereum",
-        block,
       },
-    },
-    { upsert: true }
-  );
-};
+      {
+        $set: {
+          price,
+          signature: aggregated,
+          signers,
+        },
+        $setOnInsert: {
+          timestamp: new Date(), // FIXME
+          asset: "ethereum",
+          source: "uniswap-ethereum",
+          block,
+        },
+      },
+      { upsert: true }
+    );
+  },
+  500
+);
 
 const printAttestations = (
   size: number,
@@ -139,11 +143,11 @@ const printAttestations = (
   ].filter(Boolean);
   const peerStates = {
     signed: allPeers
-      .filter((peer) => signersSet.has(peer.publicKey))
-      .map((peer) => peer.name),
+      .filter((peer) => peer?.publicKey && signersSet.has(peer.publicKey))
+      .map((peer) => peer?.name || "?"),
     missing: allPeers
-      .filter((peer) => !signersSet.has(peer.publicKey))
-      .map((peer) => peer.name),
+      .filter((peer) => peer?.publicKey && !signersSet.has(peer.publicKey))
+      .map((peer) => peer?.name || "?"),
   };
   logger.verbose(`Received signatures: ${peerStates.signed.join(", ")}`);
   logger.verbose(
@@ -211,7 +215,10 @@ const setAttestations = async (
   earlyAttestations.set(block, []);
 
   if (!config.lite) {
-    await updateAssetPrice(block, price, aggregated, [...signersSet]);
+    updateAssetPrice({
+      key: block,
+      args: [block, price, aggregated, [...signersSet]],
+    });
   }
 
   const { size } = signersSet;

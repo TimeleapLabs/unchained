@@ -2,6 +2,7 @@ import * as uniswap from "../plugins/uniswap/uniswap.js";
 import { gossip } from "../gossip/index.js";
 import { runWithRetries } from "../utils/retry.js";
 import { printScores } from "../score/print.js";
+import { syncNodeNames } from "../metadata/index.js";
 import { Cron } from "croner";
 
 interface UniswapArgs {
@@ -32,6 +33,14 @@ export const runTasks = (): void => {
   Cron("0 */5 * * * *", async () => {
     try {
       printScores();
+    } catch (error) {
+      // Handle the error or log it
+    }
+  });
+
+  Cron("0 */1 * * * *", async () => {
+    try {
+      syncNodeNames();
     } catch (error) {
       // Handle the error or log it
     }
