@@ -31,6 +31,7 @@ export interface Config {
   lite: boolean;
   database?: DatabaseConfig;
   secretKey: string;
+  publicKey: string;
   gossip: number;
   peers: PeerConfig;
 }
