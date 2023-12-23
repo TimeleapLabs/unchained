@@ -4,6 +4,7 @@ import { logger } from "../logger/index.js";
 
 import assert from "node:assert";
 import * as assetPrices from "./collections/AssetPrice.js";
+import * as nodeNames from "./collections/NodeNames.js";
 
 export let db: Db;
 export let client: MongoClient;
@@ -20,4 +21,5 @@ export const initDB = async () => {
   }
   db = client.db(config.database.name);
   await assetPrices.initCollection(db);
+  await nodeNames.initCollection(db);
 };
