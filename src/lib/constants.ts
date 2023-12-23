@@ -5,14 +5,15 @@ import {
   Config,
   StringAnyObject,
   StringGossipMethodObject,
+  MetaData,
 } from "./types.js";
 
-export const version = "0.8.6";
+export const version = "0.8.7";
 export const protocolVersion = "0.8.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
 
-export const sockets = new Map();
+export const sockets = new Map<string, MetaData>();
 export const keys: KeyPair = Object({});
 
 export const config: Config = {
@@ -26,6 +27,7 @@ export const config: Config = {
     name: "unchained",
   },
   secretKey: "",
+  publicKey: "",
   lite: false,
   gossip: 24,
   peers: {
