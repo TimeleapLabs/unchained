@@ -44,9 +44,9 @@ export const verify = ({
 export const verifyAggregate = (
   signers: string[],
   signature: string,
-  request: any
+  data: any
 ): boolean => {
-  const message = Buffer.from(stringify(request), "utf8");
+  const message = Buffer.from(stringify(data), "utf8");
   const decodedSignature = bls.Signature.fromBytes(
     Buffer.from(encoder.decode(signature))
   );
