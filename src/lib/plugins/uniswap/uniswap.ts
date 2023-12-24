@@ -100,7 +100,7 @@ const addPendingAttestation = (
       processAttestations({ key: block, args: [block] });
     }
   }
-  for (const [key] of pendingAttestations.entries()) {
+  for (const key of pendingAttestations.keys()) {
     if (key < block - CACHE_SIZE) {
       // FIXME: Security problem where a validator can reset another
       // FIXME: peer's cache by sending a big block number
@@ -248,7 +248,7 @@ const processAttestations = debounce(async (block: number) => {
     printAttestations(size, block, price, signersSet);
   }
 
-  for (const [key] of attestations.entries()) {
+  for (const key of attestations.keys()) {
     // FIXME: Security problem where a validator can reset another
     // FIXME: peer's cache by sending a big block number
     if (key < block - CACHE_SIZE) {
