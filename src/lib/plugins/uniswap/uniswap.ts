@@ -3,7 +3,12 @@ import { gossipMethods, config, keys, sockets } from "../../constants.js";
 import { logger } from "../../logger/index.js";
 import { state } from "../../constants.js";
 import { WS } from "iso-websocket";
-import { attest as blsAttest, aggregate, verify } from "../../bls/index.js";
+import {
+  attest as blsAttest,
+  aggregate,
+  verify,
+  verifyAggregate,
+} from "../../bls/index.js";
 import { encoder } from "../../bls/keys.js";
 import { WebSocketLike } from "ethers";
 import { WebSocket } from "unws";
@@ -25,7 +30,7 @@ import { Attestation, PriceSignatureInput } from "./types.js";
 
 const cache = new Map<number, number>();
 const attestations = new Map<number, Attestation>();
-const earlyAttestations = new Map<number, SignatureItem[]>();
+const pendingAttestations = new Map<number, SignatureItem[]>();
 
 let provider: ethers.Provider | undefined;
 let getNewRpc: boolean = false;
@@ -74,21 +79,32 @@ const setCache = (block: number, price: number) => {
   }
 };
 
-const setEarlyAttestations = (
+const addPendingAttestation = (
   block: number,
   signer: string,
   signature: string
 ) => {
-  const attestations = earlyAttestations.get(block) || [];
-  const alreadyAdded = attestations.some((item) => item.signer === signer);
+  const pendingSignatures = pendingAttestations.get(block) || [];
+  const confirmedSignatures = attestations.get(block)?.signatures;
+
+  const alreadyAdded =
+    pendingSignatures.some((item) => item.signer === signer) ||
+    confirmedSignatures?.some((item) => item.signer === signer);
+
   if (!alreadyAdded) {
-    earlyAttestations.set(block, [...attestations, { signer, signature }]);
+    pendingAttestations.set(block, [
+      ...pendingSignatures,
+      { signer, signature },
+    ]);
+    if (cache.has(block)) {
+      processAttestations({ key: block, args: [block] });
+    }
   }
-  for (const [key] of earlyAttestations.entries()) {
+  for (const key of pendingAttestations.keys()) {
     if (key < block - CACHE_SIZE) {
       // FIXME: Security problem where a validator can reset another
       // FIXME: peer's cache by sending a big block number
-      earlyAttestations.delete(key);
+      pendingAttestations.delete(key);
     }
   }
 };
@@ -132,56 +148,68 @@ const printAttestations = (
   signersSet: Set<string>
 ) => {
   logger.info(`${size}x validations at block ${block}: $${price}`);
-  const allPeers = [
-    keys.publicKey
-      ? {
-          name: "@",
-          publicKey: encoder.encode(Buffer.from(keys.publicKey.toBytes())),
-        }
-      : null,
-    ...sockets.values(),
-  ].filter(Boolean);
-  const peerStates = {
-    signed: allPeers
-      .filter((peer) => peer?.publicKey && signersSet.has(peer.publicKey))
-      .map((peer) => peer?.name || "?"),
-    missing: allPeers
-      .filter((peer) => peer?.publicKey && !signersSet.has(peer.publicKey))
-      .map((peer) => peer?.name || "?"),
-  };
-  logger.verbose(`Received signatures: ${peerStates.signed.join(", ")}`);
-  logger.verbose(
-    `Missing signatures: ${peerStates.missing.join(", ") || "N/A"}`
-  );
+  if (logger.isVerboseEnabled()) {
+    const allPeers = [
+      keys.publicKey
+        ? {
+            name: "@",
+            publicKey: encoder.encode(Buffer.from(keys.publicKey.toBytes())),
+          }
+        : null,
+      ...sockets.values(),
+    ].filter(Boolean);
+    const peerStates = {
+      signed: allPeers
+        .filter((peer) => peer?.publicKey && signersSet.has(peer.publicKey))
+        .map((peer) => peer?.name || "?"),
+      missing: allPeers
+        .filter((peer) => peer?.publicKey && !signersSet.has(peer.publicKey))
+        .map((peer) => peer?.name || "?"),
+    };
+    logger.verbose(`Received signatures: ${peerStates.signed.join(", ")}`);
+    logger.verbose(
+      `Missing signatures: ${peerStates.missing.join(", ") || "N/A"}`
+    );
+  }
 };
 
-const setAttestations = async (
-  block: number,
-  signer: string,
-  signature: string
-) => {
+const processAttestations = debounce(async (block: number) => {
   const price = cache.get(block);
-  assert(typeof price === "number", "Attempting to attest an unchaed block");
+  assert(typeof price === "number", "Attempting to attest an uncached block");
   const data: PriceSignatureInput = { metric: { block }, value: { price } };
-
-  if (!verify({ signer, signature, data })) {
-    return false;
-  }
-
   const stored = attestations.get(block) || { signatures: [] };
+  const pending = pendingAttestations.get(block) || [];
 
-  if (stored.signatures.some((item) => item.signer === signer)) {
-    return false;
+  if (!pending.length) {
+    return;
   }
 
-  const early = earlyAttestations.get(block) || [];
-  const earlySignatures = early.filter((item) => verify({ ...item, data }));
-  const allSignatures = [
-    ...stored.signatures,
-    ...earlySignatures,
-    { signer, signature },
-  ];
+  // reset pending attestations
+  pendingAttestations.set(block, []);
 
+  const currentSignatures = stored.signatures.map((item) => item.signature);
+  const newSignatureSet = pending.filter(
+    ({ signer }) => !currentSignatures.includes(signer)
+  );
+
+  if (!newSignatureSet.length) {
+    return;
+  }
+
+  // verify aggregated pending signatures
+  const pendingSigners = pending.map((item) => item.signer);
+  const pendingAggregated = aggregate(pending.map((item) => item.signature));
+  const aggregatedVerify = verifyAggregate(
+    pendingSigners,
+    pendingAggregated,
+    data
+  );
+
+  const pendingSignatures = aggregatedVerify
+    ? pending
+    : pending.filter((item) => verify({ ...item, data }));
+
+  const allSignatures = [...stored.signatures, ...pendingSignatures];
   const uniqueSignatures = [];
   const signersSet = new Set<string>();
 
@@ -192,11 +220,7 @@ const setAttestations = async (
     }
   }
 
-  const currentSignatures = stored.signatures.map((item) => item.signature);
-  const newSignatureSet = [...early, { signer, signature }].filter(
-    ({ signer }) => !currentSignatures.includes(signer)
-  );
-
+  // add peer scores
   for (const { signer } of newSignatureSet) {
     addOnePoint(signer);
   }
@@ -212,8 +236,6 @@ const setAttestations = async (
     signatures: [...newSignatureSet, ...stored.signatures],
   });
 
-  earlyAttestations.set(block, []);
-
   if (!config.lite) {
     updateAssetPrice({
       key: block,
@@ -226,7 +248,7 @@ const setAttestations = async (
     printAttestations(size, block, price, signersSet);
   }
 
-  for (const [key] of attestations.entries()) {
+  for (const key of attestations.keys()) {
     // FIXME: Security problem where a validator can reset another
     // FIXME: peer's cache by sending a big block number
     if (key < block - CACHE_SIZE) {
@@ -234,7 +256,7 @@ const setAttestations = async (
     }
   }
   return true;
-};
+}, 500);
 
 const poolABI = [
   `function slot0() external view returns
@@ -280,7 +302,7 @@ export const work = async (
     setCache(block, price);
     const data: PriceSignatureInput = { metric: { block }, value: { price } };
     const signed = blsAttest(data);
-    await setAttestations(block, signed.signer, signed.signature);
+    addPendingAttestation(block, signed.signer, signed.signature);
     // TODO: we need to properly handle `dataset`
     return {
       method: "uniswapAttest",
@@ -300,18 +322,8 @@ export const attest: GossipMethod<AssetPriceMetric> = async (
   request: GossipRequest<AssetPriceMetric>
 ) => {
   const { metric, signer, signature } = request;
-
-  if (!cache.has(metric.block)) {
-    setEarlyAttestations(metric.block, signer, signature);
-    return null;
-  } else {
-    const valid = await setAttestations(metric.block, signer, signature);
-    if (valid) {
-      return request;
-    }
-  }
-
-  return null;
+  addPendingAttestation(metric.block, signer, signature);
+  return request;
 };
 
 Object.assign(gossipMethods, { uniswapAttest: attest });
