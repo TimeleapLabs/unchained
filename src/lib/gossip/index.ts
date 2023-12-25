@@ -21,10 +21,15 @@ const randomIndex = (length: number): number => {
 };
 
 const gossipTo = async (nodes: MetaData[], data: any): Promise<void> => {
-  const promises = nodes.map(({ socket }) =>
-    socket.write(JSON.stringify(data))
-  );
-  await Promise.all(promises).catch(() => null);
+  const payload = JSON.stringify(data);
+  for (const node of nodes) {
+    if (!node.socket.closed && !node.isSocketBusy) {
+      const sent = node.socket.write(payload);
+      if (!sent) {
+        node.isSocketBusy = true;
+      }
+    }
+  }
 };
 
 const randomDistinct = (length: number, count: number): number[] => {
@@ -49,10 +54,10 @@ export const gossip = async (
     return;
   }
   const payload = { type: "gossip", request, seen: [...seen, publicKey] };
-  const values = Array.from(sockets.values()) as MetaData[];
-  const nodes = values.filter(
-    (node) => node.publicKey && !seen.includes(node.publicKey)
-  );
+  const values = [...sockets.values()] as MetaData[];
+  const nodes = values
+    .filter((node) => node.publicKey && !seen.includes(node.publicKey))
+    .filter((node) => !node.isSocketBusy);
   if (!nodes.length) {
     return;
   }
@@ -82,7 +87,6 @@ export const processGossip = async (
 
     const method = gossipMethods[methodName];
     const payload = await method(incoming.request);
-
     if (payload) {
       await gossip(payload, incoming.seen);
     }

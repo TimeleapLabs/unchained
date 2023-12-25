@@ -107,6 +107,7 @@ const addPendingAttestation = (
       pendingAttestations.delete(key);
     }
   }
+  return !alreadyAdded;
 };
 
 const updateAssetPrice = debounce(
@@ -322,8 +323,8 @@ export const attest: GossipMethod<AssetPriceMetric> = async (
   request: GossipRequest<AssetPriceMetric>
 ) => {
   const { metric, signer, signature } = request;
-  addPendingAttestation(metric.block, signer, signature);
-  return request;
+  const added = addPendingAttestation(metric.block, signer, signature);
+  return added ? request : null;
 };
 
 Object.assign(gossipMethods, { uniswapAttest: attest });

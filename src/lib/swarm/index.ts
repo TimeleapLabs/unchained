@@ -26,7 +26,13 @@ const setupEventListeners = () => {
 
       const peerAddr = info.publicKey.toString("hex");
       const peer = `[${peerAddr.slice(0, 4)}···${peerAddr.slice(-4)}]`;
-      const meta: MetaData = { socket, peer, peerAddr, name: peer };
+      const meta: MetaData = {
+        socket,
+        peer,
+        peerAddr,
+        name: peer,
+        isSocketBusy: false,
+      };
 
       sockets.set(peerAddr, meta);
       logger.info(`Connected to a new peer: ${peerAddr}`);
@@ -97,6 +103,10 @@ const setupEventListeners = () => {
       socket.on("close", () => {
         clearTimeout(timeout);
         sockets.delete(peerAddr);
+      });
+
+      socket.on("drain", () => {
+        meta.isSocketBusy = false;
       });
 
       try {

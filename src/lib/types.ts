@@ -42,6 +42,7 @@ export interface MetaData {
   peerAddr: string;
   name: string;
   publicKey?: string;
+  isSocketBusy: boolean;
 }
 
 export interface NodeSystemError extends Error {
