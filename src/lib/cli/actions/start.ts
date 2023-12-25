@@ -55,7 +55,9 @@ export const startAction = async (
     logger.error("No secret key supplied");
     logger.warn("Run me with --generate to generate a new secret for you");
     return process.exit(1);
-  } else if (options.generate) {
+  }
+
+  if (!config.secretKey && options.generate) {
     const newKeys = makeKeys();
     const encodedKeys = encodeKeys(newKeys);
     config.secretKey = encodedKeys.secretKey;
