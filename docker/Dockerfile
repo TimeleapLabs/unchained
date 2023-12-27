@@ -6,7 +6,7 @@ LABEL maintainer="hi@kenshi.io"
 WORKDIR /app
 
 RUN npm i -g @kenshi.io/unchained@${UNCHAINED_VERSION} && \
-    unchained postgres migrate && \
+    unchained postgres migrate conf.yaml && \
     unchained --version
 
 ENTRYPOINT ["unchained", "start", "conf.yaml", "--generate"]
