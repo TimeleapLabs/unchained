@@ -3,6 +3,7 @@
 import { program } from "commander";
 import { startAction } from "./lib/cli/actions/start.js";
 import { addressAction } from "./lib/cli/actions/address.js";
+import { initDbAction } from "./lib/cli/actions/postgres/migrate.js";
 import { version } from "./lib/constants.js";
 
 program
@@ -32,5 +33,15 @@ program
   .option("--generate", "generate a secret key")
   .option("--ci", "run in ci mode")
   .action(addressAction);
+
+const postgres = program
+  .command("postgres")
+  .description("commands to manage postgres instances for Unchained");
+
+postgres
+  .command("migrate")
+  .description("runs the database migrations to this Unchained version")
+  .argument("<config>", "config file in YAML format")
+  .action(initDbAction);
 
 program.parse();
