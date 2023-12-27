@@ -10,4 +10,4 @@ rpc:
     - https://eth.rpc.blxrbdn.com
 peers:
   max: 64
-  parallel: 4
+  parallel: 8
