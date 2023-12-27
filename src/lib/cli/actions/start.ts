@@ -93,10 +93,6 @@ export const startAction = async (
     return process.exit(1);
   }
 
-  if (!config.lite && !config.database?.name) {
-    config.database = { url: config.database?.url || "", name: "unchained" };
-  }
-
   Object.assign(globalConfig, config);
 
   if (!config.lite) {

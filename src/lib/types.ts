@@ -16,7 +16,6 @@ interface RPCList {
 
 interface DatabaseConfig {
   url: string;
-  name: string;
 }
 
 interface PeerConfig {
