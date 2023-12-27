@@ -7,3 +7,5 @@ data
 release
 release-notes.md
 prisma/client
+docker/data
+docker/pgadmin
