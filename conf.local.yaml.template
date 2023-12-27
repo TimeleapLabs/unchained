@@ -8,8 +8,7 @@ rpc:
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
 database:
-  url: mongodb://<user>:<pass>@<url>/?retryWrites=true&w=majority
-  name: unchained
+  url: postgres://<user>:<pass>@<host>:<port>/<db>
 peers:
-  max: 512
-  parallel: 16
+  max: 64
+  parallel: 8

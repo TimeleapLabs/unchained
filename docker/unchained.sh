@@ -30,10 +30,8 @@ if [ ! $1 == 'local' ] && [ ! $1 == 'remote' ] && [ ! $1 == 'lite' ] || [ -z $2 
   exit 1
 fi
 
-UID_GID="$(id -u):$(id -g)"
-
 if [ $2 == 'up' ] && [ $1 == 'local' ] && [ ! -d 'data' ]; then
   mkdir data
 fi
 
-UID_GID=$UID_GID COMPOSE_PROFILES=$1 docker compose "${@:2}"
+COMPOSE_PROFILES=$1 docker compose "${@:2}"

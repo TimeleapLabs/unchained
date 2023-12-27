@@ -60,7 +60,7 @@ makeReleaseFile("docker", [
   { source: "docker/unchained.sh", target: "unchained.sh" },
   { source: ".env.template", target: ".env.template" },
   { source: "conf.local.yaml.template", target: "conf.local.yaml.template" },
-  { source: "conf.atlas.yaml.template", target: "conf.atlas.yaml.template" },
+  { source: "conf.remote.yaml.template", target: "conf.remote.yaml.template" },
   { source: "conf.lite.yaml.template", target: "conf.lite.yaml.template" },
   { source: "LICENSE", target: "LICENSE" },
 ]);

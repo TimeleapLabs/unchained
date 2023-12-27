@@ -2,14 +2,18 @@ version: "3.9"
 
 services:
   unchained_local:
-    image: ghcr.io/kenshitech/unchained:latest
+    #image: ghcr.io/kenshitech/unchained:latest
+    build:
+      dockerfile: Dockerfile
+      args:
+        - NODE_VERSION=20.10
+        - UNCHAINED_VERSION=0.8.11-alpha1
     container_name: unchained_local
     hostname: unchained_local
-    user: "${UID_GID}"
     volumes:
       - ./conf.local.yaml:/app/conf.yaml
     depends_on:
-      - mongodb
+      - postgres
     profiles: ["local"]
     restart: always
 
@@ -17,7 +21,6 @@ services:
     image: postgres:16.1
     container_name: postgres
     hostname: postgres
-    user: "${UID_GID}"
     env_file:
       - .env
     volumes:
@@ -29,7 +32,6 @@ services:
     image: ghcr.io/kenshitech/unchained:latest
     container_name: unchained_lite
     hostname: unchained_lite
-    user: "${UID_GID}"
     volumes:
       - ./conf.lite.yaml:/app/conf.yaml
     profiles: ["lite"]
@@ -39,8 +41,7 @@ services:
     image: ghcr.io/kenshitech/unchained:latest
     container_name: unchained_remote
     hostname: unchained_remote
-    user: "${UID_GID}"
     volumes:
-      - ./conf.atlas.yaml:/app/conf.yaml
+      - ./conf.remote.yaml:/app/conf.yaml
     profiles: ["remote"]
     restart: always
