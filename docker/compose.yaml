@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
   unchained_local:
@@ -13,15 +13,15 @@ services:
     profiles: ["local"]
     restart: always
 
-  mongodb:
-    image: mongodb/mongodb-community-server:7.0.4-ubuntu2204
-    container_name: mongodb
-    hostname: mongodb
+  postgres:
+    image: postgres:16.1
+    container_name: postgres
+    hostname: postgres
     user: "${UID_GID}"
     env_file:
       - .env
     volumes:
-      - ./data:/data/db
+      - ./data:/var/lib/postgresql/data
     profiles: ["local"]
     restart: always
 
@@ -35,12 +35,12 @@ services:
     profiles: ["lite"]
     restart: always
 
-  unchained_atlas:
+  unchained_remote:
     image: ghcr.io/kenshitech/unchained:latest
-    container_name: unchained_atlas
-    hostname: unchained_atlas
+    container_name: unchained_remote
+    hostname: unchained_remote
     user: "${UID_GID}"
     volumes:
       - ./conf.atlas.yaml:/app/conf.yaml
-    profiles: ["atlas"]
+    profiles: ["remote"]
     restart: always
