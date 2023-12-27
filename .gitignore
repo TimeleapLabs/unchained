@@ -2,7 +2,7 @@
 node_modules
 conf.*.yaml
 .env
-dist
+#dist
 data
 release
 release-notes.md
