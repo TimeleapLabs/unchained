@@ -49,6 +49,6 @@ postgres
   .command("generate")
   .description("generates the Postgres client for this Unchained version")
   .argument("<config>", "config file in YAML format")
-  .action(initDbAction);
+  .action(generateDbAction);
 
 program.parse();
