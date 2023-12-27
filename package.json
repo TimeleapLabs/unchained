@@ -1,13 +1,13 @@
 {
   "name": "@kenshi.io/unchained",
-  "version": "0.8.11-alpha1",
+  "version": "0.8.11-alpha2",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "lint": "tslint -p tsconfig.json",
     "prepublishOnly": "npm run build",
-    "postinstall": "unchained postgres generate"
+    "postinstall": "npx prisma generate"
   },
   "keywords": [],
   "bin": {
