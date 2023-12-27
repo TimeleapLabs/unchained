@@ -2,9 +2,7 @@ version: "3.9"
 
 services:
   unchained_local:
-    #image: ghcr.io/kenshitech/unchained:latest
-    build:
-      dockerfile: Dockerfile
+    image: ghcr.io/kenshitech/unchained:latest
     container_name: unchained_local
     hostname: unchained_local
     volumes:
