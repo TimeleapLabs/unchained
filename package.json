@@ -7,7 +7,7 @@
     "build": "tsc",
     "lint": "tslint -p tsconfig.json",
     "prepublishOnly": "npm run build",
-    "postinstall": "prisma generate"
+    "postinstall": "unchained postgres generate"
   },
   "keywords": [],
   "bin": {
