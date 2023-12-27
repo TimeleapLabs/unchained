@@ -24,7 +24,6 @@ export const config: Config = {
   },
   database: {
     url: "",
-    name: "unchained",
   },
   secretKey: "",
   publicKey: "",
