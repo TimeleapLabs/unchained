@@ -10,6 +10,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    environment:
+      - UNCHAINED_NODE_TYPE=full
     profiles: ["local"]
     restart: always
 
@@ -50,6 +52,8 @@ services:
     hostname: unchained_lite
     volumes:
       - ./conf.lite.yaml:/app/conf.yaml
+    environment:
+      - UNCHAINED_NODE_TYPE=lite
     profiles: ["lite"]
     restart: always
 
@@ -59,5 +63,7 @@ services:
     hostname: unchained_remote
     volumes:
       - ./conf.remote.yaml:/app/conf.yaml
+    environment:
+      - UNCHAINED_NODE_TYPE=lite
     profiles: ["remote"]
     restart: always
