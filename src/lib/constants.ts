@@ -8,7 +8,7 @@ import {
   MetaData,
 } from "./types.js";
 
-export const version = "0.8.10";
+export const version = "0.8.11";
 export const protocolVersion = "0.8.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
@@ -24,7 +24,6 @@ export const config: Config = {
   },
   database: {
     url: "",
-    name: "unchained",
   },
   secretKey: "",
   publicKey: "",

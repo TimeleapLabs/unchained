@@ -5,7 +5,9 @@ LABEL maintainer="hi@kenshi.io"
 
 WORKDIR /app
 
+COPY ./entrypoint.sh entrypoint.sh
+
 RUN npm i -g @kenshi.io/unchained@${UNCHAINED_VERSION} && \
     unchained --version
 
-ENTRYPOINT ["unchained", "start", "conf.yaml", "--generate"]
+ENTRYPOINT ["./entrypoint.sh"]

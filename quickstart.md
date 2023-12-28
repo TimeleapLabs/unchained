@@ -6,8 +6,10 @@ Follow the guide on this page to run either a full or a lite node:
   the validated datapoints. It's easier to set up a lite node than a full node.
 - **Full nodes** are nodes that validate data, and store the validated data for
   future queries. Full nodes require extra steps to set up, and need more
-  resources. You can either store the validated data on a local MongoDB
-  instance, or use DBaaS such as MongoDB Atlas.
+  resources. You can either store the validated data on a local Postgres
+  instance, or use DBaaS such as [Neon](https://neon.tech),
+  [AWS RDS](https://aws.amazon.com/rds/), [ElephantSQL](https://www.elephantsql.com/)
+  or any other.
 
 You can setup a node using a docker deployment or local deployment:
 
@@ -31,9 +33,9 @@ Once done, head to the uncompressed release directory.
 
 The docker deployment is compatible with the 3 different node types:
 
-- local
-- lite
-- atlas
+- `local`: Unchained and Postgres run in Docker.
+- `lite`: Unchained runs in Docker, no need for Postgres.
+- `remote`: Unchained runs in Docker, Postgres runs elsewhere.
 
 Choose which node type you'd like to run on your machine.
 
@@ -47,7 +49,8 @@ Make a copy of the environment template:
 cp .env.template .env
 ```
 
-Edit the newly created file with a username and password of your choice for MongoDB.
+Edit the newly created file with a username and password of your choice for Postgres
+and PgAdmin.
 
 Make a copy of the local configuration template:
 
@@ -55,7 +58,9 @@ Make a copy of the local configuration template:
 cp conf.local.yaml.template conf.local.yaml
 ```
 
-Edit the newly created file. Set a name for your node. Set the MongoDB username and password to the ones you defined in the previous step, and the url of the MongoDB local instance to `mongodb`.
+Edit the newly created file. Set a name for your node. Set the Postgres
+username, password, and database name to the ones you defined in the previous
+step. Set the host of the Postgres local instance to `postgres`, and the port to 5432.
 
 #### Lite node
 
@@ -67,15 +72,16 @@ cp conf.lite.yaml.template conf.lite.yaml
 
 Edit the newly created file and set a name for your node.
 
-#### Atlas node
+#### Remote node
 
 Make a copy of the atlas configuration template:
 
 ```bash
-cp conf.atlas.yaml.template conf.atlas.yaml
+cp conf.remote.yaml.template conf.remote.yaml
 ```
 
-Edit the newly created file. Set a name for your node. Set the MongoDB username, password and url to the ones of your MongoDB Atlas instance.
+Edit the newly created file. Set a name for your node. Set the Postgres username,
+password, database name, host, and port to the ones of your DBaaS instance.
 
 ### Managing your node
 
@@ -117,9 +123,7 @@ To update the node to the latest docker image version, run this command while in
 ## Installing Locally
 
 Follow these instructions if you want to install Unchained and its dependencies
-locally, on a
-[RaspberryPi](https://forum.kenshi.io/t/how-to-set-up-your-unchained-node-on-raspberry-pi/132),
-on a server, or on your computer/laptop.
+locally, on a RaspberryPi, on a server, or on your computer/laptop.
 
 ### Prerequisites
 
@@ -152,61 +156,27 @@ Adding `@latest` to the end would result in installing the latest version.
 sudo npm i -g @kenshi.io/unchained@latest
 ```
 
-### MongoDB
+### Postgres
 
 Note: Skip this step if you're planning to run a lite node.
 
-To run a full node, you need to have an instance of MongoDB. You can either run
-your own, or make a subscription to a cloud service. You can get a free
-subscription for the Unchained testnet on
-[MongoDB Atlas](https://www.mongodb.com/pricing) or
-[OVH](https://www.ovhcloud.com/en/public-cloud/mongodb/). You can also get $200
-free credits on [Digital Ocean](https://try.digitalocean.com/freetrialoffer/).
+To run a full node, you need to have an instance of Postgres. You can either run
+your own, or make a subscription to a cloud service.
 
 Contact us on [Telegram](https://t.me/kenshi) if you need help with this step.
 
-#### MongoDB Atlas
+#### Installing Postgres Locally
 
-If you want to use MongoDB Atlas, there is a great tutorial you can watch on the
-[official MongoDB YouTube channel](https://www.youtube.com/watch?v=jXgJyuBeb_o).
-
-#### Installing MongoDB Locally
-
-If you want to install MongoDB locally, first follow the official MongoDB
-installation
-[instructions](https://www.mongodb.com/docs/manual/administration/install-community/),
-then use the following url in your Unchained config file:
+If you want to install Postgres locally, first follow the official Postgres
+installation [instructions](https://www.postgresql.org/download/), then use the
+following url in your Unchained config file:
 
 ```
-mongodb://localhost:27017/<database>
+postgres://<user>:<pass>@localhost:5432/<database>
 ```
 
-Replace `<database>` with the name of the database you want to use (for example,
-`unchained`).
-
-##### Securing Your Local MongoDB
-
-To secure your local MongoDB installation, you should first enable DB
-authentication. To do so, follow the guide
-[here](https://www.mongodb.com/docs/manual/tutorial/enable-authentication/). If
-you're not sure which method to choose, go with the SCRAM method.
-
-Once access control is enable, you should create a new user for your Unchained
-database. To do so, follow the guide
-[here](https://www.mongodb.com/docs/manual/tutorial/create-users#configure-users-for-self-hosted-deployments). Be sure to take note
-of your password.
-
-Once done, you can use the following connection string in you Unchained config
-file:
-
-```
-mongodb://<user>:<password>@localhost:27017/<database>
-```
-
-Replace `<user>` with your username, replace `<password>` with a
-[url-encoded](https://www.urlencoder.io/) version of your password. Replace
-`<database>` with the name of the database you want to use for Unchained. Your
-user needs `readWrite` access to this database.
+Replace `<user>`, `<pass>`, and `<database>` with the user, password, and name
+of the database you have created.
 
 ### Configuration
 
@@ -225,11 +195,10 @@ rpc:
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
 database:
-  url: mongodb+srv://<user>:<password>@<url>/?retryWrites=true&w=majority
-  name: unchained
+  url: postgres://<user>:<pass>@<host>:<port>/<db>
 peers:
-  max: 512
-  parallel: 16
+  max: 64
+  parallel: 8
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -241,14 +210,11 @@ the following modifications if required:
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
 - `lite`: To run a lite node, set this to `true`, otherwise set it to `false`.
-- `gossip`: Gossip number represents the number of other nodes that you node will gossip with to validate a piece of data. It is set to `5` by default, but you can change it if you wish. Setting it to `0` is the equivalent of not running a node at all.
+- `gossip`: Gossip number represents the number of other nodes that you node will gossip with to validate a piece of data. It is set to `24` by default, but you can change it if you wish. Setting it to `0` is the equivalent of not running a node at all.
 - `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when issues are detected with the RPC connection. You can find a list of Ethereum RPC nodes on
   [Chainlist](https://chainlist.org/chain/1).
-- `database.url`: Your
-  [MongoDB connection string](https://www.mongodb.com/docs/manual/reference/connection-string/)
-  goes here. Ignore this if you're running a lite node.
-- `database.name`: Name of the database to choose. If unsure, leave the default
-  value. Ignore this if you're running a lite node.
+- `database.url`: Your Postgres connection string goes here. Ignore this if
+  you're running a lite node.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 

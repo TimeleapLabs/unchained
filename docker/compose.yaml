@@ -1,46 +1,63 @@
-version: '3.9'
+version: "3.9"
 
 services:
   unchained_local:
     image: ghcr.io/kenshitech/unchained:latest
     container_name: unchained_local
     hostname: unchained_local
-    user: "${UID_GID}"
     volumes:
       - ./conf.local.yaml:/app/conf.yaml
     depends_on:
-      - mongodb
+      postgres:
+        condition: service_healthy
     profiles: ["local"]
     restart: always
 
-  mongodb:
-    image: mongodb/mongodb-community-server:7.0.4-ubuntu2204
-    container_name: mongodb
-    hostname: mongodb
-    user: "${UID_GID}"
+  postgres:
+    image: postgres:16.1
+    container_name: postgres
+    hostname: postgres
     env_file:
       - .env
     volumes:
-      - ./data:/data/db
+      - ./data:/var/lib/postgresql/data
     profiles: ["local"]
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    env_file:
+      - .env
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    profiles: ["local"]
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   unchained_lite:
     image: ghcr.io/kenshitech/unchained:latest
     container_name: unchained_lite
     hostname: unchained_lite
-    user: "${UID_GID}"
     volumes:
       - ./conf.lite.yaml:/app/conf.yaml
     profiles: ["lite"]
     restart: always
 
-  unchained_atlas:
+  unchained_remote:
     image: ghcr.io/kenshitech/unchained:latest
-    container_name: unchained_atlas
-    hostname: unchained_atlas
-    user: "${UID_GID}"
+    container_name: unchained_remote
+    hostname: unchained_remote
     volumes:
-      - ./conf.atlas.yaml:/app/conf.yaml
-    profiles: ["atlas"]
+      - ./conf.remote.yaml:/app/conf.yaml
+    profiles: ["remote"]
     restart: always
