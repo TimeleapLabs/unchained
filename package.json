@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "tslint -p tsconfig.json",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "postinstall": "npx prisma generate"
   },
   "keywords": [],
   "bin": {
@@ -16,6 +17,7 @@
   "license": "BUSL-1.1",
   "dependencies": {
     "@chainsafe/bls": "^7.1.2",
+    "@prisma/client": "^5.7.1",
     "base-ex": "^0.8.1",
     "commander": "^11.1.0",
     "console-table-printer": "^2.11.2",
@@ -31,7 +33,8 @@
     "semver": "^7.5.4",
     "unws": "^0.2.4",
     "winston": "^3.11.0",
-    "yaml": "^2.3.4"
+    "yaml": "^2.3.4",
+    "prisma": "^5.7.1"
   },
   "type": "module",
   "optionalDependencies": {

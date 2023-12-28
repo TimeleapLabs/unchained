@@ -12,11 +12,9 @@ import {
 import { encoder } from "../../bls/keys.js";
 import { WebSocketLike } from "ethers";
 import { WebSocket } from "unws";
-import { assetPrices } from "../../db/collections/AssetPrice.js";
 import { addOnePoint } from "../../score/index.js";
 import { debounce } from "../../utils/debounce.js";
-
-import assert from "assert";
+import { db } from "../../db/db.js";
 
 import {
   Config,
@@ -114,30 +112,51 @@ const updateAssetPrice = debounce(
   async (
     block: number,
     price: number,
-    aggregated: string,
+    signature: string,
     signers: string[]
   ) => {
-    await assetPrices.updateOne(
-      {
-        block,
-        asset: "ethereum",
-        source: "uniswap-ethereum",
-      },
-      {
-        $set: {
-          price,
-          signature: aggregated,
-          signers,
-        },
-        $setOnInsert: {
-          timestamp: new Date(), // FIXME
-          asset: "ethereum",
-          source: "uniswap-ethereum",
-          block,
-        },
-      },
-      { upsert: true }
+    const dataset = await db.dataSet.upsert({
+      where: { name: "uniswap::ethereum::ethereum" },
+      update: {},
+      create: { name: "uniswap::ethereum::ethereum" },
+      select: { id: true },
+    });
+
+    const assetPrice = await db.assetPrice.upsert({
+      where: { dataSetId_block: { dataSetId: dataset.id, block } },
+      update: { signature },
+      create: { dataSetId: dataset.id, block, price, signature },
+      select: { id: true },
+    });
+
+    const signerNames = new Map(
+      [...sockets.values()].map((item) => [item.publicKey, item.name])
     );
+
+    for (const key of signers) {
+      const name = signerNames.get(key);
+      // Find or create each signer
+      const signer = await db.signer.upsert({
+        where: { key },
+        // see https://github.com/prisma/prisma/issues/18883
+        update: { key },
+        create: { key, name },
+        select: { id: true },
+      });
+
+      // Create relation in SignersOnAssetPrice
+      await db.signersOnAssetPrice.upsert({
+        where: {
+          signerId_assetPriceId: {
+            signerId: signer.id,
+            assetPriceId: assetPrice.id,
+          },
+        },
+        // see https://github.com/prisma/prisma/issues/18883
+        update: { signerId: signer.id, assetPriceId: assetPrice.id },
+        create: { signerId: signer.id, assetPriceId: assetPrice.id },
+      });
+    }
   },
   500
 );
@@ -175,8 +194,13 @@ const printAttestations = (
 };
 
 const processAttestations = debounce(async (block: number) => {
+  if (!cache.has(block)) {
+    return;
+  }
   const price = cache.get(block);
-  assert(typeof price === "number", "Attempting to attest an uncached block");
+  if (typeof price !== "number") {
+    return;
+  }
   const data: PriceSignatureInput = { metric: { block }, value: { price } };
   const stored = attestations.get(block) || { signatures: [] };
   const pending = pendingAttestations.get(block) || [];
