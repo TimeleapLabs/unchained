@@ -50,7 +50,7 @@ cp .env.template .env
 ```
 
 Edit the newly created file with a username and password of your choice for Postgres
-and PgAdmin.
+and Grafana.
 
 Make a copy of the local configuration template:
 
@@ -113,12 +113,19 @@ To view the node, run this command while in the release directory:
 
 #### Update Node
 
-To update the node to the latest docker image version, run this command while in the release directory:
+To update the node to the latest docker image version, run this command while in
+the release directory:
 
 ```bash
 ./unchained.sh [node] pull
 ./unchained.sh [node] up -d --force-recreate
 ```
+
+### Grafana Dashboard
+
+Running a local node starts a Grafana dashboard instance on port 3000. You can
+access it in your browser by visiting http://localhost:3000. You must set username
+and password of your Grafana instance in the .env file mentioned above.
 
 ## Installing Locally
 
