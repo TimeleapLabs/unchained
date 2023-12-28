@@ -64,6 +64,6 @@ services:
     volumes:
       - ./conf.remote.yaml:/app/conf.yaml
     environment:
-      - UNCHAINED_NODE_TYPE=lite
+      - UNCHAINED_NODE_TYPE=full
     profiles: ["remote"]
     restart: always
