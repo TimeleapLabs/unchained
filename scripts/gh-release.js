@@ -58,6 +58,15 @@ makeReleaseFile("docker", [
   { source: "docker/compose.yaml", target: "compose.yaml" },
   { source: "docker/Dockerfile", target: "Dockerfile" },
   { source: "docker/unchained.sh", target: "unchained.sh" },
+  { source: "docker/grafana/dashboard.yaml", target: "grafana/dashboard.yaml" },
+  {
+    source: "docker/grafana/datasource.yaml",
+    target: "grafana/datasource.yaml",
+  },
+  {
+    source: "docker/grafana/dashboards/unchained.json",
+    target: "grafana/dashboards/unchained.json",
+  },
   { source: ".env.template", target: ".env.template" },
   { source: "conf.local.yaml.template", target: "conf.local.yaml.template" },
   { source: "conf.remote.yaml.template", target: "conf.remote.yaml.template" },

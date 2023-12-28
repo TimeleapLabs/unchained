@@ -34,9 +34,6 @@ if [ $2 == 'up' ] && [ $1 == 'local' ]; then
   if [ ! -d 'data' ]; then
     mkdir data
   fi
-  if [ ! -d 'pgadmin' ]; then
-    mkdir pgadmin
-  fi
 fi
 
 COMPOSE_PROFILES=$1 docker compose "${@:2}"
