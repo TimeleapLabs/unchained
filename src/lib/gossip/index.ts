@@ -42,7 +42,7 @@ const randomDistinct = (length: number, count: number): number[] => {
 };
 
 export const gossip = async (
-  request: GossipRequest<any>,
+  request: GossipRequest<any, any>,
   seen: string[]
 ): Promise<void> => {
   if (sockets.size === 0) {
@@ -71,7 +71,7 @@ export const gossip = async (
 };
 
 export const processGossip = async (
-  incoming: Gossip<unknown>
+  incoming: Gossip<unknown, unknown>
 ): Promise<void | { error?: string | number }> => {
   try {
     // TODO: We should detect and slash nodes if they send wrong data
