@@ -60,15 +60,15 @@ export interface StringAnyObject {
   [key: string]: any;
 }
 
-export interface GossipMethod<T> {
-  (payload: GossipRequest<T>):
-    | Promise<GossipRequest<T> | null>
-    | GossipRequest<T>
+export interface GossipMethod<T, V> {
+  (payload: GossipRequest<T, V>):
+    | Promise<GossipRequest<T, V> | null>
+    | GossipRequest<T, V>
     | null;
 }
 
-export interface StringGossipMethodObject<T> {
-  [key: string]: GossipMethod<T>;
+export interface StringGossipMethodObject<T, V> {
+  [key: string]: GossipMethod<T, V>;
 }
 
 export interface AssetPriceMetric {
@@ -84,17 +84,18 @@ export interface GossipSignatureInput<MT, VT> {
   value: VT;
 }
 
-export interface GossipRequest<T> {
+export interface GossipRequest<T, V> {
   method: string;
   dataset: string;
   metric: T;
   signature: string;
   signer: string;
+  payload?: GossipSignatureInput<T, V>;
 }
 
-export interface Gossip<T> {
+export interface Gossip<T, V> {
   type: "gossip";
-  request: GossipRequest<T>;
+  request: GossipRequest<T, V>;
   seen: string[];
 }
 
