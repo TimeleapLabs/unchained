@@ -9,3 +9,5 @@ release-notes.md
 prisma/client
 docker/data
 docker/pgadmin
+.clinic
+node_trace.*

@@ -3,12 +3,8 @@ import { gossipMethods, config, keys, sockets } from "../../constants.js";
 import { logger } from "../../logger/index.js";
 import { state } from "../../constants.js";
 import { WS } from "iso-websocket";
-import {
-  attest as blsAttest,
-  aggregate,
-  verify,
-  verifyAggregate,
-} from "../../bls/index.js";
+import { attest as blsAttest, verify } from "../../bls/index.js";
+import { aggregate, verifyAggregate } from "../../bls/threads/index.js";
 import { encoder } from "../../bls/keys.js";
 import { WebSocketLike } from "ethers";
 import { WebSocket } from "unws";
@@ -83,11 +79,11 @@ const addPendingAttestation = (
   signature: string
 ) => {
   const pendingSignatures = pendingAttestations.get(block) || [];
-  const confirmedSignatures = attestations.get(block)?.signatures;
+  const confirmedSigners = attestations.get(block)?.signers;
 
   const alreadyAdded =
     pendingSignatures.some((item) => item.signer === signer) ||
-    confirmedSignatures?.some((item) => item.signer === signer);
+    confirmedSigners?.some((cSigner) => cSigner === signer);
 
   if (!alreadyAdded) {
     pendingAttestations.set(block, [
@@ -165,7 +161,7 @@ const printAttestations = (
   size: number,
   block: number,
   price: number,
-  signersSet: Set<string>
+  signersSet: string[]
 ) => {
   logger.info(`${size}x validations at block ${block}: $${price}`);
   if (logger.isVerboseEnabled()) {
@@ -180,10 +176,14 @@ const printAttestations = (
     ].filter(Boolean);
     const peerStates = {
       signed: allPeers
-        .filter((peer) => peer?.publicKey && signersSet.has(peer.publicKey))
+        .filter(
+          (peer) => peer?.publicKey && signersSet.includes(peer.publicKey)
+        )
         .map((peer) => peer?.name || "?"),
       missing: allPeers
-        .filter((peer) => peer?.publicKey && !signersSet.has(peer.publicKey))
+        .filter(
+          (peer) => peer?.publicKey && !signersSet.includes(peer.publicKey)
+        )
         .map((peer) => peer?.name || "?"),
     };
     logger.verbose(`Received signatures: ${peerStates.signed.join(", ")}`);
@@ -202,7 +202,7 @@ const processAttestations = debounce(async (block: number) => {
     return;
   }
   const data: PriceSignatureInput = { metric: { block }, value: { price } };
-  const stored = attestations.get(block) || { signatures: [] };
+  const stored = attestations.get(block) || { signers: [] };
   const pending = pendingAttestations.get(block) || [];
 
   if (!pending.length) {
@@ -212,65 +212,52 @@ const processAttestations = debounce(async (block: number) => {
   // reset pending attestations
   pendingAttestations.set(block, []);
 
-  const currentSignatures = stored.signatures.map((item) => item.signature);
+  const currentSigners = stored.signers;
   const newSignatureSet = pending.filter(
-    ({ signer }) => !currentSignatures.includes(signer)
+    ({ signer }) => !currentSigners.includes(signer)
   );
 
   if (!newSignatureSet.length) {
     return;
   }
 
-  // verify aggregated pending signatures
-  const pendingSigners = pending.map((item) => item.signer);
-  const pendingAggregated = aggregate(pending.map((item) => item.signature));
-  const aggregatedVerify = verifyAggregate(
-    pendingSigners,
-    pendingAggregated,
-    data
-  );
-
-  const pendingSignatures = aggregatedVerify
-    ? pending
-    : pending.filter((item) => verify({ ...item, data }));
-
-  const allSignatures = [...stored.signatures, ...pendingSignatures];
-  const uniqueSignatures = [];
-  const signersSet = new Set<string>();
-
-  for (const item of allSignatures) {
-    if (!signersSet.has(item.signer)) {
-      signersSet.add(item.signer);
-      uniqueSignatures.push(item);
-    }
-  }
-
-  // add peer scores
-  for (const { signer } of newSignatureSet) {
-    addOnePoint(signer);
-  }
-
-  const newSignatures = newSignatureSet.map((item) => item.signature);
-  const currentAggregation = stored.aggregated || "";
-  const signatureList = [currentAggregation, ...newSignatures].filter(Boolean);
-  const aggregated = aggregate(signatureList);
-
-  attestations.set(block, {
-    ...stored,
-    aggregated,
-    signatures: [...newSignatureSet, ...stored.signatures],
-  });
+  // verify aggregated new signatures
+  const newSigners = newSignatureSet.map((item) => item.signer);
+  const signers = [...newSigners, ...stored.signers];
 
   if (!config.lite) {
+    const newAggregated = await aggregate(
+      newSignatureSet.map((item) => item.signature)
+    );
+    const isValid = await verifyAggregate(newSigners, newAggregated, data);
+
+    const validNewSigs = isValid
+      ? newSignatureSet
+      : newSignatureSet.filter((item) => verify({ ...item, data }));
+
+    // add peer scores
+    for (const { signer } of validNewSigs) {
+      addOnePoint(signer);
+    }
+
+    const newSignatures = newSignatureSet.map((item) => item.signature);
+    const currentSignature = stored.aggregated || "";
+    const signatureList = isValid ? [newAggregated] : newSignatures;
+    const aggregated = await aggregate([currentSignature, ...signatureList]);
+
+    attestations.set(block, { ...stored, aggregated, signers });
+
     updateAssetPrice({
       key: block,
-      args: [block, price, aggregated, [...signersSet]],
+      args: [block, price, aggregated, [...newSigners]],
     });
+  } else {
+    attestations.set(block, { ...stored, aggregated: "", signers });
   }
 
-  const { size } = signersSet;
-  if (size > 1) {
-    printAttestations(size, block, price, signersSet);
+  const { length } = signers;
+  if (length > 1) {
+    printAttestations(length, block, price, signers);
   }
 
   for (const key of attestations.keys()) {

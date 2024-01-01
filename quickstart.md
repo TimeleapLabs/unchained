@@ -218,6 +218,20 @@ the following modifications if required:
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 
+## Migrations / Database Initialization
+
+Note: Skip this step if you're running a lite node.
+
+Before running the Unchained client, you need to get your database schema ready
+for storing Unchained data. To do so, you should run:
+
+```bash
+unchained postgres migrate conf.yaml
+```
+
+You'll need to run this command again if you're installing a new version of the
+client that makes changes to the Unchained data structure.
+
 ## Starting the Unchained Validator
 
 To start the validator and join the Unchained network, you need to run the
