@@ -47,9 +47,15 @@ export const startAction = async (
     parseInt(options.gossip || "0") || config.gossip || globalConfig.gossip;
 
   config.peers ||= globalConfig.peers;
-  config.peers.max = parseInt(options.maxPeers || "0") || config.peers.max;
+  config.peers.max =
+    parseInt(options.maxPeers || "0") ||
+    config.peers.max ||
+    globalConfig.peers.max;
+
   config.peers.parallel =
-    parseInt(options.parallelPeers || "0") || config.peers.parallel;
+    parseInt(options.parallelPeers || "0") ||
+    config.peers.parallel ||
+    globalConfig.peers.parallel;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");

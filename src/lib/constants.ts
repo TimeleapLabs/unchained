@@ -30,8 +30,8 @@ export const config: Config = {
   lite: false,
   gossip: 24,
   peers: {
-    max: 512,
-    parallel: 16,
+    max: 64,
+    parallel: 8,
   },
 };
 
