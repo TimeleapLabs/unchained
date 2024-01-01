@@ -56,8 +56,8 @@ export const gossip = async (
   const payload = { type: "gossip", request, seen: [...seen, publicKey] };
   const values = [...sockets.values()] as MetaData[];
   const nodes = values
-    .filter((node) => node.publicKey && !seen.includes(node.publicKey))
-    .filter((node) => !node.isSocketBusy);
+    .filter((node) => !node.isSocketBusy)
+    .filter((node) => node.publicKey && !seen.includes(node.publicKey));
   if (!nodes.length) {
     return;
   }
