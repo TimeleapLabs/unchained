@@ -240,10 +240,16 @@ const processAttestations = debounce(async (block: number) => {
       addOnePoint(signer);
     }
 
-    const newSignatures = newSignatureSet.map((item) => item.signature);
-    const currentSignature = stored.aggregated || "";
-    const signatureList = isValid ? [newAggregated] : newSignatures;
-    const aggregated = await aggregate([currentSignature, ...signatureList]);
+    const newSignatures = isValid
+      ? [newAggregated]
+      : newSignatureSet.map((item) => item.signature);
+
+    const signatureList = [stored.aggregated, ...newSignatures].filter(Boolean);
+
+    const aggregated =
+      signatureList.length === 1
+        ? signatureList[0]
+        : await aggregate(signatureList as string[]);
 
     attestations.set(block, { ...stored, aggregated, signers });
 
