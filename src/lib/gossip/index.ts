@@ -41,10 +41,10 @@ const randomDistinct = (length: number, count: number): number[] => {
   return [...set];
 };
 
-export const gossip = async (
+export const gossip = (
   request: GossipRequest<any, any>,
   seen: string[]
-): Promise<void> => {
+): void => {
   if (sockets.size === 0) {
     return;
   }
@@ -56,17 +56,17 @@ export const gossip = async (
   const payload = { type: "gossip", request, seen: [...seen, publicKey] };
   const values = [...sockets.values()] as MetaData[];
   const nodes = values
-    .filter((node) => node.publicKey && !seen.includes(node.publicKey))
-    .filter((node) => !node.isSocketBusy);
+    .filter((node) => !node.isSocketBusy)
+    .filter((node) => node.publicKey && !seen.includes(node.publicKey));
   if (!nodes.length) {
     return;
   }
   if (nodes.length <= config.gossip) {
-    await gossipTo(nodes, payload);
+    gossipTo(nodes, payload);
   } else {
     const indexes = randomDistinct(nodes.length, config.gossip);
     const chosen = indexes.map((index) => nodes[index]);
-    await gossipTo(chosen, payload);
+    gossipTo(chosen, payload);
   }
 };
 
@@ -88,7 +88,7 @@ export const processGossip = async (
     const method = gossipMethods[methodName];
     const payload = await method(incoming.request);
     if (payload) {
-      await gossip(payload, incoming.seen);
+      gossip(payload, incoming.seen);
     }
   } catch (error) {
     const systemError = error as NodeSystemError;

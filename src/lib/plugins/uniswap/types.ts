@@ -2,11 +2,10 @@ import {
   GossipSignatureInput,
   AssetPriceMetric,
   AssetPriceValue,
-  SignatureItem,
 } from "../../types.js";
 
 export interface Attestation {
-  signatures: SignatureItem[];
+  signers: string[];
   aggregated?: string;
 }
 
