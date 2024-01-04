@@ -23,6 +23,10 @@ const setupEventListeners = () => {
       state.connected = true;
     }
 
+    if (sockets.size >= config.peers.max) {
+      return socket.end();
+    }
+
     const peerAddr = info.publicKey.toString("hex");
     const peer = `[${peerAddr.slice(0, 4)}···${peerAddr.slice(-4)}]`;
     const meta: MetaData = {
@@ -58,10 +62,6 @@ const setupEventListeners = () => {
     socket.on("drain", () => {
       meta.isSocketBusy = false;
     });
-
-    if (sockets.size >= config.peers.max) {
-      return socket.end();
-    }
 
     sockets.set(peerAddr, meta);
     logger.info(`Connected to a new peer: ${peerAddr}`);
