@@ -8,19 +8,12 @@ import { parse } from "../utils/json.js";
 import { Duplex } from "stream";
 import { MetaData, NodeSystemError, PeerInfo } from "../types.js";
 import { config } from "../constants.js";
+import { isJailed, strike } from "./jail.js";
 
 import HyperSwarm from "hyperswarm";
 
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
-
-const unban = (name: string, info: PeerInfo) => {
-  try {
-    info.ban(false);
-    info.priority = 3;
-    logger.info(`Giving peer ${name} another chance`);
-  } catch (error) {}
-};
 
 const setupEventListeners = () => {
   swarm.on("connection", async (socket: Duplex, info: PeerInfo) => {
@@ -40,29 +33,21 @@ const setupEventListeners = () => {
       isSocketBusy: false,
     };
 
+    if (isJailed(meta.name, info)) {
+      return socket.end();
+    }
+
     let timeout: NodeJS.Timeout;
 
     socket.on("error", (error: NodeSystemError) => {
       const code = error.code || error.errno || error.message;
-      info.priority = Math.max(info.priority - 1, 0);
-      if (info.priority === 0) {
-        info.ban(true);
-        logger.error(`Banned peer ${meta.name} for socket errors: ${code}`);
-        setTimeout(unban, 300_000, meta.name, info);
-      } else {
-        logger.warn(`Flagging peer ${meta.name} for socket errors: ${code}`);
-      }
+      logger.debug(`Socket error with peer ${meta.name}: ${code}`);
+      strike(meta.name, info);
     });
 
     socket.on("timeout", () => {
-      info.priority = Math.max(info.priority - 1, 0);
-      if (info.priority === 0) {
-        info.ban(true);
-        logger.error(`Banned peer ${meta.name} for socket time out`);
-        setTimeout(unban, 300_000, meta.name, info);
-      } else {
-        logger.warn(`Flagging peer ${meta.name} for socket time out`);
-      }
+      logger.debug(`Socket error with peer ${meta.name}: ETIMEDOUT`);
+      strike(meta.name, info);
     });
 
     socket.on("close", () => {
@@ -84,6 +69,7 @@ const setupEventListeners = () => {
     const warnNoData = () => {
       timeout = setTimeout(() => {
         logger.warn(`No data from ${meta.name} in the last 60 seconds`);
+        strike(meta.name, info);
         warnNoData();
       }, 60000);
     };
