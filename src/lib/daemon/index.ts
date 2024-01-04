@@ -1,8 +1,8 @@
 import * as uniswap from "../plugins/uniswap/uniswap.js";
 import { gossip } from "../gossip/index.js";
 import { runWithRetries } from "../utils/retry.js";
-import { printScores } from "../score/print.js";
 import { Cron } from "croner";
+import { getScoresPayload, resetAllScores } from "../score/index.js";
 
 interface UniswapArgs {
   blockchain: string;
@@ -22,16 +22,18 @@ export const runTasks = (): void => {
     try {
       const result = await runWithRetries(uniswap.work, uniswapArgs);
       if (result && !(result instanceof Symbol)) {
-        await gossip(result, []);
+        gossip(result, []);
       }
     } catch (error) {
       // Handle the error or log it
     }
   });
 
-  Cron("0 */5 * * * *", async () => {
+  Cron("0 */5 * * * *", () => {
     try {
-      printScores();
+      const scores = resetAllScores();
+      const payload = getScoresPayload(scores);
+      gossip(payload, []);
     } catch (error) {
       // Handle the error or log it
     }
