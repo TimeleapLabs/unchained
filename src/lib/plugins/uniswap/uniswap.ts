@@ -232,40 +232,38 @@ const processAttestations = debounce(async (block: number) => {
   const newSigners = newSignatureSet.map((item) => item.signer);
   const signers = [...newSigners, ...stored.signers];
 
+  const newAggregated = await aggregate(
+    newSignatureSet.map((item) => item.signature)
+  );
+  const isValid = await verifyAggregate(newSigners, newAggregated, data);
+
+  const validNewSigs = isValid
+    ? newSignatureSet
+    : newSignatureSet.filter((item) => verify({ ...item, data }));
+
+  // add peer scores
+  for (const { signer } of validNewSigs) {
+    addOnePoint(signer);
+  }
+
+  const newSignatures = isValid
+    ? [newAggregated]
+    : newSignatureSet.map((item) => item.signature);
+
+  const signatureList = [stored.aggregated, ...newSignatures].filter(Boolean);
+
+  const aggregated =
+    signatureList.length === 1
+      ? signatureList[0]
+      : await aggregate(signatureList as string[]);
+
+  attestations.set(block, { ...stored, aggregated, signers });
+
   if (!config.lite) {
-    const newAggregated = await aggregate(
-      newSignatureSet.map((item) => item.signature)
-    );
-    const isValid = await verifyAggregate(newSigners, newAggregated, data);
-
-    const validNewSigs = isValid
-      ? newSignatureSet
-      : newSignatureSet.filter((item) => verify({ ...item, data }));
-
-    // add peer scores
-    for (const { signer } of validNewSigs) {
-      addOnePoint(signer);
-    }
-
-    const newSignatures = isValid
-      ? [newAggregated]
-      : newSignatureSet.map((item) => item.signature);
-
-    const signatureList = [stored.aggregated, ...newSignatures].filter(Boolean);
-
-    const aggregated =
-      signatureList.length === 1
-        ? signatureList[0]
-        : await aggregate(signatureList as string[]);
-
-    attestations.set(block, { ...stored, aggregated, signers });
-
     updateAssetPrice({
       key: block,
       args: [block, price, aggregated, [...newSigners]],
     });
-  } else {
-    attestations.set(block, { ...stored, aggregated: "", signers });
   }
 
   const { length } = signers;

@@ -22,18 +22,18 @@ export const runTasks = (): void => {
     try {
       const result = await runWithRetries(uniswap.work, uniswapArgs);
       if (result && !(result instanceof Symbol)) {
-        await gossip(result, []);
+        gossip(result, []);
       }
     } catch (error) {
       // Handle the error or log it
     }
   });
 
-  Cron("0 */5 * * * *", async () => {
+  Cron("0 */5 * * * *", () => {
     try {
       const scores = resetAllScores();
       const payload = getScoresPayload(scores);
-      await gossip(payload, []);
+      gossip(payload, []);
     } catch (error) {
       // Handle the error or log it
     }
