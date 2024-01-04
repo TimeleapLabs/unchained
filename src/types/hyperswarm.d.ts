@@ -2,10 +2,7 @@
 declare module "hyperswarm" {
   import { EventEmitter } from "events";
   import { Duplex } from "stream";
-
-  interface ConnectionInfo {
-    publicKey: Buffer;
-  }
+  import { PeerInfo } from "../lib/types.ts";
 
   interface Discovery {
     flushed(): Promise<void>;
@@ -16,7 +13,7 @@ declare module "hyperswarm" {
     join(topic: Buffer | string): Discovery;
     on(
       event: "connection",
-      listener: (socket: Duplex, info: ConnectionInfo) => void
+      listener: (socket: Duplex, info: PeerInfo) => void
     ): this;
     keyPair: {
       publicKey: Buffer;

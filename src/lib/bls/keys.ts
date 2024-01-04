@@ -1,7 +1,7 @@
 import bls from "@chainsafe/bls";
 import { Base58 } from "base-ex";
 import { KeyPair } from "../types.js";
-import { SecretKey } from "@chainsafe/bls/types";
+import { SecretKey, PublicKey } from "@chainsafe/bls/types";
 
 interface EncodedKeyPair {
   secretKey: string;
@@ -40,4 +40,16 @@ export const decodeKeys = (
     secretKey: Buffer.from(encoder.decode(pair.secretKey)),
     publicKey: Buffer.from(encoder.decode(pair.publicKey)),
   };
+};
+
+const decodeCache = new Map<string, PublicKey>();
+
+export const cachedDecodePublicKey = (input: string): PublicKey => {
+  if (!decodeCache.has(input)) {
+    const buffer = Buffer.from(encoder.decode(input));
+    const publicKey = bls.PublicKey.fromBytes(buffer);
+    decodeCache.set(input, publicKey);
+    return publicKey;
+  }
+  return decodeCache.get(input) as PublicKey;
 };

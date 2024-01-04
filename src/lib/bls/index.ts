@@ -1,4 +1,4 @@
-import { encoder } from "./keys.js";
+import { encoder, cachedDecodePublicKey } from "./keys.js";
 import bls from "@chainsafe/bls";
 import { keys } from "../constants.js";
 import stringify from "json-canon";
@@ -32,9 +32,7 @@ export const verify = ({
   data: any;
 }): boolean => {
   const message = Buffer.from(stringify(data), "utf8");
-  const publicKey = bls.PublicKey.fromBytes(
-    Buffer.from(encoder.decode(signer))
-  );
+  const publicKey = cachedDecodePublicKey(signer);
   const decodedSignature = bls.Signature.fromBytes(
     Buffer.from(encoder.decode(signature))
   );
@@ -50,9 +48,7 @@ export const verifyAggregate = (
   const decodedSignature = bls.Signature.fromBytes(
     Buffer.from(encoder.decode(signature))
   );
-  const publicKeys = signers.map((signer) =>
-    bls.PublicKey.fromBytes(Buffer.from(encoder.decode(signer)))
-  );
+  const publicKeys = signers.map(cachedDecodePublicKey);
   return decodedSignature.verifyAggregate(publicKeys, message);
 };
 

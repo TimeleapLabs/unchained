@@ -56,8 +56,8 @@ export interface NodeSystemError extends Error {
   syscall: string;
 }
 
-export interface StringAnyObject {
-  [key: string]: any;
+export interface ObjectType<V> {
+  [key: string]: V;
 }
 
 export interface GossipMethod<T, V> {
@@ -66,6 +66,8 @@ export interface GossipMethod<T, V> {
     | GossipRequest<T, V>
     | null;
 }
+
+export type StringAnyObject = ObjectType<any>;
 
 export interface StringGossipMethodObject<T, V> {
   [key: string]: GossipMethod<T, V>;
@@ -102,4 +104,10 @@ export interface Gossip<T, V> {
 export interface SignatureItem {
   signer: string;
   signature: string;
+}
+
+export interface PeerInfo {
+  publicKey: Buffer;
+  priority: number;
+  ban(flag: boolean): void;
 }
