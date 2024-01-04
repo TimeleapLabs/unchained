@@ -5,5 +5,5 @@ export const getMode = (arr: number[]): number => {
     frequencyMap.set(number, 1 + (frequencyMap.get(number) || 0));
   }
 
-  return [...frequencyMap.entries()].reduce((a, b) => (a[0] > b[0] ? a : b))[1];
+  return [...frequencyMap.entries()].reduce((a, b) => (a[0] > b[0] ? a : b))[0];
 };

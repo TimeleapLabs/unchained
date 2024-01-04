@@ -15,6 +15,9 @@ import HyperSwarm from "hyperswarm";
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
 
+const safeClearTimeout = (timeout: NodeJS.Timeout | null) =>
+  timeout && clearTimeout(timeout);
+
 const setupEventListeners = () => {
   swarm.on("connection", async (socket: Duplex, info: PeerInfo) => {
     if (spinner.isEnabled) {
@@ -37,11 +40,11 @@ const setupEventListeners = () => {
       isSocketBusy: false,
     };
 
+    let timeout: NodeJS.Timeout | null = null;
+
     if (isJailed(meta.name, info)) {
       return socket.end();
     }
-
-    let timeout: NodeJS.Timeout;
 
     socket.on("error", (error: NodeSystemError) => {
       const code = error.code || error.errno || error.message;
@@ -55,7 +58,7 @@ const setupEventListeners = () => {
     });
 
     socket.on("close", () => {
-      clearTimeout(timeout);
+      safeClearTimeout(timeout);
       sockets.delete(peerAddr);
     });
 
@@ -77,7 +80,7 @@ const setupEventListeners = () => {
     warnNoData();
 
     socket.on("data", async (data) => {
-      clearTimeout(timeout);
+      safeClearTimeout(timeout);
       warnNoData();
 
       const message = parse(data.toString());
