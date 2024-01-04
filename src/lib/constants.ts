@@ -8,8 +8,8 @@ import {
   MetaData,
 } from "./types.js";
 
-export const version = "0.8.13";
-export const protocolVersion = "0.8.0";
+export const version = "0.9.0";
+export const protocolVersion = "0.9.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
 
@@ -36,7 +36,7 @@ export const config: Config = {
 };
 
 export const rpcMethods: StringAnyObject = {};
-export const gossipMethods: StringGossipMethodObject<any> = {};
+export const gossipMethods: StringGossipMethodObject<any, any> = {};
 
 export const errors = {
   E_NOT_FOUND: 404,

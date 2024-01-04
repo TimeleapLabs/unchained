@@ -18,6 +18,7 @@ import {
   AssetPriceMetric,
   GossipRequest,
   SignatureItem,
+  AssetPriceValue,
 } from "../../types.js";
 
 import { Attestation, PriceSignatureInput } from "./types.js";
@@ -25,6 +26,7 @@ import { Attestation, PriceSignatureInput } from "./types.js";
 const cache = new Map<number, number>();
 const attestations = new Map<number, Attestation>();
 const pendingAttestations = new Map<number, SignatureItem[]>();
+const keyToIdCache = new Map<string, number>();
 
 let provider: ethers.Provider | undefined;
 let getNewRpc: boolean = false;
@@ -118,41 +120,46 @@ const updateAssetPrice = debounce(
       select: { id: true },
     });
 
-    const assetPrice = await db.assetPrice.upsert({
-      where: { dataSetId_block: { dataSetId: dataset.id, block } },
-      update: { signature },
-      create: { dataSetId: dataset.id, block, price, signature },
-      select: { id: true },
-    });
-
     const signerNames = new Map(
       [...sockets.values()].map((item) => [item.publicKey, item.name])
     );
 
     for (const key of signers) {
-      const name = signerNames.get(key);
-      // Find or create each signer
-      const signer = await db.signer.upsert({
-        where: { key },
-        // see https://github.com/prisma/prisma/issues/18883
-        update: { key },
-        create: { key, name },
-        select: { id: true },
-      });
-
-      // Create relation in SignersOnAssetPrice
-      await db.signersOnAssetPrice.upsert({
-        where: {
-          signerId_assetPriceId: {
-            signerId: signer.id,
-            assetPriceId: assetPrice.id,
-          },
-        },
-        // see https://github.com/prisma/prisma/issues/18883
-        update: { signerId: signer.id, assetPriceId: assetPrice.id },
-        create: { signerId: signer.id, assetPriceId: assetPrice.id },
-      });
+      if (!keyToIdCache.has(key)) {
+        const name = signerNames.get(key);
+        const signer = await db.signer.upsert({
+          where: { key },
+          // see https://github.com/prisma/prisma/issues/18883
+          update: { key },
+          create: { key, name },
+          select: { id: true },
+        });
+        keyToIdCache.set(key, signer.id);
+      }
     }
+
+    await db.$transaction(
+      async (db) => {
+        const { id: assetPriceId } = await db.assetPrice.upsert({
+          where: { dataSetId_block: { dataSetId: dataset.id, block } },
+          update: { signature },
+          create: { dataSetId: dataset.id, block, price, signature },
+          select: { id: true },
+        });
+
+        await db.signersOnAssetPrice.deleteMany({
+          where: { assetPriceId },
+        });
+
+        await db.signersOnAssetPrice.createMany({
+          data: signers.map((key) => {
+            const signerId = keyToIdCache.get(key) as number;
+            return { signerId, assetPriceId };
+          }),
+        });
+      },
+      { maxWait: 5000, timeout: 15000 }
+    );
   },
   500
 );
@@ -225,40 +232,38 @@ const processAttestations = debounce(async (block: number) => {
   const newSigners = newSignatureSet.map((item) => item.signer);
   const signers = [...newSigners, ...stored.signers];
 
+  const newAggregated = await aggregate(
+    newSignatureSet.map((item) => item.signature)
+  );
+  const isValid = await verifyAggregate(newSigners, newAggregated, data);
+
+  const validNewSigs = isValid
+    ? newSignatureSet
+    : newSignatureSet.filter((item) => verify({ ...item, data }));
+
+  // add peer scores
+  for (const { signer } of validNewSigs) {
+    addOnePoint(signer);
+  }
+
+  const newSignatures = isValid
+    ? [newAggregated]
+    : newSignatureSet.map((item) => item.signature);
+
+  const signatureList = [stored.aggregated, ...newSignatures].filter(Boolean);
+
+  const aggregated =
+    signatureList.length === 1
+      ? signatureList[0]
+      : await aggregate(signatureList as string[]);
+
+  attestations.set(block, { ...stored, aggregated, signers });
+
   if (!config.lite) {
-    const newAggregated = await aggregate(
-      newSignatureSet.map((item) => item.signature)
-    );
-    const isValid = await verifyAggregate(newSigners, newAggregated, data);
-
-    const validNewSigs = isValid
-      ? newSignatureSet
-      : newSignatureSet.filter((item) => verify({ ...item, data }));
-
-    // add peer scores
-    for (const { signer } of validNewSigs) {
-      addOnePoint(signer);
-    }
-
-    const newSignatures = isValid
-      ? [newAggregated]
-      : newSignatureSet.map((item) => item.signature);
-
-    const signatureList = [stored.aggregated, ...newSignatures].filter(Boolean);
-
-    const aggregated =
-      signatureList.length === 1
-        ? signatureList[0]
-        : await aggregate(signatureList as string[]);
-
-    attestations.set(block, { ...stored, aggregated, signers });
-
     updateAssetPrice({
       key: block,
       args: [block, price, aggregated, [...newSigners]],
     });
-  } else {
-    attestations.set(block, { ...stored, aggregated: "", signers });
   }
 
   const { length } = signers;
@@ -292,7 +297,7 @@ export const work = async (
   poolAddress: string,
   decimals: [number, number],
   inverse: boolean
-): Promise<GossipRequest<AssetPriceMetric> | null> => {
+): Promise<GossipRequest<AssetPriceMetric, AssetPriceValue> | null> => {
   try {
     const start = new Date();
     const provider = getProvider(config);
@@ -336,8 +341,8 @@ export const work = async (
   }
 };
 
-export const attest: GossipMethod<AssetPriceMetric> = async (
-  request: GossipRequest<AssetPriceMetric>
+export const attest: GossipMethod<AssetPriceMetric, AssetPriceValue> = async (
+  request: GossipRequest<AssetPriceMetric, AssetPriceValue>
 ) => {
   const { metric, signer, signature } = request;
   const added = addPendingAttestation(metric.block, signer, signature);
