@@ -77,6 +77,8 @@ const printMyScore = debounce((sprint: number) => {
   const max = Math.max(...rawScores);
   const average = rawScores.reduce((a, b) => a + b) / rawScores.length;
 
+  console.log({ rawScores, score, min, max });
+
   const table = new Table({
     columns: [
       { name: "sprint", title: "Sprint", alignment: "center", color: "blue" },
