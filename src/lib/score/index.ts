@@ -84,9 +84,9 @@ const printMyScore = debounce((sprint: number) => {
         name: "attestations",
         title: "Attestations",
         alignment: "center",
-        color: "blue",
+        color: "green",
       },
-      { name: "score", title: "Score", alignment: "center", color: "blue" },
+      { name: "score", title: "Score", alignment: "center", color: "green" },
       {
         name: "average",
         title: "Average",
