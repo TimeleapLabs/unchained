@@ -104,7 +104,7 @@ const printMyScore = debounce((sprint: number) => {
     score,
     min,
     max,
-    average: average.toFixed(3),
+    average: average.toFixed(4),
   });
 
   logger.info("Score received from peers");
