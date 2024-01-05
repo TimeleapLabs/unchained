@@ -115,7 +115,7 @@ const updateAssetPrice = debounceAsync(
     block: number,
     price: number,
     signature: string,
-    signers: string[]
+    newSigners: string[]
   ) => {
     const dataset = await db.dataSet.upsert({
       where: { name: "uniswap::ethereum::ethereum" },
@@ -124,11 +124,18 @@ const updateAssetPrice = debounceAsync(
       select: { id: true },
     });
 
+    const assetPrice = await db.assetPrice.upsert({
+      where: { dataSetId_block: { dataSetId: dataset.id, block } },
+      update: { signature },
+      create: { dataSetId: dataset.id, block, price, signature },
+      select: { id: true },
+    });
+
     const signerNames = new Map(
       [...sockets.values()].map((item) => [item.publicKey, item.name])
     );
 
-    for (const key of signers) {
+    for (const key of newSigners) {
       if (!keyToIdCache.has(key)) {
         const name = signerNames.get(key);
         const signer = await db.signer.upsert({
@@ -142,28 +149,18 @@ const updateAssetPrice = debounceAsync(
       }
     }
 
-    await db.$transaction(
-      async (db) => {
-        const { id: assetPriceId } = await db.assetPrice.upsert({
-          where: { dataSetId_block: { dataSetId: dataset.id, block } },
-          update: { signature },
-          create: { dataSetId: dataset.id, block, price, signature },
-          select: { id: true },
-        });
+    for (const key of newSigners) {
+      const signerId = keyToIdCache.get(key) as number;
+      const combo = { signerId, assetPriceId: assetPrice.id };
 
-        await db.signersOnAssetPrice.deleteMany({
-          where: { assetPriceId },
-        });
-
-        await db.signersOnAssetPrice.createMany({
-          data: signers.map((key) => {
-            const signerId = keyToIdCache.get(key) as number;
-            return { signerId, assetPriceId };
-          }),
-        });
-      },
-      { maxWait: 5000, timeout: 15000 }
-    );
+      // Create relation in SignersOnAssetPrice
+      await db.signersOnAssetPrice.upsert({
+        where: { signerId_assetPriceId: combo },
+        // see https://github.com/prisma/prisma/issues/18883
+        update: combo,
+        create: combo,
+      });
+    }
   },
   500
 );

@@ -5,7 +5,7 @@ import { epoch } from "../utils/time.js";
 const jail = new Map<string, number>();
 const strikes = new Map<string, number>();
 
-const JAIL_TIME = 300_000; // 5 minutes
+const JAIL_TIME = 15 * 60 * 1000; // 15 minutes
 const STRIKES_TO_JAIL = 3;
 
 const peerKey = (info: PeerInfo) => info.publicKey.toString("base64");
@@ -31,7 +31,9 @@ export const strike = (name: string, info: PeerInfo) => {
     strikes.delete(key);
     jail.set(key, epoch());
     logger.info(`Jailed peer ${name} for too many connection errors.`);
+    return true;
   } else {
     strikes.set(key, score);
+    return false;
   }
 };
