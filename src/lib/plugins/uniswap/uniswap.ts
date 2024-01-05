@@ -9,7 +9,7 @@ import { encoder } from "../../bls/keys.js";
 import { WebSocketLike } from "ethers";
 import { WebSocket } from "unws";
 import { addOnePoint } from "../../score/index.js";
-import { debounce } from "../../utils/debounce.js";
+import { debounceAsync } from "../../utils/debounce.js";
 import { db } from "../../db/db.js";
 
 import {
@@ -93,7 +93,11 @@ const addPendingAttestation = (
       { signer, signature },
     ]);
     if (cache.has(block)) {
-      processAttestations({ key: block, args: [block] });
+      processAttestations({ key: block, args: [block] }).catch((err: Error) => {
+        logger.error(
+          `Encountered an error while processing attestations: ${err.message}`
+        );
+      });
     }
   }
   for (const key of pendingAttestations.keys()) {
@@ -106,7 +110,7 @@ const addPendingAttestation = (
   return !alreadyAdded;
 };
 
-const updateAssetPrice = debounce(
+const updateAssetPrice = debounceAsync(
   async (
     block: number,
     price: number,
@@ -200,7 +204,7 @@ const printAttestations = (
   }
 };
 
-const processAttestations = debounce(async (block: number) => {
+const processAttestations = debounceAsync(async (block: number) => {
   if (!cache.has(block)) {
     return;
   }
@@ -263,6 +267,10 @@ const processAttestations = debounce(async (block: number) => {
     updateAssetPrice({
       key: block,
       args: [block, price, aggregated, [...newSigners]],
+    }).catch((err: Error) => {
+      logger.error(
+        `Error encountered while updating asset prices in the database: ${err.message}`
+      );
     });
   }
 
