@@ -41,12 +41,18 @@ const setupEventListeners = () => {
     socket.on("error", (error: NodeSystemError) => {
       const code = error.code || error.errno || error.message;
       logger.debug(`Socket error with peer ${meta.name}: ${code}`);
-      strike(meta.name, info);
+      const jailed = strike(meta.name, info);
+      if (jailed) {
+        socket.end();
+      }
     });
 
     socket.on("timeout", () => {
       logger.debug(`Socket error with peer ${meta.name}: ETIMEDOUT`);
-      strike(meta.name, info);
+      const jailed = strike(meta.name, info);
+      if (jailed) {
+        socket.end();
+      }
     });
 
     socket.on("close", () => {
@@ -68,7 +74,10 @@ const setupEventListeners = () => {
     const warnNoData = () => {
       timeout = setTimeout(() => {
         logger.warn(`No data from ${meta.name} in the last 60 seconds`);
-        strike(meta.name, info);
+        const jailed = strike(meta.name, info);
+        if (jailed) {
+          return socket.end();
+        }
         warnNoData();
       }, 60000);
     };
