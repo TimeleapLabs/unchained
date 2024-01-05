@@ -24,16 +24,17 @@ export const isJailed = (name: string, info: PeerInfo) => {
   return isFree;
 };
 
-export const strike = (name: string, info: PeerInfo) => {
-  const key = peerKey(info);
-  const score = 1 + (strikes.get(key) || 0);
-  if (score >= STRIKES_TO_JAIL) {
-    strikes.delete(key);
-    jail.set(key, epoch());
-    logger.info(`Jailed peer ${name} for too many connection errors.`);
-    return true;
-  } else {
-    strikes.set(key, score);
-    return false;
-  }
+export const strike = (_name: string, _info: PeerInfo) => {
+  return false;
+  // const key = peerKey(info);
+  // const score = 1 + (strikes.get(key) || 0);
+  // if (score >= STRIKES_TO_JAIL) {
+  //   strikes.delete(key);
+  //   jail.set(key, epoch());
+  //   logger.info(`Jailed peer ${name} for too many connection errors.`);
+  //   return true;
+  // } else {
+  //   strikes.set(key, score);
+  //   return false;
+  // }
 };

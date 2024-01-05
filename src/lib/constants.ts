@@ -8,7 +8,7 @@ import {
   MetaData,
 } from "./types.js";
 
-export const version = "0.9.7";
+export const version = "0.9.8";
 export const protocolVersion = "0.9.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
@@ -28,10 +28,10 @@ export const config: Config = {
   secretKey: "",
   publicKey: "",
   lite: false,
-  gossip: 24,
+  gossip: 48,
   peers: {
-    max: 64,
-    parallel: 8,
+    max: 128,
+    parallel: 16,
   },
 };
 
