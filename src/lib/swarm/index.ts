@@ -26,10 +26,6 @@ const setupEventListeners = () => {
       state.connected = true;
     }
 
-    if (sockets.size >= config.peers.max) {
-      return socket.end();
-    }
-
     const peerAddr = info.publicKey.toString("hex");
     const peer = `[${peerAddr.slice(0, 4)}···${peerAddr.slice(-4)}]`;
     const meta: MetaData = {
@@ -41,10 +37,6 @@ const setupEventListeners = () => {
     };
 
     let timeout: NodeJS.Timeout | null = null;
-
-    if (isJailed(meta.name, info)) {
-      return socket.end();
-    }
 
     socket.on("error", (error: NodeSystemError) => {
       const code = error.code || error.errno || error.message;
@@ -61,6 +53,10 @@ const setupEventListeners = () => {
       safeClearTimeout(timeout);
       sockets.delete(peerAddr);
     });
+
+    if (isJailed(meta.name, info) || sockets.size >= config.peers.max) {
+      return socket.end();
+    }
 
     socket.on("drain", () => {
       meta.isSocketBusy = false;
