@@ -115,7 +115,7 @@ const updateAssetPrice = debounceAsync(
     block: number,
     price: number,
     signature: string,
-    newSigners: string[]
+    signers: string[]
   ) => {
     const dataset = await db.dataSet.upsert({
       where: { name: "uniswap::ethereum::ethereum" },
@@ -135,7 +135,7 @@ const updateAssetPrice = debounceAsync(
       [...sockets.values()].map((item) => [item.publicKey, item.name])
     );
 
-    for (const key of newSigners) {
+    for (const key of signers) {
       if (!keyToIdCache.has(key)) {
         const name = signerNames.get(key);
         const signer = await db.signer.upsert({
@@ -149,10 +149,11 @@ const updateAssetPrice = debounceAsync(
       }
     }
 
-    for (const key of newSigners) {
+    for (const key of signers) {
       const signerId = keyToIdCache.get(key) as number;
       const combo = { signerId, assetPriceId: assetPrice.id };
 
+      // TODO: Add a upsert tracker/cache
       // Create relation in SignersOnAssetPrice
       await db.signersOnAssetPrice.upsert({
         where: { signerId_assetPriceId: combo },
@@ -263,7 +264,7 @@ const processAttestations = debounceAsync(async (block: number) => {
   if (!config.lite) {
     updateAssetPrice({
       key: block,
-      args: [block, price, aggregated, [...newSigners]],
+      args: [block, price, aggregated, [...signers]],
     }).catch((err: Error) => {
       logger.error(
         `Error encountered while updating asset prices in the database: ${err.message}`
