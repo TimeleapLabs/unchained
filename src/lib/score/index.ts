@@ -132,12 +132,12 @@ export const scoreAttest: GossipMethod<ScoreMetric, ScoreValues> = async (
       if (typeof sprintScores[request.signer] === "undefined") {
         sprintScores[request.signer] = entry.score;
         printMyScore({ key: sprint, args: [sprint] });
-        break;
+        return request;
       }
     }
   }
 
-  return request;
+  return null;
 };
 
 Object.assign(gossipMethods, { scoreAttest });
