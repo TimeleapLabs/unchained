@@ -1,11 +1,13 @@
 import { attest, sign } from "../bls/index.js";
 import { GossipRequest, GossipMethod } from "../types.js";
 import { encodeKeys } from "../bls/keys.js";
-import { keys, gossipMethods } from "../constants.js";
+import { keys, gossipMethods, sockets } from "../constants.js";
 import { debounce } from "../utils/debounce.js";
 import { getMode } from "../utils/mode.js";
 import { Table } from "console-table-printer";
 import { logger } from "../logger/index.js";
+import { cache } from "../utils/cache.js";
+import { db } from "../db/db.js";
 
 import {
   ScoreMetric,
@@ -15,11 +17,14 @@ import {
 } from "./types.js";
 
 export interface ScoreMap {
-  [key: string]: number;
+  [key: string]: { [key: string]: number };
 }
 
+const scoreCache = cache<number, ScoreMap>(15 * 60 * 1000); // 15 minutes
+const upsertCache = cache<number, boolean>(15 * 60 * 1000);
 const peerScoreMap = new Map<string, number>();
-const myScoreMap = new Map<number, ScoreMap>();
+// TODO: Better share this with the UniSwap plugin (and others)
+const keyToIdCache = new Map<string, number>();
 
 export const addOnePoint = (peer: string) => {
   const current = peerScoreMap.get(peer) || 0;
@@ -69,9 +74,12 @@ export const getScoresPayload = (
   };
 };
 
-const printMyScore = debounce((sprint: number) => {
-  const sprintScores = myScoreMap.get(sprint) || {};
-  const rawScores = Object.values(sprintScores);
+const printMyScore = debounce((sprint: number, publicKey: string) => {
+  const sprintScores = scoreCache.get(sprint) as ScoreMap;
+  if (!sprintScores[publicKey]) {
+    return;
+  }
+  const rawScores = Object.values(sprintScores[publicKey]);
   const score = getMode(rawScores);
   const min = Math.min(...rawScores);
   const max = Math.max(...rawScores);
@@ -109,7 +117,53 @@ const printMyScore = debounce((sprint: number) => {
 
   logger.info("Score received from peers");
   table.printTable();
-}, 1000);
+}, 2500);
+
+export const storeSprintScores = async () => {
+  const previousSprint = Math.ceil(new Date().valueOf() / 300000) - 1;
+  const sprintScores = scoreCache.get(previousSprint);
+  if (!sprintScores) {
+    return;
+  }
+  if (upsertCache.get(previousSprint)) {
+    return;
+  }
+  upsertCache.set(previousSprint, true);
+
+  const signerNames = new Map(
+    [...sockets.values()].map((item) => [item.publicKey, item.name])
+  );
+
+  for (const key of Object.keys(sprintScores)) {
+    if (!keyToIdCache.has(key)) {
+      const name = signerNames.get(key);
+      const signer = await db.signer.upsert({
+        where: { key },
+        // see https://github.com/prisma/prisma/issues/18883
+        update: { key },
+        create: { key, name },
+        select: { id: true },
+      });
+      keyToIdCache.set(key, signer.id);
+    }
+  }
+
+  for (const peer of Object.keys(sprintScores)) {
+    // TODO: We're not doing any verification on this data
+    const scores = Object.values(sprintScores[peer]);
+    const score = getMode(scores);
+    const signerId = keyToIdCache.get(peer) as number;
+    await db.sprintPoint.upsert({
+      where: { signerId_sprint: { signerId, sprint: previousSprint } },
+      update: { score },
+      create: { signerId, sprint: previousSprint, score },
+    });
+    await db.signer.update({
+      where: { id: signerId },
+      data: { points: { increment: score } },
+    });
+  }
+};
 
 export const scoreAttest: GossipMethod<ScoreMetric, ScoreValues> = async (
   request: GossipRequest<ScoreMetric, ScoreValues>
@@ -118,26 +172,36 @@ export const scoreAttest: GossipMethod<ScoreMetric, ScoreValues> = async (
     return null;
   }
 
-  const { publicKey } = encodeKeys(keys);
-  const sprint = Math.ceil(new Date().valueOf() / 300000);
-
-  if (!myScoreMap.has(sprint)) {
-    myScoreMap.set(sprint, {});
+  if (!request.payload.value.length) {
+    return null;
   }
 
-  const sprintScores = myScoreMap.get(sprint) || {};
+  const currentSprint = Math.ceil(new Date().valueOf() / 300000);
+  const payloadSprint = request.payload.value[0].sprint;
+
+  if (currentSprint !== payloadSprint) {
+    return null;
+  }
+
+  if (!scoreCache.has(payloadSprint)) {
+    scoreCache.set(payloadSprint, {});
+  }
+
+  const sprintScores = scoreCache.get(payloadSprint) as ScoreMap;
+  const { publicKey } = encodeKeys(keys);
+
+  if (sprintScores[publicKey]?.[request.signer]) {
+    return null;
+  }
 
   for (const entry of request.payload.value) {
-    if (entry.peer === publicKey) {
-      if (typeof sprintScores[request.signer] === "undefined") {
-        sprintScores[request.signer] = entry.score;
-        printMyScore({ key: sprint, args: [sprint] });
-        return request;
-      }
-    }
+    sprintScores[entry.peer] ||= {};
+    sprintScores[entry.peer][request.signer] = entry.score;
   }
 
-  return null;
+  printMyScore({ key: payloadSprint, args: [payloadSprint, publicKey] });
+
+  return request;
 };
 
 Object.assign(gossipMethods, { scoreAttest });

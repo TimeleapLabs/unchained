@@ -31,8 +31,10 @@ model DataSet {
 model Signer {
   id                  Int                   @id @default(autoincrement())
   key                 String                @unique
+  points              Int                   @default(0)
   name                String?
   signersOnAssetPrice SignersOnAssetPrice[]
+  SprintPoint         SprintPoint[]
 }
 
 model SignersOnAssetPrice {
@@ -42,4 +44,13 @@ model SignersOnAssetPrice {
   assetPriceId Int
 
   @@id([signerId, assetPriceId])
+}
+
+model SprintPoint {
+  signer   Signer @relation(fields: [signerId], references: [id])
+  sprint   Int
+  score    Int
+  signerId Int
+
+  @@id([signerId, sprint])
 }
