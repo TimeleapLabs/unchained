@@ -57,4 +57,6 @@ export const addressAction = async (
   } else {
     logger.info(`Unchained public address is ${address}`);
   }
+
+  return process.exit(0);
 };

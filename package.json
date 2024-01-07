@@ -28,7 +28,6 @@
     "iso-websocket": "^0.1.6",
     "json-canon": "^1.0.1",
     "latest-version": "^7.0.0",
-    "mongodb": "^6.3.0",
     "ora": "^7.0.1",
     "prisma": "^5.7.1",
     "semver": "^7.5.4",
