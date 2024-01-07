@@ -29,6 +29,16 @@ export const initDbAction = async (configFile: string) => {
   }
 
   Object.assign(globalConfig, config);
+
+  // FIX: Migration rename init -> 000000000000_init
+  // TODO: Remove in next releases
+  await runPrismaCommand([
+    "migrate",
+    "resolve",
+    "--applied",
+    "000000000000_init",
+  ]);
+
   const exitCode = await runPrismaCommand(["migrate", "deploy"]);
 
   if (!exitCode) {
