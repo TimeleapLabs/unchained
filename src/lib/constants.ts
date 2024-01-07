@@ -8,7 +8,7 @@ import {
   MetaData,
 } from "./types.js";
 
-export const version = "0.9.10";
+export const version = "0.9.11";
 export const protocolVersion = "0.9.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
