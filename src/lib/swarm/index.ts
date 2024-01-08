@@ -18,6 +18,14 @@ const spinner = makeSpinner("Looking for peers");
 const safeClearTimeout = (timeout: NodeJS.Timeout | null) =>
   timeout && clearTimeout(timeout);
 
+const safeCloseSocket = (socket: Duplex) => {
+  try {
+    if (!socket.closed) {
+      socket.end();
+    }
+  } catch (_err) {}
+};
+
 const setupEventListeners = () => {
   swarm.on("connection", async (socket: Duplex, info: PeerInfo) => {
     if (spinner.isEnabled) {
@@ -43,7 +51,7 @@ const setupEventListeners = () => {
       logger.debug(`Socket error with peer ${meta.name}: ${code}`);
       const jailed = strike(meta.name, info);
       if (jailed) {
-        socket.end();
+        safeCloseSocket(socket);
       }
     });
 
@@ -51,7 +59,7 @@ const setupEventListeners = () => {
       logger.debug(`Socket error with peer ${meta.name}: ETIMEDOUT`);
       const jailed = strike(meta.name, info);
       if (jailed) {
-        socket.end();
+        safeCloseSocket(socket);
       }
     });
 
@@ -61,7 +69,7 @@ const setupEventListeners = () => {
     });
 
     if (isJailed(meta.name, info) || sockets.size >= config.peers.max) {
-      return socket.end();
+      return safeCloseSocket(socket);
     }
 
     socket.on("drain", () => {
@@ -76,7 +84,7 @@ const setupEventListeners = () => {
         logger.warn(`No data from ${meta.name} in the last 60 seconds`);
         const jailed = strike(meta.name, info);
         if (jailed) {
-          return socket.end();
+          return safeCloseSocket(socket);
         }
         warnNoData();
       }, 60000);
