@@ -5,6 +5,7 @@ import { startAction } from "./lib/cli/actions/start.js";
 import { addressAction } from "./lib/cli/actions/address.js";
 import { initDbAction } from "./lib/cli/actions/postgres/migrate.js";
 import { generateDbAction } from "./lib/cli/actions/postgres/generate.js";
+import { revertDbAction } from "./lib/cli/actions/postgres/revert.js";
 import { version } from "./lib/constants.js";
 
 program
@@ -50,5 +51,12 @@ postgres
   .description("generates the Postgres client for this Unchained version")
   .argument("<config>", "config file in YAML format")
   .action(generateDbAction);
+
+postgres
+  .command("revert")
+  .description("revert a Postgres migration")
+  .argument("<migration>", "migration name")
+  .argument("<config>", "config file in YAML format")
+  .action(revertDbAction);
 
 program.parse();

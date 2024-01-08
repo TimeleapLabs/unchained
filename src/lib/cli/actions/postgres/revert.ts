@@ -14,7 +14,7 @@ const safeReadConfig = (configFile: string): string | null => {
   }
 };
 
-export const initDbAction = async (configFile: string) => {
+export const revertDbAction = async (migration: string, configFile: string) => {
   const configContent = safeReadConfig(configFile);
   const config: Config = configContent ? { ...parse(configContent) } : null;
 
@@ -30,12 +30,17 @@ export const initDbAction = async (configFile: string) => {
 
   Object.assign(globalConfig, config);
 
-  const exitCode = await runPrismaCommand(["migrate", "deploy"]);
+  const exitCode = await runPrismaCommand([
+    "migrate",
+    "resolve",
+    "--rolled-back ",
+    migration,
+  ]);
 
   if (!exitCode) {
-    logger.info("Database migrations were successful.");
+    logger.info("Database migration reverted successfully.");
   } else {
-    logger.error("Failed to run database migrations.");
+    logger.error("Failed to revert the database migration.");
   }
 
   process.exit(exitCode || 0);
