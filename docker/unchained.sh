@@ -18,6 +18,9 @@ usage() {
 if ! command -v docker &>/dev/null; then
   echo "Error: docker could not be found on your system!"
   exit 1
+elif ! docker compose version 2>/dev/null | grep -q v2; then
+  echo "Error: docker compose v2 could not be found on your system!"
+  exit 1
 fi
 
 if ! docker compose version &>/dev/null; then
