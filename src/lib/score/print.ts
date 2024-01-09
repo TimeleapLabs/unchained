@@ -2,7 +2,7 @@ import { getAllScores, resetAllScores } from "./index.js";
 import { logger } from "../logger/index.js";
 import { Table } from "console-table-printer";
 import { sockets, keys } from "../constants.js";
-import { encodeKeys } from "../bls/keys.js";
+import { encodeKeys } from "../crypto/bls/keys.js";
 
 export const printScores = () => {
   const map = resetAllScores();

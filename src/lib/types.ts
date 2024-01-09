@@ -39,6 +39,7 @@ export interface MetaData {
   socket: Duplex;
   peer: string;
   peerAddr: string;
+  murmurAddr?: string;
   name: string;
   publicKey?: string;
   isSocketBusy: boolean;
@@ -110,4 +111,8 @@ export interface PeerInfo {
   publicKey: Buffer;
   priority: number;
   ban(flag: boolean): void;
+}
+
+export interface Murmur {
+  address: string;
 }

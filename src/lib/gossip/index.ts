@@ -1,6 +1,12 @@
-import { gossipMethods, errors, keys, sockets, config } from "../constants.js";
-import { encoder } from "../bls/keys.js";
+import {
+  gossipMethods,
+  errors,
+  sockets,
+  config,
+  murmur,
+} from "../constants.js";
 import { Gossip, GossipRequest, MetaData, NodeSystemError } from "../types.js";
+import { brotliCompressSync } from "zlib";
 
 import crypto from "crypto";
 import assert from "node:assert";
@@ -21,7 +27,7 @@ const randomIndex = (length: number): number => {
 };
 
 const gossipTo = async (nodes: MetaData[], data: any): Promise<void> => {
-  const payload = JSON.stringify(data);
+  const payload = brotliCompressSync(JSON.stringify(data));
   for (const node of nodes) {
     if (!node.socket.closed && !node.isSocketBusy) {
       const sent = node.socket.write(payload);
@@ -48,16 +54,15 @@ export const gossip = (
   if (sockets.size === 0) {
     return;
   }
-  assert(keys.publicKey !== undefined, "No public key found");
-  const publicKey = encoder.encode(keys.publicKey.toBytes());
-  if (seen.includes(publicKey)) {
+  assert(murmur.address !== "", "No murmur address found");
+  if (seen.includes(murmur.address)) {
     return;
   }
-  const payload = { type: "gossip", request, seen: [...seen, publicKey] };
+  const payload = { type: "gossip", request, seen: [...seen, murmur.address] };
   const values = [...sockets.values()] as MetaData[];
   const nodes = values
     .filter((node) => !node.isSocketBusy)
-    .filter((node) => node.publicKey && !seen.includes(node.publicKey));
+    .filter((node) => node.murmurAddr && !seen.includes(node.murmurAddr));
   if (!nodes.length) {
     return;
   }

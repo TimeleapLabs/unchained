@@ -1,7 +1,7 @@
 import { parentPort } from "node:worker_threads";
 import { verifyAggregate } from "../index.js";
 import { aggregate } from "../index.js";
-import { ObjectType } from "../../types.js";
+import { ObjectType } from "../../../types.js";
 
 const methods: ObjectType<Function> = { aggregate, verifyAggregate };
 

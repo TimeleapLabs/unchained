@@ -1,7 +1,7 @@
 import bls from "@chainsafe/bls";
-import { Base58 } from "base-ex";
-import { KeyPair } from "../types.js";
+import { KeyPair } from "../../types.js";
 import { SecretKey, PublicKey } from "@chainsafe/bls/types";
+import { encoder } from "../base58/index.js";
 
 interface EncodedKeyPair {
   secretKey: string;
@@ -23,8 +23,6 @@ export const loadKeys = (encodedSecretKey: string): KeyPair => {
   const secretKey = bls.SecretKey.fromBytes(decoded);
   return getPair(secretKey);
 };
-
-export const encoder = new Base58("bitcoin");
 
 export const encodeKeys = (pair: KeyPair): EncodedKeyPair => {
   return {

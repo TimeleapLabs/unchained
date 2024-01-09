@@ -1,7 +1,8 @@
 import { logger } from "../../logger/index.js";
 import { parse, stringify } from "yaml";
 import { readFileSync, writeFileSync } from "fs";
-import { makeKeys, encodeKeys, loadKeys, encoder } from "../../bls/keys.js";
+import { makeKeys, encodeKeys, loadKeys } from "../../crypto/bls/keys.js";
+import { encoder } from "../../crypto/base58/index.js";
 import { keys } from "../../constants.js";
 import { Config } from "../../types.js";
 import assert from "node:assert";
