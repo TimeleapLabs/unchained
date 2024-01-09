@@ -6,6 +6,7 @@ import { addressAction } from "./lib/cli/actions/address.js";
 import { initDbAction } from "./lib/cli/actions/postgres/migrate.js";
 import { generateDbAction } from "./lib/cli/actions/postgres/generate.js";
 import { revertDbAction } from "./lib/cli/actions/postgres/revert.js";
+import { diagnoseAction } from "./lib/cli/actions/diagnose.js";
 import { version } from "./lib/constants.js";
 
 program
@@ -35,6 +36,12 @@ program
   .option("--generate", "generate a secret key")
   .option("--ci", "run in ci mode")
   .action(addressAction);
+
+program
+  .command("diagnose")
+  .description("perform a system check and print the details")
+  .argument("<config>", "config file in YAML format")
+  .action(diagnoseAction);
 
 const postgres = program
   .command("postgres")

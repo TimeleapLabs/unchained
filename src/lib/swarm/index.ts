@@ -9,6 +9,7 @@ import { Duplex } from "stream";
 import { MetaData, NodeSystemError, PeerInfo } from "../types.js";
 import { config } from "../constants.js";
 import { isJailed, strike } from "./jail.js";
+import { brotliCompressSync, brotliDecompressSync } from "zlib";
 
 import HyperSwarm from "hyperswarm";
 
@@ -96,7 +97,7 @@ const setupEventListeners = () => {
       safeClearTimeout(timeout);
       warnNoData();
 
-      const message = parse(data.toString());
+      const message = parse(brotliDecompressSync(data).toString());
 
       if (message instanceof Error) {
         return logger.debug(`Received a faulty packet from: ${peerAddr}`);
@@ -119,12 +120,13 @@ const setupEventListeners = () => {
           meta.name = message.result.name.slice(0, 24);
           // TODO: verify the validity of the public key
           meta.publicKey = message.result.publicKey;
+          meta.murmurAddr = message.result.murmurAddr;
           logger.info(`Peer ${oldName} is ${meta.name}`);
         }
       } else if (message.type === "call") {
         const result = await processRpc(message);
         try {
-          socket.write(JSON.stringify(result));
+          socket.write(brotliCompressSync(JSON.stringify(result)));
         } catch (error) {
           const err = error as NodeSystemError;
           const info = err.code || err.errno || err.message;
@@ -136,10 +138,12 @@ const setupEventListeners = () => {
     });
 
     try {
-      const introducePayload = JSON.stringify({
-        type: "call",
-        request: { method: "introduce", args: {} },
-      });
+      const introducePayload = brotliCompressSync(
+        JSON.stringify({
+          type: "call",
+          request: { method: "introduce", args: {} },
+        })
+      );
       socket.write(introducePayload);
     } catch (error) {}
   });
