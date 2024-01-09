@@ -1,10 +1,11 @@
-import { encoder, cachedDecodePublicKey } from "./keys.js";
+import { cachedDecodePublicKey } from "./keys.js";
+import { encoder } from "../base58/index.js";
 import bls from "@chainsafe/bls";
-import { keys } from "../constants.js";
+import { keys } from "../../constants.js";
 import stringify from "json-canon";
 import assert from "node:assert";
 
-import { GossipSignatureInput, SignatureItem } from "../types.js";
+import { GossipSignatureInput, SignatureItem } from "../../types.js";
 
 export const sign = (data: any): string => {
   assert(keys.secretKey !== undefined, "No secret key in config");

@@ -17,6 +17,7 @@
   "license": "BUSL-1.1",
   "dependencies": {
     "@chainsafe/bls": "^7.1.2",
+    "@multiformats/murmur3": "^2.1.8",
     "@prisma/client": "^5.7.1",
     "base-ex": "^0.8.1",
     "commander": "^11.1.0",

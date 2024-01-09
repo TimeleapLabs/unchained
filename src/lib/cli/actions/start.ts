@@ -3,8 +3,15 @@ import { startSwarm } from "../../swarm/index.js";
 import { parse, stringify } from "yaml";
 import { readFileSync, writeFileSync } from "fs";
 import { checkForUpdates } from "../../update.js";
-import { makeKeys, encodeKeys, loadKeys, encoder } from "../../bls/keys.js";
-import { keys, config as globalConfig, nameRegex } from "../../constants.js";
+import { makeKeys, encodeKeys, loadKeys } from "../../crypto/bls/keys.js";
+import { encoder } from "../../crypto/base58/index.js";
+import { toMurmur } from "../../crypto/murmur/index.js";
+import {
+  keys,
+  config as globalConfig,
+  nameRegex,
+  murmur,
+} from "../../constants.js";
 import { runTasks } from "../../daemon/index.js";
 import { Config } from "../../types.js";
 import { initDB } from "../../db/db.js";
@@ -78,7 +85,10 @@ export const startAction = async (
   assert(keys.publicKey !== undefined, "No public key available");
 
   const address = encoder.encode(keys.publicKey.toBytes());
+  murmur.address = await toMurmur(address);
+
   logger.info(`Unchained public address is ${address}`);
+  logger.info(`Unchained short public address is ${murmur.address}`);
 
   if (!config.name) {
     logger.warn("Node name not found in config");

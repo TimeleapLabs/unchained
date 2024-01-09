@@ -6,10 +6,11 @@ import {
   StringAnyObject,
   StringGossipMethodObject,
   MetaData,
+  Murmur,
 } from "./types.js";
 
-export const version = "0.9.13";
-export const protocolVersion = "0.9.0";
+export const version = "0.10.0";
+export const protocolVersion = "0.10.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
 
@@ -48,3 +49,4 @@ export const state: State = {
 };
 
 export const nameRegex = /^[a-z0-9 @\._'-]+$/i;
+export const murmur: Murmur = { address: "" };
