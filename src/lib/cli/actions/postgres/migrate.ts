@@ -16,8 +16,12 @@ const safeReadConfig = (configFile: string): string | null => {
 
 export const initDbAction = async (configFile: string) => {
   const configContent = safeReadConfig(configFile);
-  const config: Config = configContent ? { ...parse(configContent) } : null;
+  if (!configContent) {
+    logger.error("Failed to read the config file");
+    return process.exit(1);
+  }
 
+  const config: Config = configContent ? { ...parse(configContent) } : null;
   if (!config) {
     logger.error("Invalid config file");
     return process.exit(1);

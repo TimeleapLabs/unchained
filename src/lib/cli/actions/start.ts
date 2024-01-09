@@ -40,8 +40,12 @@ export const startAction = async (
   options: StartOptions
 ) => {
   const configContent = safeReadConfig(configFile);
-  const config: Config = configContent ? { ...parse(configContent) } : null;
+  if (!configContent) {
+    logger.error("Failed to read the config file");
+    return process.exit(1);
+  }
 
+  const config: Config = configContent ? { ...parse(configContent) } : null;
   if (!config) {
     logger.error("Invalid config file");
     return process.exit(1);
