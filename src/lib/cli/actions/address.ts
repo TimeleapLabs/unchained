@@ -1,10 +1,12 @@
 import { logger } from "../../logger/index.js";
-import { parse, stringify } from "yaml";
-import { readFileSync, writeFileSync } from "fs";
+import { stringify } from "yaml";
+import { writeFileSync } from "fs";
 import { makeKeys, encodeKeys, loadKeys } from "../../crypto/bls/keys.js";
 import { encoder } from "../../crypto/base58/index.js";
 import { keys } from "../../constants.js";
-import { Config } from "../../types.js";
+import { safeReadConfig } from "../../utils/config.js";
+import { murmur } from "../../constants.js";
+import { toMurmur } from "../../crypto/murmur/index.js";
 import assert from "node:assert";
 
 interface AddressOptions {
@@ -12,28 +14,12 @@ interface AddressOptions {
   ci?: boolean;
 }
 
-const safeReadConfig = (configFile: string): string | null => {
-  try {
-    const configContent = readFileSync(configFile).toString();
-    return configContent;
-  } catch (error) {
-    return null;
-  }
-};
-
 export const addressAction = async (
   configFile: string,
   options: AddressOptions
 ) => {
-  const configContent = safeReadConfig(configFile);
-  if (!configContent) {
-    logger.error("Failed to read the config file");
-    return process.exit(1);
-  }
-
-  const config: Config = configContent ? { ...parse(configContent) } : null;
+  const config = safeReadConfig(configFile);
   if (!config) {
-    logger.error("Invalid config file");
     return process.exit(1);
   }
 
@@ -56,6 +42,10 @@ export const addressAction = async (
   assert(keys.publicKey !== undefined, "No public key available"); // Likely always passes
 
   const address = encoder.encode(keys.publicKey.toBytes());
+  murmur.address = await toMurmur(address);
+
+  logger.info(`Unchained public address is ${address}`);
+  logger.info(`Unchained gossip address is ${murmur.address}`);
 
   if (options.ci) {
     console.log(address);
