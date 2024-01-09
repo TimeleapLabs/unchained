@@ -1,7 +1,8 @@
 import { logger } from "../../logger/index.js";
 import { startSwarm } from "../../swarm/index.js";
-import { parse, stringify } from "yaml";
-import { readFileSync, writeFileSync } from "fs";
+import { stringify } from "yaml";
+import { writeFileSync } from "fs";
+import { safeReadConfig } from "../../utils/config.js";
 import { checkForUpdates } from "../../update.js";
 import { makeKeys, encodeKeys, loadKeys } from "../../crypto/bls/keys.js";
 import { encoder } from "../../crypto/base58/index.js";
@@ -13,7 +14,6 @@ import {
   murmur,
 } from "../../constants.js";
 import { runTasks } from "../../daemon/index.js";
-import { Config } from "../../types.js";
 import { initDB } from "../../db/db.js";
 import assert from "node:assert";
 
@@ -26,28 +26,12 @@ interface StartOptions {
   parallelPeers?: string;
 }
 
-const safeReadConfig = (configFile: string): string | null => {
-  try {
-    const configContent = readFileSync(configFile).toString();
-    return configContent;
-  } catch (error) {
-    return null;
-  }
-};
-
 export const startAction = async (
   configFile: string,
   options: StartOptions
 ) => {
-  const configContent = safeReadConfig(configFile);
-  if (!configContent) {
-    logger.error("Failed to read the config file");
-    return process.exit(1);
-  }
-
-  const config: Config = configContent ? { ...parse(configContent) } : null;
+  const config = safeReadConfig(configFile);
   if (!config) {
-    logger.error("Invalid config file");
     return process.exit(1);
   }
 
