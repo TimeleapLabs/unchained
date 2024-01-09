@@ -3,9 +3,17 @@ import { logger } from "../logger/index.js";
 import { Config } from "../types.js";
 import { parse } from "yaml";
 
+const readFileSafe = (file: string) => {
+  try {
+    return readFileSync(file).toString();
+  } catch (error) {
+    return null;
+  }
+};
+
 export const safeReadConfig = (configFile: string): Config | null => {
   try {
-    const configContent = readFileSync(configFile).toString();
+    const configContent = readFileSafe(configFile);
 
     if (!configContent) {
       logger.error("Failed to read the config file");
@@ -20,6 +28,7 @@ export const safeReadConfig = (configFile: string): Config | null => {
 
     return config;
   } catch (error) {
+    logger.error("Invalid config file");
     return null;
   }
 };
