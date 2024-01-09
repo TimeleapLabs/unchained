@@ -1,6 +1,7 @@
-import { encoder } from "../bls/keys.js";
+import { encoder } from "../crypto/base58/index.js";
 import { config, keys, rpcMethods, errors } from "../constants.js";
 import { NodeSystemError } from "../types.js";
+import { murmur } from "../constants.js";
 import assert from "assert";
 
 interface RpcRequest {
@@ -10,11 +11,12 @@ interface RpcRequest {
 
 const defaultMethods = {
   timestamp: (): number => new Date().valueOf(),
-  introduce: async (): Promise<{ name: string; publicKey: string }> => {
+  introduce: (): { name: string; publicKey: string; murmurAddr: string } => {
     assert(keys.publicKey !== undefined, "Public key not found");
     return {
       name: config.name,
       publicKey: encoder.encode(keys.publicKey.toBytes()),
+      murmurAddr: murmur.address,
     };
   },
 };

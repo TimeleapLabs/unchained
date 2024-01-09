@@ -1,6 +1,6 @@
-import { attest, sign } from "../bls/index.js";
+import { attest, sign } from "../crypto/bls/index.js";
 import { GossipRequest, GossipMethod } from "../types.js";
-import { encodeKeys } from "../bls/keys.js";
+import { encodeKeys } from "../crypto/bls/keys.js";
 import { keys, gossipMethods, sockets } from "../constants.js";
 import { debounce } from "../utils/debounce.js";
 import { getMode } from "../utils/mode.js";
