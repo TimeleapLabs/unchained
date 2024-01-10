@@ -26,5 +26,8 @@ export const cache = <K, V>(ttl: number) => {
     has(key: K): boolean {
       return map.has(key);
     },
+    entries(): IterableIterator<[K, V]> {
+      return map.entries();
+    },
   };
 };
