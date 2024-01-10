@@ -9,7 +9,7 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.0";
+export const version = "0.10.1";
 export const protocolVersion = "0.10.0";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
