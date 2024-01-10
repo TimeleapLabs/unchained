@@ -27,6 +27,14 @@ const safeCloseSocket = (socket: Duplex) => {
   } catch (_err) {}
 };
 
+const safeDecompressAndParse = (packet: Buffer) => {
+  try {
+    return parse(brotliDecompressSync(packet).toString());
+  } catch (error) {
+    return error;
+  }
+};
+
 const setupEventListeners = () => {
   swarm.on("connection", async (socket: Duplex, info: PeerInfo) => {
     if (spinner.isEnabled) {
@@ -97,7 +105,7 @@ const setupEventListeners = () => {
       safeClearTimeout(timeout);
       warnNoData();
 
-      const message = parse(brotliDecompressSync(data).toString());
+      const message = safeDecompressAndParse(data);
 
       if (message instanceof Error) {
         return logger.debug(`Received a faulty packet from: ${peerAddr}`);

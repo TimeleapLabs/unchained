@@ -4,6 +4,7 @@ import { loadKeys } from "../../crypto/bls/keys.js";
 import { encoder } from "../../crypto/base58/index.js";
 import { toMurmur } from "../../crypto/murmur/index.js";
 import { stringify } from "yaml";
+import { version } from "../../constants.js";
 
 import getos from "getos";
 import ping from "ping";
@@ -86,7 +87,7 @@ export const diagnoseAction = async (configFile: string) => {
   const info = {
     ...systemInfoResults,
     ...pingResult,
-    unchained: { publicKey, murmur },
+    unchained: { version, publicKey, murmur },
   };
 
   const stringified = stringify(info);
