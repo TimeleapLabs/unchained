@@ -10,6 +10,7 @@ import getos from "getos";
 import ping from "ping";
 import os from "os";
 import osName from "os-name";
+import prettyBytes from "pretty-bytes";
 
 const getOsName = async () =>
   new Promise((resolve) => {
@@ -18,8 +19,8 @@ const getOsName = async () =>
         if (err) {
           resolve(osName());
         } else {
-          const { dist } = result as getos.LinuxOs;
-          resolve(dist);
+          const { dist, codename, release } = result as getos.LinuxOs;
+          resolve([dist, codename, release].filter(Boolean).join(" "));
         }
       });
     } else {
@@ -29,17 +30,19 @@ const getOsName = async () =>
 
 const systemInfo = async () => ({
   os: {
-    type: os.type(),
+    platform: os.platform(),
     name: await getOsName(),
     release: os.release(),
-    platform: os.platform(),
   },
   cpu: {
     arch: os.arch(),
     cores: os.cpus().length,
     parallelism: os.availableParallelism(),
   },
-  memory: { total: os.totalmem(), free: os.freemem() },
+  memory: {
+    total: prettyBytes(os.totalmem()),
+    free: prettyBytes(os.freemem()),
+  },
   node: { version: process.version },
 });
 
