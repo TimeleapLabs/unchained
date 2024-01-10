@@ -7,13 +7,13 @@ services:
     hostname: unchained_local
     volumes:
       - ./conf.local.yaml:/app/conf.yaml
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       - UNCHAINED_NODE_TYPE=full
     profiles: ["local"]
     restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   postgres:
     image: postgres:16.1
@@ -30,23 +30,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  grafana:
-    image: grafana/grafana-oss:latest
-    container_name: grafana
-    restart: always
-    ports:
-      - "127.0.0.1:3000:3000"
-    env_file:
-      - .env
-    volumes:
-      - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
-      - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/main.yaml
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
-    profiles: ["local"]
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   unchained_lite:
     image: ghcr.io/kenshitech/unchained:latest
@@ -68,4 +51,37 @@ services:
     environment:
       - UNCHAINED_NODE_TYPE=full
     profiles: ["remote"]
+    restart: always
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/main.yaml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    profiles: ["monitoring"]
+    restart: always
+    depends_on:
+      prometheus:
+        condition: service_started
+      cadvisor:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    profiles: ["monitoring"]
+    restart: always
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    container_name: cadvisor
+    profiles: ["monitoring"]
     restart: always

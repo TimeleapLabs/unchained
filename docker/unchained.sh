@@ -1,11 +1,12 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 [node] [options]"
-  echo "Node:"
-  echo "  local  - Manage unchained local node"
-  echo "  remote - Manage unchained remote node"
-  echo "  lite   - Manage unchained lite node"
+  echo "Usage: $0 [profile] [options]"
+  echo "Profile:"
+  echo "  local      - Manage unchained local node"
+  echo "  remote     - Manage unchained remote node"
+  echo "  lite       - Manage unchained lite node"
+  echo "  monitoring - Manage unchained monitoring stack"
   echo "Options:"
   echo "  Additional options passed directly to 'docker compose'"
   echo "Examples:"
@@ -28,7 +29,7 @@ if ! docker compose version &>/dev/null; then
   exit 1
 fi
 
-if [ ! $1 == 'local' ] && [ ! $1 == 'remote' ] && [ ! $1 == 'lite' ] || [ -z $2 ]; then
+if [ ! $1 == 'local' ] && [ ! $1 == 'remote' ] && [ ! $1 == 'lite' ]  && [ ! $1 == 'monitoring' ]|| [ -z $2 ]; then
   usage
   exit 1
 fi
