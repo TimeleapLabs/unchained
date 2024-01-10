@@ -22,6 +22,8 @@ const safeClearTimeout = (timeout: NodeJS.Timeout | null) =>
 const safeCloseSocket = (socket: Duplex) => {
   try {
     if (!socket.closed) {
+      socket.pause();
+      while (socket.read());
       socket.end();
     }
   } catch (_err) {}
