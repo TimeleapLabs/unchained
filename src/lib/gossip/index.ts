@@ -30,7 +30,7 @@ const gossipTo = async (
     }
   }
   ackCache.set(payloadHash, new Set(data.seen));
-  setTimeout(processAck, 60 * 1000, data.request, payloadHash);
+  setTimeout(processAck, 7 * 1000, data.request, payloadHash);
 };
 
 const filterSeen = (seen: string[]) => (meta: MetaData) =>
@@ -45,8 +45,8 @@ export const gossip = (
   const nodes = values.filter(filterSeen(seen));
   if (nodes.length) {
     gossipTo(nodes, payload);
-  } else {
-    logger.info("No peers to gossip to.");
+  } else if (values.length) {
+    logger.info("Gossip already reached all peers.");
   }
 };
 
