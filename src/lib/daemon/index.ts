@@ -7,6 +7,7 @@ import {
   resetAllScores,
   storeSprintScores,
 } from "../score/index.js";
+import { printScores } from "../score/print.js";
 
 interface UniswapArgs {
   blockchain: string;
@@ -36,6 +37,7 @@ export const runTasks = (): void => {
   Cron("0 */5 * * * *", () => {
     try {
       const scores = resetAllScores();
+      printScores(scores);
       const payload = getScoresPayload(scores);
       gossip(payload, []);
       // TODO: We need retries here

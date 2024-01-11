@@ -14,6 +14,7 @@ import { toMurmur } from "../crypto/murmur/index.js";
 import { logger } from "../logger/index.js";
 
 const ackCache = cache<string, Set<string>>(5 * 60 * 1000);
+const ACK_TIMEOUT = 5 * 1000;
 
 const gossipTo = async (
   nodes: MetaData[],
@@ -22,15 +23,18 @@ const gossipTo = async (
   const payload = brotliCompressSync(JSON.stringify(data));
   const payloadHash = await toMurmur(hashObject(data.request));
   for (const node of nodes) {
-    if (!node.socket.closed && !node.isSocketBusy) {
+    if (!node.socket.closed) {
+      await node.isAvailable;
       const sent = node.socket.write(payload);
       if (!sent) {
-        node.isSocketBusy = true;
+        node.isAvailable = new Promise<void>((resolve) => {
+          node.onSocketDrain = resolve as () => void;
+        });
       }
     }
   }
   ackCache.set(payloadHash, new Set(data.seen));
-  setTimeout(processAck, 7 * 1000, data.request, payloadHash);
+  setTimeout(processAck, ACK_TIMEOUT, data.request, payloadHash);
 };
 
 const filterSeen = (seen: string[]) => (meta: MetaData) =>
@@ -90,7 +94,10 @@ export const processGossip = async (
   }
 };
 
-const processAck = (request: GossipRequest<any, any>, payloadHash: string) => {
+const processAck = async (
+  request: GossipRequest<any, any>,
+  payloadHash: string
+) => {
   logger.info(`Processing ack ${payloadHash}`);
   const seen = ackCache.get(payloadHash);
   if (!seen) {
@@ -99,10 +106,13 @@ const processAck = (request: GossipRequest<any, any>, payloadHash: string) => {
   const distRequest = {
     method: "dist",
     args: {
-      seen: [...seen.values(), murmur.address],
+      seen: [...seen.values()],
       request,
     },
   };
+  if (!seen.has(murmur.address)) {
+    distRequest.args.seen.push(murmur.address);
+  }
   const distPayload = brotliCompressSync(
     JSON.stringify({
       type: "call",
@@ -110,10 +120,13 @@ const processAck = (request: GossipRequest<any, any>, payloadHash: string) => {
     })
   );
   for (const node of sockets.values()) {
-    if (!node.socket.closed && !node.isSocketBusy) {
+    if (!node.socket.closed) {
+      await node.isAvailable;
       const sent = node.socket.write(distPayload);
       if (!sent) {
-        node.isSocketBusy = true;
+        node.isAvailable = new Promise<void>((resolve) => {
+          node.onSocketDrain = resolve as () => void;
+        });
       }
     }
   }

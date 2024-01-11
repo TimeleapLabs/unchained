@@ -1,12 +1,10 @@
-import { getAllScores, resetAllScores } from "./index.js";
+import { getAllScores } from "./index.js";
 import { logger } from "../logger/index.js";
 import { Table } from "console-table-printer";
 import { sockets, keys } from "../constants.js";
 import { encodeKeys } from "../crypto/bls/keys.js";
 
-export const printScores = () => {
-  const map = resetAllScores();
-
+export const printScores = (map: Map<string, number>) => {
   const table = new Table({
     columns: [
       { name: "peer", title: "Peer", alignment: "left", color: "blue" },
