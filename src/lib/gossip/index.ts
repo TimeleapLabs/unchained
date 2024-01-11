@@ -19,10 +19,11 @@ const ACK_TIMEOUT = 5 * 1000;
 
 const gossipTo = async (
   nodes: MetaData[],
-  data: Gossip<any, any>
+  data: Gossip<any, any>,
+  payloadHash: string
 ): Promise<void> => {
   const payload = brotliCompressSync(JSON.stringify(data));
-  const payloadHash = await toMurmur(hashObject(data.request));
+
   for (const node of nodes) {
     if (!node.socket.closed) {
       await node.isAvailable;
@@ -45,15 +46,18 @@ const gossipTo = async (
 const filterSeen = (seen: string[]) => (meta: MetaData) =>
   meta.murmurAddr && !seen.includes(meta.murmurAddr);
 
-export const gossip = (
+export const gossip = async (
   request: GossipRequest<any, any>,
   seen: string[]
-): void => {
+): Promise<void> => {
   const payload = { type: "gossip" as const, request, seen };
+  const payloadHash = await toMurmur(hashObject(request));
   const values = [...sockets.values()] as MetaData[];
-  const nodes = values.filter(filterSeen(seen));
+  const ackSeen = ackCache.get(payloadHash)?.values() || [];
+  const aggregatedSeen = [...seen, ...ackSeen];
+  const nodes = values.filter(filterSeen(aggregatedSeen));
   if (nodes.length) {
-    gossipTo(nodes, payload);
+    gossipTo(nodes, payload, payloadHash);
   } else if (values.length) {
     logger.info("Gossip already reached all peers.");
   }
@@ -160,7 +164,7 @@ const dist = async ({ request, seen }: DistArgs) => {
   logger.info(
     `Dist received for ${payloadHash}. Seen: ${JSON.stringify(seen)}`
   );
-  gossip(request, seen);
+  await gossip(request, seen);
 };
 
 Object.assign(rpcMethods, { ack, dist });
