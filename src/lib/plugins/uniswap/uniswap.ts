@@ -33,11 +33,18 @@ let getNewRpc: boolean = false;
 
 const CACHE_SIZE = 50;
 
-const ws = (endpoint: string): WebSocketLike =>
-  new WS(endpoint, {
+const ws = (endpoint: string): WebSocketLike => {
+  const socket = new WS(endpoint, {
     ws: WebSocket,
     retry: { forever: true },
   }) as WebSocketLike;
+
+  socket.onerror = () => {
+    getNewRpc = true;
+  };
+
+  return socket;
+};
 
 let currentProvider: number = 0;
 
