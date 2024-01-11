@@ -194,7 +194,6 @@ config:
 log: info
 name: <name>
 lite: true
-gossip: 24
 rpc:
   ethereum:
     - https://ethereum.publicnode.com
@@ -217,7 +216,6 @@ the following modifications if required:
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
 - `lite`: To run a lite node, set this to `true`, otherwise set it to `false`.
-- `gossip`: Gossip number represents the number of other nodes that you node will gossip with to validate a piece of data. It is set to `24` by default, but you can change it if you wish. Setting it to `0` is the equivalent of not running a node at all.
 - `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when issues are detected with the RPC connection. You can find a list of Ethereum RPC nodes on
   [Chainlist](https://chainlist.org/chain/1).
 - `database.url`: Your Postgres connection string goes here. Ignore this if

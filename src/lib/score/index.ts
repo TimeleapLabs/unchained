@@ -117,7 +117,7 @@ const printMyScore = debounce((sprint: number, publicKey: string) => {
 
   logger.info("Score received from peers");
   table.printTable();
-}, 2500);
+}, 1000);
 
 export const storeSprintScores = async () => {
   const previousSprint = Math.ceil(new Date().valueOf() / 300000) - 1;

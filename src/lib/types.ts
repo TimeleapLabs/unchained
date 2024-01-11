@@ -31,7 +31,6 @@ export interface Config {
   database?: DatabaseConfig;
   secretKey: string;
   publicKey: string;
-  gossip: number;
   peers: PeerConfig;
 }
 
@@ -42,7 +41,8 @@ export interface MetaData {
   murmurAddr?: string;
   name: string;
   publicKey?: string;
-  isSocketBusy: boolean;
+  onSocketDrain?: () => void;
+  isAvailable?: Promise<void>;
 }
 
 export interface NodeSystemError extends Error {

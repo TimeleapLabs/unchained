@@ -21,7 +21,6 @@ interface StartOptions {
   log?: string;
   lite?: boolean;
   generate?: boolean;
-  gossip?: string;
   maxPeers?: string;
   parallelPeers?: string;
 }
@@ -37,9 +36,6 @@ export const startAction = async (
 
   logger.level = options.log || config.log || "info";
   config.lite = options.lite || config.lite || false;
-
-  config.gossip =
-    parseInt(options.gossip || "0") || config.gossip || globalConfig.gossip;
 
   config.peers ||= globalConfig.peers;
   config.peers.max =
