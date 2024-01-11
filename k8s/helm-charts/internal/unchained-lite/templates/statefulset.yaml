@@ -67,6 +67,7 @@ spec:
             - |
               if [ ! -f config/conf.yaml ]; then
                 cp conf.lite.yaml config/conf.yaml
+                unchained address config/conf.yaml --generate
               fi
               cp config/conf.yaml conf.yaml
               ./entrypoint.sh
