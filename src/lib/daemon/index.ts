@@ -27,21 +27,21 @@ export const runTasks = (): void => {
     try {
       const result = await runWithRetries(uniswap.work, uniswapArgs);
       if (result && !(result instanceof Symbol)) {
-        gossip(result, []);
+        await gossip(result, []);
       }
     } catch (error) {
       // Handle the error or log it
     }
   });
 
-  Cron("0 */5 * * * *", () => {
+  Cron("0 */5 * * * *", async () => {
     try {
       const scores = resetAllScores();
       printScores(scores);
       const payload = getScoresPayload(scores);
-      gossip(payload, []);
+      await gossip(payload, []);
       // TODO: We need retries here
-      storeSprintScores().catch(() => null);
+      await storeSprintScores();
     } catch (error) {
       // Handle the error or log it
     }
