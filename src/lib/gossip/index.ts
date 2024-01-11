@@ -54,7 +54,7 @@ export const gossip = async (
   const payloadHash = await toMurmur(hashObject(request));
   const values = [...sockets.values()] as MetaData[];
   const ackSeen = ackCache.get(payloadHash)?.values() || [];
-  const aggregatedSeen = [...seen, ...ackSeen];
+  const aggregatedSeen = [...new Set([...seen, ...ackSeen])];
   const nodes = values.filter(filterSeen(aggregatedSeen));
   if (nodes.length) {
     gossipTo(nodes, payload, payloadHash);
