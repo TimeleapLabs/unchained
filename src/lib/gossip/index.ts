@@ -11,7 +11,6 @@ import { hashObject } from "../utils/hash.js";
 import { cache } from "../utils/cache.js";
 import { Duplex } from "stream";
 import { toMurmur } from "../crypto/murmur/index.js";
-import { logger } from "../logger/index.js";
 
 const ackCache = cache<string, Set<string>>(5 * 60 * 1000);
 const ackTimeoutCache = cache<string, NodeJS.Timeout>(5 * 60 * 1000);
