@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conf-lite
+data:
+  conf.lite.yaml: |
+    log: info
+    lite: true
+    name: k8s-test-node
+    gossip: 48
+    rpc:
+      ethereum:
+        - https://ethereum.publicnode.com
+        - https://eth.llamarpc.com
+        - wss://ethereum.publicnode.com
+        - https://eth.rpc.blxrbdn.com
+    peers:
+      max: 4
+      parallel: 8
