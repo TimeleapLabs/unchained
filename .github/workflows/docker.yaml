@@ -48,5 +48,5 @@ jobs:
             ghcr.io/kenshitech/unchained:latest
             ghcr.io/kenshitech/unchained:v${{ steps.package-version.outputs.current-version }}
           build-args: |
-            NODE_VERSION=${{ env.NODE_VERSION }}
-            UNCHAINED_VERSION=${{ steps.package-version.outputs.current-version }}
+            "NODE_VERSION=${{ env.NODE_VERSION }}"
+            "UNCHAINED_VERSION=${{ steps.package-version.outputs.current-version }}"
