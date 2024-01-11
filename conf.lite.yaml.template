@@ -1,7 +1,6 @@
 log: info
 lite: true
 name: <name>
-gossip: 24
 rpc:
   ethereum:
     - https://ethereum.publicnode.com
