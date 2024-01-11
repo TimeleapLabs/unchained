@@ -42,7 +42,8 @@ export interface MetaData {
   murmurAddr?: string;
   name: string;
   publicKey?: string;
-  isSocketBusy: boolean;
+  onSocketDrain?: () => void;
+  isAvailable?: Promise<void>;
 }
 
 export interface NodeSystemError extends Error {
