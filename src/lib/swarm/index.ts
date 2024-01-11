@@ -22,7 +22,9 @@ const safeClearTimeout = (timeout: NodeJS.Timeout | null) =>
 const safeCloseSocket = (socket: Duplex) => {
   try {
     if (!socket.closed) {
-      socket.end();
+      socket.pause();
+      while (socket.read());
+      socket.destroy(new Error("ERR_JAILED"));
     }
   } catch (_err) {}
 };
@@ -45,13 +47,7 @@ const setupEventListeners = () => {
 
     const peerAddr = info.publicKey.toString("hex");
     const peer = `[${peerAddr.slice(0, 4)}···${peerAddr.slice(-4)}]`;
-    const meta: MetaData = {
-      socket,
-      peer,
-      peerAddr,
-      name: peer,
-      isSocketBusy: false,
-    };
+    const meta: MetaData = { socket, peer, peerAddr, name: peer };
 
     let timeout: NodeJS.Timeout | null = null;
 
@@ -82,7 +78,7 @@ const setupEventListeners = () => {
     }
 
     socket.on("drain", () => {
-      meta.isSocketBusy = false;
+      meta.onSocketDrain?.();
     });
 
     sockets.set(peerAddr, meta);
@@ -141,7 +137,7 @@ const setupEventListeners = () => {
           logger.error(`Socket error with peer ${meta.name}: ${info}`);
         }
       } else if (message.type === "gossip") {
-        await processGossip(message);
+        await processGossip(message, socket);
       }
     });
 
