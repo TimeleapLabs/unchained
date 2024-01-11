@@ -14,6 +14,7 @@ import { toMurmur } from "../crypto/murmur/index.js";
 import { logger } from "../logger/index.js";
 
 const ackCache = cache<string, Set<string>>(5 * 60 * 1000);
+const ackTimeoutCache = cache<string, NodeJS.Timeout>(5 * 60 * 1000);
 const ACK_TIMEOUT = 5 * 1000;
 
 const gossipTo = async (
@@ -34,7 +35,11 @@ const gossipTo = async (
     }
   }
   ackCache.set(payloadHash, new Set(data.seen));
-  setTimeout(processAck, ACK_TIMEOUT, data.request, payloadHash);
+  clearTimeout(ackTimeoutCache.get(payloadHash));
+  ackTimeoutCache.set(
+    payloadHash,
+    setTimeout(processAck, ACK_TIMEOUT, data.request, payloadHash)
+  );
 };
 
 const filterSeen = (seen: string[]) => (meta: MetaData) =>
