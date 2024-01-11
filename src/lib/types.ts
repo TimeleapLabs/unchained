@@ -31,7 +31,6 @@ export interface Config {
   database?: DatabaseConfig;
   secretKey: string;
   publicKey: string;
-  gossip: number;
   peers: PeerConfig;
 }
 
