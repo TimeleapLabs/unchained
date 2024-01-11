@@ -57,9 +57,7 @@ export const gossip = async (
   const aggregatedSeen = [...new Set([...seen, ...ackSeen])];
   const nodes = values.filter(filterSeen(aggregatedSeen));
   if (nodes.length) {
-    gossipTo(nodes, payload, payloadHash);
-  } else if (values.length) {
-    logger.info("Gossip already reached all peers.");
+    await gossipTo(nodes, payload, payloadHash);
   }
 };
 
@@ -107,7 +105,6 @@ const processAck = async (
   request: GossipRequest<any, any>,
   payloadHash: string
 ) => {
-  logger.info(`Processing ack ${payloadHash}`);
   const seen = ackCache.get(payloadHash);
   if (!seen) {
     return;
@@ -152,7 +149,6 @@ type DistArgs = {
 };
 
 const ack = ({ payloadHash, murmurAddr }: AckArgs) => {
-  logger.info(`Ack ${payloadHash} received from ${murmurAddr}`);
   const set = ackCache.get(payloadHash);
   if (set) {
     set.add(murmurAddr);
@@ -160,10 +156,6 @@ const ack = ({ payloadHash, murmurAddr }: AckArgs) => {
 };
 
 const dist = async ({ request, seen }: DistArgs) => {
-  const payloadHash = await toMurmur(hashObject(request));
-  logger.info(
-    `Dist received for ${payloadHash}. Seen: ${JSON.stringify(seen)}`
-  );
   await gossip(request, seen);
 };
 

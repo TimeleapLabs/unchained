@@ -24,7 +24,7 @@ const safeCloseSocket = (socket: Duplex) => {
     if (!socket.closed) {
       socket.pause();
       while (socket.read());
-      socket.end();
+      socket.destroy(new Error("ERR_JAILED"));
     }
   } catch (_err) {}
 };
