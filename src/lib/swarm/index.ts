@@ -19,12 +19,12 @@ const spinner = makeSpinner("Looking for peers");
 const safeClearTimeout = (timeout: NodeJS.Timeout | null) =>
   timeout && clearTimeout(timeout);
 
-const safeCloseSocket = (socket: Duplex, err?: Error) => {
+const safeCloseSocket = (socket: Duplex) => {
   try {
     if (!socket.closed) {
       socket.pause();
       while (socket.read());
-      socket.destroy(err);
+      socket.destroy();
     }
   } catch (_err) {}
 };
@@ -56,7 +56,7 @@ const setupEventListeners = () => {
       logger.debug(`Socket error with peer ${meta.name}: ${code}`);
       const jailed = strike(meta.name, info);
       if (jailed) {
-        safeCloseSocket(socket, new Error("ERR_JAILED"));
+        safeCloseSocket(socket);
       }
     });
 
@@ -64,7 +64,7 @@ const setupEventListeners = () => {
       logger.debug(`Socket error with peer ${meta.name}: ETIMEDOUT`);
       const jailed = strike(meta.name, info);
       if (jailed) {
-        safeCloseSocket(socket, new Error("ERR_JAILED"));
+        safeCloseSocket(socket);
       }
     });
 
@@ -73,11 +73,7 @@ const setupEventListeners = () => {
       sockets.delete(peerAddr);
     });
 
-    if (isJailed(meta.name, info)) {
-      return safeCloseSocket(socket, new Error("ERR_JAILED"));
-    }
-
-    if (sockets.size >= config.peers.max) {
+    if (sockets.size >= config.peers.max || isJailed(meta.name, info)) {
       return safeCloseSocket(socket);
     }
 
