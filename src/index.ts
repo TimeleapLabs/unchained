@@ -67,7 +67,3 @@ postgres
   .action(revertDbAction);
 
 program.parse();
-
-process.on("SIGINT", () => {
-  process.exit();
-});
