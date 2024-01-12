@@ -19,12 +19,12 @@ const spinner = makeSpinner("Looking for peers");
 const safeClearTimeout = (timeout: NodeJS.Timeout | null) =>
   timeout && clearTimeout(timeout);
 
-const safeCloseSocket = (socket: Duplex) => {
+const safeCloseSocket = (socket: Duplex, err?: Error) => {
   try {
     if (!socket.closed) {
       socket.pause();
       while (socket.read());
-      socket.destroy(new Error("ERR_JAILED"));
+      socket.destroy(err);
     }
   } catch (_err) {}
 };
@@ -56,7 +56,7 @@ const setupEventListeners = () => {
       logger.debug(`Socket error with peer ${meta.name}: ${code}`);
       const jailed = strike(meta.name, info);
       if (jailed) {
-        safeCloseSocket(socket);
+        safeCloseSocket(socket, new Error("ERR_JAILED"));
       }
     });
 
@@ -64,7 +64,7 @@ const setupEventListeners = () => {
       logger.debug(`Socket error with peer ${meta.name}: ETIMEDOUT`);
       const jailed = strike(meta.name, info);
       if (jailed) {
-        safeCloseSocket(socket);
+        safeCloseSocket(socket, new Error("ERR_JAILED"));
       }
     });
 
@@ -73,12 +73,16 @@ const setupEventListeners = () => {
       sockets.delete(peerAddr);
     });
 
-    if (isJailed(meta.name, info) || sockets.size >= config.peers.max) {
+    if (isJailed(meta.name, info)) {
+      return safeCloseSocket(socket, new Error("ERR_JAILED"));
+    }
+
+    if (sockets.size >= config.peers.max) {
       return safeCloseSocket(socket);
     }
 
     socket.on("drain", () => {
-      meta.onSocketDrain?.();
+      meta.needsDrain = false;
     });
 
     sockets.set(peerAddr, meta);
@@ -89,7 +93,7 @@ const setupEventListeners = () => {
         logger.warn(`No data from ${meta.name} in the last 60 seconds`);
         const jailed = strike(meta.name, info);
         if (jailed) {
-          return safeCloseSocket(socket);
+          return safeCloseSocket(socket, new Error("ERR_JAILED"));
         }
         warnNoData();
       }, 60000);

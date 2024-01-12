@@ -11,10 +11,12 @@ import { hashObject } from "../utils/hash.js";
 import { cache } from "../utils/cache.js";
 import { Duplex } from "stream";
 import { toMurmur } from "../crypto/murmur/index.js";
+import { minutes, seconds } from "../utils/time.js";
 
-const ackCache = cache<string, Set<string>>(5 * 60 * 1000);
-const ackTimeoutCache = cache<string, NodeJS.Timeout>(5 * 60 * 1000);
-const ACK_TIMEOUT = 5 * 1000;
+const ackCache = cache<string, Set<string>>(minutes(15));
+const ackTimeoutCache = cache<string, NodeJS.Timeout>(minutes(15));
+const gossipCache = cache<string, boolean>(minutes(15));
+const ACK_TIMEOUT = seconds(5);
 
 const gossipTo = async (
   nodes: MetaData[],
@@ -25,25 +27,31 @@ const gossipTo = async (
 
   for (const node of nodes) {
     if (!node.socket.closed) {
-      await node.isAvailable;
       const sent = node.socket.write(payload);
+      // TODO: Maybe add back pressure config to allow N cached messages
       if (!sent) {
-        node.isAvailable = new Promise<void>((resolve) => {
-          node.onSocketDrain = resolve as () => void;
-        });
+        node.needsDrain = true;
       }
     }
   }
-  ackCache.set(payloadHash, new Set(data.seen));
-  clearTimeout(ackTimeoutCache.get(payloadHash));
+  const ackSeen = ackCache.get(payloadHash)?.values() || [];
+  const aggregatedSeen = new Set([...data.seen, ...ackSeen]);
+  ackCache.set(payloadHash, aggregatedSeen);
+  const maybeTimeout = ackTimeoutCache.get(payloadHash);
+  if (maybeTimeout) {
+    maybeTimeout?.unref();
+    clearTimeout(maybeTimeout);
+  }
   ackTimeoutCache.set(
     payloadHash,
     setTimeout(processAck, ACK_TIMEOUT, data.request, payloadHash)
   );
 };
 
-const filterSeen = (seen: string[]) => (meta: MetaData) =>
+const notSeen = (seen: string[]) => (meta: MetaData) =>
   meta.murmurAddr && !seen.includes(meta.murmurAddr);
+
+const isFree = (meta: MetaData) => !meta.needsDrain;
 
 export const gossip = async (
   request: GossipRequest<any, any>,
@@ -54,7 +62,7 @@ export const gossip = async (
   const values = [...sockets.values()] as MetaData[];
   const ackSeen = ackCache.get(payloadHash)?.values() || [];
   const aggregatedSeen = [...new Set([...seen, ...ackSeen])];
-  const nodes = values.filter(filterSeen(aggregatedSeen));
+  const nodes = values.filter(isFree).filter(notSeen(aggregatedSeen));
   if (nodes.length) {
     await gossipTo(nodes, payload, payloadHash);
   }
@@ -76,8 +84,14 @@ export const processGossip = async (
       return { error: errors.E_NOT_FOUND };
     }
 
-    const method = gossipMethods[methodName];
-    await method(incoming.request);
+    const hash = await toMurmur(hashObject(incoming.request));
+    const alreadySeen = gossipCache.get(hash);
+
+    if (!alreadySeen) {
+      gossipCache.set(hash, true);
+      const method = gossipMethods[methodName];
+      await method(incoming.request);
+    }
 
     const ackPayload = brotliCompressSync(
       JSON.stringify({
@@ -104,6 +118,11 @@ const processAck = async (
   request: GossipRequest<any, any>,
   payloadHash: string
 ) => {
+  const maybeTimeout = ackTimeoutCache.get(payloadHash);
+  if (maybeTimeout) {
+    maybeTimeout?.unref();
+    clearTimeout(maybeTimeout);
+  }
   const seen = ackCache.get(payloadHash);
   if (!seen) {
     return;
@@ -124,14 +143,12 @@ const processAck = async (
       request: distRequest,
     })
   );
-  for (const node of sockets.values()) {
+  const nodes = [...sockets.values()].filter(isFree);
+  for (const node of nodes) {
     if (!node.socket.closed) {
-      await node.isAvailable;
       const sent = node.socket.write(distPayload);
       if (!sent) {
-        node.isAvailable = new Promise<void>((resolve) => {
-          node.onSocketDrain = resolve as () => void;
-        });
+        node.needsDrain = true;
       }
     }
   }
