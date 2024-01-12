@@ -89,7 +89,7 @@ const setupEventListeners = () => {
         logger.warn(`No data from ${meta.name} in the last 60 seconds`);
         const jailed = strike(meta.name, info);
         if (jailed) {
-          return safeCloseSocket(socket, new Error("ERR_JAILED"));
+          return safeCloseSocket(socket);
         }
         warnNoData();
       }, 60000);
