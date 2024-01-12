@@ -1,4 +1,5 @@
 import { sha } from "./utils/hash.js";
+import { minutes } from "./utils/time.js";
 import {
   State,
   KeyPair,
@@ -9,7 +10,7 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.3";
+export const version = "0.10.4";
 export const protocolVersion = "0.10.3";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
@@ -32,6 +33,10 @@ export const config: Config = {
   peers: {
     max: 128,
     parallel: 16,
+  },
+  jail: {
+    duration: minutes(5),
+    strikes: 5,
   },
 };
 
