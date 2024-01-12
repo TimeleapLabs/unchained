@@ -48,6 +48,11 @@ export const startAction = async (
     config.peers.parallel ||
     globalConfig.peers.parallel;
 
+  // TODO: We need sanity checks; e.g. did the user set jail time to a string?
+  config.jail ||= globalConfig.jail;
+  config.jail.duration = config.jail.duration || globalConfig.jail.duration;
+  config.jail.strikes = config.jail.strikes || globalConfig.jail.strikes;
+
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
     logger.warn("Run me with --generate to generate a new secret for you");
