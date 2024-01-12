@@ -24,7 +24,7 @@ const safeCloseSocket = (socket: Duplex) => {
     if (!socket.closed) {
       socket.pause();
       while (socket.read());
-      socket.destroy(new Error("ERR_JAILED"));
+      socket.destroy();
     }
   } catch (_err) {}
 };
@@ -73,12 +73,12 @@ const setupEventListeners = () => {
       sockets.delete(peerAddr);
     });
 
-    if (isJailed(meta.name, info) || sockets.size >= config.peers.max) {
+    if (sockets.size >= config.peers.max || isJailed(meta.name, info)) {
       return safeCloseSocket(socket);
     }
 
     socket.on("drain", () => {
-      meta.onSocketDrain?.();
+      meta.needsDrain = false;
     });
 
     sockets.set(peerAddr, meta);
@@ -89,7 +89,7 @@ const setupEventListeners = () => {
         logger.warn(`No data from ${meta.name} in the last 60 seconds`);
         const jailed = strike(meta.name, info);
         if (jailed) {
-          return safeCloseSocket(socket);
+          return safeCloseSocket(socket, new Error("ERR_JAILED"));
         }
         warnNoData();
       }, 60000);

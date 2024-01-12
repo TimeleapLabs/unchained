@@ -23,6 +23,11 @@ interface PeerConfig {
   parallel: number;
 }
 
+interface JailConfig {
+  duration: number;
+  strikes: number;
+}
+
 export interface Config {
   name: string;
   log: string;
@@ -32,6 +37,7 @@ export interface Config {
   secretKey: string;
   publicKey: string;
   peers: PeerConfig;
+  jail: JailConfig;
 }
 
 export interface MetaData {
@@ -41,8 +47,7 @@ export interface MetaData {
   murmurAddr?: string;
   name: string;
   publicKey?: string;
-  onSocketDrain?: () => void;
-  isAvailable?: Promise<void>;
+  needsDrain?: boolean;
 }
 
 export interface NodeSystemError extends Error {
