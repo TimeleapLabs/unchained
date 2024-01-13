@@ -61,6 +61,16 @@ export const gossip = async (
 
   await gossipTo(selected, payload);
   ttlCache.set(payloadHash, 1 + ttl);
+
+  const selectedMurmurs = selected
+    .map((meta) => meta.murmurAddr as string)
+    .filter(Boolean);
+
+  if (seen) {
+    selectedMurmurs.forEach((murmur) => seen.add(murmur));
+  } else {
+    seenCache.set(payloadHash, new Set(selectedMurmurs));
+  }
 };
 
 export const processGossip = async (
@@ -88,10 +98,10 @@ export const processGossip = async (
       await method(incoming.request);
     }
 
-    const cache = seenCache.get(hash);
+    const seen = seenCache.get(hash);
 
-    if (cache) {
-      cache.add(sender);
+    if (seen) {
+      seen.add(sender);
     } else {
       seenCache.set(hash, new Set([sender]));
     }
