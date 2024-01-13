@@ -203,8 +203,14 @@ rpc:
 database:
   url: postgres://<user>:<pass>@<host>:<port>/<db>
 peers:
-  max: 64
+  max: 128
   parallel: 8
+jail:
+  duration: 5
+  strikes: 5
+gossip:
+  infect: 24
+  die: 8
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -216,10 +222,21 @@ the following modifications if required:
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
 - `lite`: To run a lite node, set this to `true`, otherwise set it to `false`.
-- `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when issues are detected with the RPC connection. You can find a list of Ethereum RPC nodes on
-  [Chainlist](https://chainlist.org/chain/1).
+- `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
+  issues are detected with the RPC connection. You can find a list of Ethereum
+  RPC nodes on [Chainlist](https://chainlist.org/chain/1).
 - `database.url`: Your Postgres connection string goes here. Ignore this if
   you're running a lite node.
+
+Advanced options:
+
+- `peers.max`: Maximum number of peers to connect to.
+- `peers.parallel`: Maximum number of peers in connecting state. A peer is in
+  connecting state when it is discovered but hasn't finished connecting yet.
+- `jail.duration`: Number of minutes to jail a peer on bad behavior.
+- `jail.strikes`: Number of strikes to wait before jailing a peer.
+- `gossip.infect`: Number of peers to infect when a packet is available.
+- `gossip.die`: Number of times a packet can infect others before it dies.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 

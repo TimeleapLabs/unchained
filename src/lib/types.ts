@@ -28,6 +28,11 @@ interface JailConfig {
   strikes: number;
 }
 
+interface GossipConfig {
+  infect: number;
+  die: number;
+}
+
 export interface Config {
   name: string;
   log: string;
@@ -38,6 +43,7 @@ export interface Config {
   publicKey: string;
   peers: PeerConfig;
   jail: JailConfig;
+  gossip: GossipConfig;
 }
 
 export interface MetaData {
