@@ -64,7 +64,8 @@ export const gossip = async (
 };
 
 export const processGossip = async (
-  incoming: Gossip<unknown, unknown>
+  incoming: Gossip<unknown, unknown>,
+  sender: string
 ): Promise<void | { error?: string | number }> => {
   try {
     // TODO: We should detect and slash nodes if they send wrong data
@@ -86,6 +87,16 @@ export const processGossip = async (
       const method = gossipMethods[methodName];
       await method(incoming.request);
     }
+
+    const cache = seenCache.get(hash);
+
+    if (cache) {
+      cache.add(sender);
+    } else {
+      seenCache.set(hash, new Set([sender]));
+    }
+
+    await gossip(incoming.request);
   } catch (error) {
     const systemError = error as NodeSystemError;
     const message =

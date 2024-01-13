@@ -136,8 +136,8 @@ const setupEventListeners = () => {
           const info = err.code || err.errno || err.message;
           logger.error(`Socket error with peer ${meta.name}: ${info}`);
         }
-      } else if (message.type === "gossip") {
-        await processGossip(message);
+      } else if (message.type === "gossip" && meta.murmurAddr) {
+        await processGossip(message, meta.murmurAddr);
       }
     });
 
