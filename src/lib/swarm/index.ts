@@ -137,7 +137,7 @@ const setupEventListeners = () => {
           logger.error(`Socket error with peer ${meta.name}: ${info}`);
         }
       } else if (message.type === "gossip") {
-        await processGossip(message, socket);
+        await processGossip(message);
       }
     });
 
