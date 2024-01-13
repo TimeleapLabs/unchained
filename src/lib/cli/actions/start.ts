@@ -16,6 +16,7 @@ import {
 import { runTasks } from "../../daemon/index.js";
 import { initDB } from "../../db/db.js";
 import assert from "node:assert";
+import { minutes } from "../../utils/time.js";
 
 interface StartOptions {
   log?: string;
@@ -23,6 +24,8 @@ interface StartOptions {
   generate?: boolean;
   maxPeers?: string;
   parallelPeers?: string;
+  infect?: string;
+  die?: string;
 }
 
 export const startAction = async (
@@ -37,6 +40,7 @@ export const startAction = async (
   logger.level = options.log || config.log || "info";
   config.lite = options.lite || config.lite || false;
 
+  // Peers
   config.peers ||= globalConfig.peers;
   config.peers.max =
     parseInt(options.maxPeers || "0") ||
@@ -49,9 +53,32 @@ export const startAction = async (
     globalConfig.peers.parallel;
 
   // TODO: We need sanity checks; e.g. did the user set jail time to a string?
+  // Jailing
   config.jail ||= globalConfig.jail;
-  config.jail.duration = config.jail.duration || globalConfig.jail.duration;
+
+  config.jail.duration = config.jail.duration
+    ? minutes(config.jail.duration)
+    : globalConfig.jail.duration;
+
   config.jail.strikes = config.jail.strikes || globalConfig.jail.strikes;
+
+  // Gossip
+  config.gossip ||= globalConfig.gossip;
+
+  if (Object.getPrototypeOf(config.gossip) !== Object.prototype) {
+    logger.error("Invalid gossip option");
+    return process.exit(1);
+  }
+
+  config.gossip.infect =
+    parseInt(options.infect || "0") ||
+    config.gossip.infect ||
+    globalConfig.gossip.infect;
+
+  config.gossip.die =
+    parseInt(options.die || "0") ||
+    config.gossip.die ||
+    globalConfig.gossip.die;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
