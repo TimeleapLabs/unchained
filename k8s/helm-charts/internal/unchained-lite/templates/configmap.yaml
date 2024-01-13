@@ -7,7 +7,6 @@ data:
     log: info
     lite: true
     name: k8s-test-node
-    gossip: 48
     rpc:
       ethereum:
         - https://ethereum.publicnode.com
