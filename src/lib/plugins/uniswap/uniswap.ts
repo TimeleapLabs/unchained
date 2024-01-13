@@ -148,7 +148,7 @@ const updateAssetPrice = debounceAsync(
         const signer = await db.signer.upsert({
           where: { key },
           // see https://github.com/prisma/prisma/issues/18883
-          update: { key },
+          update: { key, name },
           create: { key, name },
           select: { id: true },
         });

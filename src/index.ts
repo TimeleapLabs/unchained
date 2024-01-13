@@ -22,11 +22,10 @@ program
   .option("--log <level>", "log level")
   .option("--lite", "run in lite mode")
   .option("--generate", "generate a secret key")
-  .option("--max-peers <max>", "set max allowed active peer connections")
-  .option(
-    "--parallel-peers <parallel>",
-    "set max allowed parallel peer connections"
-  )
+  .option("--max-peers <max>", "max active peer connections")
+  .option("--parallel-peers <parallel>", "max parallel peer connections")
+  .option("--infect <number>", "number of nodes to infect in one go")
+  .option("--die <times>", "times a packet infects others before it dies")
   .action(startAction);
 
 program

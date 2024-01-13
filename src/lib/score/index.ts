@@ -25,6 +25,7 @@ const upsertCache = cache<number, boolean>(15 * 60 * 1000);
 const peerScoreMap = new Map<string, number>();
 // TODO: Better share this with the UniSwap plugin (and others)
 const keyToIdCache = new Map<string, number>();
+const keyToNameCache = new Map<string, string | null>();
 
 export const addOnePoint = (peer: string) => {
   const current = peerScoreMap.get(peer) || 0;
@@ -135,18 +136,21 @@ export const storeSprintScores = async () => {
   );
 
   for (const key of Object.keys(sprintScores)) {
-    if (!keyToIdCache.has(key)) {
-      const name = signerNames.get(key);
+    const name = signerNames.get(key);
+    if (!keyToIdCache.has(key) || keyToNameCache.get(key) !== name) {
       const signer = await db.signer.upsert({
         where: { key },
         // see https://github.com/prisma/prisma/issues/18883
-        update: { key },
+        update: { key, name },
         create: { key, name },
-        select: { id: true },
+        select: { id: true, name: true },
       });
       keyToIdCache.set(key, signer.id);
+      keyToNameCache.set(key, signer.name);
     }
   }
+
+  // Update node names
 
   for (const peer of Object.keys(sprintScores)) {
     // TODO: We're not doing any verification on this data
