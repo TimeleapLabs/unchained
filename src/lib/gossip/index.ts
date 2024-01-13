@@ -1,4 +1,4 @@
-import { gossipMethods, errors, sockets } from "../constants.js";
+import { gossipMethods, errors, sockets, config } from "../constants.js";
 import { Gossip, GossipRequest, MetaData, NodeSystemError } from "../types.js";
 import { brotliCompressSync } from "zlib";
 import { hashObject } from "../utils/hash.js";
@@ -33,6 +33,11 @@ const notSeen = (seen: Set<string>) => (meta: MetaData) =>
 
 const isFree = (meta: MetaData) => !meta.needsDrain;
 
+const randomNodes = (nodes: MetaData[]) =>
+  randomDistinct(nodes.length, config.gossip.infect).map(
+    (index) => nodes[index]
+  );
+
 export const gossip = async (
   request: GossipRequest<any, any>
 ): Promise<void> => {
@@ -41,7 +46,7 @@ export const gossip = async (
   const seen = seenCache.get(payloadHash);
   const ttl = ttlCache.get(payloadHash) || 0;
 
-  if (ttl > 5) {
+  if (ttl > config.gossip.die) {
     return;
   }
 
@@ -55,9 +60,7 @@ export const gossip = async (
   }
 
   const selected =
-    nodes.length > 16
-      ? randomDistinct(nodes.length, 16).map((index) => nodes[index])
-      : nodes;
+    nodes.length > config.gossip.infect ? randomNodes(nodes) : nodes;
 
   await gossipTo(selected, payload);
   ttlCache.set(payloadHash, 1 + ttl);
