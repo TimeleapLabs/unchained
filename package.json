@@ -38,7 +38,8 @@
     "semver": "^7.5.4",
     "unws": "^0.2.4",
     "winston": "^3.11.0",
-    "yaml": "^2.3.4"
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
   },
   "type": "module",
   "optionalDependencies": {
