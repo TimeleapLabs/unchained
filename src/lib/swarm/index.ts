@@ -12,6 +12,7 @@ import { isJailed, strike } from "./jail.js";
 import { brotliCompressSync, brotliDecompressSync } from "zlib";
 
 import HyperSwarm from "hyperswarm";
+import { hashObject } from "../utils/hash.js";
 
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
@@ -124,13 +125,15 @@ const setupEventListeners = () => {
           logger.info(`Peer ${oldName} is ${meta.name}`);
         }
       } else if (message.type === "call") {
-        const result = await processRpc(message);
-        try {
-          socket.write(brotliCompressSync(JSON.stringify(result)));
-        } catch (error) {
-          const err = error as NodeSystemError;
-          const info = err.code || err.errno || err.message;
-          logger.error(`Socket error with peer ${meta.name}: ${info}`);
+        const result = await processRpc(message, meta);
+        if (result.result || result.error) {
+          try {
+            socket.write(brotliCompressSync(JSON.stringify(result)));
+          } catch (error) {
+            const err = error as NodeSystemError;
+            const info = err.code || err.errno || err.message;
+            logger.error(`Socket error with peer ${meta.name}: ${info}`);
+          }
         }
       } else if (message.type === "gossip") {
         await processGossip(message);

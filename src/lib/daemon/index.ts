@@ -9,7 +9,7 @@ import {
 } from "../score/index.js";
 import { printScores } from "../score/print.js";
 import { murmur } from "../constants.js";
-import { queryNetworkFor } from "../network/index.js";
+import { queryNetworkFor, stats } from "../network/index.js";
 import { toMurmur } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
 import { cache } from "../utils/cache.js";
@@ -68,6 +68,12 @@ export const runTasks = (): void => {
     } catch (error) {
       // Handle the error or log it
     }
+  });
+
+  Cron("0 */1 * * * *", async () => {
+    console.log(stats);
+    stats.have = 0;
+    stats.want = 0;
   });
 
   Cron("*/1 * * * * *", async () => {

@@ -1,6 +1,6 @@
 import { encoder } from "../crypto/base58/index.js";
 import { config, keys, rpcMethods, errors } from "../constants.js";
-import { NodeSystemError } from "../types.js";
+import { MetaData, NodeSystemError } from "../types.js";
 import { murmur } from "../constants.js";
 import assert from "assert";
 
@@ -23,11 +23,10 @@ const defaultMethods = {
 
 Object.assign(rpcMethods, defaultMethods);
 
-const thisArg = {};
-
-export const processRpc = async (message: {
-  request: RpcRequest;
-}): Promise<{ result?: any; error?: string | number }> => {
+export const processRpc = async (
+  message: { request: RpcRequest },
+  sender: MetaData
+): Promise<{ result?: any; error?: string | number }> => {
   try {
     const { method, args } = message.request;
 
@@ -35,7 +34,7 @@ export const processRpc = async (message: {
       return { error: errors.E_NOT_FOUND };
     }
 
-    const result = await rpcMethods[method].call(thisArg, args);
+    const result = await rpcMethods[method].call(null, args, sender);
     return { result };
   } catch (error) {
     const errno = (error as NodeSystemError).code;

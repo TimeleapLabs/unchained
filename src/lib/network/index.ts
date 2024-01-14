@@ -62,7 +62,9 @@ export const queryNetworkFor = (
   wantRpcCall(nodes, packet);
 };
 
-const want = async (data: WantPacket) => {
+export let stats = { want: 0, have: 0 };
+
+const want = async (data: WantPacket, sender: MetaData) => {
   const dataset = datasets.get(data.dataset);
   if (!dataset) {
     return;
@@ -71,9 +73,9 @@ const want = async (data: WantPacket) => {
   if (!have.length) {
     return;
   }
-  const nodes = [...sockets.values()].filter(isFree);
   const packet: WantAnswer = { dataset: data.dataset, want: data.want, have };
-  haveRpcCall(nodes, packet);
+  haveRpcCall([sender], packet);
+  stats.want++;
 };
 
 const have = (data: WantAnswer) => {
@@ -82,6 +84,7 @@ const have = (data: WantAnswer) => {
     return;
   }
   dataset.have(data);
+  stats.have++;
 };
 
 Object.assign(rpcMethods, { want, have });
