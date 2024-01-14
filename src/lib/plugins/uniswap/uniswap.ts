@@ -1,11 +1,5 @@
 import { ethers } from "ethers";
-import {
-  gossipMethods,
-  config,
-  keys,
-  sockets,
-  murmur,
-} from "../../constants.js";
+import { gossipMethods, config, keys, sockets } from "../../constants.js";
 import { logger } from "../../logger/index.js";
 import { state } from "../../constants.js";
 import { WS } from "iso-websocket";
@@ -17,7 +11,7 @@ import { WebSocket } from "unws";
 import { addOnePoint } from "../../score/index.js";
 import { debounceAsync } from "../../utils/debounce.js";
 import { db } from "../../db/db.js";
-import { datasets, queryNetworkFor } from "../../network/index.js";
+import { datasets } from "../../network/index.js";
 import { cache } from "../../utils/cache.js";
 
 import type { WantPacket, WantAnswer, Dataset } from "../../network/index.js";
@@ -131,13 +125,16 @@ const addPendingAttestation = (
   return !alreadyAdded;
 };
 
-const addPendingAttestations = (
+const addPendingAttestations = async (
   cache: any,
   block: number,
   signatures: { signer: string; signature: string }[]
 ) => {
   const pending = pendingAttestations.get(block) || [];
   const confirmed = attestations.get(block)?.signers;
+  const murmurMap = new Map(
+    [...sockets.values()].map((meta) => [meta.publicKey, meta.murmurAddr])
+  );
 
   let newSigners = false;
 
@@ -152,7 +149,8 @@ const addPendingAttestations = (
 
     pendingAttestations.set(block, [...pending, { signer, signature }]);
     newSigners = true;
-    cache.have = [...cache.have, { signer, signature }];
+    const murmur = murmurMap.get(signer) || (await toMurmur(signer));
+    cache.have = [...cache.have, { signer, signature, murmur }];
   }
 
   if (newSigners) {
@@ -398,7 +396,7 @@ export const work = async (
       wantCache.set(hash, { block, have: [] });
     }
     const cache = wantCache.get(hash);
-    addPendingAttestations(cache, block, [signed]);
+    await addPendingAttestations(cache, block, [signed]);
     // TODO: we need to properly handle `dataset`
     return {
       method: "uniswapAttest",
@@ -437,7 +435,7 @@ const want = async (data: WantPacket) => {
   }
   const have = [];
   for (const item of cache.have) {
-    if (!data.have.includes(await toMurmur(item.signer))) {
+    if (!data.have.includes(item.murmur)) {
       have.push(item);
     }
   }
@@ -452,7 +450,5 @@ export const getHave = async (want: string) => {
   if (!cache) {
     return [];
   }
-  return await Promise.all(
-    cache.have.map((item: { signer: string }) => toMurmur(item.signer))
-  );
+  return cache.have.map((item: { murmur: string }) => item.murmur);
 };
