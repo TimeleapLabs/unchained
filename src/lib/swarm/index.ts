@@ -54,10 +54,6 @@ const setupEventListeners = () => {
     socket.on("error", (error: NodeSystemError) => {
       const code = error.code || error.errno || error.message;
       logger.debug(`Socket error with peer ${meta.name}: ${code}`);
-      const jailed = strike(meta.name, info);
-      if (jailed) {
-        safeCloseSocket(socket);
-      }
     });
 
     socket.on("timeout", () => {
