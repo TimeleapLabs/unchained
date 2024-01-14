@@ -82,7 +82,7 @@ export const runTasks = (): void => {
       const now = epoch();
       for (const item of wantCache.toReversed()) {
         if (now - item.created >= seconds(item.calls ** 2)) {
-          item.calls--;
+          item.calls++;
           const have = await uniswap.getHave(item.want);
           queryNetworkFor(item.want, item.dataset, have);
         }
