@@ -433,13 +433,7 @@ const want = async (data: WantPacket) => {
   if (!cache) {
     return [];
   }
-  const have = [];
-  for (const item of cache.have) {
-    if (!data.have.includes(item.murmur)) {
-      have.push(item);
-    }
-  }
-  return have;
+  return cache.have.filter((item: any) => !data.have.includes(item.murmur));
 };
 
 Object.assign(gossipMethods, { uniswapAttest: attest });
