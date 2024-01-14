@@ -7,8 +7,6 @@ import { toMurmur } from "../crypto/murmur/index.js";
 import { minutes } from "../utils/time.js";
 import { randomDistinct } from "../utils/random.js";
 
-const seenCache = cache<string, Set<string>>(minutes(15));
-const ttlCache = cache<string, number>(minutes(15));
 const gossipCache = cache<string, boolean>(minutes(15));
 
 const gossipTo = async (
@@ -28,8 +26,8 @@ const gossipTo = async (
   }
 };
 
-const notSeen = (seen: Set<string>) => (meta: MetaData) =>
-  meta.murmurAddr && !seen.has(meta.murmurAddr);
+const notSeen = (seen: string[]) => (meta: MetaData) =>
+  meta.murmurAddr && !seen.includes(meta.murmurAddr);
 
 const isFree = (meta: MetaData) => !meta.needsDrain;
 
@@ -39,17 +37,9 @@ const randomNodes = (nodes: MetaData[]) =>
   );
 
 export const gossip = async (
-  request: GossipRequest<any, any>
+  request: GossipRequest<any, any>,
+  seen: string[]
 ): Promise<void> => {
-  const payload = { type: "gossip" as const, request };
-  const payloadHash = await toMurmur(hashObject(request));
-  const seen = seenCache.get(payloadHash);
-  const ttl = ttlCache.get(payloadHash) || 0;
-
-  if (ttl > config.gossip.die) {
-    return;
-  }
-
   const values = [...sockets.values()] as MetaData[];
   const nodes = seen
     ? values.filter(isFree).filter(notSeen(seen))
@@ -62,18 +52,18 @@ export const gossip = async (
   const selected =
     nodes.length > config.gossip.infect ? randomNodes(nodes) : nodes;
 
-  await gossipTo(selected, payload);
-  ttlCache.set(payloadHash, 1 + ttl);
-
   const selectedMurmurs = selected
     .map((meta) => meta.murmurAddr as string)
     .filter(Boolean);
 
-  if (seen) {
-    selectedMurmurs.forEach((murmur) => seen.add(murmur));
-  } else {
-    seenCache.set(payloadHash, new Set(selectedMurmurs));
-  }
+  // Optimistic:
+  const payload = {
+    type: "gossip" as const,
+    request,
+    seen: [...seen, ...selectedMurmurs],
+  };
+
+  await gossipTo(selected, payload);
 };
 
 export const processGossip = async (
@@ -95,21 +85,14 @@ export const processGossip = async (
     const hash = await toMurmur(hashObject(incoming.request));
     const alreadySeen = gossipCache.get(hash);
 
-    if (!alreadySeen) {
-      gossipCache.set(hash, true);
-      const method = gossipMethods[methodName];
-      await method(incoming.request);
+    if (alreadySeen) {
+      return { error: errors.E_DUPLICATE };
     }
 
-    const seen = seenCache.get(hash);
-
-    if (seen) {
-      seen.add(sender);
-    } else {
-      seenCache.set(hash, new Set([sender]));
-    }
-
-    await gossip(incoming.request);
+    gossipCache.set(hash, true);
+    const method = gossipMethods[methodName];
+    await method(incoming.request);
+    await gossip(incoming.request, incoming.seen || []);
   } catch (error) {
     const systemError = error as NodeSystemError;
     const message =
