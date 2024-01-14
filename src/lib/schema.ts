@@ -1,27 +1,29 @@
 import { z } from "zod";
 import { nameRegex } from "./constants.js";
 
+const POSTGRES_REGEX = /^postgres(ql)?:\/\/[^:]+:[^@]+@[^\/]+\/.+$/;
+
 export const rPCListSchema = z.object({
   ethereum: z.union([z.string().url(), z.array(z.string().url())]),
 });
 
 export const databaseConfigSchema = z.object({
-  url: z.string(),
+  url: z.string().regex(POSTGRES_REGEX, "Not a valid Postgres URI"),
 });
 
 export const peerConfigSchema = z.object({
-  max: z.number(),
-  parallel: z.number(),
+  max: z.number().optional(),
+  parallel: z.number().optional(),
 });
 
 export const jailConfigSchema = z.object({
-  duration: z.number(),
-  strikes: z.number(),
+  duration: z.number().optional(),
+  strikes: z.number().optional(),
 });
 
 export const gossipConfigSchema = z.object({
-  infect: z.number(),
-  die: z.number(),
+  infect: z.number().optional(),
+  die: z.number().optional(),
 });
 
 export const userConfigSchema = z.object({
