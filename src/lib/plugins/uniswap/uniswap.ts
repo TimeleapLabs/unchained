@@ -1,5 +1,11 @@
 import { ethers } from "ethers";
-import { gossipMethods, config, keys, sockets } from "../../constants.js";
+import {
+  gossipMethods,
+  config,
+  keys,
+  sockets,
+  murmur,
+} from "../../constants.js";
 import { logger } from "../../logger/index.js";
 import { state } from "../../constants.js";
 import { WS } from "iso-websocket";
@@ -11,6 +17,10 @@ import { WebSocket } from "unws";
 import { addOnePoint } from "../../score/index.js";
 import { debounceAsync } from "../../utils/debounce.js";
 import { db } from "../../db/db.js";
+import { datasets, queryNetworkFor } from "../../network/index.js";
+import { cache } from "../../utils/cache.js";
+
+import type { WantPacket, WantAnswer, Dataset } from "../../network/index.js";
 
 import {
   Config,
@@ -22,11 +32,15 @@ import {
 } from "../../types.js";
 
 import { Attestation, PriceSignatureInput } from "./types.js";
+import { minutes } from "../../utils/time.js";
+import { hashObject } from "../../utils/hash.js";
+import { toMurmur } from "../../crypto/murmur/index.js";
 
-const cache = new Map<number, number>();
+const blockCache = new Map<number, number>();
 const attestations = new Map<number, Attestation>();
 const pendingAttestations = new Map<number, SignatureItem[]>();
 const keyToIdCache = new Map<string, number>();
+const wantCache = cache<string, any>(minutes(15));
 
 let provider: ethers.Provider | undefined;
 let getNewRpc: boolean = false;
@@ -74,10 +88,10 @@ const getProvider = (config: Config) => {
 };
 
 const setCache = (block: number, price: number) => {
-  cache.set(block, price);
-  for (const key of cache.keys()) {
+  blockCache.set(block, price);
+  for (const key of blockCache.keys()) {
     if (key < block - CACHE_SIZE) {
-      cache.delete(key);
+      blockCache.delete(key);
     }
   }
 };
@@ -99,7 +113,7 @@ const addPendingAttestation = (
       ...pendingSignatures,
       { signer, signature },
     ]);
-    if (cache.has(block)) {
+    if (blockCache.has(block)) {
       processAttestations({ key: block, args: [block] }).catch((err: Error) => {
         logger.error(
           `Encountered an error while processing attestations: ${err.message}`
@@ -115,6 +129,47 @@ const addPendingAttestation = (
     }
   }
   return !alreadyAdded;
+};
+
+const addPendingAttestations = (
+  cache: any,
+  block: number,
+  signatures: { signer: string; signature: string }[]
+) => {
+  const pending = pendingAttestations.get(block) || [];
+  const confirmed = attestations.get(block)?.signers;
+
+  let newSigners = false;
+
+  for (const { signature, signer } of signatures) {
+    const alreadyAdded =
+      pending.some((item) => item.signer === signer) ||
+      confirmed?.some((cSigner) => cSigner === signer);
+
+    if (alreadyAdded) {
+      continue;
+    }
+
+    pendingAttestations.set(block, [...pending, { signer, signature }]);
+    newSigners = true;
+    cache.have = [...cache.have, { signer, signature }];
+  }
+
+  if (newSigners) {
+    processAttestations({ key: block, args: [block] }).catch((err: Error) => {
+      logger.error(
+        `Encountered an error while processing attestations: ${err.message}`
+      );
+    });
+  }
+
+  for (const key of pendingAttestations.keys()) {
+    if (key < block - CACHE_SIZE) {
+      // FIXME: Security problem where a validator can reset another
+      // FIXME: peer's cache by sending a big block number
+      pendingAttestations.delete(key);
+    }
+  }
 };
 
 const updateAssetPrice = debounceAsync(
@@ -210,10 +265,10 @@ const printAttestations = (
 };
 
 const processAttestations = debounceAsync(async (block: number) => {
-  if (!cache.has(block)) {
+  if (!blockCache.has(block)) {
     return;
   }
-  const price = cache.get(block);
+  const price = blockCache.get(block);
   if (typeof price !== "number") {
     return;
   }
@@ -316,7 +371,7 @@ export const work = async (
     const provider = getProvider(config);
     const pool = new ethers.Contract(poolAddress, poolABI, provider);
     const block = await provider.getBlockNumber();
-    if (cache.has(block)) {
+    if (blockCache.has(block)) {
       return null;
     }
     const { sqrtPriceX96 } = await pool.slot0();
@@ -332,13 +387,18 @@ export const work = async (
     } else if (state.connected) {
       logger.debug(`Request to Ethereum RPC node took ${took}ms`);
     }
-    if (cache.has(block)) {
+    if (blockCache.has(block)) {
       return null;
     }
     setCache(block, price);
     const data: PriceSignatureInput = { metric: { block }, value: { price } };
     const signed = blsAttest(data);
-    addPendingAttestation(block, signed.signer, signed.signature);
+    const hash = await toMurmur(hashObject(data.metric));
+    if (!wantCache.has(hash)) {
+      wantCache.set(hash, { block, have: [] });
+    }
+    const cache = wantCache.get(hash);
+    addPendingAttestations(cache, block, [signed]);
     // TODO: we need to properly handle `dataset`
     return {
       method: "uniswapAttest",
@@ -362,4 +422,37 @@ export const attest: GossipMethod<AssetPriceMetric, AssetPriceValue> = async (
   return added ? request : null;
 };
 
+const have = (data: WantAnswer) => {
+  const cache = wantCache.get(data.want);
+  if (!cache) {
+    return;
+  }
+  addPendingAttestations(cache, cache.block, data.have);
+};
+
+const want = async (data: WantPacket) => {
+  const cache = wantCache.get(data.want);
+  if (!cache) {
+    return [];
+  }
+  const have = [];
+  for (const item of cache.have) {
+    if (!data.have.includes(await toMurmur(item.signer))) {
+      have.push(item);
+    }
+  }
+  return have;
+};
+
 Object.assign(gossipMethods, { uniswapAttest: attest });
+datasets.set("ethereum::uniswap::ethereum", { have, want });
+
+export const getHave = async (want: string) => {
+  const cache = wantCache.get(want);
+  if (!cache) {
+    return [];
+  }
+  return await Promise.all(
+    cache.have.map((item: { signer: string }) => toMurmur(item.signer))
+  );
+};

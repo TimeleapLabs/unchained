@@ -9,6 +9,20 @@ import {
 } from "../score/index.js";
 import { printScores } from "../score/print.js";
 import { murmur } from "../constants.js";
+import { queryNetworkFor } from "../network/index.js";
+import { toMurmur } from "../crypto/murmur/index.js";
+import { hashObject } from "../utils/hash.js";
+import { cache } from "../utils/cache.js";
+import { epoch, minutes, seconds } from "../utils/time.js";
+
+interface Cache {
+  want: string;
+  dataset: string;
+  calls: number;
+  created: number;
+}
+
+let wantCache: Cache[] = [];
 
 interface UniswapArgs {
   blockchain: string;
@@ -28,7 +42,15 @@ export const runTasks = (): void => {
     try {
       const result = await runWithRetries(uniswap.work, uniswapArgs);
       if (result && !(result instanceof Symbol)) {
-        await gossip(result, [murmur.address]);
+        const want = await toMurmur(hashObject(result.metric));
+        queryNetworkFor(want, result.dataset, [murmur.address]);
+        wantCache.push({
+          want,
+          dataset: result.dataset,
+          calls: 0,
+          created: epoch(),
+        });
+        //await gossip(result, [murmur.address]);
       }
     } catch (error) {
       // Handle the error or log it
@@ -43,6 +65,22 @@ export const runTasks = (): void => {
       await gossip(payload, [murmur.address]);
       // TODO: We need retries here
       await storeSprintScores();
+    } catch (error) {
+      // Handle the error or log it
+    }
+  });
+
+  Cron("*/1 * * * * *", async () => {
+    try {
+      wantCache = wantCache.filter((item) => item.calls <= 7);
+      const now = epoch();
+      for (const item of wantCache.toReversed()) {
+        if (now - item.created >= seconds(item.calls ** 2)) {
+          item.calls--;
+          const have = await uniswap.getHave(item.want);
+          queryNetworkFor(item.want, item.dataset, have);
+        }
+      }
     } catch (error) {
       // Handle the error or log it
     }
