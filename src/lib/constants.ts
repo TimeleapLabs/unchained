@@ -10,8 +10,8 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.7";
-export const protocolVersion = "0.10.5";
+export const version = "0.10.8";
+export const protocolVersion = "0.10.8";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
 
@@ -50,6 +50,7 @@ export const gossipMethods: StringGossipMethodObject<any, any> = {};
 export const errors = {
   E_NOT_FOUND: 404,
   E_INTERNAL: 500,
+  E_DUPLICATE: 409,
 };
 
 export const state: State = {

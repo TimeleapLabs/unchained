@@ -1,6 +1,6 @@
 {
   "name": "@kenshi.io/unchained",
-  "version": "0.10.7",
+  "version": "0.10.8-rc.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -38,7 +38,8 @@
     "semver": "^7.5.4",
     "unws": "^0.2.4",
     "winston": "^3.11.0",
-    "yaml": "^2.3.4"
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
   },
   "type": "module",
   "optionalDependencies": {

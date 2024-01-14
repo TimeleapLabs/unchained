@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import { logger } from "../logger/index.js";
 import { Config } from "../types.js";
 import { parse } from "yaml";
+import { userConfigSchema } from "../schema.js";
 
 const readFileSafe = (file: string) => {
   try {
@@ -22,7 +23,20 @@ export const safeReadConfig = (configFile: string): Config | null => {
 
     const config: Config = configContent ? { ...parse(configContent) } : null;
     if (!config) {
-      logger.error("Invalid config file");
+      logger.error("Config isn't valid YAML");
+      return null;
+    }
+
+    const schemaCheck = userConfigSchema.safeParse(config);
+    if (!schemaCheck.success) {
+      for (const issue of schemaCheck.error.issues) {
+        logger.error(
+          `Config file errors at ${issue.path.join(".")}: ${issue.message}`
+        );
+      }
+      console.warn(
+        "See https://kenshi.io/r/conf for the correct config format"
+      );
       return null;
     }
 

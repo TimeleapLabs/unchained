@@ -14,5 +14,5 @@ data:
         - wss://ethereum.publicnode.com
         - https://eth.rpc.blxrbdn.com
     peers:
-      max: 4
+      max: 12
       parallel: 8
