@@ -8,6 +8,7 @@ import {
   storeSprintScores,
 } from "../score/index.js";
 import { printScores } from "../score/print.js";
+import { murmur } from "../constants.js";
 
 interface UniswapArgs {
   blockchain: string;
@@ -27,7 +28,7 @@ export const runTasks = (): void => {
     try {
       const result = await runWithRetries(uniswap.work, uniswapArgs);
       if (result && !(result instanceof Symbol)) {
-        await gossip(result);
+        await gossip(result, [murmur.address]);
       }
     } catch (error) {
       // Handle the error or log it
@@ -39,7 +40,7 @@ export const runTasks = (): void => {
       const scores = resetAllScores();
       printScores(scores);
       const payload = getScoresPayload(scores);
-      await gossip(payload);
+      await gossip(payload, [murmur.address]);
       // TODO: We need retries here
       await storeSprintScores();
     } catch (error) {

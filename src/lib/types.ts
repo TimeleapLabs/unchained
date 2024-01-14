@@ -110,6 +110,7 @@ export interface GossipRequest<T, V> {
 export interface Gossip<T, V> {
   type: "gossip";
   request: GossipRequest<T, V>;
+  seen: string[];
 }
 
 export interface SignatureItem {

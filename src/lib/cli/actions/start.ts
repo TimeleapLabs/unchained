@@ -52,7 +52,6 @@ export const startAction = async (
     config.peers.parallel ||
     globalConfig.peers.parallel;
 
-  // TODO: We need sanity checks; e.g. did the user set jail time to a string?
   // Jailing
   config.jail ||= globalConfig.jail;
 
@@ -64,11 +63,6 @@ export const startAction = async (
 
   // Gossip
   config.gossip ||= globalConfig.gossip;
-
-  if (Object.getPrototypeOf(config.gossip) !== Object.prototype) {
-    logger.error("Invalid gossip option");
-    return process.exit(1);
-  }
 
   config.gossip.infect =
     parseInt(options.infect || "0") ||
