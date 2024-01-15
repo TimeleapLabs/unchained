@@ -33,7 +33,7 @@ const blockCache = new Map<number, number>();
 const attestations = new Map<number, Attestation>();
 const pendingAttestations = new Map<number, SignatureItem[]>();
 const keyToIdCache = new Map<string, number>();
-const wantCache = cache<string, any>(minutes(15));
+const waveCache = cache<string, any>(minutes(15));
 
 let provider: ethers.Provider | undefined;
 let getNewRpc: boolean = false;
@@ -396,10 +396,10 @@ export const work = async (
     const data: PriceSignatureInput = { metric: { block }, value: { price } };
     const signed = blsAttest(data);
     const hash = await toMurmur(hashObject(data.metric));
-    if (!wantCache.has(hash)) {
-      wantCache.set(hash, { block, have: [] });
+    if (!waveCache.has(hash)) {
+      waveCache.set(hash, { block, have: [] });
     }
-    const cache = wantCache.get(hash);
+    const cache = waveCache.get(hash);
     await addPendingAttestations(cache, block, [signed]);
     // TODO: we need to properly handle `dataset`
     return {
@@ -417,7 +417,7 @@ export const work = async (
 };
 
 const have = (data: WantAnswer) => {
-  const cache = wantCache.get(data.want);
+  const cache = waveCache.get(data.want);
   if (!cache) {
     return;
   }
@@ -425,7 +425,7 @@ const have = (data: WantAnswer) => {
 };
 
 const want = async (data: WantPacket) => {
-  const cache = wantCache.get(data.want);
+  const cache = waveCache.get(data.want);
   if (!cache) {
     return [];
   }
@@ -435,7 +435,7 @@ const want = async (data: WantPacket) => {
 datasets.set("ethereum::uniswap::ethereum", { have, want });
 
 export const getHave = async (want: string) => {
-  const cache = wantCache.get(want);
+  const cache = waveCache.get(want);
   if (!cache) {
     return [];
   }

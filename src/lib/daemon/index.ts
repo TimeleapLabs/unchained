@@ -17,7 +17,7 @@ interface Cache {
   getHave: (want: string) => Promise<any>;
 }
 
-let wantCache: Cache[] = [];
+let waveCache: Cache[] = [];
 
 interface UniswapArgs {
   blockchain: string;
@@ -32,6 +32,7 @@ const uniswapArgs: [UniswapArgs, string, [number, number], boolean] = [
   true,
 ];
 
+// TODO: We need to expose this as an API
 export const runTasks = (): void => {
   Cron("*/5 * * * * *", async () => {
     try {
@@ -48,7 +49,7 @@ export const runTasks = (): void => {
           created,
           getHave: uniswap.getHave,
         };
-        wantCache.push(args);
+        waveCache.push(args);
       }
     } catch (error) {
       // Handle the error or log it
@@ -71,7 +72,7 @@ export const runTasks = (): void => {
         created,
         getHave: score.getHave,
       };
-      wantCache.push(args);
+      waveCache.push(args);
       // TODO: We need retries here
       await score.storeSprintScores();
     } catch (error) {
@@ -81,9 +82,9 @@ export const runTasks = (): void => {
 
   Cron("*/1 * * * * *", async () => {
     try {
-      wantCache = wantCache.filter((item) => item.calls <= config.waves);
+      waveCache = waveCache.filter((item) => item.calls <= config.waves);
       const now = epoch();
-      for (const item of wantCache.toReversed()) {
+      for (const item of waveCache.toReversed()) {
         if (now - item.created >= seconds(item.calls ** 2)) {
           item.calls++;
           const have = await item.getHave(item.want);
