@@ -5,13 +5,12 @@ import {
   KeyPair,
   Config,
   StringAnyObject,
-  StringGossipMethodObject,
   MetaData,
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.8";
-export const protocolVersion = "0.10.8";
+export const version = "0.10.9";
+export const protocolVersion = "0.10.9-latest";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
 
@@ -38,14 +37,10 @@ export const config: Config = {
     duration: minutes(5),
     strikes: 5,
   },
-  gossip: {
-    infect: 24,
-    die: 8,
-  },
+  waves: 8,
 };
 
 export const rpcMethods: StringAnyObject = {};
-export const gossipMethods: StringGossipMethodObject<any, any> = {};
 
 export const errors = {
   E_NOT_FOUND: 404,

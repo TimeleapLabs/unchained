@@ -1,27 +1,24 @@
 import { z } from "zod";
 import { nameRegex } from "./constants.js";
 
-export const rPCListSchema = z.object({
+const POSTGRES_REGEX = /^postgres(ql)?:\/\/[^:]+:[^@]+@[^\/]+\/.+$/;
+
+const rpcListSchema = z.object({
   ethereum: z.union([z.string().url(), z.array(z.string().url())]),
 });
 
-export const databaseConfigSchema = z.object({
-  url: z.string(),
+const databaseConfigSchema = z.object({
+  url: z.string().regex(POSTGRES_REGEX, "Not a valid Postgres URI"),
 });
 
-export const peerConfigSchema = z.object({
-  max: z.number(),
-  parallel: z.number(),
+const peerConfigSchema = z.object({
+  max: z.number().gte(8).optional(),
+  parallel: z.number().gte(4).optional(),
 });
 
-export const jailConfigSchema = z.object({
-  duration: z.number(),
-  strikes: z.number(),
-});
-
-export const gossipConfigSchema = z.object({
-  infect: z.number(),
-  die: z.number(),
+const jailConfigSchema = z.object({
+  duration: z.number().optional(),
+  strikes: z.number().optional(),
 });
 
 export const userConfigSchema = z.object({
@@ -34,12 +31,12 @@ export const userConfigSchema = z.object({
   log: z
     .enum(["error", "warn", "info", "verbose", "debug", "silly"])
     .optional(),
-  rpc: rPCListSchema,
+  rpc: rpcListSchema,
   lite: z.boolean().optional(),
   database: databaseConfigSchema.optional(),
   secretKey: z.string().optional(),
   publicKey: z.string().optional(),
   peers: peerConfigSchema.optional(),
   jail: jailConfigSchema.optional(),
-  gossip: gossipConfigSchema.optional(),
+  waves: z.number().gte(7).optional(),
 });

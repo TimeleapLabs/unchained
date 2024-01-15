@@ -1,15 +1,20 @@
 import { attest, sign } from "../crypto/bls/index.js";
-import { GossipRequest, GossipMethod } from "../types.js";
+import { WaveRequest } from "../types.js";
 import { encodeKeys } from "../crypto/bls/keys.js";
-import { keys, gossipMethods, sockets } from "../constants.js";
+import { keys, sockets } from "../constants.js";
 import { debounce } from "../utils/debounce.js";
 import { getMode } from "../utils/mode.js";
 import { Table } from "console-table-printer";
 import { logger } from "../logger/index.js";
 import { cache } from "../utils/cache.js";
 import { db } from "../db/db.js";
+import { WantAnswer, WantPacket, datasets } from "../network/index.js";
+import { minutes } from "../utils/time.js";
 
-import {
+import { toMurmur } from "../crypto/murmur/index.js";
+import { hashObject } from "../utils/hash.js";
+
+import type {
   ScoreMetric,
   ScoreSignatureInput,
   ScoreValue,
@@ -22,6 +27,7 @@ export interface ScoreMap {
 
 const scoreCache = cache<number, ScoreMap>(15 * 60 * 1000); // 15 minutes
 const upsertCache = cache<number, boolean>(15 * 60 * 1000);
+const waveCache = cache<string, any>(minutes(15));
 const peerScoreMap = new Map<string, number>();
 // TODO: Better share this with the UniSwap plugin (and others)
 const keyToIdCache = new Map<string, number>();
@@ -32,11 +38,6 @@ export const addOnePoint = (peer: string) => {
   peerScoreMap.set(peer, current + 1);
 };
 
-export const resetScore = (
-  peer: string,
-  map: Map<string, number> = peerScoreMap
-) => map.set(peer, 0);
-
 export const resetAllScores = (
   map: Map<string, number> = peerScoreMap
 ): Map<string, number> => {
@@ -45,17 +46,12 @@ export const resetAllScores = (
   return clone;
 };
 
-export const getScoreOf = (
-  peer: string,
-  map: Map<string, number> = peerScoreMap
-): number => map.get(peer) || 0;
-
 export const getAllScores = (map: Map<string, number> = peerScoreMap) =>
   map.entries();
 
-export const getScoresPayload = (
+export const getScoresPayload = async (
   map: Map<string, number> = peerScoreMap
-): GossipRequest<ScoreMetric, ScoreValues> => {
+): Promise<WaveRequest<ScoreMetric, ScoreValues>> => {
   const sprint = Math.ceil(new Date().valueOf() / 300000);
   const value: ScoreValues = [];
   for (const [peer, score] of map.entries()) {
@@ -66,13 +62,15 @@ export const getScoresPayload = (
   }
   const payload: ScoreSignatureInput = { metric: { sprint }, value };
   const signed = attest(payload);
-  return {
+  const data = {
     method: "scoreAttest",
     metric: { sprint },
     dataset: "scores::peers::validations",
     ...signed,
     payload,
   };
+  await scoreAttest([data]);
+  return data;
 };
 
 const printMyScore = debounce((sprint: number, publicKey: string) => {
@@ -169,19 +167,23 @@ export const storeSprintScores = async () => {
   }
 };
 
-export const scoreAttest: GossipMethod<ScoreMetric, ScoreValues> = async (
-  request: GossipRequest<ScoreMetric, ScoreValues>
+const scoreAttest = async (
+  requests: WaveRequest<ScoreMetric, ScoreValues>[]
 ) => {
-  if (!request.payload) {
+  if (!requests.length) {
     return null;
   }
 
-  if (!request.payload.value.length) {
+  if (!requests.every((req) => req.payload)) {
+    return null;
+  }
+
+  if (!requests[0]?.payload?.value.length) {
     return null;
   }
 
   const currentSprint = Math.ceil(new Date().valueOf() / 300000);
-  const payloadSprint = request.payload.value[0].sprint;
+  const payloadSprint = requests[0].payload.value[0].sprint;
 
   if (currentSprint !== payloadSprint) {
     return null;
@@ -191,21 +193,62 @@ export const scoreAttest: GossipMethod<ScoreMetric, ScoreValues> = async (
     scoreCache.set(payloadSprint, {});
   }
 
+  const hash = await toMurmur(hashObject(requests[0].metric));
+
+  if (!waveCache.has(hash)) {
+    waveCache.set(hash, { ...requests[0].metric, have: [] });
+  }
+
+  const murmurMap = new Map(
+    [...sockets.values()].map((meta) => [meta.publicKey, meta.murmurAddr])
+  );
+
+  const cache = waveCache.get(hash);
   const sprintScores = scoreCache.get(payloadSprint) as ScoreMap;
+
+  for (const request of requests) {
+    if (!request.payload) {
+      continue;
+    }
+
+    const murmur =
+      murmurMap.get(request.signer) || (await toMurmur(request.signer));
+
+    if (!cache.have.some((item: any) => item.murmur === murmur)) {
+      cache.have.push({ murmur, request });
+      for (const entry of request.payload.value) {
+        sprintScores[entry.peer] ||= {};
+        sprintScores[entry.peer][request.signer] = entry.score;
+      }
+    }
+  }
+
   const { publicKey } = encodeKeys(keys);
-
-  if (sprintScores[publicKey]?.[request.signer]) {
-    return null;
-  }
-
-  for (const entry of request.payload.value) {
-    sprintScores[entry.peer] ||= {};
-    sprintScores[entry.peer][request.signer] = entry.score;
-  }
-
   printMyScore({ key: payloadSprint, args: [payloadSprint, publicKey] });
-
-  return request;
 };
 
-Object.assign(gossipMethods, { scoreAttest });
+const have = async (data: WantAnswer) => {
+  const cache = waveCache.get(data.want);
+  if (!cache) {
+    return;
+  }
+  await scoreAttest(data.have.map((item) => item.request));
+};
+
+const want = async (data: WantPacket) => {
+  const cache = waveCache.get(data.want);
+  if (!cache) {
+    return [];
+  }
+  return cache.have.filter((item: any) => !data.have.includes(item.murmur));
+};
+
+datasets.set("scores::peers::validations", { have, want });
+
+export const getHave = async (want: string) => {
+  const cache = waveCache.get(want);
+  if (!cache) {
+    return [];
+  }
+  return cache.have.map((item: { murmur: string }) => item.murmur);
+};

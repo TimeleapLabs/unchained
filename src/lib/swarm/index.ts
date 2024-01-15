@@ -2,7 +2,6 @@ import { makeSpinner } from "../spinner.js";
 import { topic, state, nameRegex } from "../constants.js";
 import { logger } from "../logger/index.js";
 import { processRpc } from "../rpc/index.js";
-import { processGossip } from "../gossip/index.js";
 import { sockets } from "../constants.js";
 import { parse } from "../utils/json.js";
 import { Duplex } from "stream";
@@ -54,10 +53,6 @@ const setupEventListeners = () => {
     socket.on("error", (error: NodeSystemError) => {
       const code = error.code || error.errno || error.message;
       logger.debug(`Socket error with peer ${meta.name}: ${code}`);
-      const jailed = strike(meta.name, info);
-      if (jailed) {
-        safeCloseSocket(socket);
-      }
     });
 
     socket.on("timeout", () => {
@@ -73,7 +68,10 @@ const setupEventListeners = () => {
       sockets.delete(peerAddr);
     });
 
-    if (sockets.size >= config.peers.max || isJailed(meta.name, info)) {
+    sockets.set(peerAddr, meta);
+
+    if (sockets.size > config.peers.max || isJailed(meta.name, info)) {
+      sockets.delete(peerAddr);
       return safeCloseSocket(socket);
     }
 
@@ -81,7 +79,6 @@ const setupEventListeners = () => {
       meta.needsDrain = false;
     });
 
-    sockets.set(peerAddr, meta);
     logger.info(`Connected to a new peer: ${peerAddr}`);
 
     const warnNoData = () => {
@@ -128,16 +125,16 @@ const setupEventListeners = () => {
           logger.info(`Peer ${oldName} is ${meta.name}`);
         }
       } else if (message.type === "call") {
-        const result = await processRpc(message);
-        try {
-          socket.write(brotliCompressSync(JSON.stringify(result)));
-        } catch (error) {
-          const err = error as NodeSystemError;
-          const info = err.code || err.errno || err.message;
-          logger.error(`Socket error with peer ${meta.name}: ${info}`);
+        const result = await processRpc(message, meta);
+        if (result.result || result.error) {
+          try {
+            socket.write(brotliCompressSync(JSON.stringify(result)));
+          } catch (error) {
+            const err = error as NodeSystemError;
+            const info = err.code || err.errno || err.message;
+            logger.error(`Socket error with peer ${meta.name}: ${info}`);
+          }
         }
-      } else if (message.type === "gossip") {
-        await processGossip(message);
       }
     });
 

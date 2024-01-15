@@ -208,9 +208,7 @@ peers:
 jail:
   duration: 5
   strikes: 5
-gossip:
-  infect: 24
-  die: 8
+waves: 8
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -235,8 +233,7 @@ Advanced options:
   connecting state when it is discovered but hasn't finished connecting yet.
 - `jail.duration`: Number of minutes to jail a peer on bad behavior.
 - `jail.strikes`: Number of strikes to wait before jailing a peer.
-- `gossip.infect`: Number of peers to infect when a packet is available.
-- `gossip.die`: Number of times a packet can infect others before it dies.
+- `waves`: Number of times to ask directly connected peers for attestations.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 

@@ -44,13 +44,12 @@ export const addressAction = async (
   const address = encoder.encode(keys.publicKey.toBytes());
   murmur.address = await toMurmur(address);
 
-  logger.info(`Unchained public address is ${address}`);
-  logger.info(`Unchained gossip address is ${murmur.address}`);
-
   if (options.ci) {
     console.log(address);
+    console.log(murmur.address);
   } else {
     logger.info(`Unchained public address is ${address}`);
+    logger.info(`Unchained wave address is ${murmur.address}`);
   }
 
   return process.exit(0);

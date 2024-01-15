@@ -28,11 +28,6 @@ interface JailConfig {
   strikes: number;
 }
 
-interface GossipConfig {
-  infect: number;
-  die: number;
-}
-
 export interface Config {
   name: string;
   log: string;
@@ -43,7 +38,7 @@ export interface Config {
   publicKey: string;
   peers: PeerConfig;
   jail: JailConfig;
-  gossip: GossipConfig;
+  waves: number;
 }
 
 export interface MetaData {
@@ -72,18 +67,7 @@ export interface ObjectType<V> {
   [key: string]: V;
 }
 
-export interface GossipMethod<T, V> {
-  (payload: GossipRequest<T, V>):
-    | Promise<GossipRequest<T, V> | null>
-    | GossipRequest<T, V>
-    | null;
-}
-
 export type StringAnyObject = ObjectType<any>;
-
-export interface StringGossipMethodObject<T, V> {
-  [key: string]: GossipMethod<T, V>;
-}
 
 export interface AssetPriceMetric {
   block: number;
@@ -93,24 +77,18 @@ export interface AssetPriceValue {
   price: number;
 }
 
-export interface GossipSignatureInput<MT, VT> {
+export interface SignatureInput<MT, VT> {
   metric: MT;
   value: VT;
 }
 
-export interface GossipRequest<T, V> {
+export interface WaveRequest<T, V> {
   method: string;
   dataset: string;
   metric: T;
   signature: string;
   signer: string;
-  payload?: GossipSignatureInput<T, V>;
-}
-
-export interface Gossip<T, V> {
-  type: "gossip";
-  request: GossipRequest<T, V>;
-  seen: string[];
+  payload?: SignatureInput<T, V>;
 }
 
 export interface SignatureItem {

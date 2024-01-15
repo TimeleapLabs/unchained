@@ -61,18 +61,8 @@ export const startAction = async (
 
   config.jail.strikes = config.jail.strikes || globalConfig.jail.strikes;
 
-  // Gossip
-  config.gossip ||= globalConfig.gossip;
-
-  config.gossip.infect =
-    parseInt(options.infect || "0") ||
-    config.gossip.infect ||
-    globalConfig.gossip.infect;
-
-  config.gossip.die =
-    parseInt(options.die || "0") ||
-    config.gossip.die ||
-    globalConfig.gossip.die;
+  // Waves
+  config.waves ||= globalConfig.waves;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
@@ -98,7 +88,7 @@ export const startAction = async (
   murmur.address = await toMurmur(address);
 
   logger.info(`Unchained public address is ${address}`);
-  logger.info(`Unchained gossip address is ${murmur.address}`);
+  logger.info(`Unchained wave address is ${murmur.address}`);
 
   if (!config.name) {
     logger.warn("Node name not found in config");
