@@ -19,31 +19,3 @@ To call a method on a node, you can use the following payload schema:
   "signer": "Public key of the signer"
 }
 ```
-
-## Gossip
-
-Gossip is a piece of data that is broadcast to all nodes. To gossip, use
-the following payload schema:
-
-```JSON
-{
-  "type": "gossip",
-  "request": {
-    "method": "assetPrice", // gossip method to call
-    "dataset": "ethereum::uniswap::ethereum", // chain::source::asset
-    "metric": { "block": "18670546" }, // M -> V metric
-    "signature": "Singature", // Hash { metric, value }, then sign
-    "signer": "Public key of the signer",
-  },
-  "seen": [] // Array of public keys who have seen the packet with this signature
-}
-```
-
-Signature data format:
-
-```JSON
-{
-  "metric": { "block": "18670546" },
-  "value": { "price": "$2229.8986944638564" }
-}
-```

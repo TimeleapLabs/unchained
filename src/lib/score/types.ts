@@ -1,9 +1,6 @@
-import { GossipSignatureInput } from "../types.js";
+import { SignatureInput } from "../types.js";
 
-export type ScoreSignatureInput = GossipSignatureInput<
-  ScoreMetric,
-  ScoreValues
->;
+export type ScoreSignatureInput = SignatureInput<ScoreMetric, ScoreValues>;
 
 export interface ScoreMetric {
   sprint: number;

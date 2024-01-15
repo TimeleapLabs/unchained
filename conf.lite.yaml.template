@@ -13,6 +13,4 @@ peers:
 jail:
   duration: 5
   strikes: 5
-gossip:
-  infect: 24
-  die: 8
+waves: 8
