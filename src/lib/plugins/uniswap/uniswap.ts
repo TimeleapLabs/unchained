@@ -416,14 +416,6 @@ export const work = async (
   }
 };
 
-export const attest = async (
-  request: WaveRequest<AssetPriceMetric, AssetPriceValue>
-) => {
-  const { metric, signer, signature } = request;
-  const added = addPendingAttestation(metric.block, signer, signature);
-  return added ? request : null;
-};
-
 const have = (data: WantAnswer) => {
   const cache = wantCache.get(data.want);
   if (!cache) {
