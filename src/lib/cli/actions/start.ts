@@ -88,7 +88,7 @@ export const startAction = async (
   murmur.address = await toMurmur(address);
 
   logger.info(`Unchained public address is ${address}`);
-  logger.info(`Unchained gossip address is ${murmur.address}`);
+  logger.info(`Unchained wave address is ${murmur.address}`);
 
   if (!config.name) {
     logger.warn("Node name not found in config");

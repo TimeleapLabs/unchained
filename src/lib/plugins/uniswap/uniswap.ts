@@ -1,11 +1,5 @@
 import { ethers } from "ethers";
-import {
-  gossipMethods,
-  config,
-  keys,
-  sockets,
-  murmur,
-} from "../../constants.js";
+import { config, keys, sockets } from "../../constants.js";
 import { logger } from "../../logger/index.js";
 import { state } from "../../constants.js";
 import { WS } from "iso-websocket";
@@ -20,13 +14,12 @@ import { db } from "../../db/db.js";
 import { datasets } from "../../network/index.js";
 import { cache } from "../../utils/cache.js";
 
-import type { WantPacket, WantAnswer, Dataset } from "../../network/index.js";
+import type { WantPacket, WantAnswer } from "../../network/index.js";
 
 import {
   Config,
-  GossipMethod,
   AssetPriceMetric,
-  GossipRequest,
+  WaveRequest,
   SignatureItem,
   AssetPriceValue,
 } from "../../types.js";
@@ -374,7 +367,7 @@ export const work = async (
   poolAddress: string,
   decimals: [number, number],
   inverse: boolean
-): Promise<GossipRequest<AssetPriceMetric, AssetPriceValue> | null> => {
+): Promise<WaveRequest<AssetPriceMetric, AssetPriceValue> | null> => {
   try {
     const start = new Date();
     const provider = getProvider(config);
@@ -423,8 +416,8 @@ export const work = async (
   }
 };
 
-export const attest: GossipMethod<AssetPriceMetric, AssetPriceValue> = async (
-  request: GossipRequest<AssetPriceMetric, AssetPriceValue>
+export const attest = async (
+  request: WaveRequest<AssetPriceMetric, AssetPriceValue>
 ) => {
   const { metric, signer, signature } = request;
   const added = addPendingAttestation(metric.block, signer, signature);
@@ -447,7 +440,6 @@ const want = async (data: WantPacket) => {
   return cache.have.filter((item: any) => !data.have.includes(item.murmur));
 };
 
-Object.assign(gossipMethods, { uniswapAttest: attest });
 datasets.set("ethereum::uniswap::ethereum", { have, want });
 
 export const getHave = async (want: string) => {

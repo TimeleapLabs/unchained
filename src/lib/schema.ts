@@ -21,11 +21,6 @@ export const jailConfigSchema = z.object({
   strikes: z.number().optional(),
 });
 
-export const gossipConfigSchema = z.object({
-  infect: z.number().optional(),
-  die: z.number().optional(),
-});
-
 export const userConfigSchema = z.object({
   name: z
     .string()

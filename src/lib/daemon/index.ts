@@ -49,7 +49,6 @@ export const runTasks = (): void => {
           getHave: uniswap.getHave,
         };
         wantCache.push(args);
-        //await gossip(result, [murmur.address]);
       }
     } catch (error) {
       // Handle the error or log it
