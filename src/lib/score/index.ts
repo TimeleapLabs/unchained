@@ -214,11 +214,12 @@ const scoreAttest = async (
     const murmur =
       murmurMap.get(request.signer) || (await toMurmur(request.signer));
 
-    cache.have.push({ murmur, request });
-
-    for (const entry of request.payload.value) {
-      sprintScores[entry.peer] ||= {};
-      sprintScores[entry.peer][request.signer] = entry.score;
+    if (!cache.have.some((item: any) => item.murmur === murmur)) {
+      cache.have.push({ murmur, request });
+      for (const entry of request.payload.value) {
+        sprintScores[entry.peer] ||= {};
+        sprintScores[entry.peer][request.signer] = entry.score;
+      }
     }
   }
 
