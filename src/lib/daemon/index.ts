@@ -76,23 +76,19 @@ export const runTasks = (): void => {
     stats.want = 0;
   });
 
-  Cron(
-    "*/1 * * * * *",
-    async () => {
-      try {
-        wantCache = wantCache.filter((item) => item.calls <= 13);
-        const now = epoch();
-        for (const item of wantCache.toReversed()) {
-          if (now - item.created >= seconds(item.calls ** 2)) {
-            item.calls++;
-            const have = await uniswap.getHave(item.want);
-            queryNetworkFor(item.want, item.dataset, have);
-          }
+  Cron("*/2 * * * * *", async () => {
+    try {
+      wantCache = wantCache.filter((item) => item.calls <= 13);
+      const now = epoch();
+      for (const item of wantCache.toReversed()) {
+        if (now - item.created >= seconds(item.calls * 2)) {
+          item.calls++;
+          const have = await uniswap.getHave(item.want);
+          queryNetworkFor(item.want, item.dataset, have);
         }
-      } catch (error) {
-        // Handle the error or log it
       }
-    },
-    { protect: true }
-  );
+    } catch (error) {
+      // Handle the error or log it
+    }
+  });
 };
