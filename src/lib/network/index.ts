@@ -57,7 +57,7 @@ export const queryNetworkFor = (
   dataset: string,
   have: string[] = []
 ) => {
-  const nodes = [...sockets.values()].filter(isFree);
+  const nodes = [...sockets.values()]; //.filter(isFree);
   const packet: WantPacket = { want, dataset, have };
   wantRpcCall(nodes, packet);
 };
