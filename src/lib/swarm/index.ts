@@ -2,7 +2,6 @@ import { makeSpinner } from "../spinner.js";
 import { topic, state, nameRegex } from "../constants.js";
 import { logger } from "../logger/index.js";
 import { processRpc } from "../rpc/index.js";
-import { processGossip } from "../gossip/index.js";
 import { sockets } from "../constants.js";
 import { parse } from "../utils/json.js";
 import { Duplex } from "stream";
@@ -12,7 +11,6 @@ import { isJailed, strike } from "./jail.js";
 import { brotliCompressSync, brotliDecompressSync } from "zlib";
 
 import HyperSwarm from "hyperswarm";
-import { hashObject } from "../utils/hash.js";
 
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
@@ -135,8 +133,6 @@ const setupEventListeners = () => {
             logger.error(`Socket error with peer ${meta.name}: ${info}`);
           }
         }
-      } else if (message.type === "gossip") {
-        await processGossip(message);
       }
     });
 

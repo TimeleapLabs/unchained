@@ -38,10 +38,7 @@ export const config: Config = {
     duration: minutes(5),
     strikes: 5,
   },
-  gossip: {
-    infect: 24,
-    die: 16,
-  },
+  waves: 8,
 };
 
 export const rpcMethods: StringAnyObject = {};

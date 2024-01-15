@@ -43,7 +43,7 @@ export interface Config {
   publicKey: string;
   peers: PeerConfig;
   jail: JailConfig;
-  gossip: GossipConfig;
+  waves: number;
 }
 
 export interface MetaData {

@@ -61,18 +61,8 @@ export const startAction = async (
 
   config.jail.strikes = config.jail.strikes || globalConfig.jail.strikes;
 
-  // Gossip
-  config.gossip ||= globalConfig.gossip;
-
-  config.gossip.infect =
-    parseInt(options.infect || "0") ||
-    config.gossip.infect ||
-    globalConfig.gossip.infect;
-
-  config.gossip.die =
-    parseInt(options.die || "0") ||
-    config.gossip.die ||
-    globalConfig.gossip.die;
+  // Waves
+  config.waves ||= globalConfig.waves;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
