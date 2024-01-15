@@ -12,8 +12,8 @@ const databaseConfigSchema = z.object({
 });
 
 const peerConfigSchema = z.object({
-  max: z.number().gt(8).optional(),
-  parallel: z.number().gt(4).optional(),
+  max: z.number().gte(8).optional(),
+  parallel: z.number().gte(4).optional(),
 });
 
 const jailConfigSchema = z.object({
@@ -38,5 +38,5 @@ export const userConfigSchema = z.object({
   publicKey: z.string().optional(),
   peers: peerConfigSchema.optional(),
   jail: jailConfigSchema.optional(),
-  waves: z.number().gte(5).optional(),
+  waves: z.number().gte(7).optional(),
 });

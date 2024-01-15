@@ -70,7 +70,7 @@ const setupEventListeners = () => {
 
     sockets.set(peerAddr, meta);
 
-    if (sockets.size >= config.peers.max || isJailed(meta.name, info)) {
+    if (sockets.size > config.peers.max || isJailed(meta.name, info)) {
       sockets.delete(peerAddr);
       return safeCloseSocket(socket);
     }

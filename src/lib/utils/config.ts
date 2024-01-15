@@ -34,9 +34,7 @@ export const safeReadConfig = (configFile: string): Config | null => {
           `Config file errors at ${issue.path.join(".")}: ${issue.message}`
         );
       }
-      console.warn(
-        "See https://kenshi.io/r/conf for the correct config format"
-      );
+      logger.warn("See https://kenshi.io/r/conf for the correct config format");
       return null;
     }
 
