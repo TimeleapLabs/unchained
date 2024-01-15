@@ -136,7 +136,11 @@ const addPendingAttestations = async (
   block: number,
   signatures: { signer: string; signature: string }[]
 ) => {
-  const pending = pendingAttestations.get(block) || [];
+  if (!pendingAttestations.has(block)) {
+    pendingAttestations.set(block, []);
+  }
+
+  const pending = pendingAttestations.get(block) as SignatureItem[];
   const confirmed = attestations.get(block)?.signers;
   const murmurMap = new Map(
     [...sockets.values()].map((meta) => [meta.publicKey, meta.murmurAddr])
@@ -153,9 +157,15 @@ const addPendingAttestations = async (
       continue;
     }
 
-    pendingAttestations.set(block, [...pending, { signer, signature }]);
+    pending.push({ signer, signature });
+
     newSigners = true;
     const murmur = murmurMap.get(signer) || (await toMurmur(signer));
+
+    if (cache.have.some((item: any) => item.signer === signer)) {
+      console.log(pending, signer);
+    }
+
     cache.have = [...cache.have, { signer, signature, murmur }];
   }
 
