@@ -5,7 +5,6 @@ import {
   KeyPair,
   Config,
   StringAnyObject,
-  StringGossipMethodObject,
   MetaData,
   Murmur,
 } from "./types.js";
@@ -42,7 +41,6 @@ export const config: Config = {
 };
 
 export const rpcMethods: StringAnyObject = {};
-export const gossipMethods: StringGossipMethodObject<any, any> = {};
 
 export const errors = {
   E_NOT_FOUND: 404,

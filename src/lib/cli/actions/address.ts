@@ -49,7 +49,7 @@ export const addressAction = async (
     console.log(murmur.address);
   } else {
     logger.info(`Unchained public address is ${address}`);
-    logger.info(`Unchained gossip address is ${murmur.address}`);
+    logger.info(`Unchained wave address is ${murmur.address}`);
   }
 
   return process.exit(0);

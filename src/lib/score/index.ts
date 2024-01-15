@@ -1,7 +1,7 @@
 import { attest, sign } from "../crypto/bls/index.js";
-import { GossipRequest } from "../types.js";
+import { WaveRequest } from "../types.js";
 import { encodeKeys } from "../crypto/bls/keys.js";
-import { keys, gossipMethods, sockets } from "../constants.js";
+import { keys, sockets } from "../constants.js";
 import { debounce } from "../utils/debounce.js";
 import { getMode } from "../utils/mode.js";
 import { Table } from "console-table-printer";
@@ -11,14 +11,15 @@ import { db } from "../db/db.js";
 import { WantAnswer, WantPacket, datasets } from "../network/index.js";
 import { minutes } from "../utils/time.js";
 
-import {
+import { toMurmur } from "../crypto/murmur/index.js";
+import { hashObject } from "../utils/hash.js";
+
+import type {
   ScoreMetric,
   ScoreSignatureInput,
   ScoreValue,
   ScoreValues,
 } from "./types.js";
-import { toMurmur } from "../crypto/murmur/index.js";
-import { hashObject } from "../utils/hash.js";
 
 export interface ScoreMap {
   [key: string]: { [key: string]: number };
@@ -60,7 +61,7 @@ export const getAllScores = (map: Map<string, number> = peerScoreMap) =>
 
 export const getScoresPayload = async (
   map: Map<string, number> = peerScoreMap
-): Promise<GossipRequest<ScoreMetric, ScoreValues>> => {
+): Promise<WaveRequest<ScoreMetric, ScoreValues>> => {
   const sprint = Math.ceil(new Date().valueOf() / 300000);
   const value: ScoreValues = [];
   for (const [peer, score] of map.entries()) {
@@ -177,7 +178,7 @@ export const storeSprintScores = async () => {
 };
 
 export const scoreAttest = async (
-  requests: GossipRequest<ScoreMetric, ScoreValues>[]
+  requests: WaveRequest<ScoreMetric, ScoreValues>[]
 ) => {
   if (!requests.length) {
     return null;
@@ -235,8 +236,6 @@ export const scoreAttest = async (
   printMyScore({ key: payloadSprint, args: [payloadSprint, publicKey] });
 };
 
-Object.assign(gossipMethods, { scoreAttest });
-
 const have = async (data: WantAnswer) => {
   const cache = wantCache.get(data.want);
   if (!cache) {
@@ -253,7 +252,6 @@ const want = async (data: WantPacket) => {
   return cache.have.filter((item: any) => !data.have.includes(item.murmur));
 };
 
-Object.assign(gossipMethods, { uniswapAttest: attest });
 datasets.set("scores::peers::validations", { have, want });
 
 export const getHave = async (want: string) => {
