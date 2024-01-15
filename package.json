@@ -1,6 +1,6 @@
 {
   "name": "@kenshi.io/unchained",
-  "version": "0.10.9-rc.5",
+  "version": "0.10.9-rc.6",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
