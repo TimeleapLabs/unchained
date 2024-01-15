@@ -20,6 +20,7 @@ interface Cache {
   dataset: string;
   calls: number;
   created: number;
+  block: number;
 }
 
 let wantCache: Cache[] = [];
@@ -44,12 +45,11 @@ export const runTasks = (): void => {
       if (result && !(result instanceof Symbol)) {
         const want = await toMurmur(hashObject(result.metric));
         queryNetworkFor(want, result.dataset, [murmur.address]);
-        wantCache.push({
-          want,
-          dataset: result.dataset,
-          calls: 0,
-          created: epoch(),
-        });
+        const created = epoch();
+        const { dataset } = result;
+        const { block } = result.metric;
+        const args: Cache = { want, dataset, block, calls: 0, created };
+        wantCache.push(args);
         //await gossip(result, [murmur.address]);
       }
     } catch (error) {
@@ -76,14 +76,15 @@ export const runTasks = (): void => {
     stats.want = 0;
   });
 
-  Cron("*/2 * * * * *", async () => {
+  Cron("*/1 * * * * *", async () => {
     try {
       wantCache = wantCache.filter((item) => item.calls <= config.gossip.die);
       const now = epoch();
       for (const item of wantCache.toReversed()) {
-        if (now - item.created >= seconds(item.calls * 2)) {
+        if (now - item.created >= seconds(item.calls ** 2)) {
           item.calls++;
           const have = await uniswap.getHave(item.want);
+          console.log(`Querying for block: ${item.block}`);
           queryNetworkFor(item.want, item.dataset, have);
         }
       }

@@ -1,5 +1,11 @@
 import { ethers } from "ethers";
-import { gossipMethods, config, keys, sockets } from "../../constants.js";
+import {
+  gossipMethods,
+  config,
+  keys,
+  sockets,
+  murmur,
+} from "../../constants.js";
 import { logger } from "../../logger/index.js";
 import { state } from "../../constants.js";
 import { WS } from "iso-websocket";
@@ -154,6 +160,11 @@ const addPendingAttestations = async (
   }
 
   if (newSigners) {
+    console.log(
+      `We ${murmur.address} for ${block} have`,
+      cache.have.map((item: any) => item.murmur)
+    );
+
     processAttestations({ key: block, args: [block] }).catch((err: Error) => {
       logger.error(
         `Encountered an error while processing attestations: ${err.message}`
