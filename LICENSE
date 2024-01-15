@@ -5,19 +5,31 @@ Parameters
 Licensor:             Kenshi
 Licensed Work:        Kenshi Unchained
                       The Licensed Work is (c) 2023 Kenshi.
-Additional Use Grant: You may make production use of the Licensed Work, 
-                      provided your use does not involve offering the
-                      Licensed Work, either in its original or modified
-                      form, as part of a commercial service or product
-                      that directly competes with the commercial offerings
-                      of Kenshi.
+Additional Use Grant: You are granted the right to use the Licensed Work as-is,
+                      exclusively on networks officially designated by Kenshi or
+                      Unchained. This right is akin to the permissible use of
+                      Ethereum code on its mainnet or testnet, and excludes use
+                      on private networks. The intent is to ensure the Licensed
+                      Work's application remains within its intended network
+                      ecosystem.
                       
-                      This includes, but is not limited to, using the
-                      Licensed Work to provide similar services,
-                      functionalities, or features as those offered by
-                      Kenshi’s paid services or products.
+                      You may operate the Licensed Work on private networks
+                      for non-commercial purposes only. Permissible
+                      non-commercial uses include, but are not limited to,
+                      research, personal network use, and academic purposes.
+                      This clause is to facilitate access to the Licensed Work
+                      for non-profit and developmental activities.
 
-Change Date:          Five years from the date the Licensed Work is
+                      Operating the Licensed Work on private networks for
+                      commercial purposes is prohibited unless a separate
+                      commercial license is obtained from Kenshi. Commercial
+                      purposes encompass any use involving monetary or other
+                      forms of compensation, or as part of a commercial
+                      offering or service. This restriction is to protect
+                      Kenshi's commercial interests and ensure the Licensed
+                      Work is appropriately licensed for commercial uses.
+
+Change Date:          Ten years from the date the Licensed Work is
                       published.
 
 Change License:       AGPL License, Version 3.0

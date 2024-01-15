@@ -158,23 +158,13 @@ const addPendingAttestations = async (
     }
 
     pending.push({ signer, signature });
-
     newSigners = true;
+
     const murmur = murmurMap.get(signer) || (await toMurmur(signer));
-
-    if (cache.have.some((item: any) => item.signer === signer)) {
-      console.log(pending, signer);
-    }
-
     cache.have = [...cache.have, { signer, signature, murmur }];
   }
 
   if (newSigners) {
-    console.log(
-      `We ${murmur.address} for ${block} have`,
-      cache.have.map((item: any) => item.murmur)
-    );
-
     processAttestations({ key: block, args: [block] }).catch((err: Error) => {
       logger.error(
         `Encountered an error while processing attestations: ${err.message}`

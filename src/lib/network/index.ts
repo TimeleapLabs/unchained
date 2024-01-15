@@ -1,11 +1,6 @@
-import { gossipMethods, errors, sockets, rpcMethods } from "../constants.js";
-import { Gossip, GossipRequest, MetaData, NodeSystemError } from "../types.js";
+import { sockets, rpcMethods } from "../constants.js";
+import { MetaData } from "../types.js";
 import { brotliCompressSync } from "zlib";
-import { hashObject } from "../utils/hash.js";
-import { cache } from "../utils/cache.js";
-import { toMurmur } from "../crypto/murmur/index.js";
-import { minutes } from "../utils/time.js";
-import { randomDistinct } from "../utils/random.js";
 
 export interface WantPacket {
   dataset: string;
@@ -21,7 +16,7 @@ export interface WantAnswer {
 
 export interface Dataset {
   want: (data: WantPacket) => any[] | Promise<any[]>;
-  have: (data: WantAnswer) => void;
+  have: (data: WantAnswer) => void | Promise<void>;
 }
 
 export const datasets = new Map<string, Dataset>();
@@ -50,19 +45,15 @@ const haveRpcCall = async (nodes: MetaData[], data: WantAnswer) => {
   writePayload(nodes, payload);
 };
 
-const isFree = (meta: MetaData) => !meta.needsDrain;
-
 export const queryNetworkFor = (
   want: string,
   dataset: string,
   have: string[] = []
 ) => {
-  const nodes = [...sockets.values()]; //.filter(isFree);
+  const nodes = [...sockets.values()];
   const packet: WantPacket = { want, dataset, have };
   wantRpcCall(nodes, packet);
 };
-
-export let stats = { want: 0, have: 0 };
 
 const want = async (data: WantPacket, sender: MetaData) => {
   const dataset = datasets.get(data.dataset);
@@ -75,16 +66,14 @@ const want = async (data: WantPacket, sender: MetaData) => {
   }
   const packet: WantAnswer = { dataset: data.dataset, want: data.want, have };
   haveRpcCall([sender], packet);
-  stats.want++;
 };
 
-const have = (data: WantAnswer) => {
+const have = async (data: WantAnswer) => {
   const dataset = datasets.get(data.dataset);
   if (!dataset) {
     return;
   }
-  dataset.have(data);
-  stats.have++;
+  await dataset.have(data);
 };
 
 Object.assign(rpcMethods, { want, have });
