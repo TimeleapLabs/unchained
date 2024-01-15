@@ -68,7 +68,10 @@ const setupEventListeners = () => {
       sockets.delete(peerAddr);
     });
 
+    sockets.set(peerAddr, meta);
+
     if (sockets.size >= config.peers.max || isJailed(meta.name, info)) {
+      sockets.delete(peerAddr);
       return safeCloseSocket(socket);
     }
 
@@ -76,7 +79,6 @@ const setupEventListeners = () => {
       meta.needsDrain = false;
     });
 
-    sockets.set(peerAddr, meta);
     logger.info(`Connected to a new peer: ${peerAddr}`);
 
     const warnNoData = () => {
