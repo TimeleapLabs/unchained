@@ -40,7 +40,7 @@ export const config: Config = {
   },
   gossip: {
     infect: 24,
-    die: 8,
+    die: 16,
   },
 };
 
