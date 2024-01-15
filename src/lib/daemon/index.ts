@@ -8,7 +8,7 @@ import {
   storeSprintScores,
 } from "../score/index.js";
 import { printScores } from "../score/print.js";
-import { murmur } from "../constants.js";
+import { config, murmur } from "../constants.js";
 import { queryNetworkFor, stats } from "../network/index.js";
 import { toMurmur } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
@@ -78,7 +78,7 @@ export const runTasks = (): void => {
 
   Cron("*/2 * * * * *", async () => {
     try {
-      wantCache = wantCache.filter((item) => item.calls <= 13);
+      wantCache = wantCache.filter((item) => item.calls <= config.gossip.die);
       const now = epoch();
       for (const item of wantCache.toReversed()) {
         if (now - item.created >= seconds(item.calls * 2)) {
