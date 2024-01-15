@@ -27,7 +27,7 @@ export interface ScoreMap {
 
 const scoreCache = cache<number, ScoreMap>(15 * 60 * 1000); // 15 minutes
 const upsertCache = cache<number, boolean>(15 * 60 * 1000);
-const wantCache = cache<string, any>(minutes(15));
+const waveCache = cache<string, any>(minutes(15));
 const peerScoreMap = new Map<string, number>();
 // TODO: Better share this with the UniSwap plugin (and others)
 const keyToIdCache = new Map<string, number>();
@@ -195,15 +195,15 @@ const scoreAttest = async (
 
   const hash = await toMurmur(hashObject(requests[0].metric));
 
-  if (!wantCache.has(hash)) {
-    wantCache.set(hash, { ...requests[0].metric, have: [] });
+  if (!waveCache.has(hash)) {
+    waveCache.set(hash, { ...requests[0].metric, have: [] });
   }
 
   const murmurMap = new Map(
     [...sockets.values()].map((meta) => [meta.publicKey, meta.murmurAddr])
   );
 
-  const cache = wantCache.get(hash);
+  const cache = waveCache.get(hash);
   const sprintScores = scoreCache.get(payloadSprint) as ScoreMap;
 
   for (const request of requests) {
@@ -227,7 +227,7 @@ const scoreAttest = async (
 };
 
 const have = async (data: WantAnswer) => {
-  const cache = wantCache.get(data.want);
+  const cache = waveCache.get(data.want);
   if (!cache) {
     return;
   }
@@ -235,7 +235,7 @@ const have = async (data: WantAnswer) => {
 };
 
 const want = async (data: WantPacket) => {
-  const cache = wantCache.get(data.want);
+  const cache = waveCache.get(data.want);
   if (!cache) {
     return [];
   }
@@ -245,7 +245,7 @@ const want = async (data: WantPacket) => {
 datasets.set("scores::peers::validations", { have, want });
 
 export const getHave = async (want: string) => {
-  const cache = wantCache.get(want);
+  const cache = waveCache.get(want);
   if (!cache) {
     return [];
   }
