@@ -9,8 +9,8 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.9";
-export const protocolVersion = "0.10.9-latest";
+export const version = "0.10.10";
+export const protocolVersion = "0.10.10";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
 
@@ -37,7 +37,15 @@ export const config: Config = {
     duration: minutes(5),
     strikes: 5,
   },
-  waves: 8,
+  waves: {
+    count: 10,
+    group: 8,
+    select: 35,
+    jitter: {
+      min: 5,
+      max: 15,
+    },
+  },
 };
 
 export const rpcMethods: StringAnyObject = {};

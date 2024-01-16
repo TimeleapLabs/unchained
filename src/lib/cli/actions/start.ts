@@ -62,7 +62,14 @@ export const startAction = async (
   config.jail.strikes = config.jail.strikes || globalConfig.jail.strikes;
 
   // Waves
+  // TODO: expose to cli
   config.waves ||= globalConfig.waves;
+  config.waves.count ||= globalConfig.waves.count;
+  config.waves.select ||= globalConfig.waves.select;
+  config.waves.group ||= globalConfig.waves.group;
+  config.waves.jitter ||= globalConfig.waves.jitter;
+  config.waves.jitter.min ||= globalConfig.waves.jitter.min;
+  config.waves.jitter.max ||= globalConfig.waves.jitter.max;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
