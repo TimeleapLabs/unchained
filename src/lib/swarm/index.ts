@@ -8,7 +8,7 @@ import { Duplex } from "stream";
 import { MetaData, NodeSystemError, PeerInfo } from "../types.js";
 import { config } from "../constants.js";
 import { isJailed, strike } from "./jail.js";
-import { brotliCompressSync, brotliDecompressSync } from "zlib";
+import { compress, uncompress } from "snappy";
 
 import HyperSwarm from "hyperswarm";
 
@@ -30,7 +30,7 @@ const safeCloseSocket = (socket: Duplex) => {
 
 const safeDecompressAndParse = (packet: Buffer) => {
   try {
-    return parse(brotliDecompressSync(packet).toString());
+    return parse(uncompress(packet).toString());
   } catch (error) {
     return error;
   }
@@ -128,7 +128,7 @@ const setupEventListeners = () => {
         const result = await processRpc(message, meta);
         if (result.result || result.error) {
           try {
-            socket.write(brotliCompressSync(JSON.stringify(result)));
+            socket.write(compress(JSON.stringify(result)));
           } catch (error) {
             const err = error as NodeSystemError;
             const info = err.code || err.errno || err.message;
@@ -139,7 +139,7 @@ const setupEventListeners = () => {
     });
 
     try {
-      const introducePayload = brotliCompressSync(
+      const introducePayload = compress(
         JSON.stringify({
           type: "call",
           request: { method: "introduce", args: {} },
