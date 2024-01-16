@@ -61,7 +61,7 @@ export const queryNetworkFor = async (
   const nodes = [...sockets.values()].filter(isFree);
   const count = Math.floor((nodes.length * config.waves.select) / 100);
   const selected =
-    count > nodes.length
+    count >= nodes.length
       ? randomDistinct(nodes.length, count).map((index) => nodes[index])
       : nodes;
   const groups = chunks(selected, config.waves.group);
