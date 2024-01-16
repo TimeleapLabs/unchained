@@ -1,9 +1,9 @@
 import { sockets, rpcMethods, config } from "../constants.js";
 import { MetaData } from "../types.js";
-import { brotliCompressSync } from "zlib";
 import { chunks } from "../utils/array.js";
 import { jitter } from "../utils/time.js";
 import { randomDistinct } from "../utils/random.js";
+import { compress } from "snappy";
 
 export interface WantPacket {
   dataset: string;
@@ -41,13 +41,13 @@ const writePayload = async (nodes: MetaData[], payload: Buffer) => {
 
 const wantRpcCall = async (nodes: MetaData[], data: WantPacket) => {
   const call = { type: "call", request: { method: "want", args: data } };
-  const payload = brotliCompressSync(JSON.stringify(call));
+  const payload = await compress(JSON.stringify(call));
   await writePayload(nodes, payload);
 };
 
 const haveRpcCall = async (nodes: MetaData[], data: WantAnswer) => {
   const call = { type: "call", request: { method: "have", args: data } };
-  const payload = brotliCompressSync(JSON.stringify(call));
+  const payload = await compress(JSON.stringify(call));
   await writePayload(nodes, payload);
 };
 
