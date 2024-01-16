@@ -246,8 +246,7 @@ const want = async (data: WantPacket) => {
   if (!cache) {
     return [];
   }
-  return cache.have
-    .entries()
+  return [...cache.have.entries()]
     .filter(([murmur]: [string, any]) => !data.have.includes(murmur))
     .map(([_, item]: [string, any]) => item);
 };
