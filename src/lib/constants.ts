@@ -38,9 +38,9 @@ export const config: Config = {
     strikes: 5,
   },
   waves: {
-    count: 8,
+    count: 10,
     group: 8,
-    select: 50,
+    select: 35,
     jitter: {
       min: 5,
       max: 15,
