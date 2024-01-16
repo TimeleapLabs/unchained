@@ -37,7 +37,15 @@ export const config: Config = {
     duration: minutes(5),
     strikes: 5,
   },
-  waves: 8,
+  waves: {
+    count: 8,
+    group: 8,
+    select: 50,
+    jitter: {
+      min: 5,
+      max: 15,
+    },
+  },
 };
 
 export const rpcMethods: StringAnyObject = {};

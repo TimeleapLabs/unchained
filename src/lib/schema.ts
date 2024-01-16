@@ -21,9 +21,27 @@ const jailConfigSchema = z.object({
   strikes: z.number().optional(),
 });
 
+const jitterConfigSchema = z
+  .object({
+    max: z.number().gte(0),
+    min: z.number().gte(0),
+  })
+  .refine(
+    (schema) => schema.max > schema.min,
+    "Max jitter should be bigger than min"
+  );
+
+const wavesConfigSchema = z.object({
+  count: z.number().gt(5).optional(),
+  select: z.number().gte(25).lte(100).optional(),
+  group: z.number().gte(4).optional(),
+  jitter: jitterConfigSchema.optional(),
+});
+
 export const userConfigSchema = z.object({
   name: z
     .string()
+    .max(24)
     .regex(
       nameRegex,
       "Only English letters, numbers, and @._'- are allowed in the name"
@@ -38,5 +56,5 @@ export const userConfigSchema = z.object({
   publicKey: z.string().optional(),
   peers: peerConfigSchema.optional(),
   jail: jailConfigSchema.optional(),
-  waves: z.number().gte(7).optional(),
+  waves: wavesConfigSchema.optional(),
 });
