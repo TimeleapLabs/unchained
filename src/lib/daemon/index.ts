@@ -3,9 +3,9 @@ import * as score from "../score/index.js";
 import { runWithRetries } from "../utils/retry.js";
 import { Cron } from "croner";
 import { printScores } from "../score/print.js";
-import { config, murmur } from "../constants.js";
+import { config } from "../constants.js";
 import { queryNetworkFor } from "../network/index.js";
-import { toMurmur } from "../crypto/murmur/index.js";
+import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
 import { epoch, seconds } from "../utils/time.js";
 
@@ -38,8 +38,8 @@ export const runTasks = (): void => {
     try {
       const result = await runWithRetries(uniswap.work, uniswapArgs);
       if (result && !(result instanceof Symbol)) {
-        const want = await toMurmur(hashObject(result.metric));
-        queryNetworkFor(want, result.dataset, [murmur.address]);
+        const want = await toMurmurCached(hashObject(result.metric));
+        await queryNetworkFor(want, result.dataset, uniswap.getHave);
         const created = epoch();
         const { dataset } = result;
         const args: Cache = {
@@ -61,8 +61,8 @@ export const runTasks = (): void => {
       const scores = score.resetAllScores();
       printScores(scores);
       const result = await score.getScoresPayload(scores);
-      const want = await toMurmur(hashObject(result.metric));
-      queryNetworkFor(want, result.dataset, [murmur.address]);
+      const want = await toMurmurCached(hashObject(result.metric));
+      await queryNetworkFor(want, result.dataset, score.getHave);
       const created = epoch();
       const { dataset } = result;
       const args: Cache = {
@@ -74,7 +74,9 @@ export const runTasks = (): void => {
       };
       waveCache.push(args);
       // TODO: We need retries here
-      await score.storeSprintScores();
+      if (!config.lite) {
+        await score.storeSprintScores();
+      }
     } catch (error) {
       // Handle the error or log it
     }
@@ -82,13 +84,12 @@ export const runTasks = (): void => {
 
   Cron("*/1 * * * * *", async () => {
     try {
-      waveCache = waveCache.filter((item) => item.calls <= config.waves);
+      waveCache = waveCache.filter((item) => item.calls <= config.waves.count);
       const now = epoch();
       for (const item of waveCache.toReversed()) {
         if (now - item.created >= seconds(item.calls ** 2)) {
           item.calls++;
-          const have = await item.getHave(item.want);
-          queryNetworkFor(item.want, item.dataset, have);
+          await queryNetworkFor(item.want, item.dataset, item.getHave);
         }
       }
     } catch (error) {

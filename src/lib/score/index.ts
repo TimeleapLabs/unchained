@@ -9,9 +9,9 @@ import { logger } from "../logger/index.js";
 import { cache } from "../utils/cache.js";
 import { db } from "../db/db.js";
 import { WantAnswer, WantPacket, datasets } from "../network/index.js";
-import { minutes } from "../utils/time.js";
+import { minutes, seconds } from "../utils/time.js";
 
-import { toMurmur } from "../crypto/murmur/index.js";
+import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
 
 import type {
@@ -116,7 +116,7 @@ const printMyScore = debounce((sprint: number, publicKey: string) => {
 
   logger.info("Score received from peers");
   table.printTable();
-}, 1000);
+}, seconds(5));
 
 export const storeSprintScores = async () => {
   const previousSprint = Math.ceil(new Date().valueOf() / 300000) - 1;
@@ -193,10 +193,13 @@ const scoreAttest = async (
     scoreCache.set(payloadSprint, {});
   }
 
-  const hash = await toMurmur(hashObject(requests[0].metric));
+  const hash = await toMurmurCached(hashObject(requests[0].metric));
 
   if (!waveCache.has(hash)) {
-    waveCache.set(hash, { ...requests[0].metric, have: [] });
+    waveCache.set(hash, {
+      ...requests[0].metric,
+      have: new Map<string, any>(),
+    });
   }
 
   const murmurMap = new Map(
@@ -212,14 +215,17 @@ const scoreAttest = async (
     }
 
     const murmur =
-      murmurMap.get(request.signer) || (await toMurmur(request.signer));
+      murmurMap.get(request.signer) || (await toMurmurCached(request.signer));
 
-    if (!cache.have.some((item: any) => item.murmur === murmur)) {
-      cache.have.push({ murmur, request });
-      for (const entry of request.payload.value) {
-        sprintScores[entry.peer] ||= {};
-        sprintScores[entry.peer][request.signer] = entry.score;
-      }
+    if (cache.have.has(murmur)) {
+      continue;
+    }
+
+    // TODO: backward compatibility, fix in next minor release
+    cache.have.set(murmur, { request });
+    for (const entry of request.payload.value) {
+      sprintScores[entry.peer] ||= {};
+      sprintScores[entry.peer][request.signer] = entry.score;
     }
   }
 
@@ -240,7 +246,10 @@ const want = async (data: WantPacket) => {
   if (!cache) {
     return [];
   }
-  return cache.have.filter((item: any) => !data.have.includes(item.murmur));
+  return cache.have
+    .entries()
+    .filter(([murmur]: [string, any]) => !data.have.includes(murmur))
+    .map(([_, item]: [string, any]) => item);
 };
 
 datasets.set("scores::peers::validations", { have, want });
@@ -250,5 +259,5 @@ export const getHave = async (want: string) => {
   if (!cache) {
     return [];
   }
-  return cache.have.map((item: { murmur: string }) => item.murmur);
+  return [...cache.have.keys()];
 };
