@@ -240,7 +240,11 @@ Advanced options:
 - `jail.duration`: Number of minutes to jail a peer on bad behavior.
 - `jail.strikes`: Number of strikes to wait before jailing a peer.
 - `waves.count`: Number of times to ask directly connected peers for attestations.
-- `waves.select`: Percentage of peers contact on each wave.
+- `waves.select`: Percentage of peers to contact on each wave.
+- `waves.group`: Number of peers in each wave group. Packets are rebuilt for
+  each target group based on newly received data.
+- `waves.jitter.min`: Minimum delay between each socket transmission.
+- `waves.jitter.max`: Maximum delay between each socket transmission.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 
