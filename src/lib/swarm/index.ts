@@ -28,9 +28,10 @@ const safeCloseSocket = (socket: Duplex) => {
   } catch (_err) {}
 };
 
-const safeDecompressAndParse = (packet: Buffer) => {
+const safeDecompressAndParse = async (packet: Buffer) => {
   try {
-    return parse(uncompress(packet).toString());
+    const uncompressed = await uncompress(packet);
+    return parse(uncompressed.toString());
   } catch (error) {
     return error;
   }
@@ -98,7 +99,7 @@ const setupEventListeners = () => {
       safeClearTimeout(timeout);
       warnNoData();
 
-      const message = safeDecompressAndParse(data);
+      const message = await safeDecompressAndParse(data);
 
       if (message instanceof Error) {
         return logger.debug(`Received a faulty packet from: ${peerAddr}`);
@@ -128,7 +129,8 @@ const setupEventListeners = () => {
         const result = await processRpc(message, meta);
         if (result.result || result.error) {
           try {
-            socket.write(compress(JSON.stringify(result)));
+            const payload = await compress(JSON.stringify(result));
+            socket.write(payload);
           } catch (error) {
             const err = error as NodeSystemError;
             const info = err.code || err.errno || err.message;
@@ -139,7 +141,7 @@ const setupEventListeners = () => {
     });
 
     try {
-      const introducePayload = compress(
+      const introducePayload = await compress(
         JSON.stringify({
           type: "call",
           request: { method: "introduce", args: {} },
