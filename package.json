@@ -1,6 +1,6 @@
 {
   "name": "@kenshi.io/unchained",
-  "version": "0.10.9",
+  "version": "0.10.10-rc.2",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -36,6 +36,7 @@
     "pretty-bytes": "^6.1.1",
     "prisma": "^5.7.1",
     "semver": "^7.5.4",
+    "snappy": "^7.2.2",
     "unws": "^0.2.4",
     "winston": "^3.11.0",
     "yaml": "^2.3.4",

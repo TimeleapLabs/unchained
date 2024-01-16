@@ -1,6 +1,9 @@
-import { sockets, rpcMethods } from "../constants.js";
+import { sockets, rpcMethods, config } from "../constants.js";
 import { MetaData } from "../types.js";
-import { brotliCompressSync } from "zlib";
+import { chunks } from "../utils/array.js";
+import { jitter } from "../utils/time.js";
+import { randomDistinct } from "../utils/random.js";
+import { compress } from "snappy";
 
 export interface WantPacket {
   dataset: string;
@@ -21,7 +24,7 @@ export interface Dataset {
 
 export const datasets = new Map<string, Dataset>();
 
-const writePayload = (nodes: MetaData[], payload: Buffer) => {
+const writePayload = async (nodes: MetaData[], payload: Buffer) => {
   for (const node of nodes) {
     if (!node.socket.closed) {
       const sent = node.socket.write(payload);
@@ -29,30 +32,44 @@ const writePayload = (nodes: MetaData[], payload: Buffer) => {
       if (!sent) {
         node.needsDrain = true;
       }
+      if (config.waves.jitter.max) {
+        await jitter(config.waves.jitter.max, config.waves.jitter.min);
+      }
     }
   }
 };
 
-const wantRpcCall = (nodes: MetaData[], data: WantPacket) => {
+const wantRpcCall = async (nodes: MetaData[], data: WantPacket) => {
   const call = { type: "call", request: { method: "want", args: data } };
-  const payload = brotliCompressSync(JSON.stringify(call));
-  writePayload(nodes, payload);
+  const payload = await compress(JSON.stringify(call));
+  await writePayload(nodes, payload);
 };
 
 const haveRpcCall = async (nodes: MetaData[], data: WantAnswer) => {
   const call = { type: "call", request: { method: "have", args: data } };
-  const payload = brotliCompressSync(JSON.stringify(call));
-  writePayload(nodes, payload);
+  const payload = await compress(JSON.stringify(call));
+  await writePayload(nodes, payload);
 };
 
-export const queryNetworkFor = (
+const isFree = (node: MetaData) => !node.needsDrain;
+
+export const queryNetworkFor = async (
   want: string,
   dataset: string,
-  have: string[] = []
+  getHave: (want: string) => Promise<any>
 ) => {
-  const nodes = [...sockets.values()];
-  const packet: WantPacket = { want, dataset, have };
-  wantRpcCall(nodes, packet);
+  const nodes = [...sockets.values()].filter(isFree);
+  const count = Math.floor((nodes.length * config.waves.select) / 100);
+  const selected =
+    count >= nodes.length
+      ? randomDistinct(nodes.length, count).map((index) => nodes[index])
+      : nodes;
+  const groups = chunks(selected, config.waves.group);
+  for (const group of groups) {
+    const have = await getHave(want);
+    const packet: WantPacket = { want, dataset, have };
+    await wantRpcCall(group, packet);
+  }
 };
 
 const want = async (data: WantPacket, sender: MetaData) => {
@@ -65,7 +82,7 @@ const want = async (data: WantPacket, sender: MetaData) => {
     return;
   }
   const packet: WantAnswer = { dataset: data.dataset, want: data.want, have };
-  haveRpcCall([sender], packet);
+  await haveRpcCall([sender], packet);
 };
 
 const have = async (data: WantAnswer) => {

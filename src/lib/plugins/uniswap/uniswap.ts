@@ -27,7 +27,7 @@ import {
 import { Attestation, PriceSignatureInput } from "./types.js";
 import { minutes } from "../../utils/time.js";
 import { hashObject } from "../../utils/hash.js";
-import { toMurmur } from "../../crypto/murmur/index.js";
+import { toMurmurCached } from "../../crypto/murmur/index.js";
 
 const blockCache = new Map<number, number>();
 const attestations = new Map<number, Attestation>();
@@ -44,13 +44,16 @@ const ws = (endpoint: string): WebSocketLike => {
   const socket = new WS(endpoint, {
     ws: WebSocket,
     retry: { forever: true },
-  }) as WebSocketLike;
+    automaticOpen: false,
+  });
 
-  socket.onerror = () => {
+  socket.addEventListener("error", () => {
     getNewRpc = true;
-  };
+  });
 
-  return socket;
+  socket.open();
+
+  return socket as WebSocketLike;
 };
 
 let currentProvider: number = 0;
@@ -153,7 +156,7 @@ const addPendingAttestations = async (
     pending.push({ signer, signature });
     newSigners = true;
 
-    const murmur = murmurMap.get(signer) || (await toMurmur(signer));
+    const murmur = murmurMap.get(signer) || (await toMurmurCached(signer));
     cache.have = [...cache.have, { signer, signature, murmur }];
   }
 
@@ -395,7 +398,7 @@ export const work = async (
     setCache(block, price);
     const data: PriceSignatureInput = { metric: { block }, value: { price } };
     const signed = blsAttest(data);
-    const hash = await toMurmur(hashObject(data.metric));
+    const hash = await toMurmurCached(hashObject(data.metric));
     if (!waveCache.has(hash)) {
       waveCache.set(hash, { block, have: [] });
     }

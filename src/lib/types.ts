@@ -28,6 +28,18 @@ interface JailConfig {
   strikes: number;
 }
 
+interface JitterConfig {
+  min: number;
+  max: number;
+}
+
+interface WavesConfig {
+  count: number;
+  select: number;
+  group: number;
+  jitter: JitterConfig;
+}
+
 export interface Config {
   name: string;
   log: string;
@@ -38,7 +50,7 @@ export interface Config {
   publicKey: string;
   peers: PeerConfig;
   jail: JailConfig;
-  waves: number;
+  waves: WavesConfig;
 }
 
 export interface MetaData {

@@ -208,7 +208,13 @@ peers:
 jail:
   duration: 5
   strikes: 5
-waves: 8
+waves:
+  count: 8
+  select: 50
+  group: 8
+  jitter:
+    min: 5
+    max: 15
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -233,7 +239,12 @@ Advanced options:
   connecting state when it is discovered but hasn't finished connecting yet.
 - `jail.duration`: Number of minutes to jail a peer on bad behavior.
 - `jail.strikes`: Number of strikes to wait before jailing a peer.
-- `waves`: Number of times to ask directly connected peers for attestations.
+- `waves.count`: Number of times to ask directly connected peers for attestations.
+- `waves.select`: Percentage of peers to contact on each wave.
+- `waves.group`: Number of peers in each wave group. Packets are rebuilt for
+  each target group based on newly received data.
+- `waves.jitter.min`: Minimum delay between each socket transmission.
+- `waves.jitter.max`: Maximum delay between each socket transmission.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 
