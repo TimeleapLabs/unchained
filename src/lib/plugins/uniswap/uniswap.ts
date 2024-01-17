@@ -145,6 +145,10 @@ const addPendingAttestations = async (
   let newSigners = false;
 
   for (const { signature, signer } of signatures) {
+    if (!signature || !signer) {
+      continue;
+    }
+
     const alreadyAdded =
       pending.some((item) => item.signer === signer) ||
       confirmed?.some((cSigner) => cSigner === signer);
