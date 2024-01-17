@@ -8,3 +8,5 @@ export const minutes = (m: number) => m * seconds(60);
 
 export const jitter = (max: number, min: number = 0) =>
   sleep(Math.max(min, Math.floor(Math.random() * max)));
+
+export const getSprint = () => Math.ceil(new Date().valueOf() / seconds(30));

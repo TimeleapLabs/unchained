@@ -3,6 +3,7 @@ import { logger } from "../logger/index.js";
 import { Table } from "console-table-printer";
 import { sockets, keys } from "../constants.js";
 import { encodeKeys } from "../crypto/bls/keys.js";
+import { getSprint } from "../utils/time.js";
 
 export const printScores = (map: Map<string, number>) => {
   const table = new Table({
@@ -34,7 +35,7 @@ export const printScores = (map: Map<string, number>) => {
 
   table.addRows(rows.sort((a, b) => b.score - a.score));
 
-  const sprint = Math.ceil(new Date().valueOf() / 300000);
+  const sprint = getSprint();
   logger.info(`Scores for sprint ${sprint} are:`);
   table.printTable();
 };
