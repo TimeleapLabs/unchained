@@ -172,7 +172,7 @@ const scoreAttest = async (
     return null;
   }
 
-  if (!requests[0]?.payload?.value.length) {
+  if (!Object.keys(requests[0]?.payload?.value || {}).length) {
     return null;
   }
 
@@ -202,6 +202,9 @@ const scoreAttest = async (
 
   const cache = waveCache.get(hash);
   const sprintScores = scoreCache.get(payloadSprint) as ScoreMap;
+  const { publicKey } = encodeKeys(keys);
+
+  let scoreUpdated = false;
 
   for (const request of requests) {
     if (!request.payload) {
@@ -219,11 +222,15 @@ const scoreAttest = async (
     cache.have.set(murmur, { request });
     for (const [peer, score] of Object.entries(request.payload.value)) {
       sprintScores[peer] ||= {};
+
+      if (peer === publicKey && sprintScores[peer][request.signer] !== score) {
+        scoreUpdated = true;
+      }
+
       sprintScores[peer][request.signer] = score;
     }
   }
 
-  const { publicKey } = encodeKeys(keys);
   printMyScore({ key: payloadSprint, args: [payloadSprint, publicKey] });
 };
 
