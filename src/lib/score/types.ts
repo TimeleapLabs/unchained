@@ -6,11 +6,6 @@ export interface ScoreMetric {
   sprint: number;
 }
 
-export interface ScoreValue {
-  score: number;
-  peer: string;
-  sprint: number;
-  signature: string;
-}
-
-export type ScoreValues = ScoreValue[];
+export type ScoreValues = {
+  [key: string]: number;
+};
