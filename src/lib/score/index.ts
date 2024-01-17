@@ -9,21 +9,18 @@ import { logger } from "../logger/index.js";
 import { cache } from "../utils/cache.js";
 import { db } from "../db/db.js";
 import { WantAnswer, WantPacket, datasets } from "../network/index.js";
-import { minutes, seconds } from "../utils/time.js";
+import { getSprint, minutes, seconds } from "../utils/time.js";
 
 import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
 
-import type {
-  ScoreMetric,
-  ScoreSignatureInput,
-  ScoreValue,
-  ScoreValues,
-} from "./types.js";
+import type { ScoreMetric, ScoreSignatureInput, ScoreValues } from "./types.js";
 
 export interface ScoreMap {
   [key: string]: { [key: string]: number };
 }
+
+const DATASET = "scores::peers::validations";
 
 const scoreCache = cache<number, ScoreMap>(15 * 60 * 1000); // 15 minutes
 const upsertCache = cache<number, boolean>(15 * 60 * 1000);
@@ -52,20 +49,17 @@ export const getAllScores = (map: Map<string, number> = peerScoreMap) =>
 export const getScoresPayload = async (
   map: Map<string, number> = peerScoreMap
 ): Promise<WaveRequest<ScoreMetric, ScoreValues>> => {
-  const sprint = Math.ceil(new Date().valueOf() / 300000);
-  const value: ScoreValues = [];
+  const sprint = getSprint();
+  const value: ScoreValues = {};
   for (const [peer, score] of map.entries()) {
-    const toSign = { peer, score, sprint };
-    const signature = sign(toSign);
-    const data: ScoreValue = { ...toSign, signature };
-    value.push(data);
+    value[peer] = score;
   }
   const payload: ScoreSignatureInput = { metric: { sprint }, value };
   const signed = attest(payload);
   const data = {
     method: "scoreAttest",
     metric: { sprint },
-    dataset: "scores::peers::validations",
+    dataset: DATASET,
     ...signed,
     payload,
   };
@@ -119,7 +113,7 @@ const printMyScore = debounce((sprint: number, publicKey: string) => {
 }, seconds(5));
 
 export const storeSprintScores = async () => {
-  const previousSprint = Math.ceil(new Date().valueOf() / 300000) - 1;
+  const previousSprint = getSprint() - 1;
   const sprintScores = scoreCache.get(previousSprint);
   if (!sprintScores) {
     return;
@@ -182,8 +176,8 @@ const scoreAttest = async (
     return null;
   }
 
-  const currentSprint = Math.ceil(new Date().valueOf() / 300000);
-  const payloadSprint = requests[0].payload.value[0].sprint;
+  const currentSprint = getSprint();
+  const payloadSprint = requests[0].metric.sprint;
 
   if (currentSprint !== payloadSprint) {
     return null;
@@ -223,9 +217,9 @@ const scoreAttest = async (
 
     // TODO: backward compatibility, fix in next minor release
     cache.have.set(murmur, { request });
-    for (const entry of request.payload.value) {
-      sprintScores[entry.peer] ||= {};
-      sprintScores[entry.peer][request.signer] = entry.score;
+    for (const [peer, score] of Object.entries(request.payload.value)) {
+      sprintScores[peer] ||= {};
+      sprintScores[peer][request.signer] = score;
     }
   }
 
@@ -251,7 +245,7 @@ const want = async (data: WantPacket) => {
     .map(([_, item]: [string, any]) => item);
 };
 
-datasets.set("scores::peers::validations", { have, want });
+datasets.set(DATASET, { have, want });
 
 export const getHave = async (want: string) => {
   const cache = waveCache.get(want);
