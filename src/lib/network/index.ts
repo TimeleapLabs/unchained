@@ -4,6 +4,7 @@ import { chunks } from "../utils/array.js";
 import { jitter } from "../utils/time.js";
 import { randomDistinct } from "../utils/random.js";
 import { compress } from "snappy";
+import { serialize } from "../utils/sia.js";
 
 export interface WantPacket {
   dataset: string;
@@ -41,13 +42,13 @@ const writePayload = async (nodes: MetaData[], payload: Buffer) => {
 
 const wantRpcCall = async (nodes: MetaData[], data: WantPacket) => {
   const call = { type: "call", request: { method: "want", args: data } };
-  const payload = await compress(JSON.stringify(call));
+  const payload = await compress(serialize(call));
   await writePayload(nodes, payload);
 };
 
 const haveRpcCall = async (nodes: MetaData[], data: WantAnswer) => {
   const call = { type: "call", request: { method: "have", args: data } };
-  const payload = await compress(JSON.stringify(call));
+  const payload = await compress(serialize(call));
   await writePayload(nodes, payload);
 };
 
