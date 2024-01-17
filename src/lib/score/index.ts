@@ -231,7 +231,9 @@ const scoreAttest = async (
     }
   }
 
-  printMyScore({ key: payloadSprint, args: [payloadSprint, publicKey] });
+  if (scoreUpdated) {
+    printMyScore({ key: payloadSprint, args: [payloadSprint, publicKey] });
+  }
 };
 
 const have = async (data: WantAnswer) => {
