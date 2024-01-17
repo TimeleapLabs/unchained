@@ -22,8 +22,8 @@ export interface ScoreMap {
 
 const DATASET = "scores::peers::validations";
 
-const scoreCache = cache<number, ScoreMap>(15 * 60 * 1000); // 15 minutes
-const upsertCache = cache<number, boolean>(15 * 60 * 1000);
+const scoreCache = cache<number, ScoreMap>(minutes(15)); // 15 minutes
+const upsertCache = cache<number, boolean>(minutes(15));
 const waveCache = cache<string, any>(minutes(15));
 const peerScoreMap = new Map<string, number>();
 // TODO: Better share this with the UniSwap plugin (and others)
@@ -115,12 +115,15 @@ const printMyScore = debounce((sprint: number, publicKey: string) => {
 export const storeSprintScores = async () => {
   const previousSprint = getSprint() - 1;
   const sprintScores = scoreCache.get(previousSprint);
+
   if (!sprintScores) {
     return;
   }
+
   if (upsertCache.get(previousSprint)) {
     return;
   }
+
   upsertCache.set(previousSprint, true);
 
   const signerNames = new Map(
@@ -220,6 +223,7 @@ const scoreAttest = async (
 
     // TODO: backward compatibility, fix in next minor release
     cache.have.set(murmur, { request });
+
     for (const [peer, score] of Object.entries(request.payload.value)) {
       sprintScores[peer] ||= {};
 
