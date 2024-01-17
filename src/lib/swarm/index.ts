@@ -3,7 +3,7 @@ import { topic, state, nameRegex } from "../constants.js";
 import { logger } from "../logger/index.js";
 import { processRpc } from "../rpc/index.js";
 import { sockets } from "../constants.js";
-import { parse } from "../utils/json.js";
+import { serialize, parse } from "../utils/sia.js";
 import { Duplex } from "stream";
 import { MetaData, NodeSystemError, PeerInfo } from "../types.js";
 import { config } from "../constants.js";
@@ -30,8 +30,8 @@ const safeCloseSocket = (socket: Duplex) => {
 
 const safeDecompressAndParse = async (packet: Buffer) => {
   try {
-    const uncompressed = await uncompress(packet);
-    return parse(uncompressed.toString());
+    const uncompressed = await uncompress(packet, { asBuffer: true });
+    return parse(uncompressed as Buffer) as any;
   } catch (error) {
     return error;
   }
@@ -129,7 +129,7 @@ const setupEventListeners = () => {
         const result = await processRpc(message, meta);
         if (result.result || result.error) {
           try {
-            const payload = await compress(JSON.stringify(result));
+            const payload = await compress(serialize(result));
             socket.write(payload);
           } catch (error) {
             const err = error as NodeSystemError;
@@ -142,7 +142,7 @@ const setupEventListeners = () => {
 
     try {
       const introducePayload = await compress(
-        JSON.stringify({
+        serialize({
           type: "call",
           request: { method: "introduce", args: {} },
         })
