@@ -16,7 +16,6 @@ import { hashObject } from "../utils/hash.js";
 
 import type { ScoreMetric, ScoreSignatureInput, ScoreValues } from "./types.js";
 import { hashUint8Array } from "../utils/uint8array.js";
-import { number } from "zod";
 
 export interface ScoreMap {
   [key: string]: ScoreValues;
@@ -269,11 +268,10 @@ const scoreAttest = async (
     }
 
     cache.have.set(murmur, request);
+    sprintScores[murmur] = [];
 
     for (const { score, peer } of request.payload.value) {
-      sprintScores[murmur] = [];
-
-      if (isEqual(peer, publicKey)) {
+      if (!scoreUpdated && isEqual(peer, publicKey)) {
         scoreUpdated = true;
       }
 
