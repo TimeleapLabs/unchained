@@ -59,7 +59,7 @@ export interface MetaData {
   peerAddr: string;
   murmurAddr?: string;
   name: string;
-  publicKey?: string;
+  publicKey?: Uint8Array;
   needsDrain?: boolean;
 }
 
@@ -98,14 +98,14 @@ export interface WaveRequest<T, V> {
   method: string;
   dataset: string;
   metric: T;
-  signature: string;
-  signer: string;
+  signature: Uint8Array;
+  signer: Uint8Array;
   payload?: SignatureInput<T, V>;
 }
 
 export interface SignatureItem {
-  signer: string;
-  signature: string;
+  signer: Uint8Array;
+  signature: Uint8Array;
 }
 
 export interface PeerInfo {
