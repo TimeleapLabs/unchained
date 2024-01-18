@@ -2,9 +2,9 @@ import { logger } from "../../logger/index.js";
 import { safeReadConfig } from "../../utils/config.js";
 import { loadKeys } from "../../crypto/bls/keys.js";
 import { encoder } from "../../crypto/base58/index.js";
-import { toMurmur } from "../../crypto/murmur/index.js";
 import { stringify } from "yaml";
 import { version } from "../../constants.js";
+import { hashUint8Array } from "../../utils/uint8array.js";
 
 import getos from "getos";
 import ping from "ping";
@@ -77,8 +77,9 @@ export const diagnoseAction = async (configFile: string) => {
   }
 
   const keys = loadKeys(config.secretKey);
-  const publicKey = encoder.encode(keys.publicKey.toBytes());
-  const murmur = await toMurmur(publicKey);
+  const bytes = keys.publicKey.toBytes();
+  const publicKey = encoder.encode(bytes);
+  const murmur = await hashUint8Array(bytes);
 
   const host = Array.isArray(config.rpc.ethereum)
     ? config.rpc.ethereum[0]

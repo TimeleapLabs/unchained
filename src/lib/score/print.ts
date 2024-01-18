@@ -1,11 +1,11 @@
-import { getAllScores } from "./index.js";
+import { Score, getAllScores } from "./index.js";
 import { logger } from "../logger/index.js";
 import { Table } from "console-table-printer";
 import { sockets, keys } from "../constants.js";
-import { encodeKeys } from "../crypto/bls/keys.js";
 import { getSprint } from "../utils/time.js";
+import { hashUint8Array, isEqual } from "../utils/uint8array.js";
 
-export const printScores = (map: Map<string, number>) => {
+export const printScores = async (map: Map<string, Score>) => {
   const table = new Table({
     columns: [
       { name: "peer", title: "Peer", alignment: "left", color: "blue" },
@@ -14,19 +14,23 @@ export const printScores = (map: Map<string, number>) => {
     ],
   });
 
-  const { publicKey: thisNode } = encodeKeys(keys);
-
+  const thisNode = keys.publicKey.toBytes();
   const rows = [];
-  const publicKeyMap = new Map(
-    [...sockets.entries()].map(([_, { publicKey, name }]) => [publicKey, name])
-  );
+  const signerNames = new Map<string, string>();
 
-  for (const [peer, score] of getAllScores(map)) {
-    if (peer === thisNode) {
+  for (const peer of sockets.values()) {
+    if (peer.publicKey) {
+      const hash = peer.murmurAddr || (await hashUint8Array(peer.publicKey));
+      signerNames.set(hash, peer.name);
+    }
+  }
+
+  for (const [murmur, { peer, score }] of getAllScores(map)) {
+    if (isEqual(peer, thisNode)) {
       continue;
     }
-    const name = publicKeyMap.get(peer) || "?";
-    rows.push({ peer, score, name });
+    const name = signerNames.get(murmur) || "?";
+    rows.push({ peer: murmur, score, name });
   }
 
   if (!rows.length) {
