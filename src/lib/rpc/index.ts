@@ -37,6 +37,7 @@ export const processRpc = async (
     const result = await rpcMethods[method].call(null, args, sender);
     return { result };
   } catch (error) {
+    console.trace(error);
     const errno = (error as NodeSystemError).code;
     return { error: errno || errors.E_INTERNAL };
   }

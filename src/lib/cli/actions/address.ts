@@ -6,7 +6,7 @@ import { encoder } from "../../crypto/base58/index.js";
 import { keys } from "../../constants.js";
 import { safeReadConfig } from "../../utils/config.js";
 import { murmur } from "../../constants.js";
-import { toMurmur } from "../../crypto/murmur/index.js";
+import { hashUint8Array } from "../../utils/uint8array.js";
 import assert from "node:assert";
 
 interface AddressOptions {
@@ -41,8 +41,9 @@ export const addressAction = async (
   Object.assign(keys, loadKeys(config.secretKey));
   assert(keys.publicKey !== undefined, "No public key available"); // Likely always passes
 
-  const address = encoder.encode(keys.publicKey.toBytes());
-  murmur.address = await toMurmur(address);
+  const bytes = keys.publicKey.toBytes();
+  const address = encoder.encode(bytes);
+  murmur.address = await hashUint8Array(bytes);
 
   if (options.ci) {
     console.log(address);

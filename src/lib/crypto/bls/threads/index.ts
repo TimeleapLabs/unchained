@@ -128,8 +128,8 @@ export default class WorkerPool extends EventEmitter {
 export const pool = new WorkerPool(os.availableParallelism());
 
 export const verifyAggregate = async (
-  signers: string[],
-  signature: string,
+  signers: Uint8Array[],
+  signature: Uint8Array,
   data: any
 ): Promise<boolean> => {
   return await pool.runTask<boolean>({
@@ -138,8 +138,10 @@ export const verifyAggregate = async (
   });
 };
 
-export const aggregate = async (signatures: string[]): Promise<string> => {
-  return await pool.runTask<string>({
+export const aggregate = async (
+  signatures: Uint8Array[]
+): Promise<Uint8Array> => {
+  return await pool.runTask<Uint8Array>({
     method: "aggregate",
     args: [signatures],
   });
