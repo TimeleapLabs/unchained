@@ -59,7 +59,7 @@ export const runTasks = (): void => {
   Cron("0 */5 * * * *", async () => {
     try {
       const scores = score.resetAllScores();
-      printScores(scores);
+      printScores(scores).catch(() => null);
       const result = await score.getScoresPayload(scores);
       const want = await toMurmurCached(hashObject(result.metric));
       await queryNetworkFor(want, result.dataset, score.getHave);

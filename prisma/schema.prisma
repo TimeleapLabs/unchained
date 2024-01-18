@@ -15,7 +15,8 @@ model AssetPrice {
   updatedAt           DateTime              @updatedAt
   block               Int?
   price               Decimal
-  signature           String
+  signature           Bytes                 @db.ByteA
+  oldSignature        String?
   dataset             DataSet               @relation(fields: [dataSetId], references: [id])
   signersOnAssetPrice SignersOnAssetPrice[]
 
@@ -30,7 +31,8 @@ model DataSet {
 
 model Signer {
   id                  Int                   @id @default(autoincrement())
-  key                 String                @unique
+  oldKey              String?               @unique
+  key                 Bytes                 @unique @db.ByteA
   points              Int                   @default(0)
   name                String?
   signersOnAssetPrice SignersOnAssetPrice[]

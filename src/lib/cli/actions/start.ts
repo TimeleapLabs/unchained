@@ -6,17 +6,18 @@ import { safeReadConfig } from "../../utils/config.js";
 import { checkForUpdates } from "../../update.js";
 import { makeKeys, encodeKeys, loadKeys } from "../../crypto/bls/keys.js";
 import { encoder } from "../../crypto/base58/index.js";
-import { toMurmur } from "../../crypto/murmur/index.js";
+import { hashUint8Array } from "../../utils/uint8array.js";
+import { runTasks } from "../../daemon/index.js";
+import { initDB } from "../../db/db.js";
+import { minutes } from "../../utils/time.js";
+import assert from "node:assert";
+
 import {
   keys,
   config as globalConfig,
   nameRegex,
   murmur,
 } from "../../constants.js";
-import { runTasks } from "../../daemon/index.js";
-import { initDB } from "../../db/db.js";
-import assert from "node:assert";
-import { minutes } from "../../utils/time.js";
 
 interface StartOptions {
   log?: string;
@@ -91,8 +92,9 @@ export const startAction = async (
   Object.assign(keys, loadKeys(config.secretKey));
   assert(keys.publicKey !== undefined, "No public key available");
 
-  const address = encoder.encode(keys.publicKey.toBytes());
-  murmur.address = await toMurmur(address);
+  const bytes = keys.publicKey.toBytes();
+  const address = encoder.encode(bytes);
+  murmur.address = await hashUint8Array(bytes);
 
   logger.info(`Unchained public address is ${address}`);
   logger.info(`Unchained wave address is ${murmur.address}`);

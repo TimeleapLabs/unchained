@@ -5,8 +5,8 @@ import {
 } from "../../types.js";
 
 export interface Attestation {
-  signers: string[];
-  aggregated?: string;
+  signers: Uint8Array[];
+  aggregated?: Uint8Array;
 }
 
 export type PriceSignatureInput = SignatureInput<
