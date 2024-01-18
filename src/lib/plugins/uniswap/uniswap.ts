@@ -128,9 +128,11 @@ const addPendingAttestations = async (
 
   if (newSigners) {
     processAttestations({ key: block, args: [block] }).catch((err: Error) => {
-      logger.error(
-        `Encountered an error while processing attestations: ${err.message}`
-      );
+      if (err) {
+        logger.error(
+          `Encountered an error while processing attestations: ${err.message}`
+        );
+      }
     });
   }
 
