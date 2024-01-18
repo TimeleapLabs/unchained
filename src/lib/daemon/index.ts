@@ -78,7 +78,6 @@ export const runTasks = (): void => {
         await score.storeSprintScores();
       }
     } catch (error) {
-      console.trace(error);
       // Handle the error or log it
     }
   });
