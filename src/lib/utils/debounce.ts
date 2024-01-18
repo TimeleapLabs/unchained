@@ -37,16 +37,15 @@ export const debounceAsync = <T>(
             timeouts.delete(key);
 
             // Wait for the previous execution to finish
-            if (executions.has(key)) {
-              await executions.get(key);
-            }
+            await executions.get(key)?.catch(() => null);
 
             // Execute the function
-            const execution = fn.apply(null, args);
+            const execution = fn(...args);
             executions.set(key, execution);
 
             // Resolve or reject based on execution
-            await execution.then(resolve).catch(reject);
+            const result = await execution;
+            return resolve(result);
           } catch (error) {
             reject(error);
           } finally {
