@@ -111,6 +111,14 @@ const addPendingAttestations = async (
       continue;
     }
 
+    if (!(signature instanceof Uint8Array)) {
+      continue;
+    }
+
+    if (!(signer instanceof Uint8Array)) {
+      continue;
+    }
+
     const alreadyAdded =
       pending.some((item) => isEqual(item.signer, signer)) ||
       confirmed?.some((cSigner) => isEqual(cSigner, signer));
