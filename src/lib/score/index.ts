@@ -139,7 +139,7 @@ const printMyScore = debounce((sprint: string, publicKey: Uint8Array) => {
   });
 
   table.addRow({
-    sprint,
+    sprint: murmurToSprint.get(sprint),
     attestations: rawScores.length,
     score,
     min,
