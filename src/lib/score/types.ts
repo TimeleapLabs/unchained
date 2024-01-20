@@ -12,3 +12,12 @@ export interface ScoreValue {
 }
 
 export type ScoreValues = ScoreValue[];
+
+export interface ScoreMap {
+  [key: string]: ScoreValues;
+}
+
+export interface Score {
+  score: number;
+  peer: Uint8Array;
+}

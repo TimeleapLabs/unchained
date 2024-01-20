@@ -9,32 +9,30 @@ import { cache } from "../utils/cache.js";
 import { db } from "../db/db.js";
 import { WantAnswer, WantPacket, datasets } from "../network/index.js";
 import { getSprint, minutes, seconds } from "../utils/time.js";
-import { isEqual } from "../utils/uint8array.js";
+import { copyUint8Array, isEqual } from "../utils/uint8array.js";
 import { encoder } from "../crypto/base58/index.js";
 import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
-
-import type { ScoreMetric, ScoreSignatureInput, ScoreValues } from "./types.js";
 import { hashUint8Array } from "../utils/uint8array.js";
 
-export interface ScoreMap {
-  [key: string]: ScoreValues;
-}
-
-export interface Score {
-  score: number;
-  peer: Uint8Array;
-}
+import {
+  ScoreMetric,
+  ScoreSignatureInput,
+  ScoreValues,
+  ScoreMap,
+  Score,
+} from "./types.js";
 
 const DATASET = "scores::peers::validations";
 
-const scoreCache = cache<number, ScoreMap>(minutes(15)); // 15 minutes
+const scoreCache = cache<string, ScoreMap>(minutes(15)); // 15 minutes
 const upsertCache = cache<number, boolean>(minutes(15));
-const waveCache = cache<string, any>(minutes(15));
 const peerScoreMap = new Map<string, Score>();
 // TODO: Better share this with the UniSwap plugin (and others)
 const keyToIdCache = new Map<string, number>();
-const keyToNameCache = new Map<string, string | null>();
+const murmurToKey = new Map<string, Uint8Array>();
+const sprintSignatures = cache<string, Uint8Array>(minutes(15));
+const murmurToSprint = cache<string, number>(minutes(15));
 
 export const addOnePoint = async (peer: Uint8Array) => {
   const hash = await hashUint8Array(peer);
@@ -91,7 +89,7 @@ const getScoresForAllPeers = (sprintScores: ScoreMap) => {
   return rawScores;
 };
 
-const getScoresForPeer = (sprint: number, publicKey: Uint8Array) => {
+const getScoresForPeer = (sprint: string, publicKey: Uint8Array) => {
   const sprintScores = scoreCache.get(sprint) as ScoreMap;
   const rawScores: number[] = [];
 
@@ -107,7 +105,7 @@ const getScoresForPeer = (sprint: number, publicKey: Uint8Array) => {
   return rawScores;
 };
 
-const printMyScore = debounce((sprint: number, publicKey: Uint8Array) => {
+const printMyScore = debounce((sprint: string, publicKey: Uint8Array) => {
   const rawScores = getScoresForPeer(sprint, publicKey);
 
   if (!rawScores.length) {
@@ -141,7 +139,7 @@ const printMyScore = debounce((sprint: number, publicKey: Uint8Array) => {
   });
 
   table.addRow({
-    sprint,
+    sprint: murmurToSprint.get(sprint),
     attestations: rawScores.length,
     score,
     min,
@@ -155,7 +153,8 @@ const printMyScore = debounce((sprint: number, publicKey: Uint8Array) => {
 
 export const storeSprintScores = async () => {
   const previousSprint = getSprint() - 1;
-  const sprintScores = scoreCache.get(previousSprint);
+  const hash = await toMurmurCached(hashObject({ sprint: previousSprint }));
+  const sprintScores = scoreCache.get(hash);
 
   if (!sprintScores) {
     return;
@@ -223,10 +222,6 @@ const scoreAttest = async (
     return null;
   }
 
-  if (!Object.keys(requests[0]?.payload?.value || {}).length) {
-    return null;
-  }
-
   const currentSprint = getSprint();
   const payloadSprint = requests[0].metric.sprint;
 
@@ -234,21 +229,14 @@ const scoreAttest = async (
     return null;
   }
 
-  if (!scoreCache.has(payloadSprint)) {
-    scoreCache.set(payloadSprint, {});
+  const sprintHash = await toMurmurCached(hashObject(requests[0].metric));
+
+  if (!scoreCache.has(sprintHash)) {
+    scoreCache.set(sprintHash, {});
+    murmurToSprint.set(sprintHash, requests[0].metric.sprint);
   }
 
-  const hash = await toMurmurCached(hashObject(requests[0].metric));
-
-  if (!waveCache.has(hash)) {
-    waveCache.set(hash, {
-      ...requests[0].metric,
-      have: new Map<string, any>(),
-    });
-  }
-
-  const cache = waveCache.get(hash);
-  const sprintScores = scoreCache.get(payloadSprint) as ScoreMap;
+  const sprintScores = scoreCache.get(sprintHash) as ScoreMap;
   const publicKey = keys.publicKey.toBytes();
 
   let scoreUpdated = false;
@@ -259,15 +247,19 @@ const scoreAttest = async (
     }
 
     const murmur = await hashUint8Array(request.signer);
-    if (cache.have.has(murmur)) {
-      continue;
-    }
+    sprintSignatures.set(
+      `${sprintHash}::${murmur}`,
+      copyUint8Array(request.signature)
+    );
 
     if (Array.isArray(sprintScores[murmur])) {
       continue;
     }
 
-    cache.have.set(murmur, request);
+    if (!murmurToKey.has(murmur)) {
+      murmurToKey.set(murmur, copyUint8Array(request.signer));
+    }
+
     sprintScores[murmur] = [];
 
     for (const { score, peer } of request.payload.value) {
@@ -275,39 +267,65 @@ const scoreAttest = async (
         scoreUpdated = true;
       }
 
-      sprintScores[murmur].push({ score, peer });
+      const copy = { score, peer: copyUint8Array(peer) };
+      sprintScores[murmur].push(copy);
     }
   }
 
   if (scoreUpdated) {
-    printMyScore({ key: payloadSprint, args: [payloadSprint, publicKey] });
+    printMyScore({ key: payloadSprint, args: [sprintHash, publicKey] });
   }
 };
 
 const have = async (data: WantAnswer) => {
-  const cache = waveCache.get(data.want);
+  const cache = scoreCache.get(data.want);
   if (!cache) {
     return;
   }
   await scoreAttest(data.have);
 };
 
+const wantCommon = {
+  dataset: DATASET,
+  method: "scoreAttest",
+};
+
+const toWantResponse =
+  (want: string) =>
+  ([murmur, value]: [string, ScoreValues]): WaveRequest<
+    ScoreMetric,
+    ScoreValues
+  > => {
+    const metric = { sprint: murmurToSprint.get(want) as number };
+    const key = `${want}::${murmur}`;
+    const signature = sprintSignatures.get(key) as Uint8Array;
+    const signer = murmurToKey.get(murmur) as Uint8Array;
+    return {
+      ...wantCommon,
+      signature,
+      signer,
+      metric,
+      payload: { metric, value },
+    };
+  };
+
 const want = async (data: WantPacket) => {
-  const cache = waveCache.get(data.want);
+  const cache = scoreCache.get(data.want);
   if (!cache) {
     return [];
   }
-  return [...cache.have.entries()]
-    .filter(([murmur]: [string, any]) => !data.have.includes(murmur))
-    .map(([_, item]: [string, any]) => item);
+  return Object.entries(cache)
+    .filter(([murmur]) => !data.have.includes(murmur))
+    .map(toWantResponse(data.want))
+    .filter((item) => item.signature && item.signer);
 };
 
 datasets.set(DATASET, { have, want });
 
 export const getHave = async (want: string) => {
-  const cache = waveCache.get(want);
+  const cache = scoreCache.get(want);
   if (!cache) {
     return [];
   }
-  return [...cache.have.keys()];
+  return Object.keys(cache);
 };
