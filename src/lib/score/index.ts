@@ -285,6 +285,30 @@ const have = async (data: WantAnswer) => {
   await scoreAttest(data.have);
 };
 
+const wantCommon = {
+  dataset: DATASET,
+  method: "scoreAttest",
+};
+
+const toWantResponse =
+  (want: string) =>
+  ([murmur, value]: [string, ScoreValues]): WaveRequest<
+    ScoreMetric,
+    ScoreValues
+  > => {
+    const metric = { sprint: murmurToSprint.get(want) as number };
+    const key = `${want}::${murmur}`;
+    const signature = sprintSignatures.get(key) as Uint8Array;
+    const signer = murmurToKey.get(murmur) as Uint8Array;
+    return {
+      ...wantCommon,
+      signature,
+      signer,
+      metric,
+      payload: { metric, value },
+    };
+  };
+
 const want = async (data: WantPacket) => {
   const cache = scoreCache.get(data.want);
   if (!cache) {
@@ -292,21 +316,8 @@ const want = async (data: WantPacket) => {
   }
   return Object.entries(cache)
     .filter(([murmur]) => !data.have.includes(murmur))
-    .map(
-      ([murmur, value]): WaveRequest<ScoreMetric, ScoreValues> => ({
-        signature: sprintSignatures.get(
-          `${data.want}::${murmur}`
-        ) as Uint8Array,
-        signer: murmurToKey.get(murmur) as Uint8Array,
-        dataset: DATASET,
-        metric: { sprint: murmurToSprint.get(data.want) as number },
-        method: "scoreAttest",
-        payload: {
-          metric: { sprint: murmurToSprint.get(data.want) as number },
-          value,
-        },
-      })
-    );
+    .map(toWantResponse(data.want))
+    .filter((item) => item.signature && item.signer);
 };
 
 datasets.set(DATASET, { have, want });
