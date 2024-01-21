@@ -8,7 +8,6 @@ import { queryNetworkFor } from "../network/index.js";
 import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
 import { epoch, seconds } from "../utils/time.js";
-import { fib } from "../utils/math.js";
 
 interface Task {
   running: boolean;
@@ -95,8 +94,8 @@ export const runTasks = (): void => {
           continue;
         }
 
-        const tooSoon = now - item.created <= seconds(fib(6 + item.calls));
-        if (tooSoon) {
+        const nextCall = item.created + seconds(Math.floor(item.calls ** 2.22));
+        if (now <= nextCall) {
           continue;
         }
 
