@@ -9,7 +9,7 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.19";
+export const version = "0.10.20";
 export const protocolVersion = "0.10.15";
 
 export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
@@ -39,11 +39,11 @@ export const config: Config = {
   },
   waves: {
     count: 10,
-    group: 8,
+    group: 16,
     select: 35,
     jitter: {
-      min: 5,
-      max: 15,
+      min: 10,
+      max: 25,
     },
   },
 };
@@ -54,6 +54,7 @@ export const errors = {
   E_NOT_FOUND: 404,
   E_INTERNAL: 500,
   E_DUPLICATE: 409,
+  E_TOO_MANY_REQUESTS: 429,
 };
 
 export const state: State = {
