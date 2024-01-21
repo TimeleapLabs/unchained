@@ -48,7 +48,13 @@ const setupEventListeners = () => {
 
     const peerAddr = info.publicKey.toString("hex");
     const peer = `[${peerAddr.slice(0, 4)}···${peerAddr.slice(-4)}]`;
-    const meta: MetaData = { socket, peer, peerAddr, name: peer };
+    const meta: MetaData = {
+      socket,
+      peer,
+      peerAddr,
+      name: peer,
+      rpcRequests: new Set(),
+    };
 
     let timeout: NodeJS.Timeout | null = null;
 

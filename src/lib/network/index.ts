@@ -5,6 +5,7 @@ import { jitter } from "../utils/time.js";
 import { randomDistinct } from "../utils/random.js";
 import { compress } from "snappy";
 import { serialize } from "../utils/sia.js";
+import { logger } from "../logger/index.js";
 
 export interface WantPacket {
   dataset: string;
@@ -54,18 +55,32 @@ const haveRpcCall = async (nodes: MetaData[], data: WantAnswer) => {
 };
 
 const isFree = (node: MetaData) => !node.needsDrain;
+const notWaiting = (identifier: string) => (node: MetaData) =>
+  !node.rpcRequests.has(identifier);
 
 export const queryNetworkFor = async (
   want: string,
   dataset: string,
   getHave: (want: string) => Promise<any>
 ) => {
-  const nodes = [...sockets.values()].filter(isFree);
+  const id = `${dataset}::${want}`;
+  const nodes = [...sockets.values()].filter(isFree).filter(notWaiting(id));
+
+  if (!nodes.length) {
+    return;
+  }
+
   const count = Math.floor((nodes.length * config.waves.select) / 100);
+
   const selected =
-    count >= nodes.length
+    count >= nodes.length * 2
       ? randomDistinct(nodes.length, count).map((index) => nodes[index])
       : nodes;
+
+  for (const node of selected) {
+    node.rpcRequests.add(id);
+  }
+
   const groups = chunks(selected, config.waves.group);
   for (const group of groups) {
     const have = await getHave(want);
@@ -87,11 +102,13 @@ const want = async (data: WantPacket, sender: MetaData) => {
   await haveRpcCall([sender], packet);
 };
 
-const have = async (data: WantAnswer) => {
+const have = async (data: WantAnswer, sender: MetaData) => {
   const dataset = datasets.get(data.dataset);
   if (!dataset) {
     return;
   }
+  sender.rpcRequests.delete(`${data.dataset}::${data.want}`);
+  logger.debug(`Peer ${sender.name} has fulfilled ${data.want}`);
   await dataset.have(data);
 };
 
