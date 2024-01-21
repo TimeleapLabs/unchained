@@ -61,6 +61,7 @@ export interface MetaData {
   name: string;
   publicKey?: Uint8Array;
   needsDrain?: boolean;
+  rpcRequests: Set<string>;
 }
 
 export interface NodeSystemError extends Error {
