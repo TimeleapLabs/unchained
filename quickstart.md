@@ -211,7 +211,7 @@ jail:
 waves:
   count: 8
   select: 35
-  select: 16
+  group: 16
   jitter:
     min: 10
     max: 25
