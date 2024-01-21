@@ -11,6 +11,7 @@ import { isJailed, strike } from "./jail.js";
 import { compress, uncompress } from "snappy";
 
 import HyperSwarm from "hyperswarm";
+import { copyUint8Array } from "../utils/uint8array.js";
 
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
@@ -121,7 +122,7 @@ const setupEventListeners = () => {
           const oldName = meta.name;
           meta.name = message.result.name.slice(0, 24);
           // TODO: verify the validity of the public key
-          meta.publicKey = message.result.publicKey;
+          meta.publicKey = copyUint8Array(message.result.publicKey);
           meta.murmurAddr = message.result.murmurAddr;
           logger.info(`Peer ${oldName} is ${meta.name}`);
         }
@@ -142,10 +143,7 @@ const setupEventListeners = () => {
 
     try {
       const introducePayload = await compress(
-        serialize({
-          type: "call",
-          request: { method: "introduce", args: {} },
-        })
+        serialize({ type: "call", request: { method: "introduce", args: {} } })
       );
       socket.write(introducePayload);
     } catch (error) {}

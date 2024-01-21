@@ -17,8 +17,8 @@ const peerConfigSchema = z.object({
 });
 
 const jailConfigSchema = z.object({
-  duration: z.number().optional(),
-  strikes: z.number().optional(),
+  duration: z.number().min(1).max(10).optional(),
+  strikes: z.number().min(5).optional(),
 });
 
 const jitterConfigSchema = z

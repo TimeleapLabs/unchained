@@ -48,8 +48,9 @@ const wantRpcCall = async (nodes: MetaData[], data: WantPacket) => {
 
 const haveRpcCall = async (nodes: MetaData[], data: WantAnswer) => {
   const call = { type: "call", request: { method: "have", args: data } };
-  const payload = await compress(serialize(call));
-  await writePayload(nodes, payload);
+  const serialized = serialize(call);
+  const compressed = await compress(serialized);
+  await writePayload(nodes, compressed);
 };
 
 const isFree = (node: MetaData) => !node.needsDrain;
