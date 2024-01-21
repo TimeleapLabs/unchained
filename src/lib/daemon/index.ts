@@ -9,7 +9,8 @@ import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
 import { epoch, seconds } from "../utils/time.js";
 
-interface Cache {
+interface Task {
+  running: boolean;
   want: string;
   dataset: string;
   calls: number;
@@ -17,7 +18,7 @@ interface Cache {
   getHave: (want: string) => Promise<any>;
 }
 
-let waveCache: Cache[] = [];
+let waveCache: Task[] = [];
 
 interface UniswapArgs {
   blockchain: string;
@@ -42,7 +43,8 @@ export const runTasks = (): void => {
         await queryNetworkFor(want, result.dataset, uniswap.getHave);
         const created = epoch();
         const { dataset } = result;
-        const args: Cache = {
+        const args: Task = {
+          running: false,
           want,
           dataset,
           calls: 0,
@@ -65,7 +67,8 @@ export const runTasks = (): void => {
       await queryNetworkFor(want, result.dataset, score.getHave);
       const created = epoch();
       const { dataset } = result;
-      const args: Cache = {
+      const args: Task = {
+        running: false,
         want,
         dataset,
         calls: 0,
@@ -87,10 +90,19 @@ export const runTasks = (): void => {
       waveCache = waveCache.filter((item) => item.calls <= config.waves.count);
       const now = epoch();
       for (const item of waveCache.toReversed()) {
-        if (now - item.created >= seconds(item.calls ** 2)) {
-          item.calls++;
-          await queryNetworkFor(item.want, item.dataset, item.getHave);
+        if (item.running) {
+          continue;
         }
+
+        const nextCall = item.created + seconds(Math.floor(item.calls ** 2.22));
+        if (now <= nextCall) {
+          continue;
+        }
+
+        item.running = true;
+        item.calls++;
+        await queryNetworkFor(item.want, item.dataset, item.getHave);
+        item.running = false;
       }
     } catch (error) {
       // Handle the error or log it

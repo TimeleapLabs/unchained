@@ -210,11 +210,11 @@ jail:
   strikes: 5
 waves:
   count: 8
-  select: 50
-  group: 8
+  select: 35
+  group: 16
   jitter:
-    min: 5
-    max: 15
+    min: 10
+    max: 25
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
