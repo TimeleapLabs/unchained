@@ -1,6 +1,13 @@
 import { epoch } from "./time.js";
 
-export const cache = <K, V>(ttl: number) => {
+export interface Cache<K, V> {
+  set(key: K, value: V): Map<K, V>;
+  get(key: K): V | undefined;
+  has(key: K): boolean;
+  entries(): IterableIterator<[K, V]>;
+}
+
+export const cache = <K, V>(ttl: number): Cache<K, V> => {
   const map = new Map<K, V>();
   const timeouts = new Map<K, number>();
 
@@ -16,7 +23,7 @@ export const cache = <K, V>(ttl: number) => {
   };
 
   return {
-    set(key: K, value: V) {
+    set(key: K, value: V): Map<K, V> {
       addTtlAndCleanup(key);
       return map.set(key, value);
     },
