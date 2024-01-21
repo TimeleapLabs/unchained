@@ -28,6 +28,10 @@ export const processRpc = async (
   sender: MetaData
 ): Promise<{ result?: any; error?: string | number }> => {
   try {
+    if (sender.needsDrain) {
+      return { error: errors.E_TOO_MANY_REQUESTS };
+    }
+
     const { method, args } = message.request;
 
     if (!(method in rpcMethods)) {

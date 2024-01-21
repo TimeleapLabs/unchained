@@ -34,14 +34,14 @@
     "os-name": "^6.0.0",
     "ping": "^0.4.4",
     "pretty-bytes": "^6.1.1",
+    "prisma": "^5.8.1",
     "semver": "^7.5.4",
     "sializer": "^0.3.0",
     "snappy": "^7.2.2",
     "unws": "^0.2.4",
     "winston": "^3.11.0",
     "yaml": "^2.3.4",
-    "zod": "^3.22.4",
-    "prisma": "^5.8.1"
+    "zod": "^3.22.4"
   },
   "type": "module",
   "optionalDependencies": {
