@@ -1,4 +1,3 @@
-import { sha } from "./utils/hash.js";
 import { minutes } from "./utils/time.js";
 import {
   State,
@@ -9,10 +8,8 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.21";
-export const protocolVersion = "0.10.15";
-
-export const topic = sha(`Kenshi.Unchained.Testnet.Topic.V${protocolVersion}`);
+export const version = "0.10.22";
+export const protocolVersion = "0.10.22";
 
 export const sockets = new Map<string, MetaData>();
 export const keys: KeyPair = Object({});
@@ -20,6 +17,7 @@ export const keys: KeyPair = Object({});
 export const config: Config = {
   name: "Change Me",
   log: "info",
+  network: `Kenshi::Unchained::Testnet::V${protocolVersion}`,
   rpc: {
     ethereum: "https://ethereum.publicnode.com",
   },

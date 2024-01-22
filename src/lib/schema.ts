@@ -52,6 +52,7 @@ export const userConfigSchema = z.object({
   rpc: rpcListSchema,
   lite: z.boolean().optional(),
   database: databaseConfigSchema.optional(),
+  network: z.string().optional(),
   secretKey: z.string().optional(),
   publicKey: z.string().optional(),
   peers: peerConfigSchema.optional(),
