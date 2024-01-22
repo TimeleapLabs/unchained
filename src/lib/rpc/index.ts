@@ -1,6 +1,6 @@
 import { encoder } from "../crypto/base58/index.js";
 import { config, keys, rpcMethods, errors, version } from "../constants.js";
-import { MetaData, NodeSystemError, IntroduceClientConfig } from "../types.js";
+import { MetaData, NodeSystemError, IntroducePayload } from "../types.js";
 import { murmur } from "../constants.js";
 import assert from "assert";
 
@@ -11,12 +11,7 @@ interface RpcRequest {
 
 const defaultMethods = {
   timestamp: (): number => new Date().valueOf(),
-  introduce: (): {
-    name: string;
-    publicKey: string;
-    murmurAddr: string;
-    client: IntroduceClientConfig;
-  } => {
+  introduce: (): IntroducePayload => {
     assert(keys.publicKey !== undefined, "Public key not found");
     return {
       name: config.name,
