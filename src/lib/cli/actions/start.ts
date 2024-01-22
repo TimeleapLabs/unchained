@@ -41,6 +41,9 @@ export const startAction = async (
   logger.level = options.log || config.log || "info";
   config.lite = options.lite || config.lite || false;
 
+  // Network
+  config.network ||= globalConfig.network;
+
   // Peers
   config.peers ||= globalConfig.peers;
   config.peers.max =

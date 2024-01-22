@@ -1,17 +1,15 @@
 import { makeSpinner } from "../spinner.js";
-import { topic, state, nameRegex } from "../constants.js";
+import { state, nameRegex, sockets, config } from "../constants.js";
 import { logger } from "../logger/index.js";
 import { processRpc } from "../rpc/index.js";
-import { sockets } from "../constants.js";
 import { serialize, parse } from "../utils/sia.js";
 import { Duplex } from "stream";
 import { MetaData, NodeSystemError, PeerInfo } from "../types.js";
-import { config } from "../constants.js";
 import { isJailed, strike } from "./jail.js";
 import { compress, uncompress } from "snappy";
-
-import HyperSwarm from "hyperswarm";
 import { copyUint8Array } from "../utils/uint8array.js";
+import { sha } from "../utils/hash.js";
+import HyperSwarm from "hyperswarm";
 
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
@@ -130,6 +128,7 @@ const setupEventListeners = () => {
           // TODO: verify the validity of the public key
           meta.publicKey = copyUint8Array(message.result.publicKey);
           meta.murmurAddr = message.result.murmurAddr;
+          meta.client = message.result.client;
           logger.info(`Peer ${oldName} is ${meta.name}`);
         }
       } else if (message.type === "call") {
@@ -160,7 +159,7 @@ export const discover = (): void => {
   if (state.connected) {
     logger.debug("Running the peer discovery mechanism");
   }
-  const discovery = swarm.join(topic);
+  const discovery = swarm.join(sha(config.network));
   discovery.flushed().then(() => {
     setTimeout(discover, 30000);
   });

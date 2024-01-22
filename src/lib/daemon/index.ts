@@ -94,7 +94,7 @@ export const runTasks = (): void => {
           continue;
         }
 
-        const nextCall = item.created + seconds(Math.floor(item.calls ** 2.22));
+        const nextCall = item.created + seconds(15 + item.calls ** 1.369 * 15);
         if (now <= nextCall) {
           continue;
         }
