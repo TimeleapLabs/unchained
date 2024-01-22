@@ -33,7 +33,7 @@ interface JitterConfig {
   max: number;
 }
 
-interface WavesConfig {
+export interface WavesConfig {
   count: number;
   select: number;
   group: number;
@@ -43,6 +43,7 @@ interface WavesConfig {
 export interface Config {
   name: string;
   log: string;
+  network: string;
   rpc: RPCList;
   lite: boolean;
   database?: DatabaseConfig;
@@ -62,6 +63,7 @@ export interface MetaData {
   publicKey?: Uint8Array;
   needsDrain?: boolean;
   rpcRequests: Set<string>;
+  client?: IntroduceClientConfig;
 }
 
 export interface NodeSystemError extends Error {
@@ -117,4 +119,10 @@ export interface PeerInfo {
 
 export interface Murmur {
   address: string;
+}
+
+export interface IntroduceClientConfig {
+  waves: WavesConfig;
+  peers: PeerConfig;
+  version: string;
 }
