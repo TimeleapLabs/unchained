@@ -126,3 +126,10 @@ export interface IntroduceClientConfig {
   peers: PeerConfig;
   version: string;
 }
+
+export interface IntroducePayload {
+  name: string;
+  publicKey: string;
+  murmurAddr: string;
+  client: IntroduceClientConfig;
+}
