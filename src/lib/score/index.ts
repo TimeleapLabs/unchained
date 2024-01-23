@@ -182,7 +182,7 @@ export const storeSprintScores = async () => {
     const oldKey = encoder.encode(peer);
 
     if (!keyToIdCache.has(hash)) {
-      const key = Buffer.from(oldKey);
+      const key = Buffer.from(peer);
       const name = signerNames.get(hash);
       const signer = await db.signer.upsert({
         where: { oldKey },
