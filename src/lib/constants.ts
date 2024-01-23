@@ -8,8 +8,8 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.22";
-export const protocolVersion = "0.10.22";
+export const version = "0.10.23";
+export const protocolVersion = "0.10.23";
 
 export const sockets = new Map<string, MetaData>();
 export const keys: KeyPair = Object({});
