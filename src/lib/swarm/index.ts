@@ -15,6 +15,7 @@ import { compress, uncompress } from "snappy";
 import { copyUint8Array } from "../utils/uint8array.js";
 import { sha } from "../utils/hash.js";
 import HyperSwarm from "hyperswarm";
+import { minutes } from "../utils/time.js";
 
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
@@ -117,7 +118,7 @@ const setupEventListeners = () => {
           return safeCloseSocket(socket);
         }
         warnNoData();
-      }, 60000);
+      }, minutes(1));
     };
 
     warnNoData();
