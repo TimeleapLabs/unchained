@@ -101,6 +101,7 @@ export const runTasks = (): void => {
         }
 
         item.running = true;
+        item.lastQuery = epoch();
 
         const success = await queryNetworkFor(
           item.want,
@@ -110,7 +111,6 @@ export const runTasks = (): void => {
 
         if (success) {
           item.calls++;
-          item.lastQuery = epoch();
         }
 
         item.running = false;
