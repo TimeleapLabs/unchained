@@ -7,14 +7,14 @@ import { config } from "../constants.js";
 import { queryNetworkFor } from "../network/index.js";
 import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
-import { epoch, seconds } from "../utils/time.js";
+import { epoch, jitter, seconds } from "../utils/time.js";
 
 interface Task {
   running: boolean;
   want: string;
   dataset: string;
   calls: number;
-  created: number;
+  lastQuery: number;
   getHave: (want: string) => Promise<any>;
 }
 
@@ -41,14 +41,14 @@ export const runTasks = (): void => {
       if (result && !(result instanceof Symbol)) {
         const want = await toMurmurCached(hashObject(result.metric));
         await queryNetworkFor(want, result.dataset, uniswap.getHave);
-        const created = epoch();
+        const lastQuery = epoch();
         const { dataset } = result;
         const args: Task = {
           running: false,
           want,
           dataset,
           calls: 0,
-          created,
+          lastQuery,
           getHave: uniswap.getHave,
         };
         waveCache.push(args);
@@ -65,14 +65,14 @@ export const runTasks = (): void => {
       const result = await score.getScoresPayload(scores);
       const want = await toMurmurCached(hashObject(result.metric));
       await queryNetworkFor(want, result.dataset, score.getHave);
-      const created = epoch();
+      const lastQuery = epoch();
       const { dataset } = result;
       const args: Task = {
         running: false,
         want,
         dataset,
         calls: 0,
-        created,
+        lastQuery,
         getHave: score.getHave,
       };
       waveCache.push(args);
@@ -94,14 +94,25 @@ export const runTasks = (): void => {
           continue;
         }
 
-        const nextCall = item.created + seconds(15 + item.calls ** 1.369 * 15);
+        const nextCall = item.lastQuery + seconds(15 + 7.5 * item.calls);
+
         if (now <= nextCall) {
           continue;
         }
 
         item.running = true;
-        item.calls++;
-        await queryNetworkFor(item.want, item.dataset, item.getHave);
+
+        const success = await queryNetworkFor(
+          item.want,
+          item.dataset,
+          item.getHave
+        );
+
+        if (success) {
+          item.calls++;
+          item.lastQuery = epoch();
+        }
+
         item.running = false;
       }
     } catch (error) {

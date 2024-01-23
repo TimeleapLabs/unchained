@@ -8,8 +8,8 @@ import {
   Murmur,
 } from "./types.js";
 
-export const version = "0.10.22";
-export const protocolVersion = "0.10.22";
+export const version = "0.10.23";
+export const protocolVersion = "0.10.23";
 
 export const sockets = new Map<string, MetaData>();
 export const keys: KeyPair = Object({});
@@ -36,7 +36,7 @@ export const config: Config = {
     strikes: 5,
   },
   waves: {
-    count: 10,
+    count: 4,
     group: 16,
     select: 35,
     jitter: {

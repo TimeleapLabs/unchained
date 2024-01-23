@@ -15,7 +15,7 @@ const defaultMethods = {
     assert(keys.publicKey !== undefined, "Public key not found");
     return {
       name: config.name,
-      publicKey: encoder.encode(keys.publicKey.toBytes()),
+      publicKey: keys.publicKey.toBytes(),
       murmurAddr: murmur.address,
       client: {
         version,
