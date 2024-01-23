@@ -209,7 +209,7 @@ jail:
   duration: 5
   strikes: 5
 waves:
-  count: 8
+  count: 4
   select: 35
   group: 16
   jitter:

@@ -197,6 +197,7 @@ const updateAssetPrice = debounceAsync(
 
       if (!keyToIdCache.has(hash)) {
         const name = signerNames.get(hash);
+
         const signer = await db.signer.upsert({
           where: { oldKey },
           // see https://github.com/prisma/prisma/issues/18883

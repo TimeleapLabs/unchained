@@ -1,3 +1,5 @@
+import { seconds } from "./time.js";
+
 export const TIMEOUT = Symbol("TIMEOUT");
 export const CALLERROR = Symbol("CALLERROR");
 
@@ -24,7 +26,7 @@ const retryTimes: { [key: number]: number } = {
 export const runWithRetries = async <T>(
   fn: (...args: any[]) => Promise<T>,
   args: any[],
-  timeoutMs: number = 5000,
+  timeoutMs: number = seconds(1),
   retries: number = 3
 ): Promise<T | Symbol> => {
   while (true) {

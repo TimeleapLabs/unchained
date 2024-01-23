@@ -32,7 +32,7 @@ const jitterConfigSchema = z
   );
 
 const wavesConfigSchema = z.object({
-  count: z.number().gt(5).optional(),
+  count: z.number().gt(3).lt(6).optional(),
   select: z.number().gte(25).lte(100).optional(),
   group: z.number().gte(4).optional(),
   jitter: jitterConfigSchema.optional(),
