@@ -61,7 +61,7 @@ const notWaitingFor = (identifier: string) => (node: MetaData) =>
   !node.rpcRequests.has(identifier);
 
 // TODO: Should this be configurable?
-const notOverwhelmed = (node: MetaData) => node.rpcRequests.size < 8;
+const notOverwhelmed = (node: MetaData) => node.rpcRequests.size < Infinity;
 
 // TODO: Should this be configurable?
 const notTooFast = (node: MetaData) =>
@@ -73,6 +73,7 @@ export const queryNetworkFor = async (
   getHave: (want: string) => Promise<any>
 ): Promise<boolean> => {
   const id = `${dataset}::${want}`;
+
   const nodes = [...sockets.values()]
     .filter(notBusy)
     .filter(notTooFast)
@@ -90,14 +91,16 @@ export const queryNetworkFor = async (
       ? randomDistinct(nodes.length, count).map((index) => nodes[index])
       : nodes;
 
-  for (const node of selected) {
-    node.rpcRequests.add(id);
-  }
-
   const groups = chunks(selected, config.waves.group);
+
   for (const group of groups) {
     const have = await getHave(want);
     const packet: WantPacket = { want, dataset, have };
+
+    for (const node of group) {
+      node.rpcRequests.add(id);
+    }
+
     await wantRpcCall(group, packet);
   }
 
