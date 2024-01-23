@@ -6,16 +6,18 @@ import { safeReadConfig } from "../../utils/config.js";
 import { checkForUpdates } from "../../update.js";
 import { makeKeys, encodeKeys, loadKeys } from "../../crypto/bls/keys.js";
 import { encoder } from "../../crypto/base58/index.js";
-import { toMurmur } from "../../crypto/murmur/index.js";
+import { hashUint8Array } from "../../utils/uint8array.js";
+import { runTasks } from "../../daemon/index.js";
+import { initDB } from "../../db/db.js";
+import { minutes } from "../../utils/time.js";
+import assert from "node:assert";
+
 import {
   keys,
   config as globalConfig,
   nameRegex,
   murmur,
 } from "../../constants.js";
-import { runTasks } from "../../daemon/index.js";
-import { initDB } from "../../db/db.js";
-import assert from "node:assert";
 
 interface StartOptions {
   log?: string;
@@ -23,6 +25,8 @@ interface StartOptions {
   generate?: boolean;
   maxPeers?: string;
   parallelPeers?: string;
+  infect?: string;
+  die?: string;
 }
 
 export const startAction = async (
@@ -37,6 +41,10 @@ export const startAction = async (
   logger.level = options.log || config.log || "info";
   config.lite = options.lite || config.lite || false;
 
+  // Network
+  config.network ||= globalConfig.network;
+
+  // Peers
   config.peers ||= globalConfig.peers;
   config.peers.max =
     parseInt(options.maxPeers || "0") ||
@@ -47,6 +55,25 @@ export const startAction = async (
     parseInt(options.parallelPeers || "0") ||
     config.peers.parallel ||
     globalConfig.peers.parallel;
+
+  // Jailing
+  config.jail ||= globalConfig.jail;
+
+  config.jail.duration = config.jail.duration
+    ? minutes(config.jail.duration)
+    : globalConfig.jail.duration;
+
+  config.jail.strikes = config.jail.strikes || globalConfig.jail.strikes;
+
+  // Waves
+  // TODO: expose to cli
+  config.waves ||= globalConfig.waves;
+  config.waves.count ||= globalConfig.waves.count;
+  config.waves.select ||= globalConfig.waves.select;
+  config.waves.group ||= globalConfig.waves.group;
+  config.waves.jitter ||= globalConfig.waves.jitter;
+  config.waves.jitter.min ||= globalConfig.waves.jitter.min;
+  config.waves.jitter.max ||= globalConfig.waves.jitter.max;
 
   if (!config.secretKey && !options.generate) {
     logger.error("No secret key supplied");
@@ -68,11 +95,12 @@ export const startAction = async (
   Object.assign(keys, loadKeys(config.secretKey));
   assert(keys.publicKey !== undefined, "No public key available");
 
-  const address = encoder.encode(keys.publicKey.toBytes());
-  murmur.address = await toMurmur(address);
+  const bytes = keys.publicKey.toBytes();
+  const address = encoder.encode(bytes);
+  murmur.address = await hashUint8Array(bytes);
 
   logger.info(`Unchained public address is ${address}`);
-  logger.info(`Unchained gossip address is ${murmur.address}`);
+  logger.info(`Unchained wave address is ${murmur.address}`);
 
   if (!config.name) {
     logger.warn("Node name not found in config");

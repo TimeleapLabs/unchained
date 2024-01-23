@@ -1,37 +1,48 @@
 import { makeSpinner } from "../spinner.js";
-import { topic, state, nameRegex } from "../constants.js";
+import { state, nameRegex, sockets, config } from "../constants.js";
 import { logger } from "../logger/index.js";
 import { processRpc } from "../rpc/index.js";
-import { processGossip } from "../gossip/index.js";
-import { sockets } from "../constants.js";
-import { parse } from "../utils/json.js";
+import { serialize, parse } from "../utils/sia.js";
 import { Duplex } from "stream";
-import { MetaData, NodeSystemError, PeerInfo } from "../types.js";
-import { config } from "../constants.js";
+import {
+  IntroducePayload,
+  MetaData,
+  NodeSystemError,
+  PeerInfo,
+} from "../types.js";
 import { isJailed, strike } from "./jail.js";
-import { brotliCompressSync, brotliDecompressSync } from "zlib";
-
+import { compress, uncompress } from "snappy";
+import { copyUint8Array } from "../utils/uint8array.js";
+import { sha } from "../utils/hash.js";
 import HyperSwarm from "hyperswarm";
+import { minutes } from "../utils/time.js";
 
 let swarm: HyperSwarm;
 const spinner = makeSpinner("Looking for peers");
 
+const introducePayload = await compress(
+  serialize({ type: "call", request: { method: "introduce", args: {} } })
+);
+
 const safeClearTimeout = (timeout: NodeJS.Timeout | null) =>
   timeout && clearTimeout(timeout);
+
+class safeClosedError extends Error {}
 
 const safeCloseSocket = (socket: Duplex) => {
   try {
     if (!socket.closed) {
       socket.pause();
       while (socket.read());
-      socket.destroy(new Error("ERR_JAILED"));
+      socket.destroy(new safeClosedError());
     }
   } catch (_err) {}
 };
 
-const safeDecompressAndParse = (packet: Buffer) => {
+const safeDecompressAndParse = async (packet: Buffer) => {
   try {
-    return parse(brotliDecompressSync(packet).toString());
+    const uncompressed = await uncompress(packet, { asBuffer: true });
+    return parse(uncompressed as Buffer) as any;
   } catch (error) {
     return error;
   }
@@ -47,52 +58,67 @@ const setupEventListeners = () => {
 
     const peerAddr = info.publicKey.toString("hex");
     const peer = `[${peerAddr.slice(0, 4)}···${peerAddr.slice(-4)}]`;
-    const meta: MetaData = { socket, peer, peerAddr, name: peer };
+    const meta: MetaData = {
+      socket,
+      peer,
+      peerAddr,
+      name: peer,
+      rpcRequests: new Set(),
+    };
 
+    let strikeOnClose = true;
     let timeout: NodeJS.Timeout | null = null;
 
     socket.on("error", (error: NodeSystemError) => {
+      if (error instanceof safeClosedError) {
+        return;
+      }
+      strike(meta);
       const code = error.code || error.errno || error.message;
       logger.debug(`Socket error with peer ${meta.name}: ${code}`);
-      const jailed = strike(meta.name, info);
-      if (jailed) {
-        safeCloseSocket(socket);
-      }
     });
 
     socket.on("timeout", () => {
       logger.debug(`Socket error with peer ${meta.name}: ETIMEDOUT`);
-      const jailed = strike(meta.name, info);
+      const jailed = strike(meta);
       if (jailed) {
+        strikeOnClose = false;
         safeCloseSocket(socket);
       }
     });
 
     socket.on("close", () => {
+      if (strikeOnClose) {
+        strike(meta);
+      }
       safeClearTimeout(timeout);
       sockets.delete(peerAddr);
     });
 
-    if (isJailed(meta.name, info) || sockets.size >= config.peers.max) {
+    sockets.set(peerAddr, meta);
+
+    if (sockets.size > config.peers.max || isJailed(meta)) {
+      sockets.delete(peerAddr);
+      strikeOnClose = false;
       return safeCloseSocket(socket);
     }
 
     socket.on("drain", () => {
-      meta.onSocketDrain?.();
+      meta.needsDrain = false;
     });
 
-    sockets.set(peerAddr, meta);
-    logger.info(`Connected to a new peer: ${peerAddr}`);
+    logger.debug(`Connected to a new peer: ${peerAddr}`);
 
     const warnNoData = () => {
       timeout = setTimeout(() => {
         logger.warn(`No data from ${meta.name} in the last 60 seconds`);
-        const jailed = strike(meta.name, info);
+        const jailed = strike(meta);
         if (jailed) {
+          strikeOnClose = false;
           return safeCloseSocket(socket);
         }
         warnNoData();
-      }, 60000);
+      }, minutes(1));
     };
 
     warnNoData();
@@ -101,7 +127,7 @@ const setupEventListeners = () => {
       safeClearTimeout(timeout);
       warnNoData();
 
-      const message = safeDecompressAndParse(data);
+      const message = await safeDecompressAndParse(data);
 
       if (message instanceof Error) {
         return logger.debug(`Received a faulty packet from: ${peerAddr}`);
@@ -111,43 +137,43 @@ const setupEventListeners = () => {
       logger.silly(message);
 
       if (message.error) {
-        logger.error(
-          `Received an error from peer ${meta.name}: ${message.error}`
-        );
+        // TODO: Give a score to each socket based on the number of
+        // TODO: messages they can handle and take it into account
+        if (message.error !== 429) {
+          logger.error(
+            `Received an error from peer ${meta.name}: ${message.error}`
+          );
+        }
       } else if (message.result) {
         // TODO: this needs to be handled properly
         if (message.result.name && typeof message.result.name === "string") {
-          if (!message.result.name.match(nameRegex)) {
+          const result = message.result as IntroducePayload;
+          if (!result.name.match(nameRegex)) {
             return logger.warn(`Received an illegal name from ${meta.name}`);
           }
-          const oldName = meta.name;
-          meta.name = message.result.name.slice(0, 24);
+          meta.name = result.name.slice(0, 24);
           // TODO: verify the validity of the public key
-          meta.publicKey = message.result.publicKey;
-          meta.murmurAddr = message.result.murmurAddr;
-          logger.info(`Peer ${oldName} is ${meta.name}`);
+          meta.publicKey = copyUint8Array(result.publicKey);
+          meta.murmurAddr = result.murmurAddr;
+          meta.client = result.client;
+          logger.info(`Connected to peer ${meta.name}: ${meta.murmurAddr}`);
         }
       } else if (message.type === "call") {
-        const result = await processRpc(message);
-        try {
-          socket.write(brotliCompressSync(JSON.stringify(result)));
-        } catch (error) {
-          const err = error as NodeSystemError;
-          const info = err.code || err.errno || err.message;
-          logger.error(`Socket error with peer ${meta.name}: ${info}`);
+        const result = await processRpc(message, meta);
+        if (result.result || result.error) {
+          try {
+            const payload = await compress(serialize(result));
+            socket.write(payload);
+          } catch (error) {
+            const err = error as NodeSystemError;
+            const info = err.code || err.errno || err.message;
+            logger.error(`Socket error with peer ${meta.name}: ${info}`);
+          }
         }
-      } else if (message.type === "gossip") {
-        await processGossip(message, socket);
       }
     });
 
     try {
-      const introducePayload = brotliCompressSync(
-        JSON.stringify({
-          type: "call",
-          request: { method: "introduce", args: {} },
-        })
-      );
       socket.write(introducePayload);
     } catch (error) {}
   });
@@ -157,7 +183,7 @@ export const discover = (): void => {
   if (state.connected) {
     logger.debug("Running the peer discovery mechanism");
   }
-  const discovery = swarm.join(topic);
+  const discovery = swarm.join(sha(config.network));
   discovery.flushed().then(() => {
     setTimeout(discover, 30000);
   });

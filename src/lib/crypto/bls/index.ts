@@ -1,24 +1,20 @@
-import { cachedDecodePublicKey } from "./keys.js";
-import { encoder } from "../base58/index.js";
 import bls from "@chainsafe/bls";
 import { keys } from "../../constants.js";
 import stringify from "json-canon";
 import assert from "node:assert";
 
-import { GossipSignatureInput, SignatureItem } from "../../types.js";
+import { SignatureInput, SignatureItem } from "../../types.js";
 
-export const sign = (data: any): string => {
+export const sign = (data: any): Uint8Array => {
   assert(keys.secretKey !== undefined, "No secret key in config");
   const json = stringify(data);
   const buffer = Buffer.from(json, "utf8");
-  return encoder.encode(keys.secretKey.sign(buffer).toBytes());
+  return keys.secretKey.sign(buffer).toBytes();
 };
 
-export const attest = (
-  payload: GossipSignatureInput<any, any>
-): SignatureItem => {
+export const attest = (payload: SignatureInput<any, any>): SignatureItem => {
   assert(keys.publicKey !== undefined, "No public key in config");
-  const signer = encoder.encode(keys.publicKey.toBytes());
+  const signer = keys.publicKey.toBytes();
   const signature = sign(payload);
   return { signer, signature };
 };
@@ -28,36 +24,28 @@ export const verify = ({
   signature,
   data,
 }: {
-  signer: string;
-  signature: string;
+  signer: Uint8Array;
+  signature: Uint8Array;
   data: any;
 }): boolean => {
   const message = Buffer.from(stringify(data), "utf8");
-  const publicKey = cachedDecodePublicKey(signer);
-  const decodedSignature = bls.Signature.fromBytes(
-    Buffer.from(encoder.decode(signature))
-  );
+  const publicKey = bls.PublicKey.fromBytes(signer);
+  const decodedSignature = bls.Signature.fromBytes(signature);
   return decodedSignature.verify(publicKey, message);
 };
 
 export const verifyAggregate = (
-  signers: string[],
-  signature: string,
+  signers: Uint8Array[],
+  signature: Uint8Array,
   data: any
 ): boolean => {
   const message = Buffer.from(stringify(data), "utf8");
-  const decodedSignature = bls.Signature.fromBytes(
-    Buffer.from(encoder.decode(signature))
-  );
-  const publicKeys = signers.map(cachedDecodePublicKey);
+  const decodedSignature = bls.Signature.fromBytes(signature);
+  const publicKeys = signers.map((key) => bls.PublicKey.fromBytes(key));
   return decodedSignature.verifyAggregate(publicKeys, message);
 };
 
-export const aggregate = (signatures: string[]): string =>
-  encoder.encode(
-    bls.Signature.aggregate(
-      signatures.map((signature) =>
-        bls.Signature.fromBytes(Buffer.from(encoder.decode(signature)))
-      )
-    ).toBytes()
-  );
+export const aggregate = (signatures: Uint8Array[]): Uint8Array =>
+  bls.Signature.aggregate(
+    signatures.map((signature) => bls.Signature.fromBytes(signature))
+  ).toBytes();

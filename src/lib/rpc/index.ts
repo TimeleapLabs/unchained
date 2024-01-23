@@ -1,6 +1,6 @@
 import { encoder } from "../crypto/base58/index.js";
-import { config, keys, rpcMethods, errors } from "../constants.js";
-import { NodeSystemError } from "../types.js";
+import { config, keys, rpcMethods, errors, version } from "../constants.js";
+import { MetaData, NodeSystemError, IntroducePayload } from "../types.js";
 import { murmur } from "../constants.js";
 import assert from "assert";
 
@@ -11,31 +11,39 @@ interface RpcRequest {
 
 const defaultMethods = {
   timestamp: (): number => new Date().valueOf(),
-  introduce: (): { name: string; publicKey: string; murmurAddr: string } => {
+  introduce: (): IntroducePayload => {
     assert(keys.publicKey !== undefined, "Public key not found");
     return {
       name: config.name,
-      publicKey: encoder.encode(keys.publicKey.toBytes()),
+      publicKey: keys.publicKey.toBytes(),
       murmurAddr: murmur.address,
+      client: {
+        version,
+        peers: config.peers,
+        waves: config.waves,
+      },
     };
   },
 };
 
 Object.assign(rpcMethods, defaultMethods);
 
-const thisArg = {};
-
-export const processRpc = async (message: {
-  request: RpcRequest;
-}): Promise<{ result?: any; error?: string | number }> => {
+export const processRpc = async (
+  message: { request: RpcRequest },
+  sender: MetaData
+): Promise<{ result?: any; error?: string | number }> => {
   try {
+    if (sender.needsDrain) {
+      return { error: errors.E_TOO_MANY_REQUESTS };
+    }
+
     const { method, args } = message.request;
 
     if (!(method in rpcMethods)) {
       return { error: errors.E_NOT_FOUND };
     }
 
-    const result = await rpcMethods[method].call(thisArg, args);
+    const result = await rpcMethods[method].call(null, args, sender);
     return { result };
   } catch (error) {
     const errno = (error as NodeSystemError).code;

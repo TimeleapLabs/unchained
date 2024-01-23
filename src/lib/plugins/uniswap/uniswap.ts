@@ -1,32 +1,40 @@
 import { ethers } from "ethers";
-import { gossipMethods, config, keys, sockets } from "../../constants.js";
+import { config, sockets } from "../../constants.js";
 import { logger } from "../../logger/index.js";
 import { state } from "../../constants.js";
 import { WS } from "iso-websocket";
 import { attest as blsAttest, verify } from "../../crypto/bls/index.js";
 import { aggregate, verifyAggregate } from "../../crypto/bls/threads/index.js";
-import { encoder } from "../../crypto/base58/index.js";
 import { WebSocketLike } from "ethers";
 import { WebSocket } from "unws";
 import { addOnePoint } from "../../score/index.js";
 import { debounceAsync } from "../../utils/debounce.js";
 import { db } from "../../db/db.js";
+import { datasets } from "../../network/index.js";
+import { cache } from "../../utils/cache.js";
+import { isEqual, hashUint8Array } from "../../utils/uint8array.js";
+
+import type { WantPacket, WantAnswer } from "../../network/index.js";
 
 import {
   Config,
-  GossipMethod,
   AssetPriceMetric,
-  GossipRequest,
+  WaveRequest,
   SignatureItem,
   AssetPriceValue,
 } from "../../types.js";
 
 import { Attestation, PriceSignatureInput } from "./types.js";
+import { minutes } from "../../utils/time.js";
+import { hashObject } from "../../utils/hash.js";
+import { toMurmurCached } from "../../crypto/murmur/index.js";
+import { encoder } from "../../crypto/base58/index.js";
 
-const cache = new Map<number, number>();
+const blockCache = new Map<number, number>();
 const attestations = new Map<number, Attestation>();
 const pendingAttestations = new Map<number, SignatureItem[]>();
 const keyToIdCache = new Map<string, number>();
+const waveCache = cache<string, any>(minutes(15));
 
 let provider: ethers.Provider | undefined;
 let getNewRpc: boolean = false;
@@ -37,13 +45,16 @@ const ws = (endpoint: string): WebSocketLike => {
   const socket = new WS(endpoint, {
     ws: WebSocket,
     retry: { forever: true },
-  }) as WebSocketLike;
+    automaticOpen: false,
+  });
 
-  socket.onerror = () => {
+  socket.addEventListener("error", () => {
     getNewRpc = true;
-  };
+  });
 
-  return socket;
+  socket.open();
+
+  return socket as WebSocketLike;
 };
 
 let currentProvider: number = 0;
@@ -62,7 +73,6 @@ const getNextConnectionUrl = (config: Config): string => {
 const getProvider = (config: Config) => {
   if (getNewRpc || !provider) {
     if (getNewRpc) {
-      provider?.destroy();
       getNewRpc = false;
     }
     const endpoint = getNextConnectionUrl(config);
@@ -74,39 +84,66 @@ const getProvider = (config: Config) => {
 };
 
 const setCache = (block: number, price: number) => {
-  cache.set(block, price);
-  for (const key of cache.keys()) {
+  blockCache.set(block, price);
+  for (const key of blockCache.keys()) {
     if (key < block - CACHE_SIZE) {
-      cache.delete(key);
+      blockCache.delete(key);
     }
   }
 };
 
-const addPendingAttestation = (
+const addPendingAttestations = async (
+  cache: any,
   block: number,
-  signer: string,
-  signature: string
+  signatures: SignatureItem[]
 ) => {
-  const pendingSignatures = pendingAttestations.get(block) || [];
-  const confirmedSigners = attestations.get(block)?.signers;
+  if (!pendingAttestations.has(block)) {
+    pendingAttestations.set(block, []);
+  }
 
-  const alreadyAdded =
-    pendingSignatures.some((item) => item.signer === signer) ||
-    confirmedSigners?.some((cSigner) => cSigner === signer);
+  const pending = pendingAttestations.get(block) as SignatureItem[];
+  const confirmed = attestations.get(block)?.signers;
 
-  if (!alreadyAdded) {
-    pendingAttestations.set(block, [
-      ...pendingSignatures,
-      { signer, signature },
-    ]);
-    if (cache.has(block)) {
-      processAttestations({ key: block, args: [block] }).catch((err: Error) => {
+  let newSigners = false;
+
+  for (const { signature, signer } of signatures) {
+    if (!signature || !signer) {
+      continue;
+    }
+
+    if (!(signature instanceof Uint8Array)) {
+      continue;
+    }
+
+    if (!(signer instanceof Uint8Array)) {
+      continue;
+    }
+
+    const alreadyAdded =
+      pending.some((item) => isEqual(item.signer, signer)) ||
+      confirmed?.some((cSigner) => isEqual(cSigner, signer));
+
+    if (alreadyAdded) {
+      continue;
+    }
+
+    pending.push({ signer, signature });
+    newSigners = true;
+
+    const murmur = await hashUint8Array(signer);
+    cache.have = [...cache.have, { signer, signature, murmur }];
+  }
+
+  if (newSigners) {
+    processAttestations({ key: block, args: [block] }).catch((err: Error) => {
+      if (err) {
         logger.error(
           `Encountered an error while processing attestations: ${err.message}`
         );
-      });
-    }
+      }
+    });
   }
+
   for (const key of pendingAttestations.keys()) {
     if (key < block - CACHE_SIZE) {
       // FIXME: Security problem where a validator can reset another
@@ -114,16 +151,23 @@ const addPendingAttestation = (
       pendingAttestations.delete(key);
     }
   }
-  return !alreadyAdded;
 };
+
+interface Signer {
+  publicKey: Buffer;
+  name?: string;
+}
 
 const updateAssetPrice = debounceAsync(
   async (
     block: number,
     price: number,
-    signature: string,
-    signers: string[]
+    uintSignature: Uint8Array,
+    uintSigners: Uint8Array[]
   ) => {
+    const signature = Buffer.from(uintSignature);
+    const signers = uintSigners.map((arr) => Buffer.from(arr));
+
     const dataset = await db.dataSet.upsert({
       where: { name: "uniswap::ethereum::ethereum" },
       update: {},
@@ -138,26 +182,33 @@ const updateAssetPrice = debounceAsync(
       select: { id: true },
     });
 
-    const signerNames = new Map(
-      [...sockets.values()].map((item) => [item.publicKey, item.name])
-    );
+    const signerNames = new Map<string, string>();
 
-    for (const key of signers) {
-      if (!keyToIdCache.has(key)) {
-        const name = signerNames.get(key);
-        const signer = await db.signer.upsert({
-          where: { key },
-          // see https://github.com/prisma/prisma/issues/18883
-          update: { key },
-          create: { key, name },
-          select: { id: true },
-        });
-        keyToIdCache.set(key, signer.id);
+    for (const peer of sockets.values()) {
+      if (peer.publicKey) {
+        const hash = peer.murmurAddr || (await hashUint8Array(peer.publicKey));
+        signerNames.set(hash, peer.name);
       }
     }
 
     for (const key of signers) {
-      const signerId = keyToIdCache.get(key) as number;
+      const hash = await hashUint8Array(key);
+      const oldKey = encoder.encode(key);
+
+      if (!keyToIdCache.has(hash)) {
+        const name = signerNames.get(hash);
+
+        const signer = await db.signer.upsert({
+          where: { oldKey },
+          // see https://github.com/prisma/prisma/issues/18883
+          update: { oldKey, key, name },
+          create: { oldKey, key, name },
+          select: { id: true },
+        });
+        keyToIdCache.set(hash, signer.id);
+      }
+
+      const signerId = keyToIdCache.get(hash) as number;
       const combo = { signerId, assetPriceId: assetPrice.id };
 
       // TODO: Add a upsert tracker/cache
@@ -173,47 +224,20 @@ const updateAssetPrice = debounceAsync(
   500
 );
 
-const printAttestations = (
+const printAttestations = async (
   size: number,
   block: number,
   price: number,
-  signersSet: string[]
+  signersSet: Uint8Array[]
 ) => {
   logger.info(`${size}x validations at block ${block}: $${price}`);
-  if (logger.isVerboseEnabled()) {
-    const allPeers = [
-      keys.publicKey
-        ? {
-            name: "@",
-            publicKey: encoder.encode(Buffer.from(keys.publicKey.toBytes())),
-          }
-        : null,
-      ...sockets.values(),
-    ].filter(Boolean);
-    const peerStates = {
-      signed: allPeers
-        .filter(
-          (peer) => peer?.publicKey && signersSet.includes(peer.publicKey)
-        )
-        .map((peer) => peer?.name || "?"),
-      missing: allPeers
-        .filter(
-          (peer) => peer?.publicKey && !signersSet.includes(peer.publicKey)
-        )
-        .map((peer) => peer?.name || "?"),
-    };
-    logger.verbose(`Received signatures: ${peerStates.signed.join(", ")}`);
-    logger.verbose(
-      `Missing signatures: ${peerStates.missing.join(", ") || "N/A"}`
-    );
-  }
 };
 
 const processAttestations = debounceAsync(async (block: number) => {
-  if (!cache.has(block)) {
+  if (!blockCache.has(block)) {
     return;
   }
-  const price = cache.get(block);
+  const price = blockCache.get(block);
   if (typeof price !== "number") {
     return;
   }
@@ -230,7 +254,7 @@ const processAttestations = debounceAsync(async (block: number) => {
 
   const currentSigners = stored.signers;
   const newSignatureSet = pending.filter(
-    ({ signer }) => !currentSigners.includes(signer)
+    ({ signer }) => !currentSigners.some((item) => isEqual(item, signer))
   );
 
   if (!newSignatureSet.length) {
@@ -244,6 +268,7 @@ const processAttestations = debounceAsync(async (block: number) => {
   const newAggregated = await aggregate(
     newSignatureSet.map((item) => item.signature)
   );
+
   const isValid = await verifyAggregate(newSigners, newAggregated, data);
 
   const validNewSigs = isValid
@@ -264,7 +289,7 @@ const processAttestations = debounceAsync(async (block: number) => {
   const aggregated =
     signatureList.length === 1
       ? signatureList[0]
-      : await aggregate(signatureList as string[]);
+      : await aggregate(signatureList as Uint8Array[]);
 
   attestations.set(block, { ...stored, aggregated, signers });
 
@@ -273,15 +298,17 @@ const processAttestations = debounceAsync(async (block: number) => {
       key: block,
       args: [block, price, aggregated, [...signers]],
     }).catch((err: Error) => {
-      logger.error(
-        `Error encountered while updating asset prices in the database: ${err.message}`
-      );
+      if (err) {
+        logger.error(
+          `Error encountered while updating asset prices in the database: ${err.message}`
+        );
+      }
     });
   }
 
   const { length } = signers;
   if (length > 1) {
-    printAttestations(length, block, price, signers);
+    printAttestations(length, block, price, signers).catch(() => null);
   }
 
   for (const key of attestations.keys()) {
@@ -310,13 +337,13 @@ export const work = async (
   poolAddress: string,
   decimals: [number, number],
   inverse: boolean
-): Promise<GossipRequest<AssetPriceMetric, AssetPriceValue> | null> => {
+): Promise<WaveRequest<AssetPriceMetric, AssetPriceValue> | null> => {
   try {
     const start = new Date();
     const provider = getProvider(config);
     const pool = new ethers.Contract(poolAddress, poolABI, provider);
     const block = await provider.getBlockNumber();
-    if (cache.has(block)) {
+    if (blockCache.has(block)) {
       return null;
     }
     const { sqrtPriceX96 } = await pool.slot0();
@@ -332,13 +359,18 @@ export const work = async (
     } else if (state.connected) {
       logger.debug(`Request to Ethereum RPC node took ${took}ms`);
     }
-    if (cache.has(block)) {
+    if (blockCache.has(block)) {
       return null;
     }
     setCache(block, price);
     const data: PriceSignatureInput = { metric: { block }, value: { price } };
     const signed = blsAttest(data);
-    addPendingAttestation(block, signed.signer, signed.signature);
+    const hash = await toMurmurCached(hashObject(data.metric));
+    if (!waveCache.has(hash)) {
+      waveCache.set(hash, { block, have: [] });
+    }
+    const cache = waveCache.get(hash);
+    await addPendingAttestations(cache, block, [signed]);
     // TODO: we need to properly handle `dataset`
     return {
       method: "uniswapAttest",
@@ -354,12 +386,28 @@ export const work = async (
   }
 };
 
-export const attest: GossipMethod<AssetPriceMetric, AssetPriceValue> = async (
-  request: GossipRequest<AssetPriceMetric, AssetPriceValue>
-) => {
-  const { metric, signer, signature } = request;
-  const added = addPendingAttestation(metric.block, signer, signature);
-  return added ? request : null;
+const have = (data: WantAnswer) => {
+  const cache = waveCache.get(data.want);
+  if (!cache) {
+    return;
+  }
+  addPendingAttestations(cache, cache.block, data.have);
 };
 
-Object.assign(gossipMethods, { uniswapAttest: attest });
+const want = async (data: WantPacket) => {
+  const cache = waveCache.get(data.want);
+  if (!cache) {
+    return [];
+  }
+  return cache.have.filter((item: any) => !data.have.includes(item.murmur));
+};
+
+datasets.set("ethereum::uniswap::ethereum", { have, want });
+
+export const getHave = async (want: string) => {
+  const cache = waveCache.get(want);
+  if (!cache) {
+    return [];
+  }
+  return cache.have.map((item: { murmur: string }) => item.murmur);
+};

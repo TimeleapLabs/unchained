@@ -1,39 +1,33 @@
-import { PeerInfo } from "../types.js";
+import { MetaData } from "../types.js";
 import { logger } from "../logger/index.js";
 import { epoch } from "../utils/time.js";
+import { config } from "../constants.js";
 
 const jail = new Map<string, number>();
 const strikes = new Map<string, number>();
 
-const JAIL_TIME = 15 * 60 * 1000; // 15 minutes
-const STRIKES_TO_JAIL = 3;
-
-const peerKey = (info: PeerInfo) => info.publicKey.toString("base64");
-
-export const isJailed = (name: string, info: PeerInfo) => {
-  const key = peerKey(info);
-  const jailedAt = jail.get(key);
+export const isJailed = (meta: MetaData) => {
+  const jailedAt = jail.get(meta.peerAddr);
   if (!jailedAt) {
     return false;
   }
-  const isFree = jailedAt > epoch() + JAIL_TIME;
+  const isFree = jailedAt > epoch() + config.jail.duration;
   if (isFree) {
-    jail.delete(key);
-    logger.info(`Peer ${name} is freed from jail.`);
+    jail.delete(meta.peerAddr);
+    logger.debug(`Peer ${meta.name} is freed from jail.`);
   }
   return isFree;
 };
 
-export const strike = (name: string, info: PeerInfo) => {
-  const key = peerKey(info);
-  const score = 1 + (strikes.get(key) || 0);
-  if (score >= STRIKES_TO_JAIL) {
-    strikes.delete(key);
-    jail.set(key, epoch());
-    logger.info(`Jailed peer ${name} for too many connection errors.`);
+export const strike = (meta: MetaData) => {
+  const score = 1 + (strikes.get(meta.peerAddr) || 0);
+  if (score >= config.jail.strikes) {
+    strikes.delete(meta.peerAddr);
+    jail.set(meta.peerAddr, epoch());
+    logger.debug(`Jailed peer ${meta.name} for too many connection errors.`);
     return true;
   } else {
-    strikes.set(key, score);
+    strikes.set(meta.peerAddr, score);
     return false;
   }
 };

@@ -23,15 +23,35 @@ interface PeerConfig {
   parallel: number;
 }
 
+interface JailConfig {
+  duration: number;
+  strikes: number;
+}
+
+interface JitterConfig {
+  min: number;
+  max: number;
+}
+
+export interface WavesConfig {
+  count: number;
+  select: number;
+  group: number;
+  jitter: JitterConfig;
+}
+
 export interface Config {
   name: string;
   log: string;
+  network: string;
   rpc: RPCList;
   lite: boolean;
   database?: DatabaseConfig;
   secretKey: string;
   publicKey: string;
   peers: PeerConfig;
+  jail: JailConfig;
+  waves: WavesConfig;
 }
 
 export interface MetaData {
@@ -40,9 +60,11 @@ export interface MetaData {
   peerAddr: string;
   murmurAddr?: string;
   name: string;
-  publicKey?: string;
-  onSocketDrain?: () => void;
-  isAvailable?: Promise<void>;
+  publicKey?: Uint8Array;
+  needsDrain?: boolean;
+  rpcRequests: Set<string>;
+  client?: IntroduceClientConfig;
+  lastSocketWrite?: number;
 }
 
 export interface NodeSystemError extends Error {
@@ -61,18 +83,7 @@ export interface ObjectType<V> {
   [key: string]: V;
 }
 
-export interface GossipMethod<T, V> {
-  (payload: GossipRequest<T, V>):
-    | Promise<GossipRequest<T, V> | null>
-    | GossipRequest<T, V>
-    | null;
-}
-
 export type StringAnyObject = ObjectType<any>;
-
-export interface StringGossipMethodObject<T, V> {
-  [key: string]: GossipMethod<T, V>;
-}
 
 export interface AssetPriceMetric {
   block: number;
@@ -82,29 +93,23 @@ export interface AssetPriceValue {
   price: number;
 }
 
-export interface GossipSignatureInput<MT, VT> {
+export interface SignatureInput<MT, VT> {
   metric: MT;
   value: VT;
 }
 
-export interface GossipRequest<T, V> {
+export interface WaveRequest<T, V> {
   method: string;
   dataset: string;
   metric: T;
-  signature: string;
-  signer: string;
-  payload?: GossipSignatureInput<T, V>;
-}
-
-export interface Gossip<T, V> {
-  type: "gossip";
-  request: GossipRequest<T, V>;
-  seen: string[];
+  signature: Uint8Array;
+  signer: Uint8Array;
+  payload?: SignatureInput<T, V>;
 }
 
 export interface SignatureItem {
-  signer: string;
-  signature: string;
+  signer: Uint8Array;
+  signature: Uint8Array;
 }
 
 export interface PeerInfo {
@@ -115,4 +120,17 @@ export interface PeerInfo {
 
 export interface Murmur {
   address: string;
+}
+
+export interface IntroduceClientConfig {
+  waves: WavesConfig;
+  peers: PeerConfig;
+  version: string;
+}
+
+export interface IntroducePayload {
+  name: string;
+  publicKey: Uint8Array;
+  murmurAddr: string;
+  client: IntroduceClientConfig;
 }
