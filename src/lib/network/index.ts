@@ -1,7 +1,7 @@
 import { sockets, rpcMethods, config } from "../constants.js";
 import { MetaData } from "../types.js";
 import { chunks } from "../utils/array.js";
-import { jitter } from "../utils/time.js";
+import { epoch, jitter, seconds } from "../utils/time.js";
 import { randomDistinct } from "../utils/random.js";
 import { compress } from "snappy";
 import { serialize } from "../utils/sia.js";
@@ -29,6 +29,7 @@ export const datasets = new Map<string, Dataset>();
 const writePayload = async (nodes: MetaData[], payload: Buffer) => {
   for (const node of nodes) {
     if (!node.socket.closed) {
+      node.lastSocketWrite = epoch();
       const sent = node.socket.write(payload);
       // TODO: Maybe add back pressure config to allow N cached messages
       if (!sent) {
@@ -54,20 +55,32 @@ const haveRpcCall = async (nodes: MetaData[], data: WantAnswer) => {
   await writePayload(nodes, compressed);
 };
 
-const isFree = (node: MetaData) => !node.needsDrain;
-const notWaiting = (identifier: string) => (node: MetaData) =>
+const notBusy = (node: MetaData) => !node.needsDrain;
+
+const notWaitingFor = (identifier: string) => (node: MetaData) =>
   !node.rpcRequests.has(identifier);
+
+// TODO: Should this be configurable?
+const notOverwhelmed = (node: MetaData) => node.rpcRequests.size < 8;
+
+// TODO: Should this be configurable?
+const notTooFast = (node: MetaData) =>
+  !node.lastSocketWrite || node.lastSocketWrite + seconds(0.125) < epoch();
 
 export const queryNetworkFor = async (
   want: string,
   dataset: string,
   getHave: (want: string) => Promise<any>
-) => {
+): Promise<boolean> => {
   const id = `${dataset}::${want}`;
-  const nodes = [...sockets.values()].filter(isFree).filter(notWaiting(id));
+  const nodes = [...sockets.values()]
+    .filter(notBusy)
+    .filter(notTooFast)
+    .filter(notOverwhelmed)
+    .filter(notWaitingFor(id));
 
   if (!nodes.length) {
-    return;
+    return false;
   }
 
   const count = Math.floor((nodes.length * config.waves.select) / 100);
@@ -87,6 +100,8 @@ export const queryNetworkFor = async (
     const packet: WantPacket = { want, dataset, have };
     await wantRpcCall(group, packet);
   }
+
+  return true;
 };
 
 const want = async (data: WantPacket, sender: MetaData) => {

@@ -64,6 +64,7 @@ export interface MetaData {
   needsDrain?: boolean;
   rpcRequests: Set<string>;
   client?: IntroduceClientConfig;
+  lastSocketWrite?: number;
 }
 
 export interface NodeSystemError extends Error {
@@ -129,7 +130,7 @@ export interface IntroduceClientConfig {
 
 export interface IntroducePayload {
   name: string;
-  publicKey: string;
+  publicKey: Uint8Array;
   murmurAddr: string;
   client: IntroduceClientConfig;
 }
