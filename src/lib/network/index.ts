@@ -84,7 +84,7 @@ export const queryNetworkFor = async (
     return false;
   }
 
-  const count = Math.floor((nodes.length * config.waves.select) / 100);
+  const count = Math.floor((sockets.size * config.waves.select) / 100);
 
   const selected =
     count >= nodes.length * 2
