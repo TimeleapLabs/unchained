@@ -97,6 +97,10 @@ const addPendingAttestations = async (
   block: number,
   signatures: SignatureItem[]
 ) => {
+  if (!Array.isArray(signatures)) {
+    return;
+  }
+
   if (!pendingAttestations.has(block)) {
     pendingAttestations.set(block, []);
   }

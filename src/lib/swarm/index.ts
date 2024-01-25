@@ -12,7 +12,7 @@ import {
 } from "../types.js";
 import { isJailed, strike } from "./jail.js";
 import { compress, uncompress } from "snappy";
-import { copyUint8Array } from "../utils/uint8array.js";
+import { copyUint8Array, isUint8Array } from "../utils/uint8array.js";
 import { sha } from "../utils/hash.js";
 import HyperSwarm from "hyperswarm";
 import { minutes } from "../utils/time.js";
@@ -111,7 +111,9 @@ const setupEventListeners = () => {
 
     const warnNoData = () => {
       timeout = setTimeout(() => {
-        logger.warn(`No data from ${meta.name} in the last 60 seconds`);
+        logger.warn(
+          `No data from ${meta.name}@${meta.client?.version} in the last 60 seconds`
+        );
         const jailed = strike(meta);
         if (jailed) {
           strikeOnClose = false;
@@ -153,7 +155,9 @@ const setupEventListeners = () => {
           }
           meta.name = result.name.slice(0, 24);
           // TODO: verify the validity of the public key
-          meta.publicKey = copyUint8Array(result.publicKey);
+          meta.publicKey = isUint8Array(result.publicKey)
+            ? copyUint8Array(result.publicKey)
+            : undefined;
           meta.murmurAddr = result.murmurAddr;
           meta.client = result.client;
           logger.info(`Connected to peer ${meta.name}: ${meta.murmurAddr}`);

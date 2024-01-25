@@ -9,7 +9,7 @@ import { cache } from "../utils/cache.js";
 import { db } from "../db/db.js";
 import { WantAnswer, WantPacket, datasets } from "../network/index.js";
 import { getSprint, minutes, seconds } from "../utils/time.js";
-import { copyUint8Array, isEqual } from "../utils/uint8array.js";
+import { copyUint8Array, isEqual, isUint8Array } from "../utils/uint8array.js";
 import { encoder } from "../crypto/base58/index.js";
 import { toMurmurCached } from "../crypto/murmur/index.js";
 import { hashObject } from "../utils/hash.js";
@@ -242,7 +242,7 @@ const scoreAttest = async (
   let scoreUpdated = false;
 
   for (const request of requests) {
-    if (!request.payload) {
+    if (!request.payload || !isUint8Array(request.signature)) {
       continue;
     }
 
@@ -263,6 +263,10 @@ const scoreAttest = async (
     sprintScores[murmur] = [];
 
     for (const { score, peer } of request.payload.value) {
+      if (!isUint8Array(peer)) {
+        continue;
+      }
+
       if (!scoreUpdated && isEqual(peer, publicKey)) {
         scoreUpdated = true;
       }
