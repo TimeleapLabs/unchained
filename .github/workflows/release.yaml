@@ -1,0 +1,55 @@
+name: Make release
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - zig
+
+jobs:
+  push-store-image:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{matrix.os}}
+    defaults:
+      run:
+        working-directory: "."
+    steps:
+      - name: Checkout GitHub Action
+        uses: actions/checkout@main
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+
+      - name: Run Linux Build
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p release
+          cd zig
+          ./build.sh
+          mv ./zig-out/bin/unchained-zig ../release/unchained-zig-x86_64-linux
+
+      - name: Run Mac Build
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p release
+          cd zig
+          ./build.sh
+          mv ./zig-out/bin/unchained-zig ../release/unchained-zig-aarch64-macos
+
+      - name: Run Windows Build
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir -p release
+          cd zig
+          ./build.sh
+          mv ./zig-out/bin/unchained-zig ../release/unchained-zig-x86_64-windows
+
+      - name: "Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./release/*
+          name: Unchained v${{ github.ref_name }}
+          prerelease: true
