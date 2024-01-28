@@ -8,7 +8,7 @@ on:
       - zig
 
 jobs:
-  push-store-image:
+  build-zig:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
