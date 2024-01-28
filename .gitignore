@@ -13,3 +13,4 @@ docker/pgadmin
 node_trace.*
 zig/zig-cache
 zig/zig-out
+zig/vendor/blst
