@@ -1,0 +1,23 @@
+.{
+    .paths = .{""},
+    .name = "unchained",
+    .version = "0.11.0",
+    .dependencies = .{
+        .web3 = .{
+            .url = "https://github.com/KenshiTech/web3.zig/archive/refs/heads/zig12.tar.gz",
+            .hash = "1220f665a18ce8f0d34e3a7b8ce3577f8385f88f90a27f469d708ecb0537ea01f8af",
+        },
+        .s2s = .{
+            .url = "https://github.com/der-teufel-programming/s2s/archive/refs/heads/master.tar.gz",
+            .hash = "12202c39c98f05041f1052c268132669dbfcda87e4dbb0353cd84a6070924c8ac0e3",
+        },
+        .clap = .{
+            .url = "https://github.com/Hejsil/zig-clap/archive/refs/heads/master.tar.gz",
+            .hash = "12209e829da9d7d0bc089e4e0cbc07bb882f6192cd583277277da34df53cd05b8f2a",
+        },
+        .websocket = .{
+            .url = "https://github.com/karlseguin/websocket.zig/archive/refs/heads/master.tar.gz",
+            .hash = "1220ce168e550f8904364acd0a72f5cafd40caa08a50ba83aac50b97ba700d7bcf20",
+        },
+    },
+}

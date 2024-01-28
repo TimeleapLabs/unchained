@@ -11,3 +11,5 @@ docker/data
 docker/pgadmin
 .clinic
 node_trace.*
+zig/zig-cache
+zig/zig-out
