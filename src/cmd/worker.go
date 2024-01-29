@@ -4,22 +4,23 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
 )
 
+var (
+	configPath string
+)
+
 // workerCmd represents the worker command
 var workerCmd = &cobra.Command{
 	Use:   "worker",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Run the Unchained client in worker mode",
+	Long:  `Run the Unchained client in worker mode`,
 	Run: func(cmd *cobra.Command, args []string) {
+		config.LoadConfig(configPath)
 		uniswap.Work()
 	},
 }
@@ -36,4 +37,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// workerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	workerCmd.Flags().StringVarP(&configPath, "config", "c", "./unchained.conf.yaml", "Config file")
+	workerCmd.MarkFlagFilename("config", "yaml")
+	workerCmd.MarkFlagRequired("config")
 }

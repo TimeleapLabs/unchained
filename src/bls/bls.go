@@ -16,16 +16,21 @@ func init() {
 	_, _, g1Aff, _ = bls12381.Generators()
 }
 
+func GetPublicKey(sk *big.Int) *bls12381.G1Affine {
+	return new(bls12381.G1Affine).ScalarMultiplication(&g1Aff, sk)
+}
+
 // generate BLS private and public key pair
 func GenerateKeyPair() (*big.Int, *bls12381.G1Affine, error) {
 	// generate a random point in G2
 	g2Order := bls12_381_fr.Modulus()
 	sk, err := rand.Int(rand.Reader, g2Order)
+
 	if err != nil {
 		return nil, nil, err
 	}
 
-	pk := new(bls12381.G1Affine).ScalarMultiplication(&g1Aff, sk)
+	pk := GetPublicKey(sk)
 
 	return sk, pk, nil
 }
