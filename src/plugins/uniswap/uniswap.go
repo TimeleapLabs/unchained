@@ -1,22 +1,17 @@
 package uniswap
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"math/big"
 	"net/url"
 	"os"
 	"os/signal"
-	"reflect"
 	"time"
 
 	"github.com/KenshiTech/unchained/bls"
-	"github.com/KenshiTech/unchained/contracts"
+	"github.com/KenshiTech/unchained/ethereum"
 
 	btcutil "github.com/btcsuite/btcutil/base58"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
 	"github.com/spf13/viper"
@@ -25,7 +20,7 @@ import (
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 )
 
-var addr = "65.108.48.32:9123"
+var addr = "shinobi.brokers.kenshi.io"
 
 type PriceInfo struct {
 	Block uint64
@@ -40,7 +35,7 @@ type PriceReport struct {
 
 func Work() {
 
-	packedUrl := url.URL{Scheme: "ws", Host: addr, Path: "/"}
+	packedUrl := url.URL{Scheme: "wss", Host: addr, Path: "/"}
 	wsClient, _, err := websocket.DefaultDialer.Dial(packedUrl.String(), nil)
 
 	if err != nil {
@@ -63,55 +58,12 @@ func Work() {
 		}
 	}()
 
-	var rpcList []string
+	etherUsdPairAddr := "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
+	etherUsdPair, err := ethereum.GetNewUniV3Contract(etherUsdPairAddr, false)
 
-	rpcConfig := viper.Get("rpc.ethereum")
-
-	switch reflect.TypeOf(rpcConfig).Kind() {
-	case reflect.String:
-		rpcList = append(rpcList, rpcConfig.(string))
-
-	case reflect.Slice:
-		for _, rpc := range rpcConfig.([]interface{}) {
-			rpcList = append(rpcList, rpc.(string))
-		}
-	default:
-		panic("RPC List Is Invalid")
+	if err != nil {
+		panic(err)
 	}
-
-	rpcIndex := 0
-	address := common.HexToAddress("0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640")
-
-	var client *ethclient.Client
-	var uniV3 *contracts.UniV3
-	var initRpc func(refresh bool, retries int) bool
-
-	initRpc = func(refresh bool, retries int) bool {
-
-		if retries == 0 {
-			log.Fatal("Cannot connect to any of the provided RPCs")
-		}
-
-		if refresh {
-			if rpcIndex == len(rpcList)-1 {
-				rpcIndex = 0
-			} else {
-				rpcIndex++
-			}
-		}
-
-		client, err = ethclient.Dial(rpcList[rpcIndex])
-
-		if err != nil {
-			return initRpc(true, retries-1)
-		}
-
-		uniV3, _ = contracts.NewUniV3(address, client)
-
-		return true
-	}
-
-	initRpc(false, len(rpcList))
 
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
@@ -155,10 +107,15 @@ func Work() {
 		gocron.DurationJob(5*time.Second),
 		gocron.NewTask(
 			func(decimalDif int64, inverse bool) {
-				blockNumber, err := client.BlockNumber(context.Background())
+				blockNumber, err := ethereum.GetBlockNumber()
 
 				if err != nil {
-					initRpc(true, len(rpcList))
+					etherUsdPair, err = ethereum.GetNewUniV3Contract(etherUsdPairAddr, true)
+
+					if err != nil {
+						panic(err)
+					}
+
 					return
 				}
 
@@ -167,10 +124,16 @@ func Work() {
 				}
 
 				lastBlock = blockNumber
-				data, err := uniV3.Slot0(nil)
+				data, err := etherUsdPair.Slot0(nil)
 
 				if err != nil {
-					panic(err)
+					etherUsdPair, err = ethereum.GetNewUniV3Contract(etherUsdPairAddr, true)
+
+					if err != nil {
+						panic(err)
+					}
+
+					return
 				}
 
 				var priceX96 big.Int
