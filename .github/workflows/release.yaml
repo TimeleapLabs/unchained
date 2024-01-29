@@ -8,7 +8,7 @@ on:
       - go
 
 jobs:
-  push-store-image:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
