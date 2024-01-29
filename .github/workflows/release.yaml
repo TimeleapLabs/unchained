@@ -5,7 +5,7 @@ on:
     tags:
       - v*
     branches:
-      - docker
+      - go
 
 jobs:
   push-store-image:
@@ -14,28 +14,19 @@ jobs:
       run:
         working-directory: "."
     steps:
-      - name: "Checkout GitHub Action"
+      - name: Checkout GitHub Action
         uses: actions/checkout@main
 
-      - name: "Run release script"
-        run: npm i && node scripts/gh-release.js
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
 
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-
-      - name: Get Docker Tag
-        id: get-prerelease
-        run: |
-          if echo "${{ steps.package-version.outputs.current-version }}" | grep -q rc; then \
-            echo "prerelease=true" >> $GITHUB_OUTPUT; \
-          else echo "prerelease=false" >> $GITHUB_OUTPUT; fi;
+      - name: Build
+        run: cd src && make prod
 
       - name: "Release"
         uses: softprops/action-gh-release@v1
         with:
-          body_path: release-notes.md
-          files: ./release/*.zip
-          name: Unchained v${{ steps.package-version.outputs.current-version }}
-          tag_name: v${{ steps.package-version.outputs.current-version }}
-          prerelease: ${{ steps.get-prerelease.outputs.prerelease == 'true' }}
+          files: ./src/bin/*
+          name: Unchained ${{ github.ref_name}}
+          prerelease: true
