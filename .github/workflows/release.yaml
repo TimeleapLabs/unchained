@@ -29,5 +29,5 @@ jobs:
         with:
           files: ./src/bin/*
           name: Unchained ${{ github.ref_name}}
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
           prerelease: true
