@@ -22,7 +22,7 @@ jobs:
           go-version: "stable"
 
       - name: Build
-        run: cd src && make prod
+        run: cd src && make test
 
       - name: "Release"
         uses: softprops/action-gh-release@v1
