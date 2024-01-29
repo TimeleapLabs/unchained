@@ -3,21 +3,26 @@ package uniswap
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/big"
 	"net/url"
 	"os"
 	"os/signal"
+	"reflect"
 	"time"
 
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/contracts"
 
+	btcutil "github.com/btcsuite/btcutil/base58"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
-	"github.com/njones/base58"
+	"github.com/spf13/viper"
 	"github.com/vmihailenco/msgpack/v5"
+
+	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 )
 
 var addr = "65.108.48.32:9123"
@@ -58,12 +63,55 @@ func Work() {
 		}
 	}()
 
-	encoding := base58.BitcoinEncoding
-	client, err := ethclient.Dial("https://eth.llamarpc.com")
+	var rpcList []string
 
-	if err != nil {
-		panic(err)
+	rpcConfig := viper.Get("rpc.ethereum")
+
+	switch reflect.TypeOf(rpcConfig).Kind() {
+	case reflect.String:
+		rpcList = append(rpcList, rpcConfig.(string))
+
+	case reflect.Slice:
+		for _, rpc := range rpcConfig.([]interface{}) {
+			rpcList = append(rpcList, rpc.(string))
+		}
+	default:
+		panic("RPC List Is Invalid")
 	}
+
+	rpcIndex := 0
+	address := common.HexToAddress("0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640")
+
+	var client *ethclient.Client
+	var uniV3 *contracts.UniV3
+	var initRpc func(refresh bool, retries int) bool
+
+	initRpc = func(refresh bool, retries int) bool {
+
+		if retries == 0 {
+			log.Fatal("Cannot connect to any of the provided RPCs")
+		}
+
+		if refresh {
+			if rpcIndex == len(rpcList)-1 {
+				rpcIndex = 0
+			} else {
+				rpcIndex++
+			}
+		}
+
+		client, err = ethclient.Dial(rpcList[rpcIndex])
+
+		if err != nil {
+			return initRpc(true, retries-1)
+		}
+
+		uniV3, _ = contracts.NewUniV3(address, client)
+
+		return true
+	}
+
+	initRpc(false, len(rpcList))
 
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
@@ -79,33 +127,51 @@ func Work() {
 	tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
 	tenEighteenF.SetInt(&tenEighteen)
 
-	address := common.HexToAddress("0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640")
-	uniV3, _ := contracts.NewUniV3(address, client)
+	var sk *big.Int
+	var pk *bls12381.G1Affine
 
-	sk, pk, err := bls.GenerateKeyPair()
+	if viper.InConfig("secretKey") {
+
+		decoded := btcutil.Decode(viper.GetString("secretKey"))
+
+		sk = new(big.Int)
+		sk.SetBytes(decoded)
+
+		pk = bls.GetPublicKey(sk)
+	} else {
+		sk, pk, err = bls.GenerateKeyPair()
+	}
 
 	if err != nil {
 		panic(err)
 	}
 
 	pkBytes := pk.Bytes()
-	var encoded [96]byte
-	_ = encoding.Encode(encoded[:], pkBytes[:])
+	pkStr := btcutil.Encode(pkBytes[:])
 
-	fmt.Printf("Public Key: %s\n", encoded)
+	fmt.Printf("Public Key: %s\n", pkStr)
 
 	_, err = scheduler.NewJob(
 		gocron.DurationJob(5*time.Second),
 		gocron.NewTask(
 			func(decimalDif int64, inverse bool) {
-				blockNumber, _ := client.BlockNumber(context.Background())
+				blockNumber, err := client.BlockNumber(context.Background())
+
+				if err != nil {
+					initRpc(true, len(rpcList))
+					return
+				}
 
 				if lastBlock == blockNumber {
 					return
 				}
 
 				lastBlock = blockNumber
-				data, _ := uniV3.Slot0(nil)
+				data, err := uniV3.Slot0(nil)
+
+				if err != nil {
+					panic(err)
+				}
 
 				var priceX96 big.Int
 				var raw big.Int
