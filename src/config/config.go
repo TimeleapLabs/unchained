@@ -1,6 +1,9 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/KenshiTech/unchained/ethereum"
+	"github.com/spf13/viper"
+)
 
 func defaults() {
 	viper.SetDefault("rpc.ethereum", "https://eth.llamarpc.com")
@@ -16,4 +19,5 @@ func LoadConfig(FileName string) {
 		panic(err)
 	}
 
+	ethereum.OnAfterConfigLoaded()
 }
