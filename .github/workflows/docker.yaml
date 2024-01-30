@@ -1,7 +1,7 @@
 name: Deploy Images to GHCR
 
 env:
-  NODE_VERSION: "20.10"
+  ALPINE_VERSION: "latest"
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
       - v*
     branches:
       - docker
+      - go
 
 jobs:
   push-store-image:
