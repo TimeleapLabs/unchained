@@ -37,7 +37,7 @@ const makeReleaseNotes = async () => {
 };
 
 const makeReleaseFile = (name, files) => {
-  const lastTag = execSync(`git tag | head -1`).toString().trim();
+  const lastTag = process.argv[1];
   const dirName = `unchained-${lastTag}-${name}`;
   mkdirSync(`release/${dirName}`, { recursive: true });
   for (const { source, target } of files) {
