@@ -2,8 +2,6 @@ import { writeFileSync, readFileSync, mkdirSync, copyFileSync } from "fs";
 import { dirname } from "path";
 import { execSync } from "child_process";
 
-const packageJson = JSON.parse(readFileSync("./package.json"));
-
 const about = [
   "Unchained is a decentralized, peer-to-peer network for data validation.",
   "Unchained nodes work to validate data together and are rewarded in KNS tokens.",
@@ -39,7 +37,8 @@ const makeReleaseNotes = async () => {
 };
 
 const makeReleaseFile = (name, files) => {
-  const dirName = `unchained-v${packageJson.version}-${name}`;
+  const lastTag = execSync(`git tag | head -1`).toString().trim();
+  const dirName = `unchained-${lastTag}-${name}`;
   mkdirSync(`release/${dirName}`, { recursive: true });
   for (const { source, target } of files) {
     const dirToMake = dirname(target);
