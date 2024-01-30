@@ -1,5 +1,4 @@
 log: info
-lite: true
 name: <name>
 rpc:
   ethereum:
@@ -7,16 +6,3 @@ rpc:
     - https://eth.llamarpc.com
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
-peers:
-  max: 128
-  parallel: 8
-jail:
-  duration: 5
-  strikes: 5
-waves:
-  count: 4
-  select: 35
-  group: 16
-  jitter:
-    min: 10
-    max: 25
