@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "stable"
+          cache-dependency-path: |
+            src/go.sum
 
       - name: Build
         run: cd src && make prod
