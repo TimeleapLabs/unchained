@@ -30,7 +30,7 @@ jobs:
         run: cd src && make prod
 
       - name: "Run release script"
-        run: node scripts/docker-release.mjs
+        run: node scripts/docker-release.mjs ${{ github.ref_name }}
 
       - name: "Release"
         uses: softprops/action-gh-release@v1
