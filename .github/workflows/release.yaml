@@ -39,6 +39,7 @@ jobs:
           prerelease: true
 
   push-store-image:
+    needs: build
     runs-on: ubuntu-latest
     defaults:
       run:
