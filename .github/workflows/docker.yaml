@@ -56,5 +56,5 @@ jobs:
             ghcr.io/kenshitech/unchained:${{ steps.docker-tag.outputs.docker-tag }}
             ghcr.io/kenshitech/unchained:v${{ steps.package-version.outputs.current-version }}
           build-args: |
-            "NODE_VERSION=${{ env.NODE_VERSION }}"
+            "ALPINE_VERSION=${{ env.ALPINE_VERSION }}"
             "UNCHAINED_VERSION=${{ steps.package-version.outputs.current-version }}"
