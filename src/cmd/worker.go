@@ -5,13 +5,10 @@ package cmd
 
 import (
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
-)
-
-var (
-	configPath string
 )
 
 // workerCmd represents the worker command
@@ -21,7 +18,8 @@ var workerCmd = &cobra.Command{
 	Long:  `Run the Unchained client in worker mode`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config.LoadConfig(configPath)
-		uniswap.Work()
+		ethereum.Start()
+		uniswap.Start()
 	},
 }
 
@@ -38,7 +36,4 @@ func init() {
 	// is called directly, e.g.:
 	// workerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	workerCmd.Flags().StringVarP(&configPath, "config", "c", "./unchained.conf.yaml", "Config file")
-	workerCmd.MarkFlagFilename("config", "yaml")
-	workerCmd.MarkFlagRequired("config")
 }

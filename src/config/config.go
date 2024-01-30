@@ -1,12 +1,10 @@
 package config
 
-import (
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/spf13/viper"
-)
+import "github.com/spf13/viper"
 
 func defaults() {
 	viper.SetDefault("rpc.ethereum", "https://eth.llamarpc.com")
+	viper.SetDefault("broker", "wss://shinobi.brokers.kenshi.io")
 }
 
 func LoadConfig(FileName string) {
@@ -19,5 +17,4 @@ func LoadConfig(FileName string) {
 		panic(err)
 	}
 
-	ethereum.OnAfterConfigLoaded()
 }

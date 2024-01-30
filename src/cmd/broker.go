@@ -4,6 +4,9 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/db"
+	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/net"
 
 	"github.com/spf13/cobra"
@@ -15,6 +18,9 @@ var brokerCmd = &cobra.Command{
 	Short: "Run the Unchained client in broker mode",
 	Long:  `Run the Unchained client in broker mode`,
 	Run: func(cmd *cobra.Command, args []string) {
+		config.LoadConfig(configPath)
+		db.Start()
+		ethereum.Start()
 		net.StartServer()
 	},
 }
@@ -31,4 +37,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// brokerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 }
