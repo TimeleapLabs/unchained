@@ -16,7 +16,7 @@ var rpcList []string
 var rpcIndex int
 var client *ethclient.Client
 
-func OnAfterConfigLoaded() {
+func Start() {
 	rpcConfig := viper.Get("rpc.ethereum")
 	rpcIndex = 0
 

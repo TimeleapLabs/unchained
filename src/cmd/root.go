@@ -1,10 +1,16 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
+
+var version = "0.11.0-alpha.0"
+
+var configPath string
+var printVersion bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -13,7 +19,13 @@ var rootCmd = &cobra.Command{
 	Long:  `Unchained is the universal data validation and processing protocol`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		if printVersion {
+			fmt.Println(version)
+		} else {
+			os.Exit(1)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -35,4 +47,9 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolVarP(&printVersion, "version", "v", false, "Print the Unchained version number and die")
+
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./unchained.conf.yaml", "Config file")
+	rootCmd.MarkFlagFilename("config", "yaml")
+	rootCmd.MarkFlagRequired("config")
 }

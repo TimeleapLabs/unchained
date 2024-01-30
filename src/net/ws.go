@@ -1,6 +1,7 @@
 package net
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -16,61 +17,141 @@ import (
 var upgrader = websocket.Upgrader{} // use default options
 var addr = "0.0.0.0:9123"
 
+var signers = make(map[*websocket.Conn]uniswap.Signer)
+
+func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
+
+	var signer uniswap.Signer
+	err := msgpack.Unmarshal(payload, &signer)
+
+	if err != nil {
+		err = conn.WriteMessage(messageType, []byte("packet.invalid"))
+		if err != nil {
+			fmt.Println("write:", err)
+			return err
+		}
+		return nil
+	}
+
+	signers[conn] = signer
+	err = conn.WriteMessage(messageType, []byte("conf.ok"))
+
+	if err != nil {
+		fmt.Println("write:", err)
+		return err
+	}
+
+	return nil
+}
+
+func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) error {
+
+	signer, ok := signers[conn]
+
+	if !ok {
+		conn.WriteMessage(messageType, []byte("hello.missing"))
+		return errors.New("hello.missing")
+	}
+
+	var report uniswap.PriceReport
+	err := msgpack.Unmarshal(payload, &report)
+
+	if err != nil {
+		return nil
+	}
+
+	toHash, err := msgpack.Marshal(&report.PriceInfo)
+
+	if err != nil {
+		return nil
+	}
+
+	hash, err := bls.Hash(toHash)
+
+	if err != nil {
+		return nil
+	}
+
+	signature, err := bls.RecoverSignature(report.Signature)
+
+	if err != nil {
+		return nil
+	}
+
+	pk, err := bls.RecoverPublicKey(signer.PublicKey)
+
+	if err != nil {
+		return nil
+	}
+
+	ok, _ = bls.Verify(signature, hash, pk)
+
+	if err != nil {
+		fmt.Println("Faileded")
+	}
+
+	uniswap.RecordSignature(
+		signature,
+		signer,
+		report.PriceInfo.Block,
+	)
+
+	message := []byte("signature.invalid")
+
+	if ok {
+		message = []byte("signature.accepted")
+	}
+
+	err = conn.WriteMessage(messageType, message)
+
+	if err != nil {
+		fmt.Println("write:", err)
+		return err
+	}
+
+	return nil
+}
+
 func handleAtRoot(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Print("upgrade:", err)
 		return
 	}
-	defer c.Close()
+
+	defer conn.Close()
+	defer delete(signers, conn)
+
 	for {
-		mt, payload, err := c.ReadMessage()
+		messageType, payload, err := conn.ReadMessage()
+
 		if err != nil {
 			fmt.Println("read:", err)
 			break
 		}
 
-		var report uniswap.PriceReport
-		msgpack.Unmarshal(payload, &report)
+		switch payload[0] {
+		case 0:
+			err := processHello(conn, messageType, payload[1:])
 
-		toHash, err := msgpack.Marshal(&report.PriceInfo)
+			if err != nil {
+				fmt.Println("write:", err)
+				break
+			}
 
-		if err != nil {
-			continue
-		}
+		case 1:
+			err := processPriceReport(conn, messageType, payload[1:])
 
-		hash, err := bls.Hash(toHash)
-
-		if err != nil {
-			continue
-		}
-
-		signature, err := bls.RecoverSignature(report.Signature)
-
-		if err != nil {
-			continue
-		}
-
-		pk, err := bls.RecoverPublicKey(report.PublicKey)
-
-		if err != nil {
-			continue
-		}
-
-		ok, _ := bls.Verify(signature, hash, pk)
-
-		var message []byte
-
-		if ok {
-			message = []byte("ok")
-		} else {
-			message = []byte("invalid signature")
-		}
-
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			fmt.Println("write:", err)
-			break
+			if err != nil {
+				fmt.Println("write:", err)
+				break
+			}
+		default:
+			err = conn.WriteMessage(messageType, []byte("Instruction not supported"))
+			if err != nil {
+				fmt.Println("write:", err)
+				break
+			}
 		}
 	}
 }
