@@ -29,8 +29,8 @@ func (AssetPrice) Fields() []ent.Field {
 // Edges of the DataSet.
 func (AssetPrice) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("DataSet", DataSet.Type).Required(),
-		edge.To("Signers", Signer.Type).Required(),
+		edge.To("dataSet", DataSet.Type).Required(),
+		edge.To("signers", Signer.Type).Required(),
 	}
 }
 

@@ -22,7 +22,7 @@ func (DataSet) Fields() []ent.Field {
 // Edges of the DataSet.
 func (DataSet) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("AssetPrice", AssetPrice.Type).Ref("DataSet"),
+		edge.From("assetPrice", AssetPrice.Type).Ref("dataSet"),
 	}
 }
 

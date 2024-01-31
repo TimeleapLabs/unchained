@@ -44,12 +44,12 @@ type AssetPriceMutation struct {
 	price           **big.Int
 	signature       *[]byte
 	clearedFields   map[string]struct{}
-	_DataSet        map[int]struct{}
-	removed_DataSet map[int]struct{}
-	cleared_DataSet bool
-	_Signers        map[int]struct{}
-	removed_Signers map[int]struct{}
-	cleared_Signers bool
+	dataSet         map[int]struct{}
+	removeddataSet  map[int]struct{}
+	cleareddataSet  bool
+	signers         map[int]struct{}
+	removedsigners  map[int]struct{}
+	clearedsigners  bool
 	done            bool
 	oldValue        func(context.Context) (*AssetPrice, error)
 	predicates      []predicate.AssetPrice
@@ -351,112 +351,112 @@ func (m *AssetPriceMutation) ResetSignature() {
 	m.signature = nil
 }
 
-// AddDataSetIDs adds the "DataSet" edge to the DataSet entity by ids.
+// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by ids.
 func (m *AssetPriceMutation) AddDataSetIDs(ids ...int) {
-	if m._DataSet == nil {
-		m._DataSet = make(map[int]struct{})
+	if m.dataSet == nil {
+		m.dataSet = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._DataSet[ids[i]] = struct{}{}
+		m.dataSet[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDataSet clears the "DataSet" edge to the DataSet entity.
+// ClearDataSet clears the "dataSet" edge to the DataSet entity.
 func (m *AssetPriceMutation) ClearDataSet() {
-	m.cleared_DataSet = true
+	m.cleareddataSet = true
 }
 
-// DataSetCleared reports if the "DataSet" edge to the DataSet entity was cleared.
+// DataSetCleared reports if the "dataSet" edge to the DataSet entity was cleared.
 func (m *AssetPriceMutation) DataSetCleared() bool {
-	return m.cleared_DataSet
+	return m.cleareddataSet
 }
 
-// RemoveDataSetIDs removes the "DataSet" edge to the DataSet entity by IDs.
+// RemoveDataSetIDs removes the "dataSet" edge to the DataSet entity by IDs.
 func (m *AssetPriceMutation) RemoveDataSetIDs(ids ...int) {
-	if m.removed_DataSet == nil {
-		m.removed_DataSet = make(map[int]struct{})
+	if m.removeddataSet == nil {
+		m.removeddataSet = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m._DataSet, ids[i])
-		m.removed_DataSet[ids[i]] = struct{}{}
+		delete(m.dataSet, ids[i])
+		m.removeddataSet[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedDataSet returns the removed IDs of the "DataSet" edge to the DataSet entity.
+// RemovedDataSet returns the removed IDs of the "dataSet" edge to the DataSet entity.
 func (m *AssetPriceMutation) RemovedDataSetIDs() (ids []int) {
-	for id := range m.removed_DataSet {
+	for id := range m.removeddataSet {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// DataSetIDs returns the "DataSet" edge IDs in the mutation.
+// DataSetIDs returns the "dataSet" edge IDs in the mutation.
 func (m *AssetPriceMutation) DataSetIDs() (ids []int) {
-	for id := range m._DataSet {
+	for id := range m.dataSet {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetDataSet resets all changes to the "DataSet" edge.
+// ResetDataSet resets all changes to the "dataSet" edge.
 func (m *AssetPriceMutation) ResetDataSet() {
-	m._DataSet = nil
-	m.cleared_DataSet = false
-	m.removed_DataSet = nil
+	m.dataSet = nil
+	m.cleareddataSet = false
+	m.removeddataSet = nil
 }
 
-// AddSignerIDs adds the "Signers" edge to the Signer entity by ids.
+// AddSignerIDs adds the "signers" edge to the Signer entity by ids.
 func (m *AssetPriceMutation) AddSignerIDs(ids ...int) {
-	if m._Signers == nil {
-		m._Signers = make(map[int]struct{})
+	if m.signers == nil {
+		m.signers = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._Signers[ids[i]] = struct{}{}
+		m.signers[ids[i]] = struct{}{}
 	}
 }
 
-// ClearSigners clears the "Signers" edge to the Signer entity.
+// ClearSigners clears the "signers" edge to the Signer entity.
 func (m *AssetPriceMutation) ClearSigners() {
-	m.cleared_Signers = true
+	m.clearedsigners = true
 }
 
-// SignersCleared reports if the "Signers" edge to the Signer entity was cleared.
+// SignersCleared reports if the "signers" edge to the Signer entity was cleared.
 func (m *AssetPriceMutation) SignersCleared() bool {
-	return m.cleared_Signers
+	return m.clearedsigners
 }
 
-// RemoveSignerIDs removes the "Signers" edge to the Signer entity by IDs.
+// RemoveSignerIDs removes the "signers" edge to the Signer entity by IDs.
 func (m *AssetPriceMutation) RemoveSignerIDs(ids ...int) {
-	if m.removed_Signers == nil {
-		m.removed_Signers = make(map[int]struct{})
+	if m.removedsigners == nil {
+		m.removedsigners = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m._Signers, ids[i])
-		m.removed_Signers[ids[i]] = struct{}{}
+		delete(m.signers, ids[i])
+		m.removedsigners[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedSigners returns the removed IDs of the "Signers" edge to the Signer entity.
+// RemovedSigners returns the removed IDs of the "signers" edge to the Signer entity.
 func (m *AssetPriceMutation) RemovedSignersIDs() (ids []int) {
-	for id := range m.removed_Signers {
+	for id := range m.removedsigners {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// SignersIDs returns the "Signers" edge IDs in the mutation.
+// SignersIDs returns the "signers" edge IDs in the mutation.
 func (m *AssetPriceMutation) SignersIDs() (ids []int) {
-	for id := range m._Signers {
+	for id := range m.signers {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetSigners resets all changes to the "Signers" edge.
+// ResetSigners resets all changes to the "signers" edge.
 func (m *AssetPriceMutation) ResetSigners() {
-	m._Signers = nil
-	m.cleared_Signers = false
-	m.removed_Signers = nil
+	m.signers = nil
+	m.clearedsigners = false
+	m.removedsigners = nil
 }
 
 // Where appends a list predicates to the AssetPriceMutation builder.
@@ -680,10 +680,10 @@ func (m *AssetPriceMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AssetPriceMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m._DataSet != nil {
+	if m.dataSet != nil {
 		edges = append(edges, assetprice.EdgeDataSet)
 	}
-	if m._Signers != nil {
+	if m.signers != nil {
 		edges = append(edges, assetprice.EdgeSigners)
 	}
 	return edges
@@ -694,14 +694,14 @@ func (m *AssetPriceMutation) AddedEdges() []string {
 func (m *AssetPriceMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case assetprice.EdgeDataSet:
-		ids := make([]ent.Value, 0, len(m._DataSet))
-		for id := range m._DataSet {
+		ids := make([]ent.Value, 0, len(m.dataSet))
+		for id := range m.dataSet {
 			ids = append(ids, id)
 		}
 		return ids
 	case assetprice.EdgeSigners:
-		ids := make([]ent.Value, 0, len(m._Signers))
-		for id := range m._Signers {
+		ids := make([]ent.Value, 0, len(m.signers))
+		for id := range m.signers {
 			ids = append(ids, id)
 		}
 		return ids
@@ -712,10 +712,10 @@ func (m *AssetPriceMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AssetPriceMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removed_DataSet != nil {
+	if m.removeddataSet != nil {
 		edges = append(edges, assetprice.EdgeDataSet)
 	}
-	if m.removed_Signers != nil {
+	if m.removedsigners != nil {
 		edges = append(edges, assetprice.EdgeSigners)
 	}
 	return edges
@@ -726,14 +726,14 @@ func (m *AssetPriceMutation) RemovedEdges() []string {
 func (m *AssetPriceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
 	case assetprice.EdgeDataSet:
-		ids := make([]ent.Value, 0, len(m.removed_DataSet))
-		for id := range m.removed_DataSet {
+		ids := make([]ent.Value, 0, len(m.removeddataSet))
+		for id := range m.removeddataSet {
 			ids = append(ids, id)
 		}
 		return ids
 	case assetprice.EdgeSigners:
-		ids := make([]ent.Value, 0, len(m.removed_Signers))
-		for id := range m.removed_Signers {
+		ids := make([]ent.Value, 0, len(m.removedsigners))
+		for id := range m.removedsigners {
 			ids = append(ids, id)
 		}
 		return ids
@@ -744,10 +744,10 @@ func (m *AssetPriceMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AssetPriceMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.cleared_DataSet {
+	if m.cleareddataSet {
 		edges = append(edges, assetprice.EdgeDataSet)
 	}
-	if m.cleared_Signers {
+	if m.clearedsigners {
 		edges = append(edges, assetprice.EdgeSigners)
 	}
 	return edges
@@ -758,9 +758,9 @@ func (m *AssetPriceMutation) ClearedEdges() []string {
 func (m *AssetPriceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case assetprice.EdgeDataSet:
-		return m.cleared_DataSet
+		return m.cleareddataSet
 	case assetprice.EdgeSigners:
-		return m.cleared_Signers
+		return m.clearedsigners
 	}
 	return false
 }
@@ -790,17 +790,17 @@ func (m *AssetPriceMutation) ResetEdge(name string) error {
 // DataSetMutation represents an operation that mutates the DataSet nodes in the graph.
 type DataSetMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int
-	name               *string
-	clearedFields      map[string]struct{}
-	_AssetPrice        map[int]struct{}
-	removed_AssetPrice map[int]struct{}
-	cleared_AssetPrice bool
-	done               bool
-	oldValue           func(context.Context) (*DataSet, error)
-	predicates         []predicate.DataSet
+	op                Op
+	typ               string
+	id                *int
+	name              *string
+	clearedFields     map[string]struct{}
+	assetPrice        map[int]struct{}
+	removedassetPrice map[int]struct{}
+	clearedassetPrice bool
+	done              bool
+	oldValue          func(context.Context) (*DataSet, error)
+	predicates        []predicate.DataSet
 }
 
 var _ ent.Mutation = (*DataSetMutation)(nil)
@@ -937,58 +937,58 @@ func (m *DataSetMutation) ResetName() {
 	m.name = nil
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by ids.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by ids.
 func (m *DataSetMutation) AddAssetPriceIDs(ids ...int) {
-	if m._AssetPrice == nil {
-		m._AssetPrice = make(map[int]struct{})
+	if m.assetPrice == nil {
+		m.assetPrice = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._AssetPrice[ids[i]] = struct{}{}
+		m.assetPrice[ids[i]] = struct{}{}
 	}
 }
 
-// ClearAssetPrice clears the "AssetPrice" edge to the AssetPrice entity.
+// ClearAssetPrice clears the "assetPrice" edge to the AssetPrice entity.
 func (m *DataSetMutation) ClearAssetPrice() {
-	m.cleared_AssetPrice = true
+	m.clearedassetPrice = true
 }
 
-// AssetPriceCleared reports if the "AssetPrice" edge to the AssetPrice entity was cleared.
+// AssetPriceCleared reports if the "assetPrice" edge to the AssetPrice entity was cleared.
 func (m *DataSetMutation) AssetPriceCleared() bool {
-	return m.cleared_AssetPrice
+	return m.clearedassetPrice
 }
 
-// RemoveAssetPriceIDs removes the "AssetPrice" edge to the AssetPrice entity by IDs.
+// RemoveAssetPriceIDs removes the "assetPrice" edge to the AssetPrice entity by IDs.
 func (m *DataSetMutation) RemoveAssetPriceIDs(ids ...int) {
-	if m.removed_AssetPrice == nil {
-		m.removed_AssetPrice = make(map[int]struct{})
+	if m.removedassetPrice == nil {
+		m.removedassetPrice = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m._AssetPrice, ids[i])
-		m.removed_AssetPrice[ids[i]] = struct{}{}
+		delete(m.assetPrice, ids[i])
+		m.removedassetPrice[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedAssetPrice returns the removed IDs of the "AssetPrice" edge to the AssetPrice entity.
+// RemovedAssetPrice returns the removed IDs of the "assetPrice" edge to the AssetPrice entity.
 func (m *DataSetMutation) RemovedAssetPriceIDs() (ids []int) {
-	for id := range m.removed_AssetPrice {
+	for id := range m.removedassetPrice {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// AssetPriceIDs returns the "AssetPrice" edge IDs in the mutation.
+// AssetPriceIDs returns the "assetPrice" edge IDs in the mutation.
 func (m *DataSetMutation) AssetPriceIDs() (ids []int) {
-	for id := range m._AssetPrice {
+	for id := range m.assetPrice {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetAssetPrice resets all changes to the "AssetPrice" edge.
+// ResetAssetPrice resets all changes to the "assetPrice" edge.
 func (m *DataSetMutation) ResetAssetPrice() {
-	m._AssetPrice = nil
-	m.cleared_AssetPrice = false
-	m.removed_AssetPrice = nil
+	m.assetPrice = nil
+	m.clearedassetPrice = false
+	m.removedassetPrice = nil
 }
 
 // Where appends a list predicates to the DataSetMutation builder.
@@ -1125,7 +1125,7 @@ func (m *DataSetMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DataSetMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m._AssetPrice != nil {
+	if m.assetPrice != nil {
 		edges = append(edges, dataset.EdgeAssetPrice)
 	}
 	return edges
@@ -1136,8 +1136,8 @@ func (m *DataSetMutation) AddedEdges() []string {
 func (m *DataSetMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case dataset.EdgeAssetPrice:
-		ids := make([]ent.Value, 0, len(m._AssetPrice))
-		for id := range m._AssetPrice {
+		ids := make([]ent.Value, 0, len(m.assetPrice))
+		for id := range m.assetPrice {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1148,7 +1148,7 @@ func (m *DataSetMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DataSetMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removed_AssetPrice != nil {
+	if m.removedassetPrice != nil {
 		edges = append(edges, dataset.EdgeAssetPrice)
 	}
 	return edges
@@ -1159,8 +1159,8 @@ func (m *DataSetMutation) RemovedEdges() []string {
 func (m *DataSetMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
 	case dataset.EdgeAssetPrice:
-		ids := make([]ent.Value, 0, len(m.removed_AssetPrice))
-		for id := range m.removed_AssetPrice {
+		ids := make([]ent.Value, 0, len(m.removedassetPrice))
+		for id := range m.removedassetPrice {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1171,7 +1171,7 @@ func (m *DataSetMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DataSetMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.cleared_AssetPrice {
+	if m.clearedassetPrice {
 		edges = append(edges, dataset.EdgeAssetPrice)
 	}
 	return edges
@@ -1182,7 +1182,7 @@ func (m *DataSetMutation) ClearedEdges() []string {
 func (m *DataSetMutation) EdgeCleared(name string) bool {
 	switch name {
 	case dataset.EdgeAssetPrice:
-		return m.cleared_AssetPrice
+		return m.clearedassetPrice
 	}
 	return false
 }
@@ -1209,20 +1209,20 @@ func (m *DataSetMutation) ResetEdge(name string) error {
 // SignerMutation represents an operation that mutates the Signer nodes in the graph.
 type SignerMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int
-	name               *string
-	key                *[]byte
-	points             *int64
-	addpoints          *int64
-	clearedFields      map[string]struct{}
-	_AssetPrice        map[int]struct{}
-	removed_AssetPrice map[int]struct{}
-	cleared_AssetPrice bool
-	done               bool
-	oldValue           func(context.Context) (*Signer, error)
-	predicates         []predicate.Signer
+	op                Op
+	typ               string
+	id                *int
+	name              *string
+	key               *[]byte
+	points            *int64
+	addpoints         *int64
+	clearedFields     map[string]struct{}
+	assetPrice        map[int]struct{}
+	removedassetPrice map[int]struct{}
+	clearedassetPrice bool
+	done              bool
+	oldValue          func(context.Context) (*Signer, error)
+	predicates        []predicate.Signer
 }
 
 var _ ent.Mutation = (*SignerMutation)(nil)
@@ -1451,58 +1451,58 @@ func (m *SignerMutation) ResetPoints() {
 	m.addpoints = nil
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by ids.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by ids.
 func (m *SignerMutation) AddAssetPriceIDs(ids ...int) {
-	if m._AssetPrice == nil {
-		m._AssetPrice = make(map[int]struct{})
+	if m.assetPrice == nil {
+		m.assetPrice = make(map[int]struct{})
 	}
 	for i := range ids {
-		m._AssetPrice[ids[i]] = struct{}{}
+		m.assetPrice[ids[i]] = struct{}{}
 	}
 }
 
-// ClearAssetPrice clears the "AssetPrice" edge to the AssetPrice entity.
+// ClearAssetPrice clears the "assetPrice" edge to the AssetPrice entity.
 func (m *SignerMutation) ClearAssetPrice() {
-	m.cleared_AssetPrice = true
+	m.clearedassetPrice = true
 }
 
-// AssetPriceCleared reports if the "AssetPrice" edge to the AssetPrice entity was cleared.
+// AssetPriceCleared reports if the "assetPrice" edge to the AssetPrice entity was cleared.
 func (m *SignerMutation) AssetPriceCleared() bool {
-	return m.cleared_AssetPrice
+	return m.clearedassetPrice
 }
 
-// RemoveAssetPriceIDs removes the "AssetPrice" edge to the AssetPrice entity by IDs.
+// RemoveAssetPriceIDs removes the "assetPrice" edge to the AssetPrice entity by IDs.
 func (m *SignerMutation) RemoveAssetPriceIDs(ids ...int) {
-	if m.removed_AssetPrice == nil {
-		m.removed_AssetPrice = make(map[int]struct{})
+	if m.removedassetPrice == nil {
+		m.removedassetPrice = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m._AssetPrice, ids[i])
-		m.removed_AssetPrice[ids[i]] = struct{}{}
+		delete(m.assetPrice, ids[i])
+		m.removedassetPrice[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedAssetPrice returns the removed IDs of the "AssetPrice" edge to the AssetPrice entity.
+// RemovedAssetPrice returns the removed IDs of the "assetPrice" edge to the AssetPrice entity.
 func (m *SignerMutation) RemovedAssetPriceIDs() (ids []int) {
-	for id := range m.removed_AssetPrice {
+	for id := range m.removedassetPrice {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// AssetPriceIDs returns the "AssetPrice" edge IDs in the mutation.
+// AssetPriceIDs returns the "assetPrice" edge IDs in the mutation.
 func (m *SignerMutation) AssetPriceIDs() (ids []int) {
-	for id := range m._AssetPrice {
+	for id := range m.assetPrice {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetAssetPrice resets all changes to the "AssetPrice" edge.
+// ResetAssetPrice resets all changes to the "assetPrice" edge.
 func (m *SignerMutation) ResetAssetPrice() {
-	m._AssetPrice = nil
-	m.cleared_AssetPrice = false
-	m.removed_AssetPrice = nil
+	m.assetPrice = nil
+	m.clearedassetPrice = false
+	m.removedassetPrice = nil
 }
 
 // Where appends a list predicates to the SignerMutation builder.
@@ -1688,7 +1688,7 @@ func (m *SignerMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SignerMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m._AssetPrice != nil {
+	if m.assetPrice != nil {
 		edges = append(edges, signer.EdgeAssetPrice)
 	}
 	return edges
@@ -1699,8 +1699,8 @@ func (m *SignerMutation) AddedEdges() []string {
 func (m *SignerMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case signer.EdgeAssetPrice:
-		ids := make([]ent.Value, 0, len(m._AssetPrice))
-		for id := range m._AssetPrice {
+		ids := make([]ent.Value, 0, len(m.assetPrice))
+		for id := range m.assetPrice {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1711,7 +1711,7 @@ func (m *SignerMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SignerMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removed_AssetPrice != nil {
+	if m.removedassetPrice != nil {
 		edges = append(edges, signer.EdgeAssetPrice)
 	}
 	return edges
@@ -1722,8 +1722,8 @@ func (m *SignerMutation) RemovedEdges() []string {
 func (m *SignerMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
 	case signer.EdgeAssetPrice:
-		ids := make([]ent.Value, 0, len(m.removed_AssetPrice))
-		for id := range m.removed_AssetPrice {
+		ids := make([]ent.Value, 0, len(m.removedassetPrice))
+		for id := range m.removedassetPrice {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1734,7 +1734,7 @@ func (m *SignerMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SignerMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.cleared_AssetPrice {
+	if m.clearedassetPrice {
 		edges = append(edges, signer.EdgeAssetPrice)
 	}
 	return edges
@@ -1745,7 +1745,7 @@ func (m *SignerMutation) ClearedEdges() []string {
 func (m *SignerMutation) EdgeCleared(name string) bool {
 	switch name {
 	case signer.EdgeAssetPrice:
-		return m.cleared_AssetPrice
+		return m.clearedassetPrice
 	}
 	return false
 }

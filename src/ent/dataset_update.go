@@ -42,13 +42,13 @@ func (dsu *DataSetUpdate) SetNillableName(s *string) *DataSetUpdate {
 	return dsu
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by IDs.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by IDs.
 func (dsu *DataSetUpdate) AddAssetPriceIDs(ids ...int) *DataSetUpdate {
 	dsu.mutation.AddAssetPriceIDs(ids...)
 	return dsu
 }
 
-// AddAssetPrice adds the "AssetPrice" edges to the AssetPrice entity.
+// AddAssetPrice adds the "assetPrice" edges to the AssetPrice entity.
 func (dsu *DataSetUpdate) AddAssetPrice(a ...*AssetPrice) *DataSetUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -62,19 +62,19 @@ func (dsu *DataSetUpdate) Mutation() *DataSetMutation {
 	return dsu.mutation
 }
 
-// ClearAssetPrice clears all "AssetPrice" edges to the AssetPrice entity.
+// ClearAssetPrice clears all "assetPrice" edges to the AssetPrice entity.
 func (dsu *DataSetUpdate) ClearAssetPrice() *DataSetUpdate {
 	dsu.mutation.ClearAssetPrice()
 	return dsu
 }
 
-// RemoveAssetPriceIDs removes the "AssetPrice" edge to AssetPrice entities by IDs.
+// RemoveAssetPriceIDs removes the "assetPrice" edge to AssetPrice entities by IDs.
 func (dsu *DataSetUpdate) RemoveAssetPriceIDs(ids ...int) *DataSetUpdate {
 	dsu.mutation.RemoveAssetPriceIDs(ids...)
 	return dsu
 }
 
-// RemoveAssetPrice removes "AssetPrice" edges to AssetPrice entities.
+// RemoveAssetPrice removes "assetPrice" edges to AssetPrice entities.
 func (dsu *DataSetUpdate) RemoveAssetPrice(a ...*AssetPrice) *DataSetUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -214,13 +214,13 @@ func (dsuo *DataSetUpdateOne) SetNillableName(s *string) *DataSetUpdateOne {
 	return dsuo
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by IDs.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by IDs.
 func (dsuo *DataSetUpdateOne) AddAssetPriceIDs(ids ...int) *DataSetUpdateOne {
 	dsuo.mutation.AddAssetPriceIDs(ids...)
 	return dsuo
 }
 
-// AddAssetPrice adds the "AssetPrice" edges to the AssetPrice entity.
+// AddAssetPrice adds the "assetPrice" edges to the AssetPrice entity.
 func (dsuo *DataSetUpdateOne) AddAssetPrice(a ...*AssetPrice) *DataSetUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -234,19 +234,19 @@ func (dsuo *DataSetUpdateOne) Mutation() *DataSetMutation {
 	return dsuo.mutation
 }
 
-// ClearAssetPrice clears all "AssetPrice" edges to the AssetPrice entity.
+// ClearAssetPrice clears all "assetPrice" edges to the AssetPrice entity.
 func (dsuo *DataSetUpdateOne) ClearAssetPrice() *DataSetUpdateOne {
 	dsuo.mutation.ClearAssetPrice()
 	return dsuo
 }
 
-// RemoveAssetPriceIDs removes the "AssetPrice" edge to AssetPrice entities by IDs.
+// RemoveAssetPriceIDs removes the "assetPrice" edge to AssetPrice entities by IDs.
 func (dsuo *DataSetUpdateOne) RemoveAssetPriceIDs(ids ...int) *DataSetUpdateOne {
 	dsuo.mutation.RemoveAssetPriceIDs(ids...)
 	return dsuo
 }
 
-// RemoveAssetPrice removes "AssetPrice" edges to AssetPrice entities.
+// RemoveAssetPrice removes "assetPrice" edges to AssetPrice entities.
 func (dsuo *DataSetUpdateOne) RemoveAssetPrice(a ...*AssetPrice) *DataSetUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {

@@ -123,7 +123,7 @@ func NameContainsFold(v string) predicate.DataSet {
 	return predicate.DataSet(sql.FieldContainsFold(FieldName, v))
 }
 
-// HasAssetPrice applies the HasEdge predicate on the "AssetPrice" edge.
+// HasAssetPrice applies the HasEdge predicate on the "assetPrice" edge.
 func HasAssetPrice() predicate.DataSet {
 	return predicate.DataSet(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
@@ -134,7 +134,7 @@ func HasAssetPrice() predicate.DataSet {
 	})
 }
 
-// HasAssetPriceWith applies the HasEdge predicate on the "AssetPrice" edge with a given conditions (other predicates).
+// HasAssetPriceWith applies the HasEdge predicate on the "assetPrice" edge with a given conditions (other predicates).
 func HasAssetPriceWith(preds ...predicate.AssetPrice) predicate.DataSet {
 	return predicate.DataSet(func(s *sql.Selector) {
 		step := newAssetPriceStep()

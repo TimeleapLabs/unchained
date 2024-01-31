@@ -33,10 +33,10 @@ type AssetPrice struct {
 
 // AssetPriceEdges holds the relations/edges for other nodes in the graph.
 type AssetPriceEdges struct {
-	// DataSet holds the value of the DataSet edge.
-	DataSet []*DataSet `json:"DataSet,omitempty"`
-	// Signers holds the value of the Signers edge.
-	Signers []*Signer `json:"Signers,omitempty"`
+	// DataSet holds the value of the dataSet edge.
+	DataSet []*DataSet `json:"dataSet,omitempty"`
+	// Signers holds the value of the signers edge.
+	Signers []*Signer `json:"signers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -48,7 +48,7 @@ func (e AssetPriceEdges) DataSetOrErr() ([]*DataSet, error) {
 	if e.loadedTypes[0] {
 		return e.DataSet, nil
 	}
-	return nil, &NotLoadedError{edge: "DataSet"}
+	return nil, &NotLoadedError{edge: "dataSet"}
 }
 
 // SignersOrErr returns the Signers value or an error if the edge
@@ -57,7 +57,7 @@ func (e AssetPriceEdges) SignersOrErr() ([]*Signer, error) {
 	if e.loadedTypes[1] {
 		return e.Signers, nil
 	}
-	return nil, &NotLoadedError{edge: "Signers"}
+	return nil, &NotLoadedError{edge: "signers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -130,12 +130,12 @@ func (ap *AssetPrice) Value(name string) (ent.Value, error) {
 	return ap.selectValues.Get(name)
 }
 
-// QueryDataSet queries the "DataSet" edge of the AssetPrice entity.
+// QueryDataSet queries the "dataSet" edge of the AssetPrice entity.
 func (ap *AssetPrice) QueryDataSet() *DataSetQuery {
 	return NewAssetPriceClient(ap.config).QueryDataSet(ap)
 }
 
-// QuerySigners queries the "Signers" edge of the AssetPrice entity.
+// QuerySigners queries the "signers" edge of the AssetPrice entity.
 func (ap *AssetPrice) QuerySigners() *SignerQuery {
 	return NewAssetPriceClient(ap.config).QuerySigners(ap)
 }

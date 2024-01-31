@@ -60,7 +60,7 @@ func (dsq *DataSetQuery) Order(o ...dataset.OrderOption) *DataSetQuery {
 	return dsq
 }
 
-// QueryAssetPrice chains the current query on the "AssetPrice" edge.
+// QueryAssetPrice chains the current query on the "assetPrice" edge.
 func (dsq *DataSetQuery) QueryAssetPrice() *AssetPriceQuery {
 	query := (&AssetPriceClient{config: dsq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -282,7 +282,7 @@ func (dsq *DataSetQuery) Clone() *DataSetQuery {
 }
 
 // WithAssetPrice tells the query-builder to eager-load the nodes that are connected to
-// the "AssetPrice" edge. The optional arguments are used to configure the query builder of the edge.
+// the "assetPrice" edge. The optional arguments are used to configure the query builder of the edge.
 func (dsq *DataSetQuery) WithAssetPrice(opts ...func(*AssetPriceQuery)) *DataSetQuery {
 	query := (&AssetPriceClient{config: dsq.config}).Query()
 	for _, opt := range opts {
@@ -455,7 +455,7 @@ func (dsq *DataSetQuery) loadAssetPrice(ctx context.Context, query *AssetPriceQu
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "AssetPrice" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "assetPrice" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

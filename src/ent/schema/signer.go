@@ -24,7 +24,7 @@ func (Signer) Fields() []ent.Field {
 // Edges of the DataSet.
 func (Signer) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("AssetPrice", AssetPrice.Type).Ref("Signers"),
+		edge.From("assetPrice", AssetPrice.Type).Ref("signers"),
 	}
 }
 

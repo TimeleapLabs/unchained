@@ -60,7 +60,7 @@ func (sq *SignerQuery) Order(o ...signer.OrderOption) *SignerQuery {
 	return sq
 }
 
-// QueryAssetPrice chains the current query on the "AssetPrice" edge.
+// QueryAssetPrice chains the current query on the "assetPrice" edge.
 func (sq *SignerQuery) QueryAssetPrice() *AssetPriceQuery {
 	query := (&AssetPriceClient{config: sq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -282,7 +282,7 @@ func (sq *SignerQuery) Clone() *SignerQuery {
 }
 
 // WithAssetPrice tells the query-builder to eager-load the nodes that are connected to
-// the "AssetPrice" edge. The optional arguments are used to configure the query builder of the edge.
+// the "assetPrice" edge. The optional arguments are used to configure the query builder of the edge.
 func (sq *SignerQuery) WithAssetPrice(opts ...func(*AssetPriceQuery)) *SignerQuery {
 	query := (&AssetPriceClient{config: sq.config}).Query()
 	for _, opt := range opts {
@@ -455,7 +455,7 @@ func (sq *SignerQuery) loadAssetPrice(ctx context.Context, query *AssetPriceQuer
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "AssetPrice" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "assetPrice" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
