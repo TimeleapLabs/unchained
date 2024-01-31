@@ -33,6 +33,11 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 		return nil
 	}
 
+	if signer.Name == "" || len(signer.PublicKey) != 48 {
+		conn.WriteMessage(messageType, []byte("conf.invalid"))
+		return errors.New("conf.invalid")
+	}
+
 	signers.Store(conn, signer)
 	err = conn.WriteMessage(messageType, []byte("conf.ok"))
 
