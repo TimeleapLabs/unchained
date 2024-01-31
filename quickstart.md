@@ -1,15 +1,17 @@
 # Quick Start
 
-Follow the guide on this page to run either a full or a lite node:
+Follow the guide on this page to run either a broker or a worker node:
 
-- **Lite nodes** are nodes that only validate data, but they don't store any of
-  the validated datapoints. It's easier to set up a lite node than a full node.
-- **Full nodes** are nodes that validate data, and store the validated data for
-  future queries. Full nodes require extra steps to set up, and need more
+- **Worker nodes** are nodes that only validate data, but they don't store any of
+  the validated datapoints. It's easier to set up a worker node than a broker node.
+- **Broker nodes** are nodes that validate data, and store the validated data for
+  future queries. Broker nodes require extra steps to set up, and need more
   resources. You can either store the validated data on a local Postgres
   instance, or use DBaaS such as [Neon](https://neon.tech),
   [AWS RDS](https://aws.amazon.com/rds/), [ElephantSQL](https://www.elephantsql.com/)
   or any other.
+
+For now, only worker nodes are implemented.
 
 You can setup a node using a docker deployment or local deployment:
 
@@ -33,15 +35,15 @@ Once done, head to the uncompressed release directory.
 
 The docker deployment is compatible with the 3 different node types:
 
-- `local`: Unchained and Postgres run in Docker.
-- `lite`: Unchained runs in Docker, no need for Postgres.
+- `broker`: Unchained and Postgres run in Docker.
+- `worker`: Unchained runs in Docker, no need for Postgres.
 - `remote`: Unchained runs in Docker, Postgres runs elsewhere.
 
 Choose which node type you'd like to run on your machine.
 
 ### Configuring your node
 
-#### Local node
+#### Broker node
 
 Make a copy of the environment template:
 
@@ -52,29 +54,29 @@ cp .env.template .env
 Edit the newly created file with a username and password of your choice for Postgres
 and Grafana.
 
-Make a copy of the local configuration template:
+Make a copy of the broker configuration template:
 
 ```bash
-cp conf.local.yaml.template conf.local.yaml
+cp conf.broker.yaml.template conf.broker.yaml
 ```
 
 Edit the newly created file. Set a name for your node. Set the Postgres
 username, password, and database name to the ones you defined in the previous
 step. Set the host of the Postgres local instance to `postgres`, and the port to 5432.
 
-#### Lite node
+#### Worker node
 
-Make a copy of the lite configuration template:
+Make a copy of the worker configuration template:
 
 ```bash
-cp conf.lite.yaml.template conf.lite.yaml
+cp conf.worker.yaml.template conf.worker.yaml
 ```
 
 Edit the newly created file and set a name for your node.
 
 #### Remote node
 
-Make a copy of the atlas configuration template:
+Make a copy of the remote configuration template:
 
 ```bash
 cp conf.remote.yaml.template conf.remote.yaml
@@ -134,40 +136,25 @@ locally, on a RaspberryPi, on a server, or on your computer/laptop.
 
 ### Prerequisites
 
-To run a Kenshi Unchained validator, you need to install Node.js. Follow the
-installation instructions for your platform on the Node.js
-[official installation](https://nodejs.org/en/download/package-manager) page.
+To run a Kenshi Unchained node, you need to download the latest release. Head over to the
+[Unchained release page](https://github.com/KenshiTech/unchained/releases)
+on GitHub, find the latest release corresponding to your architecture and OS and download it.
 
-### Install the Unchained Client
-
-The easiest way to get the Unchained client is to install it globally. On
-windows, Linux, MacOS, and BSD, run this command in CMD or terminal:
+On Unix-like operating systems, you'll first need to make the file executable:
 
 ```bash
-npm i -g @kenshi.io/unchained
-```
-
-Note: On UNIX-like operating systems, you might need to run this command with
-`sudo`:
-
-```bash
-sudo npm i -g @kenshi.io/unchained
+chmod +x unchained.OS.ARCH 
 ```
 
 #### Updates
 
-To update the Unchained client, you can re-run the installation command above.
-Adding `@latest` to the end would result in installing the latest version.
-
-```bash
-sudo npm i -g @kenshi.io/unchained@latest
-```
+To get the latest update of Unchained, you can download the latest release on the [Unchained release page](https://github.com/KenshiTech/unchained/releases).
 
 ### Postgres
 
-Note: Skip this step if you're planning to run a lite node.
+Note: Skip this step if you're planning to run a worker node.
 
-To run a full node, you need to have an instance of Postgres. You can either run
+To run a broker node, you need to have an instance of Postgres. You can either run
 your own, or make a subscription to a cloud service.
 
 Contact us on [Telegram](https://t.me/kenshi) if you need help with this step.
@@ -193,28 +180,12 @@ config:
 ```yaml
 log: info
 name: <name>
-lite: true
 rpc:
   ethereum:
     - https://ethereum.publicnode.com
     - https://eth.llamarpc.com
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
-database:
-  url: postgres://<user>:<pass>@<host>:<port>/<db>
-peers:
-  max: 128
-  parallel: 8
-jail:
-  duration: 5
-  strikes: 5
-waves:
-  count: 4
-  select: 35
-  group: 16
-  jitter:
-    min: 10
-    max: 25
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -225,32 +196,15 @@ the following modifications if required:
   messages.
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
-- `lite`: To run a lite node, set this to `true`, otherwise set it to `false`.
 - `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
   issues are detected with the RPC connection. You can find a list of Ethereum
   RPC nodes on [Chainlist](https://chainlist.org/chain/1).
-- `database.url`: Your Postgres connection string goes here. Ignore this if
-  you're running a lite node.
-
-Advanced options:
-
-- `peers.max`: Maximum number of peers to connect to.
-- `peers.parallel`: Maximum number of peers in connecting state. A peer is in
-  connecting state when it is discovered but hasn't finished connecting yet.
-- `jail.duration`: Number of minutes to jail a peer on bad behavior.
-- `jail.strikes`: Number of strikes to wait before jailing a peer.
-- `waves.count`: Number of times to ask directly connected peers for attestations.
-- `waves.select`: Percentage of peers to contact on each wave.
-- `waves.group`: Number of peers in each wave group. Packets are rebuilt for
-  each target group based on newly received data.
-- `waves.jitter.min`: Minimum delay between each socket transmission.
-- `waves.jitter.max`: Maximum delay between each socket transmission.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
 
 ## Migrations / Database Initialization
 
-Note: Skip this step if you're running a lite node.
+Note: Skip this step if you're running a worker node.
 
 Before running the Unchained client, you need to get your database schema ready
 for storing Unchained data. To do so, you should run:
@@ -262,23 +216,18 @@ unchained postgres migrate conf.yaml
 You'll need to run this command again if you're installing a new version of the
 client that makes changes to the Unchained data structure.
 
-## Starting the Unchained Validator
+## Starting an Unchained worker node
 
-To start the validator and join the Unchained network, you need to run the
+To start a worker node and join the Unchained network, you need to run the
 following command (in CMD or terminal, depending on your OS) in the directory
 where you saved the above configuration file:
 
 ```bash
-unchained start conf.yaml
+unchained.OS.ARCH worker
 ```
 
-If you are running the `start` command for the first time, you also need to pass
-`--generate` to generate a random secret key. This key will be saved to the
-configuraion file and you won't have to generate a new key every time.
-
-```bash
-unchained start conf.yaml --generate
-```
+If you are running the node for the first time, Unchained will generate a random secret key. This key will be saved to the
+secrets.yaml. It is your responsibility to keep this file safe.
 
 ## Max Open Sockets
 
