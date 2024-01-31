@@ -137,8 +137,8 @@ func SaveSignatures(block uint64) {
 	var keys [][]byte
 
 	for _, signature := range signatures {
+		keys = append(keys, signature.Signer.PublicKey[:])
 		if !signature.Processed {
-			keys = append(keys, signature.Signer.PublicKey[:])
 			newSignatures = append(newSignatures, signature.Signature)
 			newSigners = append(newSigners, signature.Signer)
 		}
