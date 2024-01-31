@@ -3,10 +3,13 @@ package config
 import (
 	"os"
 
+	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/spf13/viper"
 )
 
 func defaults() {
+	Config.SetDefault("name", petname.Generate(3, "-"))
+	Config.SetDefault("log", "info")
 	Config.SetDefault("rpc.ethereum", "https://eth.llamarpc.com")
 	Config.SetDefault("broker", "wss://shinobi.brokers.kenshi.io")
 }
@@ -26,7 +29,11 @@ func LoadConfig(ConfigFileName string, SecretsFileName string) {
 	err := Config.ReadInConfig()
 
 	if err != nil {
-		panic(err)
+		if os.IsNotExist(err) {
+			Config.WriteConfig()
+		} else {
+			panic(err)
+		}
 	}
 
 	Secrets.SetConfigFile(SecretsFileName)
