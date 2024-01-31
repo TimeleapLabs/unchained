@@ -14,7 +14,7 @@ var (
 		{Name: "block", Type: field.TypeUint64, Unique: true},
 		{Name: "signers_count", Type: field.TypeUint64, Nullable: true},
 		{Name: "price", Type: field.TypeString},
-		{Name: "signature", Type: field.TypeBytes},
+		{Name: "signature", Type: field.TypeBytes, Size: 96},
 	}
 	// AssetPricesTable holds the schema information for the "asset_prices" table.
 	AssetPricesTable = &schema.Table{
@@ -51,7 +51,7 @@ var (
 	SignersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "key", Type: field.TypeBytes, Unique: true},
+		{Name: "key", Type: field.TypeBytes, Unique: true, Size: 48},
 		{Name: "points", Type: field.TypeInt64},
 	}
 	// SignersTable holds the schema information for the "signers" table.

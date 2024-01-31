@@ -9,6 +9,7 @@ import (
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // workerCmd represents the worker command
@@ -36,4 +37,12 @@ func init() {
 	// is called directly, e.g.:
 	// workerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
+	workerCmd.Flags().StringP(
+		"broker",
+		"b",
+		"wss://shinobi.brokers.kenshi.io",
+		"Unchained broker to connect to",
+	)
+
+	viper.BindPFlag("broker", workerCmd.Flags().Lookup("broker"))
 }

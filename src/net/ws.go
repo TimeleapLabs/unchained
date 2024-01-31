@@ -11,13 +11,13 @@ import (
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/gorilla/websocket"
+	"github.com/puzpuzpuz/xsync/v3"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+var signers *xsync.MapOf[*websocket.Conn, uniswap.Signer]
 var upgrader = websocket.Upgrader{} // use default options
 var addr = "0.0.0.0:9123"
-
-var signers = make(map[*websocket.Conn]uniswap.Signer)
 
 func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 
@@ -33,7 +33,7 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 		return nil
 	}
 
-	signers[conn] = signer
+	signers.Store(conn, signer)
 	err = conn.WriteMessage(messageType, []byte("conf.ok"))
 
 	if err != nil {
@@ -46,7 +46,7 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 
 func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) error {
 
-	signer, ok := signers[conn]
+	signer, ok := signers.Load(conn)
 
 	if !ok {
 		conn.WriteMessage(messageType, []byte("hello.missing"))
@@ -120,7 +120,7 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer conn.Close()
-	defer delete(signers, conn)
+	defer signers.Delete(conn)
 
 	for {
 		messageType, payload, err := conn.ReadMessage()
@@ -136,7 +136,6 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				fmt.Println("write:", err)
-				break
 			}
 
 		case 1:
@@ -144,13 +143,11 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				fmt.Println("write:", err)
-				break
 			}
 		default:
 			err = conn.WriteMessage(messageType, []byte("Instruction not supported"))
 			if err != nil {
 				fmt.Println("write:", err)
-				break
 			}
 		}
 	}
@@ -161,4 +158,8 @@ func StartServer() {
 	log.SetFlags(0)
 	http.HandleFunc("/", handleAtRoot)
 	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+func init() {
+	signers = xsync.NewMapOf[*websocket.Conn, uniswap.Signer]()
 }
