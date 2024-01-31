@@ -1,7 +1,7 @@
 name: Make release
 
 env:
-  ALPINE_VERSION: "latest"
+  UBUNTU_VERSION: "latest"
 
 on:
   push:
@@ -85,5 +85,5 @@ jobs:
             ghcr.io/kenshitech/unchained:${{ steps.docker-tag.outputs.docker-tag }}
             ghcr.io/kenshitech/unchained:v${{ steps.package-version.outputs.current-version }}
           build-args: |
-            "ALPINE_VERSION=${{ env.ALPINE_VERSION }}"
+            "UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}"
             "UNCHAINED_VERSION=${{ steps.package-version.outputs.current-version }}"
