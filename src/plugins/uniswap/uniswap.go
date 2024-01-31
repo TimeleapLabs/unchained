@@ -100,7 +100,7 @@ func RecordSignature(signature bls12381.G2Affine, signer Signer, block uint64) {
 	cached = append(cached, packed)
 	signatureCache.Add(block, cached)
 
-	SaveSignatures(block)
+	DebouncedSaveSignatures(block, block)
 }
 
 func SaveSignatures(block uint64) {
