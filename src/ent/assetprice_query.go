@@ -62,7 +62,7 @@ func (apq *AssetPriceQuery) Order(o ...assetprice.OrderOption) *AssetPriceQuery 
 	return apq
 }
 
-// QueryDataSet chains the current query on the "DataSet" edge.
+// QueryDataSet chains the current query on the "dataSet" edge.
 func (apq *AssetPriceQuery) QueryDataSet() *DataSetQuery {
 	query := (&DataSetClient{config: apq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -84,7 +84,7 @@ func (apq *AssetPriceQuery) QueryDataSet() *DataSetQuery {
 	return query
 }
 
-// QuerySigners chains the current query on the "Signers" edge.
+// QuerySigners chains the current query on the "signers" edge.
 func (apq *AssetPriceQuery) QuerySigners() *SignerQuery {
 	query := (&SignerClient{config: apq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -307,7 +307,7 @@ func (apq *AssetPriceQuery) Clone() *AssetPriceQuery {
 }
 
 // WithDataSet tells the query-builder to eager-load the nodes that are connected to
-// the "DataSet" edge. The optional arguments are used to configure the query builder of the edge.
+// the "dataSet" edge. The optional arguments are used to configure the query builder of the edge.
 func (apq *AssetPriceQuery) WithDataSet(opts ...func(*DataSetQuery)) *AssetPriceQuery {
 	query := (&DataSetClient{config: apq.config}).Query()
 	for _, opt := range opts {
@@ -318,7 +318,7 @@ func (apq *AssetPriceQuery) WithDataSet(opts ...func(*DataSetQuery)) *AssetPrice
 }
 
 // WithSigners tells the query-builder to eager-load the nodes that are connected to
-// the "Signers" edge. The optional arguments are used to configure the query builder of the edge.
+// the "signers" edge. The optional arguments are used to configure the query builder of the edge.
 func (apq *AssetPriceQuery) WithSigners(opts ...func(*SignerQuery)) *AssetPriceQuery {
 	query := (&SignerClient{config: apq.config}).Query()
 	for _, opt := range opts {
@@ -499,7 +499,7 @@ func (apq *AssetPriceQuery) loadDataSet(ctx context.Context, query *DataSetQuery
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "DataSet" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "dataSet" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -560,7 +560,7 @@ func (apq *AssetPriceQuery) loadSigners(ctx context.Context, query *SignerQuery,
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "Signers" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "signers" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

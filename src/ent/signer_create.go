@@ -40,13 +40,13 @@ func (sc *SignerCreate) SetPoints(i int64) *SignerCreate {
 	return sc
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by IDs.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by IDs.
 func (sc *SignerCreate) AddAssetPriceIDs(ids ...int) *SignerCreate {
 	sc.mutation.AddAssetPriceIDs(ids...)
 	return sc
 }
 
-// AddAssetPrice adds the "AssetPrice" edges to the AssetPrice entity.
+// AddAssetPrice adds the "assetPrice" edges to the AssetPrice entity.
 func (sc *SignerCreate) AddAssetPrice(a ...*AssetPrice) *SignerCreate {
 	ids := make([]int, len(a))
 	for i := range a {

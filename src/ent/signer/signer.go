@@ -19,11 +19,11 @@ const (
 	// FieldPoints holds the string denoting the points field in the database.
 	FieldPoints = "points"
 	// EdgeAssetPrice holds the string denoting the assetprice edge name in mutations.
-	EdgeAssetPrice = "AssetPrice"
+	EdgeAssetPrice = "assetPrice"
 	// Table holds the table name of the signer in the database.
 	Table = "signers"
-	// AssetPriceTable is the table that holds the AssetPrice relation/edge. The primary key declared below.
-	AssetPriceTable = "asset_price_Signers"
+	// AssetPriceTable is the table that holds the assetPrice relation/edge. The primary key declared below.
+	AssetPriceTable = "asset_price_signers"
 	// AssetPriceInverseTable is the table name for the AssetPrice entity.
 	// It exists in this package in order to avoid circular dependency with the "assetprice" package.
 	AssetPriceInverseTable = "asset_prices"
@@ -39,7 +39,7 @@ var Columns = []string{
 
 var (
 	// AssetPricePrimaryKey and AssetPriceColumn2 are the table columns denoting the
-	// primary key for the AssetPrice relation (M2M).
+	// primary key for the assetPrice relation (M2M).
 	AssetPricePrimaryKey = []string{"asset_price_id", "signer_id"}
 )
 
@@ -78,14 +78,14 @@ func ByPoints(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPoints, opts...).ToFunc()
 }
 
-// ByAssetPriceCount orders the results by AssetPrice count.
+// ByAssetPriceCount orders the results by assetPrice count.
 func ByAssetPriceCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborsCount(s, newAssetPriceStep(), opts...)
 	}
 }
 
-// ByAssetPrice orders the results by AssetPrice terms.
+// ByAssetPrice orders the results by assetPrice terms.
 func ByAssetPrice(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAssetPriceStep(), append([]sql.OrderTerm{term}, terms...)...)

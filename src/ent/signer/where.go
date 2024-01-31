@@ -213,7 +213,7 @@ func PointsLTE(v int64) predicate.Signer {
 	return predicate.Signer(sql.FieldLTE(FieldPoints, v))
 }
 
-// HasAssetPrice applies the HasEdge predicate on the "AssetPrice" edge.
+// HasAssetPrice applies the HasEdge predicate on the "assetPrice" edge.
 func HasAssetPrice() predicate.Signer {
 	return predicate.Signer(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
@@ -224,7 +224,7 @@ func HasAssetPrice() predicate.Signer {
 	})
 }
 
-// HasAssetPriceWith applies the HasEdge predicate on the "AssetPrice" edge with a given conditions (other predicates).
+// HasAssetPriceWith applies the HasEdge predicate on the "assetPrice" edge with a given conditions (other predicates).
 func HasAssetPriceWith(preds ...predicate.AssetPrice) predicate.Signer {
 	return predicate.Signer(func(s *sql.Selector) {
 		step := newAssetPriceStep()

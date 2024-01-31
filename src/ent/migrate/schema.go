@@ -67,50 +67,50 @@ var (
 			},
 		},
 	}
-	// AssetPriceDataSetColumns holds the columns for the "asset_price_DataSet" table.
+	// AssetPriceDataSetColumns holds the columns for the "asset_price_dataSet" table.
 	AssetPriceDataSetColumns = []*schema.Column{
 		{Name: "asset_price_id", Type: field.TypeInt},
 		{Name: "data_set_id", Type: field.TypeInt},
 	}
-	// AssetPriceDataSetTable holds the schema information for the "asset_price_DataSet" table.
+	// AssetPriceDataSetTable holds the schema information for the "asset_price_dataSet" table.
 	AssetPriceDataSetTable = &schema.Table{
-		Name:       "asset_price_DataSet",
+		Name:       "asset_price_dataSet",
 		Columns:    AssetPriceDataSetColumns,
 		PrimaryKey: []*schema.Column{AssetPriceDataSetColumns[0], AssetPriceDataSetColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "asset_price_DataSet_asset_price_id",
+				Symbol:     "asset_price_dataSet_asset_price_id",
 				Columns:    []*schema.Column{AssetPriceDataSetColumns[0]},
 				RefColumns: []*schema.Column{AssetPricesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "asset_price_DataSet_data_set_id",
+				Symbol:     "asset_price_dataSet_data_set_id",
 				Columns:    []*schema.Column{AssetPriceDataSetColumns[1]},
 				RefColumns: []*schema.Column{DataSetsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// AssetPriceSignersColumns holds the columns for the "asset_price_Signers" table.
+	// AssetPriceSignersColumns holds the columns for the "asset_price_signers" table.
 	AssetPriceSignersColumns = []*schema.Column{
 		{Name: "asset_price_id", Type: field.TypeInt},
 		{Name: "signer_id", Type: field.TypeInt},
 	}
-	// AssetPriceSignersTable holds the schema information for the "asset_price_Signers" table.
+	// AssetPriceSignersTable holds the schema information for the "asset_price_signers" table.
 	AssetPriceSignersTable = &schema.Table{
-		Name:       "asset_price_Signers",
+		Name:       "asset_price_signers",
 		Columns:    AssetPriceSignersColumns,
 		PrimaryKey: []*schema.Column{AssetPriceSignersColumns[0], AssetPriceSignersColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "asset_price_Signers_asset_price_id",
+				Symbol:     "asset_price_signers_asset_price_id",
 				Columns:    []*schema.Column{AssetPriceSignersColumns[0]},
 				RefColumns: []*schema.Column{AssetPricesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "asset_price_Signers_signer_id",
+				Symbol:     "asset_price_signers_signer_id",
 				Columns:    []*schema.Column{AssetPriceSignersColumns[1]},
 				RefColumns: []*schema.Column{SignersColumns[0]},
 				OnDelete:   schema.Cascade,

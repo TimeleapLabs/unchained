@@ -56,13 +56,13 @@ func (apc *AssetPriceCreate) SetSignature(b []byte) *AssetPriceCreate {
 	return apc
 }
 
-// AddDataSetIDs adds the "DataSet" edge to the DataSet entity by IDs.
+// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by IDs.
 func (apc *AssetPriceCreate) AddDataSetIDs(ids ...int) *AssetPriceCreate {
 	apc.mutation.AddDataSetIDs(ids...)
 	return apc
 }
 
-// AddDataSet adds the "DataSet" edges to the DataSet entity.
+// AddDataSet adds the "dataSet" edges to the DataSet entity.
 func (apc *AssetPriceCreate) AddDataSet(d ...*DataSet) *AssetPriceCreate {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -71,13 +71,13 @@ func (apc *AssetPriceCreate) AddDataSet(d ...*DataSet) *AssetPriceCreate {
 	return apc.AddDataSetIDs(ids...)
 }
 
-// AddSignerIDs adds the "Signers" edge to the Signer entity by IDs.
+// AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (apc *AssetPriceCreate) AddSignerIDs(ids ...int) *AssetPriceCreate {
 	apc.mutation.AddSignerIDs(ids...)
 	return apc
 }
 
-// AddSigners adds the "Signers" edges to the Signer entity.
+// AddSigners adds the "signers" edges to the Signer entity.
 func (apc *AssetPriceCreate) AddSigners(s ...*Signer) *AssetPriceCreate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -130,10 +130,10 @@ func (apc *AssetPriceCreate) check() error {
 		return &ValidationError{Name: "signature", err: errors.New(`ent: missing required field "AssetPrice.signature"`)}
 	}
 	if len(apc.mutation.DataSetIDs()) == 0 {
-		return &ValidationError{Name: "DataSet", err: errors.New(`ent: missing required edge "AssetPrice.DataSet"`)}
+		return &ValidationError{Name: "dataSet", err: errors.New(`ent: missing required edge "AssetPrice.dataSet"`)}
 	}
 	if len(apc.mutation.SignersIDs()) == 0 {
-		return &ValidationError{Name: "Signers", err: errors.New(`ent: missing required edge "AssetPrice.Signers"`)}
+		return &ValidationError{Name: "signers", err: errors.New(`ent: missing required edge "AssetPrice.signers"`)}
 	}
 	return nil
 }

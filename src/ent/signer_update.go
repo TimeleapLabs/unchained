@@ -69,13 +69,13 @@ func (su *SignerUpdate) AddPoints(i int64) *SignerUpdate {
 	return su
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by IDs.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by IDs.
 func (su *SignerUpdate) AddAssetPriceIDs(ids ...int) *SignerUpdate {
 	su.mutation.AddAssetPriceIDs(ids...)
 	return su
 }
 
-// AddAssetPrice adds the "AssetPrice" edges to the AssetPrice entity.
+// AddAssetPrice adds the "assetPrice" edges to the AssetPrice entity.
 func (su *SignerUpdate) AddAssetPrice(a ...*AssetPrice) *SignerUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -89,19 +89,19 @@ func (su *SignerUpdate) Mutation() *SignerMutation {
 	return su.mutation
 }
 
-// ClearAssetPrice clears all "AssetPrice" edges to the AssetPrice entity.
+// ClearAssetPrice clears all "assetPrice" edges to the AssetPrice entity.
 func (su *SignerUpdate) ClearAssetPrice() *SignerUpdate {
 	su.mutation.ClearAssetPrice()
 	return su
 }
 
-// RemoveAssetPriceIDs removes the "AssetPrice" edge to AssetPrice entities by IDs.
+// RemoveAssetPriceIDs removes the "assetPrice" edge to AssetPrice entities by IDs.
 func (su *SignerUpdate) RemoveAssetPriceIDs(ids ...int) *SignerUpdate {
 	su.mutation.RemoveAssetPriceIDs(ids...)
 	return su
 }
 
-// RemoveAssetPrice removes "AssetPrice" edges to AssetPrice entities.
+// RemoveAssetPrice removes "assetPrice" edges to AssetPrice entities.
 func (su *SignerUpdate) RemoveAssetPrice(a ...*AssetPrice) *SignerUpdate {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -282,13 +282,13 @@ func (suo *SignerUpdateOne) AddPoints(i int64) *SignerUpdateOne {
 	return suo
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by IDs.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by IDs.
 func (suo *SignerUpdateOne) AddAssetPriceIDs(ids ...int) *SignerUpdateOne {
 	suo.mutation.AddAssetPriceIDs(ids...)
 	return suo
 }
 
-// AddAssetPrice adds the "AssetPrice" edges to the AssetPrice entity.
+// AddAssetPrice adds the "assetPrice" edges to the AssetPrice entity.
 func (suo *SignerUpdateOne) AddAssetPrice(a ...*AssetPrice) *SignerUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {
@@ -302,19 +302,19 @@ func (suo *SignerUpdateOne) Mutation() *SignerMutation {
 	return suo.mutation
 }
 
-// ClearAssetPrice clears all "AssetPrice" edges to the AssetPrice entity.
+// ClearAssetPrice clears all "assetPrice" edges to the AssetPrice entity.
 func (suo *SignerUpdateOne) ClearAssetPrice() *SignerUpdateOne {
 	suo.mutation.ClearAssetPrice()
 	return suo
 }
 
-// RemoveAssetPriceIDs removes the "AssetPrice" edge to AssetPrice entities by IDs.
+// RemoveAssetPriceIDs removes the "assetPrice" edge to AssetPrice entities by IDs.
 func (suo *SignerUpdateOne) RemoveAssetPriceIDs(ids ...int) *SignerUpdateOne {
 	suo.mutation.RemoveAssetPriceIDs(ids...)
 	return suo
 }
 
-// RemoveAssetPrice removes "AssetPrice" edges to AssetPrice entities.
+// RemoveAssetPrice removes "assetPrice" edges to AssetPrice entities.
 func (suo *SignerUpdateOne) RemoveAssetPrice(a ...*AssetPrice) *SignerUpdateOne {
 	ids := make([]int, len(a))
 	for i := range a {

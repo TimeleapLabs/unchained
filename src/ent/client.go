@@ -325,7 +325,7 @@ func (c *AssetPriceClient) GetX(ctx context.Context, id int) *AssetPrice {
 	return obj
 }
 
-// QueryDataSet queries the DataSet edge of a AssetPrice.
+// QueryDataSet queries the dataSet edge of a AssetPrice.
 func (c *AssetPriceClient) QueryDataSet(ap *AssetPrice) *DataSetQuery {
 	query := (&DataSetClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
@@ -341,7 +341,7 @@ func (c *AssetPriceClient) QueryDataSet(ap *AssetPrice) *DataSetQuery {
 	return query
 }
 
-// QuerySigners queries the Signers edge of a AssetPrice.
+// QuerySigners queries the signers edge of a AssetPrice.
 func (c *AssetPriceClient) QuerySigners(ap *AssetPrice) *SignerQuery {
 	query := (&SignerClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
@@ -490,7 +490,7 @@ func (c *DataSetClient) GetX(ctx context.Context, id int) *DataSet {
 	return obj
 }
 
-// QueryAssetPrice queries the AssetPrice edge of a DataSet.
+// QueryAssetPrice queries the assetPrice edge of a DataSet.
 func (c *DataSetClient) QueryAssetPrice(ds *DataSet) *AssetPriceQuery {
 	query := (&AssetPriceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
@@ -639,7 +639,7 @@ func (c *SignerClient) GetX(ctx context.Context, id int) *Signer {
 	return obj
 }
 
-// QueryAssetPrice queries the AssetPrice edge of a Signer.
+// QueryAssetPrice queries the assetPrice edge of a Signer.
 func (c *SignerClient) QueryAssetPrice(s *Signer) *AssetPriceQuery {
 	query := (&AssetPriceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {

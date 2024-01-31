@@ -90,13 +90,13 @@ func (apu *AssetPriceUpdate) SetSignature(b []byte) *AssetPriceUpdate {
 	return apu
 }
 
-// AddDataSetIDs adds the "DataSet" edge to the DataSet entity by IDs.
+// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by IDs.
 func (apu *AssetPriceUpdate) AddDataSetIDs(ids ...int) *AssetPriceUpdate {
 	apu.mutation.AddDataSetIDs(ids...)
 	return apu
 }
 
-// AddDataSet adds the "DataSet" edges to the DataSet entity.
+// AddDataSet adds the "dataSet" edges to the DataSet entity.
 func (apu *AssetPriceUpdate) AddDataSet(d ...*DataSet) *AssetPriceUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -105,13 +105,13 @@ func (apu *AssetPriceUpdate) AddDataSet(d ...*DataSet) *AssetPriceUpdate {
 	return apu.AddDataSetIDs(ids...)
 }
 
-// AddSignerIDs adds the "Signers" edge to the Signer entity by IDs.
+// AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (apu *AssetPriceUpdate) AddSignerIDs(ids ...int) *AssetPriceUpdate {
 	apu.mutation.AddSignerIDs(ids...)
 	return apu
 }
 
-// AddSigners adds the "Signers" edges to the Signer entity.
+// AddSigners adds the "signers" edges to the Signer entity.
 func (apu *AssetPriceUpdate) AddSigners(s ...*Signer) *AssetPriceUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -125,19 +125,19 @@ func (apu *AssetPriceUpdate) Mutation() *AssetPriceMutation {
 	return apu.mutation
 }
 
-// ClearDataSet clears all "DataSet" edges to the DataSet entity.
+// ClearDataSet clears all "dataSet" edges to the DataSet entity.
 func (apu *AssetPriceUpdate) ClearDataSet() *AssetPriceUpdate {
 	apu.mutation.ClearDataSet()
 	return apu
 }
 
-// RemoveDataSetIDs removes the "DataSet" edge to DataSet entities by IDs.
+// RemoveDataSetIDs removes the "dataSet" edge to DataSet entities by IDs.
 func (apu *AssetPriceUpdate) RemoveDataSetIDs(ids ...int) *AssetPriceUpdate {
 	apu.mutation.RemoveDataSetIDs(ids...)
 	return apu
 }
 
-// RemoveDataSet removes "DataSet" edges to DataSet entities.
+// RemoveDataSet removes "dataSet" edges to DataSet entities.
 func (apu *AssetPriceUpdate) RemoveDataSet(d ...*DataSet) *AssetPriceUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -146,19 +146,19 @@ func (apu *AssetPriceUpdate) RemoveDataSet(d ...*DataSet) *AssetPriceUpdate {
 	return apu.RemoveDataSetIDs(ids...)
 }
 
-// ClearSigners clears all "Signers" edges to the Signer entity.
+// ClearSigners clears all "signers" edges to the Signer entity.
 func (apu *AssetPriceUpdate) ClearSigners() *AssetPriceUpdate {
 	apu.mutation.ClearSigners()
 	return apu
 }
 
-// RemoveSignerIDs removes the "Signers" edge to Signer entities by IDs.
+// RemoveSignerIDs removes the "signers" edge to Signer entities by IDs.
 func (apu *AssetPriceUpdate) RemoveSignerIDs(ids ...int) *AssetPriceUpdate {
 	apu.mutation.RemoveSignerIDs(ids...)
 	return apu
 }
 
-// RemoveSigners removes "Signers" edges to Signer entities.
+// RemoveSigners removes "signers" edges to Signer entities.
 func (apu *AssetPriceUpdate) RemoveSigners(s ...*Signer) *AssetPriceUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -398,13 +398,13 @@ func (apuo *AssetPriceUpdateOne) SetSignature(b []byte) *AssetPriceUpdateOne {
 	return apuo
 }
 
-// AddDataSetIDs adds the "DataSet" edge to the DataSet entity by IDs.
+// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by IDs.
 func (apuo *AssetPriceUpdateOne) AddDataSetIDs(ids ...int) *AssetPriceUpdateOne {
 	apuo.mutation.AddDataSetIDs(ids...)
 	return apuo
 }
 
-// AddDataSet adds the "DataSet" edges to the DataSet entity.
+// AddDataSet adds the "dataSet" edges to the DataSet entity.
 func (apuo *AssetPriceUpdateOne) AddDataSet(d ...*DataSet) *AssetPriceUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -413,13 +413,13 @@ func (apuo *AssetPriceUpdateOne) AddDataSet(d ...*DataSet) *AssetPriceUpdateOne 
 	return apuo.AddDataSetIDs(ids...)
 }
 
-// AddSignerIDs adds the "Signers" edge to the Signer entity by IDs.
+// AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (apuo *AssetPriceUpdateOne) AddSignerIDs(ids ...int) *AssetPriceUpdateOne {
 	apuo.mutation.AddSignerIDs(ids...)
 	return apuo
 }
 
-// AddSigners adds the "Signers" edges to the Signer entity.
+// AddSigners adds the "signers" edges to the Signer entity.
 func (apuo *AssetPriceUpdateOne) AddSigners(s ...*Signer) *AssetPriceUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
@@ -433,19 +433,19 @@ func (apuo *AssetPriceUpdateOne) Mutation() *AssetPriceMutation {
 	return apuo.mutation
 }
 
-// ClearDataSet clears all "DataSet" edges to the DataSet entity.
+// ClearDataSet clears all "dataSet" edges to the DataSet entity.
 func (apuo *AssetPriceUpdateOne) ClearDataSet() *AssetPriceUpdateOne {
 	apuo.mutation.ClearDataSet()
 	return apuo
 }
 
-// RemoveDataSetIDs removes the "DataSet" edge to DataSet entities by IDs.
+// RemoveDataSetIDs removes the "dataSet" edge to DataSet entities by IDs.
 func (apuo *AssetPriceUpdateOne) RemoveDataSetIDs(ids ...int) *AssetPriceUpdateOne {
 	apuo.mutation.RemoveDataSetIDs(ids...)
 	return apuo
 }
 
-// RemoveDataSet removes "DataSet" edges to DataSet entities.
+// RemoveDataSet removes "dataSet" edges to DataSet entities.
 func (apuo *AssetPriceUpdateOne) RemoveDataSet(d ...*DataSet) *AssetPriceUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
@@ -454,19 +454,19 @@ func (apuo *AssetPriceUpdateOne) RemoveDataSet(d ...*DataSet) *AssetPriceUpdateO
 	return apuo.RemoveDataSetIDs(ids...)
 }
 
-// ClearSigners clears all "Signers" edges to the Signer entity.
+// ClearSigners clears all "signers" edges to the Signer entity.
 func (apuo *AssetPriceUpdateOne) ClearSigners() *AssetPriceUpdateOne {
 	apuo.mutation.ClearSigners()
 	return apuo
 }
 
-// RemoveSignerIDs removes the "Signers" edge to Signer entities by IDs.
+// RemoveSignerIDs removes the "signers" edge to Signer entities by IDs.
 func (apuo *AssetPriceUpdateOne) RemoveSignerIDs(ids ...int) *AssetPriceUpdateOne {
 	apuo.mutation.RemoveSignerIDs(ids...)
 	return apuo
 }
 
-// RemoveSigners removes "Signers" edges to Signer entities.
+// RemoveSigners removes "signers" edges to Signer entities.
 func (apuo *AssetPriceUpdateOne) RemoveSigners(s ...*Signer) *AssetPriceUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {

@@ -28,13 +28,13 @@ func (dsc *DataSetCreate) SetName(s string) *DataSetCreate {
 	return dsc
 }
 
-// AddAssetPriceIDs adds the "AssetPrice" edge to the AssetPrice entity by IDs.
+// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by IDs.
 func (dsc *DataSetCreate) AddAssetPriceIDs(ids ...int) *DataSetCreate {
 	dsc.mutation.AddAssetPriceIDs(ids...)
 	return dsc
 }
 
-// AddAssetPrice adds the "AssetPrice" edges to the AssetPrice entity.
+// AddAssetPrice adds the "assetPrice" edges to the AssetPrice entity.
 func (dsc *DataSetCreate) AddAssetPrice(a ...*AssetPrice) *DataSetCreate {
 	ids := make([]int, len(a))
 	for i := range a {

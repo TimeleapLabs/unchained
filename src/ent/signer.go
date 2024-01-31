@@ -30,8 +30,8 @@ type Signer struct {
 
 // SignerEdges holds the relations/edges for other nodes in the graph.
 type SignerEdges struct {
-	// AssetPrice holds the value of the AssetPrice edge.
-	AssetPrice []*AssetPrice `json:"AssetPrice,omitempty"`
+	// AssetPrice holds the value of the assetPrice edge.
+	AssetPrice []*AssetPrice `json:"assetPrice,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
@@ -43,7 +43,7 @@ func (e SignerEdges) AssetPriceOrErr() ([]*AssetPrice, error) {
 	if e.loadedTypes[0] {
 		return e.AssetPrice, nil
 	}
-	return nil, &NotLoadedError{edge: "AssetPrice"}
+	return nil, &NotLoadedError{edge: "assetPrice"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -109,7 +109,7 @@ func (s *Signer) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
-// QueryAssetPrice queries the "AssetPrice" edge of the Signer entity.
+// QueryAssetPrice queries the "assetPrice" edge of the Signer entity.
 func (s *Signer) QueryAssetPrice() *AssetPriceQuery {
 	return NewSignerClient(s.config).QueryAssetPrice(s)
 }
