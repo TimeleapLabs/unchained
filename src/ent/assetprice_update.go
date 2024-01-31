@@ -194,7 +194,20 @@ func (apu *AssetPriceUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (apu *AssetPriceUpdate) check() error {
+	if v, ok := apu.mutation.Signature(); ok {
+		if err := assetprice.SignatureValidator(v); err != nil {
+			return &ValidationError{Name: "signature", err: fmt.Errorf(`ent: validator failed for field "AssetPrice.signature": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (apu *AssetPriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := apu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(assetprice.Table, assetprice.Columns, sqlgraph.NewFieldSpec(assetprice.FieldID, field.TypeInt))
 	if ps := apu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -515,7 +528,20 @@ func (apuo *AssetPriceUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (apuo *AssetPriceUpdateOne) check() error {
+	if v, ok := apuo.mutation.Signature(); ok {
+		if err := assetprice.SignatureValidator(v); err != nil {
+			return &ValidationError{Name: "signature", err: fmt.Errorf(`ent: validator failed for field "AssetPrice.signature": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (apuo *AssetPriceUpdateOne) sqlSave(ctx context.Context) (_node *AssetPrice, err error) {
+	if err := apuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(assetprice.Table, assetprice.Columns, sqlgraph.NewFieldSpec(assetprice.FieldID, field.TypeInt))
 	id, ok := apuo.mutation.ID()
 	if !ok {

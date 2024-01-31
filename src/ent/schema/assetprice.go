@@ -22,7 +22,7 @@ func (AssetPrice) Fields() []ent.Field {
 		field.String("price").
 			GoType(&big.Int{}).
 			ValueScanner(field.TextValueScanner[*big.Int]{}),
-		field.Bytes("signature"),
+		field.Bytes("signature").MaxLen(96),
 	}
 }
 

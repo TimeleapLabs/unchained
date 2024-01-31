@@ -21,6 +21,10 @@ func init() {
 	// assetpriceDescPrice is the schema descriptor for price field.
 	assetpriceDescPrice := assetpriceFields[2].Descriptor()
 	assetprice.ValueScanner.Price = assetpriceDescPrice.ValueScanner.(field.TypeValueScanner[*big.Int])
+	// assetpriceDescSignature is the schema descriptor for signature field.
+	assetpriceDescSignature := assetpriceFields[3].Descriptor()
+	// assetprice.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
+	assetprice.SignatureValidator = assetpriceDescSignature.Validators[0].(func([]byte) error)
 	datasetFields := schema.DataSet{}.Fields()
 	_ = datasetFields
 	// datasetDescName is the schema descriptor for name field.
@@ -36,5 +40,19 @@ func init() {
 	// signerDescKey is the schema descriptor for key field.
 	signerDescKey := signerFields[1].Descriptor()
 	// signer.KeyValidator is a validator for the "key" field. It is called by the builders before save.
-	signer.KeyValidator = signerDescKey.Validators[0].(func([]byte) error)
+	signer.KeyValidator = func() func([]byte) error {
+		validators := signerDescKey.Validators
+		fns := [...]func([]byte) error{
+			validators[0].(func([]byte) error),
+			validators[1].(func([]byte) error),
+		}
+		return func(key []byte) error {
+			for _, fn := range fns {
+				if err := fn(key); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 }

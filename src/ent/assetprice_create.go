@@ -129,6 +129,11 @@ func (apc *AssetPriceCreate) check() error {
 	if _, ok := apc.mutation.Signature(); !ok {
 		return &ValidationError{Name: "signature", err: errors.New(`ent: missing required field "AssetPrice.signature"`)}
 	}
+	if v, ok := apc.mutation.Signature(); ok {
+		if err := assetprice.SignatureValidator(v); err != nil {
+			return &ValidationError{Name: "signature", err: fmt.Errorf(`ent: validator failed for field "AssetPrice.signature": %w`, err)}
+		}
+	}
 	if len(apc.mutation.DataSetIDs()) == 0 {
 		return &ValidationError{Name: "dataSet", err: errors.New(`ent: missing required edge "AssetPrice.dataSet"`)}
 	}

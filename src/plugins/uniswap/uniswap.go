@@ -136,7 +136,8 @@ func SaveSignatures(block uint64) {
 	var newSignatures []bls12381.G2Affine
 	var keys [][]byte
 
-	for _, signature := range signatures {
+	for i := range signatures {
+		signature := signatures[i]
 		keys = append(keys, signature.Signer.PublicKey[:])
 		if !signature.Processed {
 			newSignatures = append(newSignatures, signature.Signature)
@@ -161,6 +162,15 @@ func SaveSignatures(block uint64) {
 		panic(err)
 	}
 
+	signerIds, err := dbClient.Signer.
+		Query().
+		Where(signer.KeyIn(keys...)).
+		IDs(ctx)
+
+	if err != nil {
+		return
+	}
+
 	var aggregate bls12381.G2Affine
 	currentAggregate, ok := aggregateCache.Get(block)
 
@@ -175,15 +185,6 @@ func SaveSignatures(block uint64) {
 	}
 
 	signatureBytes := aggregate.Bytes()
-
-	signerIds, err := dbClient.Signer.
-		Query().
-		Where(signer.KeyIn(keys...)).
-		IDs(ctx)
-
-	if err != nil {
-		return
-	}
 
 	err = dbClient.AssetPrice.
 		Create().
@@ -320,31 +321,35 @@ func Start() {
 		panic(err)
 	}
 
+	isSocketClosed := false
+
 	go func() {
 		defer close(done)
 
-	READ_LOOP:
 		for {
 			_, message, err := wsClient.ReadMessage()
 
 			if err != nil {
 				fmt.Println("Read error:", err)
+				isSocketClosed = true
 
 				if websocket.IsUnexpectedCloseError(err) {
 					for i := 1; i < 6; i++ {
 						time.Sleep(time.Duration(i) * 3 * time.Second)
 						wsClient, _, err = websocket.DefaultDialer.Dial(brokerUrl, nil)
 						if err == nil {
+							isSocketClosed = false
 							wsClient.WriteMessage(
 								websocket.BinaryMessage,
 								append([]byte{0}, helloPayload...),
 							)
-							continue READ_LOOP
 						}
 					}
 				}
 
-				return
+				if isSocketClosed {
+					return
+				}
 			}
 
 			fmt.Printf("Unchained feedback: %s\n", message)
@@ -357,6 +362,10 @@ func Start() {
 		gocron.DurationJob(5*time.Second),
 		gocron.NewTask(
 			func() {
+
+				if isSocketClosed {
+					return
+				}
 
 				blockNumber, price, err := GetPriceFromPair(etherUsdPairAddr, 6, true)
 
@@ -397,7 +406,9 @@ func Start() {
 				}
 
 				//fmt.Printf("%x\n", payload)
-				wsClient.WriteMessage(websocket.BinaryMessage, append([]byte{1}, payload...))
+				if !isSocketClosed {
+					wsClient.WriteMessage(websocket.BinaryMessage, append([]byte{1}, payload...))
+				}
 
 				// fmt.Printf("%x\n", signature.Bytes())
 				// ok, _ := bls.Verify(signature, hash, *pk)
