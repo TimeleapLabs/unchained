@@ -86,20 +86,14 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 
 	ok, _ = bls.Verify(signature, hash, pk)
 
-	if err != nil {
-		fmt.Println("Faileded")
-	}
-
-	uniswap.RecordSignature(
-		signature,
-		signer,
-		report.PriceInfo.Block,
-	)
-
 	message := []byte("signature.invalid")
-
 	if ok {
 		message = []byte("signature.accepted")
+		uniswap.RecordSignature(
+			signature,
+			signer,
+			report.PriceInfo.Block,
+		)
 	}
 
 	err = conn.WriteMessage(messageType, message)

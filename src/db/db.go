@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ent"
-	"github.com/spf13/viper"
 
 	_ "github.com/lib/pq"
 )
@@ -16,7 +16,7 @@ func Start() {
 
 	var err error
 
-	dbUrl := viper.GetString("database.url")
+	dbUrl := config.Config.GetString("database.url")
 	dbClient, err = ent.Open("postgres", dbUrl)
 
 	if err != nil {

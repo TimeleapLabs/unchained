@@ -5,11 +5,11 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ethereum/contracts"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/viper"
 )
 
 var rpcList []string
@@ -17,7 +17,7 @@ var rpcIndex int
 var client *ethclient.Client
 
 func Start() {
-	rpcConfig := viper.Get("rpc.ethereum")
+	rpcConfig := config.Config.Get("rpc.ethereum")
 	rpcIndex = 0
 
 	switch reflect.TypeOf(rpcConfig).Kind() {

@@ -9,7 +9,6 @@ import (
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // workerCmd represents the worker command
@@ -18,7 +17,7 @@ var workerCmd = &cobra.Command{
 	Short: "Run the Unchained client in worker mode",
 	Long:  `Run the Unchained client in worker mode`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config.LoadConfig(configPath)
+		config.LoadConfig(configPath, secretsPath)
 		ethereum.Start()
 		uniswap.Start()
 	},
@@ -44,5 +43,5 @@ func init() {
 		"Unchained broker to connect to",
 	)
 
-	viper.BindPFlag("broker", workerCmd.Flags().Lookup("broker"))
+	config.Config.BindPFlag("broker", workerCmd.Flags().Lookup("broker"))
 }
