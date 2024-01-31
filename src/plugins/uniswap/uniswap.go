@@ -132,8 +132,20 @@ func SaveSignatures(block uint64) {
 		panic(err)
 	}
 
-	err = dbClient.Signer.MapCreateBulk(signatures, func(sc *ent.SignerCreate, i int) {
-		signer := signatures[i].Signer
+	var newSigners []Signer
+	var newSignatures []bls12381.G2Affine
+	var keys [][]byte
+
+	for _, signature := range signatures {
+		if !signature.Processed {
+			keys = append(keys, signature.Signer.PublicKey[:])
+			newSignatures = append(newSignatures, signature.Signature)
+			newSigners = append(newSigners, signature.Signer)
+		}
+	}
+
+	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
+		signer := newSigners[i]
 		sc.SetName(signer.Name).
 			SetKey(signer.PublicKey[:]).
 			SetPoints(0)
@@ -147,16 +159,6 @@ func SaveSignatures(block uint64) {
 
 	if err != nil {
 		panic(err)
-	}
-
-	var newSignatures []bls12381.G2Affine
-	var keys [][]byte
-
-	for _, signature := range signatures {
-		if !signature.Processed {
-			keys = append(keys, signature.Signer.PublicKey[:])
-			newSignatures = append(newSignatures, signature.Signature)
-		}
 	}
 
 	var aggregate bls12381.G2Affine
@@ -280,12 +282,27 @@ func Start() {
 
 	go func() {
 		defer close(done)
+
+	READ_LOOP:
 		for {
 			_, message, err := wsClient.ReadMessage()
+
 			if err != nil {
 				fmt.Println("Read error:", err)
+
+				if websocket.IsUnexpectedCloseError(err) {
+					for i := 1; i < 6; i++ {
+						time.Sleep(time.Duration(i) * 3 * time.Second)
+						wsClient, _, err = websocket.DefaultDialer.Dial(brokerUrl, nil)
+						if err == nil {
+							continue READ_LOOP
+						}
+					}
+				}
+
 				return
 			}
+
 			fmt.Printf("Unchained feedback: %s\n", message)
 		}
 	}()
