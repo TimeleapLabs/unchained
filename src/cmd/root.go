@@ -10,6 +10,7 @@ import (
 var version = "0.11.0-alpha.2"
 
 var configPath string
+var secretsPath string
 var printVersion bool
 
 // rootCmd represents the base command when called without any subcommands
@@ -49,7 +50,8 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().BoolVarP(&printVersion, "version", "v", false, "Print the Unchained version number and die")
 
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./unchained.conf.yaml", "Config file")
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./conf.yaml", "Config file")
+	rootCmd.PersistentFlags().StringVarP(&secretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
 	rootCmd.MarkFlagFilename("config", "yaml")
 	rootCmd.MarkFlagRequired("config")
 }

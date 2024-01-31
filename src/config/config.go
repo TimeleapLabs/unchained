@@ -1,19 +1,38 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"os"
+
+	"github.com/spf13/viper"
+)
 
 func defaults() {
-	viper.SetDefault("rpc.ethereum", "https://eth.llamarpc.com")
-	viper.SetDefault("broker", "wss://shinobi.brokers.kenshi.io")
+	Config.SetDefault("rpc.ethereum", "https://eth.llamarpc.com")
+	Config.SetDefault("broker", "wss://shinobi.brokers.kenshi.io")
 }
 
-func LoadConfig(FileName string) {
+var Config *viper.Viper
+var Secrets *viper.Viper
+
+func init() {
+	Config = viper.New()
+	Secrets = viper.New()
+}
+
+func LoadConfig(ConfigFileName string, SecretsFileName string) {
 	defaults()
 
-	viper.SetConfigFile(FileName)
-	err := viper.ReadInConfig()
+	Config.SetConfigFile(ConfigFileName)
+	err := Config.ReadInConfig()
 
 	if err != nil {
+		panic(err)
+	}
+
+	Secrets.SetConfigFile(SecretsFileName)
+	err = Secrets.MergeInConfig()
+
+	if err != nil && os.IsExist(err) {
 		panic(err)
 	}
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/KenshiTech/unchained/bls"
+	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
 	"github.com/KenshiTech/unchained/ent/signer"
@@ -270,7 +271,7 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 
 func Start() {
 
-	brokerUrl := viper.GetString("broker")
+	brokerUrl := config.Config.GetString("broker")
 	wsClient, _, err := websocket.DefaultDialer.Dial(brokerUrl, nil)
 
 	if err != nil {
@@ -288,26 +289,37 @@ func Start() {
 
 	var sk *big.Int
 	var pk *bls12381.G1Affine
+	var pkBytes [48]byte
 
-	if viper.InConfig("secretKey") {
+	if config.Secrets.InConfig("secretKey") {
 
-		decoded := base58.Decode(viper.GetString("secretKey"))
+		decoded := base58.Decode(config.Secrets.GetString("secretKey"))
 
 		sk = new(big.Int)
 		sk.SetBytes(decoded)
 
 		pk = bls.GetPublicKey(sk)
+		pkBytes = pk.Bytes()
+
 	} else {
 		sk, pk, err = bls.GenerateKeyPair()
+		pkBytes = pk.Bytes()
+
+		config.Secrets.Set("secretKey", base58.Encode(sk.Bytes()))
+		config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
+
+		err := config.Secrets.WriteConfig()
+
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if err != nil {
 		panic(err)
 	}
 
-	pkBytes := pk.Bytes()
 	pkStr := base58.Encode(pkBytes[:])
-
 	fmt.Printf("Public Key: %s\n", pkStr)
 
 	hello := Signer{
