@@ -280,33 +280,6 @@ func Start() {
 
 	done := make(chan struct{})
 
-	go func() {
-		defer close(done)
-
-	READ_LOOP:
-		for {
-			_, message, err := wsClient.ReadMessage()
-
-			if err != nil {
-				fmt.Println("Read error:", err)
-
-				if websocket.IsUnexpectedCloseError(err) {
-					for i := 1; i < 6; i++ {
-						time.Sleep(time.Duration(i) * 3 * time.Second)
-						wsClient, _, err = websocket.DefaultDialer.Dial(brokerUrl, nil)
-						if err == nil {
-							continue READ_LOOP
-						}
-					}
-				}
-
-				return
-			}
-
-			fmt.Printf("Unchained feedback: %s\n", message)
-		}
-	}()
-
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		panic(err)
@@ -346,6 +319,37 @@ func Start() {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		defer close(done)
+
+	READ_LOOP:
+		for {
+			_, message, err := wsClient.ReadMessage()
+
+			if err != nil {
+				fmt.Println("Read error:", err)
+
+				if websocket.IsUnexpectedCloseError(err) {
+					for i := 1; i < 6; i++ {
+						time.Sleep(time.Duration(i) * 3 * time.Second)
+						wsClient, _, err = websocket.DefaultDialer.Dial(brokerUrl, nil)
+						if err == nil {
+							wsClient.WriteMessage(
+								websocket.BinaryMessage,
+								append([]byte{0}, helloPayload...),
+							)
+							continue READ_LOOP
+						}
+					}
+				}
+
+				return
+			}
+
+			fmt.Printf("Unchained feedback: %s\n", message)
+		}
+	}()
 
 	wsClient.WriteMessage(websocket.BinaryMessage, append([]byte{0}, helloPayload...))
 
