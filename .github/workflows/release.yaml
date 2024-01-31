@@ -83,7 +83,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ghcr.io/kenshitech/unchained:${{ steps.docker-tag.outputs.docker-tag }}
-            ghcr.io/kenshitech/unchained:v${{ steps.package-version.outputs.current-version }}
+            ghcr.io/kenshitech/unchained:${{ github.ref_name }}
           build-args: |
             "UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}"
-            "UNCHAINED_VERSION=${{ steps.package-version.outputs.current-version }}"
+            "UNCHAINED_VERSION=${{ github.ref_name }}"
