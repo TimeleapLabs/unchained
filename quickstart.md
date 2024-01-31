@@ -227,7 +227,7 @@ unchained.OS.ARCH worker
 ```
 
 If you are running the node for the first time, Unchained will generate a random secret key. This key will be saved to the
-secrets.yaml. It is your responsibility to keep this file safe.
+secrets.yaml file. It is your responsibility to keep this file safe.
 
 ## Max Open Sockets
 
