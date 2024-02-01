@@ -43,12 +43,19 @@ Choose which node type you'd like to run on your machine.
 
 ### Configuring your node
 
+#### Prerequisites
+
+Create a directory for the config files to be mounted in your docker container:
+```bash
+mkdir conf
+```
+
 #### Broker node
 
 Make a copy of the environment template:
 
 ```bash
-cp .env.template .env
+cp .env.template conf/.env
 ```
 
 Edit the newly created file with a username and password of your choice for Postgres
@@ -57,7 +64,7 @@ and Grafana.
 Make a copy of the broker configuration template:
 
 ```bash
-cp conf.broker.yaml.template conf.broker.yaml
+cp conf.broker.yaml.template conf/conf.broker.yaml
 ```
 
 Edit the newly created file. Set a name for your node. Set the Postgres
@@ -69,7 +76,7 @@ step. Set the host of the Postgres local instance to `postgres`, and the port to
 Make a copy of the worker configuration template:
 
 ```bash
-cp conf.worker.yaml.template conf.worker.yaml
+cp conf.worker.yaml.template conf/conf.worker.yaml
 ```
 
 Edit the newly created file and set a name for your node.
@@ -79,7 +86,7 @@ Edit the newly created file and set a name for your node.
 Make a copy of the remote configuration template:
 
 ```bash
-cp conf.remote.yaml.template conf.remote.yaml
+cp conf.remote.yaml.template conf/conf.remote.yaml
 ```
 
 Edit the newly created file. Set a name for your node. Set the Postgres username,
@@ -97,9 +104,19 @@ To start the node, run this command while in the release directory:
 ./unchained.sh [node] up -d
 ```
 
+**Note: If you are running the node for the first time, Unchained will generate a random secret key. This key will be saved to the `conf/secrets.<NODE_TYPE>.yaml` file. It is your responsibility to keep this file safe.**
+
 #### Stop Node
 
 To stop the node, run this command while in the release directory:
+
+```bash
+./unchained.sh [node] stop
+```
+
+#### Restart Node
+
+To restart the node, run this command while in the release directory:
 
 ```bash
 ./unchained.sh [node] stop
@@ -226,8 +243,8 @@ where you saved the above configuration file:
 unchained.OS.ARCH worker
 ```
 
-If you are running the node for the first time, Unchained will generate a random secret key. This key will be saved to the
-secrets.yaml file. It is your responsibility to keep this file safe.
+**Note: if you are running the node for the first time, Unchained will generate a random secret key. This key will be saved to the
+secrets.yaml file. It is your responsibility to keep this file safe.**
 
 ## Max Open Sockets
 
