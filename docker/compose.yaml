@@ -1,71 +1,71 @@
 version: "3.9"
 
 services:
-  unchained_local:
+  #unchained_broker:
+  #  image: ghcr.io/kenshitech/unchained:latest
+  #  container_name: unchained_broker
+  #  hostname: unchained_broker
+  #  volumes:
+  #    - ./conf.broker.yaml:/app/conf.yaml
+  #  depends_on:
+  #    postgres:
+  #      condition: service_healthy
+  #  environment:
+  #    - UNCHAINED_NODE_TYPE=broker
+  #  profiles: ["broker"]
+  #  restart: always
+
+  #postgres:
+  #  image: postgres:16.1
+  #  container_name: postgres
+  #  hostname: postgres
+  #  env_file:
+  #    - .env
+  #  volumes:
+  #    - ./data:/var/lib/postgresql/data
+  #  profiles: ["broker"]
+  #  restart: always
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+  #    interval: 10s
+  #    timeout: 5s
+  #    retries: 5
+
+  #grafana:
+  #  image: grafana/grafana-oss:latest
+  #  container_name: grafana
+  #  restart: always
+  #  ports:
+  #    - "127.0.0.1:3000:3000"
+  #  env_file:
+  #    - .env
+  #  volumes:
+  #    - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+  #    - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/main.yaml
+  #    - ./grafana/dashboards:/var/lib/grafana/dashboards
+  #  profiles: ["broker"]
+  #  depends_on:
+  #    postgres:
+  #      condition: service_healthy
+
+  unchained_worker:
     image: ghcr.io/kenshitech/unchained:latest
-    container_name: unchained_local
-    hostname: unchained_local
+    container_name: unchained_worker
+    hostname: unchained_worker
     volumes:
-      - ./conf.local.yaml:/app/conf.yaml
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - ./conf:/app/conf
     environment:
-      - UNCHAINED_NODE_TYPE=full
-    profiles: ["local"]
+      - UNCHAINED_NODE_TYPE=worker
+    profiles: ["worker"]
     restart: always
 
-  postgres:
-    image: postgres:16.1
-    container_name: postgres
-    hostname: postgres
-    env_file:
-      - .env
-    volumes:
-      - ./data:/var/lib/postgresql/data
-    profiles: ["local"]
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  grafana:
-    image: grafana/grafana-oss:latest
-    container_name: grafana
-    restart: always
-    ports:
-      - "127.0.0.1:3000:3000"
-    env_file:
-      - .env
-    volumes:
-      - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
-      - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/main.yaml
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
-    profiles: ["local"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  unchained_lite:
-    image: ghcr.io/kenshitech/unchained:latest
-    container_name: unchained_lite
-    hostname: unchained_lite
-    volumes:
-      - ./conf.lite.yaml:/app/conf.yaml
-    environment:
-      - UNCHAINED_NODE_TYPE=lite
-    profiles: ["lite"]
-    restart: always
-
-  unchained_remote:
-    image: ghcr.io/kenshitech/unchained:latest
-    container_name: unchained_remote
-    hostname: unchained_remote
-    volumes:
-      - ./conf.remote.yaml:/app/conf.yaml
-    environment:
-      - UNCHAINED_NODE_TYPE=full
-    profiles: ["remote"]
-    restart: always
+  #unchained_remote:
+  #  image: ghcr.io/kenshitech/unchained:latest
+  #  container_name: unchained_remote
+  #  hostname: unchained_remote
+  #  volumes:
+  #    - ./conf.remote.yaml:/app/conf.yaml
+  #  environment:
+  #    - UNCHAINED_NODE_TYPE=broker
+  #  profiles: ["remote"]
+  #  restart: always

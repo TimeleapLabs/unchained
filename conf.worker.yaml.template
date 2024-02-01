@@ -6,5 +6,3 @@ rpc:
     - https://eth.llamarpc.com
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
-database:
-  url: postgres://<user>:<pass>@<host>:<port>/<db>

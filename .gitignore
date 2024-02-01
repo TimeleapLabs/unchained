@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 **/conf.*.yaml
+**/conf
 **/.env
 dist
 **/data
@@ -11,3 +12,4 @@ docker/data
 docker/pgadmin
 .clinic
 node_trace.*
+src/bin

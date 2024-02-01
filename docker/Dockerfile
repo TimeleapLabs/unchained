@@ -1,13 +1,25 @@
-ARG NODE_VERSION
-FROM node:${NODE_VERSION}
+ARG UBUNTU_VERSION
+FROM ubuntu:${UBUNTU_VERSION}
 LABEL maintainer="hi@kenshi.io"
+ARG TARGETOS
+ARG TARGETARCH
 ARG UNCHAINED_VERSION
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
 
-COPY ./entrypoint.sh entrypoint.sh
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install --no-install-recommends -y \
+    curl ca-certificates && \
+    curl -sSL https://github.com/KenshiTech/unchained/releases/download/${UNCHAINED_VERSION}/unchained.${TARGETOS}.${TARGETARCH} -o unchained && \
+    chmod +x unchained && \
+    apt-get remove -y --purge curl && \
+    apt-get autoremove -y --purge && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN npm i -g @kenshi.io/unchained@$UNCHAINED_VERSION && \
-    unchained --version
+COPY ./entrypoint.sh entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
