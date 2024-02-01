@@ -20,7 +20,6 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
-	"github.com/spf13/viper"
 	"github.com/vmihailenco/msgpack/v5"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
@@ -323,7 +322,7 @@ func Start() {
 	fmt.Printf("Public Key: %s\n", pkStr)
 
 	hello := Signer{
-		Name:      viper.GetString("name"),
+		Name:      config.Config.GetString("name"),
 		PublicKey: pkBytes,
 	}
 
