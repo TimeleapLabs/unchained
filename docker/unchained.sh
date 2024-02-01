@@ -11,6 +11,7 @@ usage() {
   echo "Examples:"
   echo "  To start a node: $0 worker up -d"
   echo "  To stop a node: $0 worker stop"
+  echo "  To restart a node: $0 worker restart"
   echo "  To view the status of a node: $0 worker ps"
   echo "  To view logs of a node: $0 worker logs -f"
 }
