@@ -53,7 +53,7 @@ services:
     container_name: unchained_worker
     hostname: unchained_worker
     volumes:
-      - ./conf.worker.yaml:/app/conf.yaml
+      - ./conf:/app/conf
     environment:
       - UNCHAINED_NODE_TYPE=worker
     profiles: ["worker"]
