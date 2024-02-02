@@ -16,6 +16,7 @@ import (
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/utils"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/go-co-op/gocron/v2"
@@ -234,7 +235,10 @@ func GetPriceFromPair(pairAddr string, decimalDif int64, inverse bool) (*uint64,
 		return nil, nil, err
 	}
 
-	data, err := pair.Slot0(nil)
+	data, err := pair.Slot0(
+		&bind.CallOpts{
+			BlockNumber: big.NewInt(int64(blockNumber)),
+		})
 
 	if err != nil {
 		ethereum.RefreshRPC()
