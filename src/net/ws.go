@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/KenshiTech/unchained/bls"
+	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
@@ -233,7 +234,8 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 func StartServer() {
 	flag.Parse()
 	log.SetFlags(0)
-	http.HandleFunc("/", handleAtRoot)
+	versionedRoot := fmt.Sprintf("/%s", constants.Version)
+	http.HandleFunc(versionedRoot, handleAtRoot)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
