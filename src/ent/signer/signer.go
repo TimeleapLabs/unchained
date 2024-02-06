@@ -16,6 +16,8 @@ const (
 	FieldName = "name"
 	// FieldKey holds the string denoting the key field in the database.
 	FieldKey = "key"
+	// FieldShortkey holds the string denoting the shortkey field in the database.
+	FieldShortkey = "shortkey"
 	// FieldPoints holds the string denoting the points field in the database.
 	FieldPoints = "points"
 	// EdgeAssetPrice holds the string denoting the assetprice edge name in mutations.
@@ -34,6 +36,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldKey,
+	FieldShortkey,
 	FieldPoints,
 }
 
@@ -58,6 +61,8 @@ var (
 	NameValidator func(string) error
 	// KeyValidator is a validator for the "key" field. It is called by the builders before save.
 	KeyValidator func([]byte) error
+	// ShortkeyValidator is a validator for the "shortkey" field. It is called by the builders before save.
+	ShortkeyValidator func([]byte) error
 )
 
 // OrderOption defines the ordering options for the Signer queries.

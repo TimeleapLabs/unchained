@@ -10,14 +10,19 @@ import (
 
 var (
 	g2Aff bls12381.G2Affine
+	g1Aff bls12381.G1Affine
 )
 
 func init() {
-	_, _, _, g2Aff = bls12381.Generators()
+	_, _, g1Aff, g2Aff = bls12381.Generators()
 }
 
 func GetPublicKey(sk *big.Int) *bls12381.G2Affine {
 	return new(bls12381.G2Affine).ScalarMultiplication(&g2Aff, sk)
+}
+
+func GetShortPublicKey(sk *big.Int) *bls12381.G1Affine {
+	return new(bls12381.G1Affine).ScalarMultiplication(&g1Aff, sk)
 }
 
 // generate BLS private and public key pair

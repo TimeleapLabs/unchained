@@ -32,8 +32,9 @@ import (
 var etherUsdPairAddr = "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
 
 type Signer struct {
-	Name      string
-	PublicKey [96]byte
+	Name           string
+	PublicKey      [96]byte
+	ShortPublicKey [48]byte
 }
 type Signature struct {
 	Signature bls12381.G1Affine
@@ -152,10 +153,12 @@ func SaveSignatures(block uint64) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
 			SetKey(signer.PublicKey[:]).
+			SetShortkey(signer.ShortPublicKey[:]).
 			SetPoints(0)
 	}).
-		OnConflictColumns("key").
+		OnConflictColumns("shortkey").
 		UpdateName().
+		UpdateShortkey().
 		Update(func(su *ent.SignerUpsert) {
 			su.AddPoints(1)
 		}).
@@ -300,6 +303,8 @@ func Start() {
 	var sk *big.Int
 	var pk *bls12381.G2Affine
 	var pkBytes [96]byte
+	var spk *bls12381.G1Affine
+	var spkBytes [48]byte
 
 	if config.Secrets.InConfig("secretKey") {
 
@@ -310,6 +315,9 @@ func Start() {
 
 		pk = bls.GetPublicKey(sk)
 		pkBytes = pk.Bytes()
+
+		spk = bls.GetShortPublicKey(sk)
+		spkBytes = spk.Bytes()
 
 	} else {
 		sk, pk, err = bls.GenerateKeyPair()
@@ -333,8 +341,9 @@ func Start() {
 	fmt.Printf("Public Key: %s\n", pkStr)
 
 	hello := Signer{
-		Name:      config.Config.GetString("name"),
-		PublicKey: pkBytes,
+		Name:           config.Config.GetString("name"),
+		PublicKey:      pkBytes,
+		ShortPublicKey: spkBytes,
 	}
 
 	helloPayload, err := msgpack.Marshal(&hello)

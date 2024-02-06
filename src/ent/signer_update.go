@@ -48,6 +48,12 @@ func (su *SignerUpdate) SetKey(b []byte) *SignerUpdate {
 	return su
 }
 
+// SetShortkey sets the "shortkey" field.
+func (su *SignerUpdate) SetShortkey(b []byte) *SignerUpdate {
+	su.mutation.SetShortkey(b)
+	return su
+}
+
 // SetPoints sets the "points" field.
 func (su *SignerUpdate) SetPoints(i int64) *SignerUpdate {
 	su.mutation.ResetPoints()
@@ -149,6 +155,11 @@ func (su *SignerUpdate) check() error {
 			return &ValidationError{Name: "key", err: fmt.Errorf(`ent: validator failed for field "Signer.key": %w`, err)}
 		}
 	}
+	if v, ok := su.mutation.Shortkey(); ok {
+		if err := signer.ShortkeyValidator(v); err != nil {
+			return &ValidationError{Name: "shortkey", err: fmt.Errorf(`ent: validator failed for field "Signer.shortkey": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -169,6 +180,9 @@ func (su *SignerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.Key(); ok {
 		_spec.SetField(signer.FieldKey, field.TypeBytes, value)
+	}
+	if value, ok := su.mutation.Shortkey(); ok {
+		_spec.SetField(signer.FieldShortkey, field.TypeBytes, value)
 	}
 	if value, ok := su.mutation.Points(); ok {
 		_spec.SetField(signer.FieldPoints, field.TypeInt64, value)
@@ -258,6 +272,12 @@ func (suo *SignerUpdateOne) SetNillableName(s *string) *SignerUpdateOne {
 // SetKey sets the "key" field.
 func (suo *SignerUpdateOne) SetKey(b []byte) *SignerUpdateOne {
 	suo.mutation.SetKey(b)
+	return suo
+}
+
+// SetShortkey sets the "shortkey" field.
+func (suo *SignerUpdateOne) SetShortkey(b []byte) *SignerUpdateOne {
+	suo.mutation.SetShortkey(b)
 	return suo
 }
 
@@ -375,6 +395,11 @@ func (suo *SignerUpdateOne) check() error {
 			return &ValidationError{Name: "key", err: fmt.Errorf(`ent: validator failed for field "Signer.key": %w`, err)}
 		}
 	}
+	if v, ok := suo.mutation.Shortkey(); ok {
+		if err := signer.ShortkeyValidator(v); err != nil {
+			return &ValidationError{Name: "shortkey", err: fmt.Errorf(`ent: validator failed for field "Signer.shortkey": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -412,6 +437,9 @@ func (suo *SignerUpdateOne) sqlSave(ctx context.Context) (_node *Signer, err err
 	}
 	if value, ok := suo.mutation.Key(); ok {
 		_spec.SetField(signer.FieldKey, field.TypeBytes, value)
+	}
+	if value, ok := suo.mutation.Shortkey(); ok {
+		_spec.SetField(signer.FieldShortkey, field.TypeBytes, value)
 	}
 	if value, ok := suo.mutation.Points(); ok {
 		_spec.SetField(signer.FieldPoints, field.TypeInt64, value)
