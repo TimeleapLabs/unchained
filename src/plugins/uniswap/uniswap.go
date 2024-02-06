@@ -279,7 +279,7 @@ func Start() {
 	brokerUrl := fmt.Sprintf(
 		"%s/%s",
 		config.Config.GetString("broker"),
-		constants.Version,
+		constants.ProtocolVersion,
 	)
 
 	wsClient, _, err := websocket.DefaultDialer.Dial(brokerUrl, nil)
