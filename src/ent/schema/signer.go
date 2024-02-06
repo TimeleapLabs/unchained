@@ -16,7 +16,7 @@ type Signer struct {
 func (Signer) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty(),
-		field.Bytes("key").MaxLen(48).Unique().NotEmpty(),
+		field.Bytes("key").MaxLen(96).Unique().NotEmpty(),
 		field.Int64("points"),
 	}
 }
