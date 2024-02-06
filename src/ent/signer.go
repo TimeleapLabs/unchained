@@ -20,6 +20,8 @@ type Signer struct {
 	Name string `json:"name,omitempty"`
 	// Key holds the value of the "key" field.
 	Key []byte `json:"key,omitempty"`
+	// Shortkey holds the value of the "shortkey" field.
+	Shortkey []byte `json:"shortkey,omitempty"`
 	// Points holds the value of the "points" field.
 	Points int64 `json:"points,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -51,7 +53,7 @@ func (*Signer) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case signer.FieldKey:
+		case signer.FieldKey, signer.FieldShortkey:
 			values[i] = new([]byte)
 		case signer.FieldID, signer.FieldPoints:
 			values[i] = new(sql.NullInt64)
@@ -89,6 +91,12 @@ func (s *Signer) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field key", values[i])
 			} else if value != nil {
 				s.Key = *value
+			}
+		case signer.FieldShortkey:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field shortkey", values[i])
+			} else if value != nil {
+				s.Shortkey = *value
 			}
 		case signer.FieldPoints:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -142,6 +150,9 @@ func (s *Signer) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("key=")
 	builder.WriteString(fmt.Sprintf("%v", s.Key))
+	builder.WriteString(", ")
+	builder.WriteString("shortkey=")
+	builder.WriteString(fmt.Sprintf("%v", s.Shortkey))
 	builder.WriteString(", ")
 	builder.WriteString("points=")
 	builder.WriteString(fmt.Sprintf("%v", s.Points))

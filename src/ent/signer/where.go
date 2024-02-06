@@ -63,6 +63,11 @@ func Key(v []byte) predicate.Signer {
 	return predicate.Signer(sql.FieldEQ(FieldKey, v))
 }
 
+// Shortkey applies equality check predicate on the "shortkey" field. It's identical to ShortkeyEQ.
+func Shortkey(v []byte) predicate.Signer {
+	return predicate.Signer(sql.FieldEQ(FieldShortkey, v))
+}
+
 // Points applies equality check predicate on the "points" field. It's identical to PointsEQ.
 func Points(v int64) predicate.Signer {
 	return predicate.Signer(sql.FieldEQ(FieldPoints, v))
@@ -171,6 +176,46 @@ func KeyLT(v []byte) predicate.Signer {
 // KeyLTE applies the LTE predicate on the "key" field.
 func KeyLTE(v []byte) predicate.Signer {
 	return predicate.Signer(sql.FieldLTE(FieldKey, v))
+}
+
+// ShortkeyEQ applies the EQ predicate on the "shortkey" field.
+func ShortkeyEQ(v []byte) predicate.Signer {
+	return predicate.Signer(sql.FieldEQ(FieldShortkey, v))
+}
+
+// ShortkeyNEQ applies the NEQ predicate on the "shortkey" field.
+func ShortkeyNEQ(v []byte) predicate.Signer {
+	return predicate.Signer(sql.FieldNEQ(FieldShortkey, v))
+}
+
+// ShortkeyIn applies the In predicate on the "shortkey" field.
+func ShortkeyIn(vs ...[]byte) predicate.Signer {
+	return predicate.Signer(sql.FieldIn(FieldShortkey, vs...))
+}
+
+// ShortkeyNotIn applies the NotIn predicate on the "shortkey" field.
+func ShortkeyNotIn(vs ...[]byte) predicate.Signer {
+	return predicate.Signer(sql.FieldNotIn(FieldShortkey, vs...))
+}
+
+// ShortkeyGT applies the GT predicate on the "shortkey" field.
+func ShortkeyGT(v []byte) predicate.Signer {
+	return predicate.Signer(sql.FieldGT(FieldShortkey, v))
+}
+
+// ShortkeyGTE applies the GTE predicate on the "shortkey" field.
+func ShortkeyGTE(v []byte) predicate.Signer {
+	return predicate.Signer(sql.FieldGTE(FieldShortkey, v))
+}
+
+// ShortkeyLT applies the LT predicate on the "shortkey" field.
+func ShortkeyLT(v []byte) predicate.Signer {
+	return predicate.Signer(sql.FieldLT(FieldShortkey, v))
+}
+
+// ShortkeyLTE applies the LTE predicate on the "shortkey" field.
+func ShortkeyLTE(v []byte) predicate.Signer {
+	return predicate.Signer(sql.FieldLTE(FieldShortkey, v))
 }
 
 // PointsEQ applies the EQ predicate on the "points" field.

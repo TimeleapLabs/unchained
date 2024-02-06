@@ -55,4 +55,22 @@ func init() {
 			return nil
 		}
 	}()
+	// signerDescShortkey is the schema descriptor for shortkey field.
+	signerDescShortkey := signerFields[2].Descriptor()
+	// signer.ShortkeyValidator is a validator for the "shortkey" field. It is called by the builders before save.
+	signer.ShortkeyValidator = func() func([]byte) error {
+		validators := signerDescShortkey.Validators
+		fns := [...]func([]byte) error{
+			validators[0].(func([]byte) error),
+			validators[1].(func([]byte) error),
+		}
+		return func(shortkey []byte) error {
+			for _, fn := range fns {
+				if err := fn(shortkey); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 }
