@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/KenshiTech/unchained/constants"
 	"github.com/spf13/cobra"
 )
-
-var version = "0.11.1"
 
 var configPath string
 var secretsPath string
@@ -22,7 +21,7 @@ var rootCmd = &cobra.Command{
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		if printVersion {
-			fmt.Println(version)
+			fmt.Println(constants.Version)
 		} else {
 			os.Exit(1)
 		}

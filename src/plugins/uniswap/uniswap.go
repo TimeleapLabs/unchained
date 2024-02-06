@@ -11,6 +11,7 @@ import (
 
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
 	"github.com/KenshiTech/unchained/ent/signer"
@@ -275,7 +276,12 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 
 func Start() {
 
-	brokerUrl := config.Config.GetString("broker")
+	brokerUrl := fmt.Sprintf(
+		"%s/%s",
+		config.Config.GetString("broker"),
+		constants.Version,
+	)
+
 	wsClient, _, err := websocket.DefaultDialer.Dial(brokerUrl, nil)
 
 	if err != nil {
