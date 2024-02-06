@@ -234,7 +234,7 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 func StartServer() {
 	flag.Parse()
 	log.SetFlags(0)
-	versionedRoot := fmt.Sprintf("/%s", constants.Version)
+	versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
 	http.HandleFunc(versionedRoot, handleAtRoot)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
