@@ -40,7 +40,21 @@ func init() {
 	// signerDescKey is the schema descriptor for key field.
 	signerDescKey := signerFields[1].Descriptor()
 	// signer.KeyValidator is a validator for the "key" field. It is called by the builders before save.
-	signer.KeyValidator = signerDescKey.Validators[0].(func([]byte) error)
+	signer.KeyValidator = func() func([]byte) error {
+		validators := signerDescKey.Validators
+		fns := [...]func([]byte) error{
+			validators[0].(func([]byte) error),
+			validators[1].(func([]byte) error),
+		}
+		return func(key []byte) error {
+			for _, fn := range fns {
+				if err := fn(key); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// signerDescShortkey is the schema descriptor for shortkey field.
 	signerDescShortkey := signerFields[2].Descriptor()
 	// signer.ShortkeyValidator is a validator for the "shortkey" field. It is called by the builders before save.

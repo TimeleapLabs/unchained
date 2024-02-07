@@ -51,7 +51,7 @@ var (
 	SignersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "key", Type: field.TypeBytes, Size: 96},
+		{Name: "key", Type: field.TypeBytes, Unique: true, Size: 96},
 		{Name: "shortkey", Type: field.TypeBytes, Unique: true, Size: 96},
 		{Name: "points", Type: field.TypeInt64},
 	}
@@ -61,6 +61,11 @@ var (
 		Columns:    SignersColumns,
 		PrimaryKey: []*schema.Column{SignersColumns[0]},
 		Indexes: []*schema.Index{
+			{
+				Name:    "signer_key",
+				Unique:  true,
+				Columns: []*schema.Column{SignersColumns[2]},
+			},
 			{
 				Name:    "signer_shortkey",
 				Unique:  true,
