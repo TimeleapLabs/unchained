@@ -390,33 +390,35 @@ func Start() {
 				}
 			}
 
-			switch payload[0] {
-			// TODO: Make a table of call codes
-			case 2:
-				fmt.Printf("Unchained feedback: %s\n", payload[1:])
+			if err != nil {
+				switch payload[0] {
+				// TODO: Make a table of call codes
+				case 2:
+					fmt.Printf("Unchained feedback: %s\n", payload[1:])
 
-			case 4:
-				// TODO: Refactor into a function
-				// TODO: Check for errors!
-				var challenge kosk.Challenge
-				msgpack.Unmarshal(payload[1:], &challenge)
+				case 4:
+					// TODO: Refactor into a function
+					// TODO: Check for errors!
+					var challenge kosk.Challenge
+					msgpack.Unmarshal(payload[1:], &challenge)
 
-				signature, _ := bls.Sign(*sk, challenge.Random[:])
-				challenge.Signature = signature.Bytes()
+					signature, _ := bls.Sign(*sk, challenge.Random[:])
+					challenge.Signature = signature.Bytes()
 
-				koskPayload, _ := msgpack.Marshal(challenge)
+					koskPayload, _ := msgpack.Marshal(challenge)
 
-				wsClient.WriteMessage(
-					websocket.BinaryMessage,
-					append([]byte{3}, koskPayload...),
-				)
+					wsClient.WriteMessage(
+						websocket.BinaryMessage,
+						append([]byte{3}, koskPayload...),
+					)
 
-				if err != nil {
-					fmt.Println("write:", err)
+					if err != nil {
+						fmt.Println("write:", err)
+					}
+
+				default:
+					fmt.Printf("Received unknown call code: %d\n", payload[0])
 				}
-
-			default:
-				fmt.Printf("Received unknown call code: %d\n", payload[0])
 			}
 
 		}
