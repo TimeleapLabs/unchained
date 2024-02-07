@@ -9,16 +9,19 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
+	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/utils"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
 	"github.com/vmihailenco/msgpack/v5"
@@ -30,11 +33,12 @@ import (
 var etherUsdPairAddr = "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
 
 type Signer struct {
-	Name      string
-	PublicKey [48]byte
+	Name           string
+	PublicKey      [96]byte
+	ShortPublicKey [48]byte
 }
 type Signature struct {
-	Signature bls12381.G2Affine
+	Signature bls12381.G1Affine
 	Signer    Signer
 	Processed bool
 }
@@ -46,14 +50,14 @@ type PriceInfo struct {
 
 type PriceReport struct {
 	PriceInfo PriceInfo
-	Signature [96]byte
+	Signature [48]byte
 }
 
 var DebouncedSaveSignatures func(key uint64, arg uint64)
 
 var priceCache *lru.Cache[uint64, big.Int]
 var signatureCache *lru.Cache[uint64, []Signature]
-var aggregateCache *lru.Cache[uint64, bls12381.G2Affine]
+var aggregateCache *lru.Cache[uint64, bls12381.G1Affine]
 
 var twoOneNinetyTwo big.Int
 var tenEighteen big.Int
@@ -61,7 +65,7 @@ var tenEighteenF big.Float
 var lastBlock uint64
 var lastPrice big.Int
 
-func RecordSignature(signature bls12381.G2Affine, signer Signer, block uint64) {
+func RecordSignature(signature bls12381.G1Affine, signer Signer, block uint64) {
 
 	// TODO: Needs optimization
 	if !priceCache.Contains(block) {
@@ -134,7 +138,7 @@ func SaveSignatures(block uint64) {
 	}
 
 	var newSigners []Signer
-	var newSignatures []bls12381.G2Affine
+	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
 	for i := range signatures {
@@ -150,10 +154,12 @@ func SaveSignatures(block uint64) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
 			SetKey(signer.PublicKey[:]).
+			SetShortkey(signer.ShortPublicKey[:]).
 			SetPoints(0)
 	}).
-		OnConflictColumns("key").
+		OnConflictColumns("shortkey").
 		UpdateName().
+		UpdateShortkey().
 		Update(func(su *ent.SignerUpsert) {
 			su.AddPoints(1)
 		}).
@@ -172,7 +178,7 @@ func SaveSignatures(block uint64) {
 		return
 	}
 
-	var aggregate bls12381.G2Affine
+	var aggregate bls12381.G1Affine
 	currentAggregate, ok := aggregateCache.Get(block)
 
 	if ok {
@@ -274,7 +280,12 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 
 func Start() {
 
-	brokerUrl := config.Config.GetString("broker")
+	brokerUrl := fmt.Sprintf(
+		"%s/%s",
+		config.Config.GetString("broker"),
+		constants.ProtocolVersion,
+	)
+
 	wsClient, _, err := websocket.DefaultDialer.Dial(brokerUrl, nil)
 
 	if err != nil {
@@ -291,8 +302,10 @@ func Start() {
 	}
 
 	var sk *big.Int
-	var pk *bls12381.G1Affine
-	var pkBytes [48]byte
+	var pk *bls12381.G2Affine
+	var pkBytes [96]byte
+	var spk *bls12381.G1Affine
+	var spkBytes [48]byte
 
 	if config.Secrets.InConfig("secretKey") {
 
@@ -303,6 +316,9 @@ func Start() {
 
 		pk = bls.GetPublicKey(sk)
 		pkBytes = pk.Bytes()
+
+		spk = bls.GetShortPublicKey(sk)
+		spkBytes = spk.Bytes()
 
 	} else {
 		sk, pk, err = bls.GenerateKeyPair()
@@ -322,12 +338,13 @@ func Start() {
 		panic(err)
 	}
 
-	pkStr := base58.Encode(pkBytes[:])
-	fmt.Printf("Public Key: %s\n", pkStr)
+	pkStr := address.Calculate(pkBytes[:])
+	fmt.Printf("Unchained Address: %s\n", pkStr)
 
 	hello := Signer{
-		Name:      config.Config.GetString("name"),
-		PublicKey: pkBytes,
+		Name:           config.Config.GetString("name"),
+		PublicKey:      pkBytes,
+		ShortPublicKey: spkBytes,
 	}
 
 	helloPayload, err := msgpack.Marshal(&hello)
@@ -342,10 +359,16 @@ func Start() {
 		defer close(done)
 
 		for {
-			_, message, err := wsClient.ReadMessage()
+			_, payload, err := wsClient.ReadMessage()
 
-			if err != nil {
-				fmt.Println("Read error:", err)
+			if err != nil || payload[0] == 5 {
+
+				if err != nil {
+					fmt.Println("Read error:", err)
+				} else {
+					fmt.Printf("Broker error: %s\n", payload[1:])
+				}
+
 				isSocketClosed = true
 
 				if websocket.IsUnexpectedCloseError(err) {
@@ -367,7 +390,35 @@ func Start() {
 				}
 			}
 
-			fmt.Printf("Unchained feedback: %s\n", message)
+			switch payload[0] {
+			// TODO: Make a table of call codes
+			case 2:
+				fmt.Printf("Unchained feedback: %s\n", payload[1:])
+
+			case 4:
+				// TODO: Refactor into a function
+				// TODO: Check for errors!
+				var challenge kosk.Challenge
+				msgpack.Unmarshal(payload[1:], &challenge)
+
+				signature, _ := bls.Sign(*sk, challenge.Random[:])
+				challenge.Signature = signature.Bytes()
+
+				koskPayload, _ := msgpack.Marshal(challenge)
+
+				wsClient.WriteMessage(
+					websocket.BinaryMessage,
+					append([]byte{3}, koskPayload...),
+				)
+
+				if err != nil {
+					fmt.Println("write:", err)
+				}
+
+			default:
+				fmt.Printf("Received unknown call code: %d\n", payload[0])
+			}
+
 		}
 	}()
 
@@ -484,7 +535,7 @@ func init() {
 		panic(err)
 	}
 
-	aggregateCache, err = lru.New[uint64, bls12381.G2Affine](24)
+	aggregateCache, err = lru.New[uint64, bls12381.G1Affine](24)
 
 	if err != nil {
 		panic(err)

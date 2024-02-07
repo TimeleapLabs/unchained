@@ -51,7 +51,8 @@ var (
 	SignersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "key", Type: field.TypeBytes, Unique: true, Size: 48},
+		{Name: "key", Type: field.TypeBytes, Unique: true, Size: 96},
+		{Name: "shortkey", Type: field.TypeBytes, Unique: true, Size: 96},
 		{Name: "points", Type: field.TypeInt64},
 	}
 	// SignersTable holds the schema information for the "signers" table.
@@ -64,6 +65,11 @@ var (
 				Name:    "signer_key",
 				Unique:  true,
 				Columns: []*schema.Column{SignersColumns[2]},
+			},
+			{
+				Name:    "signer_shortkey",
+				Unique:  true,
+				Columns: []*schema.Column{SignersColumns[3]},
 			},
 		},
 	}

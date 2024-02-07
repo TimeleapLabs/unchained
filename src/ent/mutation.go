@@ -1214,6 +1214,7 @@ type SignerMutation struct {
 	id                *int
 	name              *string
 	key               *[]byte
+	shortkey          *[]byte
 	points            *int64
 	addpoints         *int64
 	clearedFields     map[string]struct{}
@@ -1395,6 +1396,42 @@ func (m *SignerMutation) ResetKey() {
 	m.key = nil
 }
 
+// SetShortkey sets the "shortkey" field.
+func (m *SignerMutation) SetShortkey(b []byte) {
+	m.shortkey = &b
+}
+
+// Shortkey returns the value of the "shortkey" field in the mutation.
+func (m *SignerMutation) Shortkey() (r []byte, exists bool) {
+	v := m.shortkey
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShortkey returns the old "shortkey" field's value of the Signer entity.
+// If the Signer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SignerMutation) OldShortkey(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShortkey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShortkey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShortkey: %w", err)
+	}
+	return oldValue.Shortkey, nil
+}
+
+// ResetShortkey resets all changes to the "shortkey" field.
+func (m *SignerMutation) ResetShortkey() {
+	m.shortkey = nil
+}
+
 // SetPoints sets the "points" field.
 func (m *SignerMutation) SetPoints(i int64) {
 	m.points = &i
@@ -1539,12 +1576,15 @@ func (m *SignerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SignerMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.name != nil {
 		fields = append(fields, signer.FieldName)
 	}
 	if m.key != nil {
 		fields = append(fields, signer.FieldKey)
+	}
+	if m.shortkey != nil {
+		fields = append(fields, signer.FieldShortkey)
 	}
 	if m.points != nil {
 		fields = append(fields, signer.FieldPoints)
@@ -1561,6 +1601,8 @@ func (m *SignerMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case signer.FieldKey:
 		return m.Key()
+	case signer.FieldShortkey:
+		return m.Shortkey()
 	case signer.FieldPoints:
 		return m.Points()
 	}
@@ -1576,6 +1618,8 @@ func (m *SignerMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldName(ctx)
 	case signer.FieldKey:
 		return m.OldKey(ctx)
+	case signer.FieldShortkey:
+		return m.OldShortkey(ctx)
 	case signer.FieldPoints:
 		return m.OldPoints(ctx)
 	}
@@ -1600,6 +1644,13 @@ func (m *SignerMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetKey(v)
+		return nil
+	case signer.FieldShortkey:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShortkey(v)
 		return nil
 	case signer.FieldPoints:
 		v, ok := value.(int64)
@@ -1677,6 +1728,9 @@ func (m *SignerMutation) ResetField(name string) error {
 		return nil
 	case signer.FieldKey:
 		m.ResetKey()
+		return nil
+	case signer.FieldShortkey:
+		m.ResetShortkey()
 		return nil
 	case signer.FieldPoints:
 		m.ResetPoints()

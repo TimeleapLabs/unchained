@@ -34,6 +34,12 @@ func (sc *SignerCreate) SetKey(b []byte) *SignerCreate {
 	return sc
 }
 
+// SetShortkey sets the "shortkey" field.
+func (sc *SignerCreate) SetShortkey(b []byte) *SignerCreate {
+	sc.mutation.SetShortkey(b)
+	return sc
+}
+
 // SetPoints sets the "points" field.
 func (sc *SignerCreate) SetPoints(i int64) *SignerCreate {
 	sc.mutation.SetPoints(i)
@@ -105,6 +111,14 @@ func (sc *SignerCreate) check() error {
 			return &ValidationError{Name: "key", err: fmt.Errorf(`ent: validator failed for field "Signer.key": %w`, err)}
 		}
 	}
+	if _, ok := sc.mutation.Shortkey(); !ok {
+		return &ValidationError{Name: "shortkey", err: errors.New(`ent: missing required field "Signer.shortkey"`)}
+	}
+	if v, ok := sc.mutation.Shortkey(); ok {
+		if err := signer.ShortkeyValidator(v); err != nil {
+			return &ValidationError{Name: "shortkey", err: fmt.Errorf(`ent: validator failed for field "Signer.shortkey": %w`, err)}
+		}
+	}
 	if _, ok := sc.mutation.Points(); !ok {
 		return &ValidationError{Name: "points", err: errors.New(`ent: missing required field "Signer.points"`)}
 	}
@@ -142,6 +156,10 @@ func (sc *SignerCreate) createSpec() (*Signer, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Key(); ok {
 		_spec.SetField(signer.FieldKey, field.TypeBytes, value)
 		_node.Key = value
+	}
+	if value, ok := sc.mutation.Shortkey(); ok {
+		_spec.SetField(signer.FieldShortkey, field.TypeBytes, value)
+		_node.Shortkey = value
 	}
 	if value, ok := sc.mutation.Points(); ok {
 		_spec.SetField(signer.FieldPoints, field.TypeInt64, value)
@@ -239,6 +257,18 @@ func (u *SignerUpsert) UpdateKey() *SignerUpsert {
 	return u
 }
 
+// SetShortkey sets the "shortkey" field.
+func (u *SignerUpsert) SetShortkey(v []byte) *SignerUpsert {
+	u.Set(signer.FieldShortkey, v)
+	return u
+}
+
+// UpdateShortkey sets the "shortkey" field to the value that was provided on create.
+func (u *SignerUpsert) UpdateShortkey() *SignerUpsert {
+	u.SetExcluded(signer.FieldShortkey)
+	return u
+}
+
 // SetPoints sets the "points" field.
 func (u *SignerUpsert) SetPoints(v int64) *SignerUpsert {
 	u.Set(signer.FieldPoints, v)
@@ -322,6 +352,20 @@ func (u *SignerUpsertOne) SetKey(v []byte) *SignerUpsertOne {
 func (u *SignerUpsertOne) UpdateKey() *SignerUpsertOne {
 	return u.Update(func(s *SignerUpsert) {
 		s.UpdateKey()
+	})
+}
+
+// SetShortkey sets the "shortkey" field.
+func (u *SignerUpsertOne) SetShortkey(v []byte) *SignerUpsertOne {
+	return u.Update(func(s *SignerUpsert) {
+		s.SetShortkey(v)
+	})
+}
+
+// UpdateShortkey sets the "shortkey" field to the value that was provided on create.
+func (u *SignerUpsertOne) UpdateShortkey() *SignerUpsertOne {
+	return u.Update(func(s *SignerUpsert) {
+		s.UpdateShortkey()
 	})
 }
 
@@ -574,6 +618,20 @@ func (u *SignerUpsertBulk) SetKey(v []byte) *SignerUpsertBulk {
 func (u *SignerUpsertBulk) UpdateKey() *SignerUpsertBulk {
 	return u.Update(func(s *SignerUpsert) {
 		s.UpdateKey()
+	})
+}
+
+// SetShortkey sets the "shortkey" field.
+func (u *SignerUpsertBulk) SetShortkey(v []byte) *SignerUpsertBulk {
+	return u.Update(func(s *SignerUpsert) {
+		s.SetShortkey(v)
+	})
+}
+
+// UpdateShortkey sets the "shortkey" field to the value that was provided on create.
+func (u *SignerUpsertBulk) UpdateShortkey() *SignerUpsertBulk {
+	return u.Update(func(s *SignerUpsert) {
+		s.UpdateShortkey()
 	})
 }
 
