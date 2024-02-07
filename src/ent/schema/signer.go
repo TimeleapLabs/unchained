@@ -16,7 +16,8 @@ type Signer struct {
 func (Signer) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty(),
-		field.Bytes("key").MaxLen(96).Unique().NotEmpty(),
+		//field.Bytes("key").MaxLen(96).Unique().NotEmpty(),
+		field.Bytes("key").MaxLen(96),
 		field.Bytes("shortkey").MaxLen(96).Unique().NotEmpty(),
 		field.Int64("points"),
 	}
@@ -32,8 +33,8 @@ func (Signer) Edges() []ent.Edge {
 // Indexes of the DataSet.
 func (Signer) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("key").
-			Unique(),
+		// index.Fields("key").
+		// 	Unique(),
 		index.Fields("shortkey").
 			Unique(),
 	}
