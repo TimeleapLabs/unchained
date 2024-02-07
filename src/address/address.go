@@ -40,7 +40,8 @@ func Shake(input []byte) []byte {
 }
 
 func Calculate(input []byte) string {
-	address := ToBase32(input[:20])
+	hash := Shake(input)
+	address := ToBase32(hash[:20])
 	checksum := Shake(input[:20])
 	checkchars := []byte{chars[checksum[0]%32], chars[checksum[1]%32]}
 
