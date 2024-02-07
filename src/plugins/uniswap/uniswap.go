@@ -159,7 +159,7 @@ func SaveSignatures(block uint64) {
 	}).
 		OnConflictColumns("shortkey").
 		UpdateName().
-		UpdateShortkey().
+		UpdateKey().
 		Update(func(su *ent.SignerUpsert) {
 			su.AddPoints(1)
 		}).
