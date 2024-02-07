@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
@@ -18,9 +19,9 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/utils"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
 	"github.com/vmihailenco/msgpack/v5"
@@ -337,8 +338,8 @@ func Start() {
 		panic(err)
 	}
 
-	pkStr := base58.Encode(pkBytes[:])
-	fmt.Printf("Public Key: %s\n", pkStr)
+	pkStr := address.Calculate(pkBytes[:])
+	fmt.Printf("Unchained Address: %s\n", pkStr)
 
 	hello := Signer{
 		Name:           config.Config.GetString("name"),
