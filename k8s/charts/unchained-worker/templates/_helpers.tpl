@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "unchained-lite.name" -}}
+{{- define "unchained-worker.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "unchained-lite.fullname" -}}
+{{- define "unchained-worker.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "unchained-lite.chart" -}}
+{{- define "unchained-worker.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "unchained-lite.labels" -}}
-helm.sh/chart: {{ include "unchained-lite.chart" . }}
-{{ include "unchained-lite.selectorLabels" . }}
+{{- define "unchained-worker.labels" -}}
+helm.sh/chart: {{ include "unchained-worker.chart" . }}
+{{ include "unchained-worker.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "unchained-lite.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "unchained-lite.name" . }}
+{{- define "unchained-worker.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "unchained-worker.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "unchained-lite.serviceAccountName" -}}
+{{- define "unchained-worker.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "unchained-lite.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "unchained-worker.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
