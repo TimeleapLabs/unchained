@@ -1,9 +1,10 @@
 # Kenshi Unchained
 
+[![Release](https://shields.io/github/v/release/kenshitech/unchained)](https://github.com/KenshiTech/unchained/releases)
 [![CLA assistant](https://cla-assistant.io/readme/badge/KenshiTech/unchained)](https://cla-assistant.io/KenshiTech/unchained)
-[![npm version](https://badge.fury.io/js/@kenshi.io%2Funchained.svg)](https://badge.fury.io/js/@kenshi.io%2Funchained)
-[![Image tags](https://ghcrbadge-1-y2886489.deta.app/kenshitech/unchained/tags?color=%2344cc11&ignore=latest&n=3&label=image+tags&trim=)](https://github.com/KenshiTech/unchained/pkgs/container/unchained)
+[![Image tags](https://ghcrbadge-1-y2886489.deta.app/kenshitech/unchained/tags?color=%2344cc11&ignore=latest&n=1&label=image+tags&trim=)](https://github.com/KenshiTech/unchained/pkgs/container/unchained)
 [![Image size](https://ghcrbadge-1-y2886489.deta.app/kenshitech/unchained/size?color=%2344cc11&tag=latest&label=image+size&trim=)](https://github.com/KenshiTech/unchained/pkgs/container/unchained)
+[![Open Collective backers and sponsors](https://img.shields.io/opencollective/all/unchained)](https://opencollective.com/unchained)
 
 Kenshi Unchained is the next iteration of Kenshi tools and services, decentralized.
 
@@ -15,3 +16,19 @@ See [QuickStart](./quickstart.md).
 
 This work is released under the terms of the BUSL-1.1 license.
 See [License](./LICENSE) for more details.
+
+## Contributing
+
+Thank you to all the people who have already contributed to Unchained!
+
+<a href="https://github.com/KenshiTech/unchained/graphs/contributors">
+  <img src="https://contributors-img.firebaseapp.com/image?repo=KenshiTech/unchained" />
+</a>
+
+## Backers
+
+<a href="https://opencollective.com/unchained">
+  <img src="https://opencollective.com/unchained/backers.svg?width=890" />
+</a>
+
+Thank you all for supporting Unchained!

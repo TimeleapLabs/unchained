@@ -1,0 +1,8 @@
+log: info
+name: <name>
+rpc:
+  ethereum:
+    - https://ethereum.publicnode.com
+    - https://eth.llamarpc.com
+    - wss://ethereum.publicnode.com
+    - https://eth.rpc.blxrbdn.com
