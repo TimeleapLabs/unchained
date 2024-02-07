@@ -304,8 +304,6 @@ func Start() {
 	var sk *big.Int
 	var pk *bls12381.G2Affine
 	var pkBytes [96]byte
-	var spk *bls12381.G1Affine
-	var spkBytes [48]byte
 
 	if config.Secrets.InConfig("secretKey") {
 
@@ -316,9 +314,6 @@ func Start() {
 
 		pk = bls.GetPublicKey(sk)
 		pkBytes = pk.Bytes()
-
-		spk = bls.GetShortPublicKey(sk)
-		spkBytes = spk.Bytes()
 
 	} else {
 		sk, pk, err = bls.GenerateKeyPair()
@@ -333,6 +328,9 @@ func Start() {
 			panic(err)
 		}
 	}
+
+	spk := bls.GetShortPublicKey(sk)
+	spkBytes := spk.Bytes()
 
 	if err != nil {
 		panic(err)
