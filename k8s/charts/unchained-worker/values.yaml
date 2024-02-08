@@ -2,7 +2,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 5
+replicaCount: 100
+podManagementPolicy: "Parallel"
+#podManagementPolicy: "OrderedReady"
 
 image:
   repository: ghcr.io/kenshitech/unchained 
