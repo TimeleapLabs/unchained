@@ -1,16 +1,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "unchained-lite.fullname" . }}
+  name: {{ include "unchained-worker.fullname" . }}
   labels:
-    {{- include "unchained-lite.labels" . | nindent 4 }}
+    {{- include "unchained-worker.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
   selector:
     matchLabels:
-      {{- include "unchained-lite.selectorLabels" . | nindent 6 }}
+      {{- include "unchained-worker.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,19 +19,19 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "unchained-lite.selectorLabels" . | nindent 8 }}
+        {{- include "unchained-worker.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "unchained-lite.serviceAccountName" . }}
+      serviceAccountName: {{ include "unchained-worker.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
         - name: conf
           configMap:
-            name: conf-lite
+            name: conf-worker
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -56,20 +57,18 @@ spec:
               value: {{ .Values.env.nodeType }}
           volumeMounts:
             - name: conf
-              mountPath: /app/conf.lite.yaml
-              subPath: conf.lite.yaml
+              mountPath: /app/conf.worker.yaml
+              subPath: conf.worker.yaml
             - name: data
-              mountPath: /app/config
-              subPath: config
+              mountPath: /app/conf
+              subPath: conf
           command:
             - "bash"
             - "-c"
             - |
-              if [ ! -f config/conf.yaml ]; then
-                cp conf.lite.yaml config/conf.yaml
-                unchained address config/conf.yaml --generate
+              if [ ! -f conf/conf.yaml ]; then
+                cp conf.worker.yaml conf/
               fi
-              cp config/conf.yaml conf.yaml
               ./entrypoint.sh
       {{- with .Values.nodeSelector }}
       nodeSelector:

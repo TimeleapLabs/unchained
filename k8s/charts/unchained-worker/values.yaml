@@ -1,21 +1,23 @@
-# Default values for unchained-lite.
+# Default values for unchained-worker.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 96
+replicaCount: 100
+podManagementPolicy: "Parallel"
+#podManagementPolicy: "OrderedReady"
 
 image:
   repository: ghcr.io/kenshitech/unchained 
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "rc"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
 env:
-  nodeType: "lite"
+  nodeType: "worker"
 
 serviceAccount:
   # Specifies whether a service account should be created

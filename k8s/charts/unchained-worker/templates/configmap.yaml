@@ -1,18 +1,14 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: conf-lite
+  name: conf-worker
 data:
-  conf.lite.yaml: |
+  conf.worker.yaml: |
     log: info
-    lite: true
-    name: k8s-test-node
+    name: unchained-worker-k8s-test-node
     rpc:
       ethereum:
         - https://ethereum.publicnode.com
         - https://eth.llamarpc.com
         - wss://ethereum.publicnode.com
         - https://eth.rpc.blxrbdn.com
-    peers:
-      max: 12
-      parallel: 8
