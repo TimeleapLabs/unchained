@@ -49,7 +49,7 @@ func processKosk(conn *websocket.Conn, messageType int, payload []byte) error {
 	)
 
 	if err != nil || !challenge.Passed {
-		conn.WriteMessage(messageType, append([]byte{2}, []byte("kosk.invalid")...))
+		conn.WriteMessage(messageType, append([]byte{5}, []byte("kosk.invalid")...))
 		return errors.New("kosk.invalid")
 	}
 
@@ -75,8 +75,20 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 	}
 
 	if signer.Name == "" || len(signer.PublicKey) != 96 {
-		conn.WriteMessage(messageType, append([]byte{2}, []byte("conf.invalid")...))
+		conn.WriteMessage(messageType, append([]byte{5}, []byte("conf.invalid")...))
 		return errors.New("conf.invalid")
+	}
+
+	publicKeyInUse := false
+
+	signers.Range(func(conn *websocket.Conn, signerInMap uniswap.Signer) bool {
+		publicKeyInUse = signerInMap.PublicKey == signer.PublicKey
+		return !publicKeyInUse
+	})
+
+	if publicKeyInUse {
+		conn.WriteMessage(messageType, append([]byte{5}, []byte("key.duplicate")...))
+		return errors.New("key.duplicate")
 	}
 
 	signers.Store(conn, signer)
@@ -187,6 +199,7 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 
 	defer conn.Close()
 	defer signers.Delete(conn)
+	defer challenges.Delete(conn)
 
 	for {
 		messageType, payload, err := conn.ReadMessage()
