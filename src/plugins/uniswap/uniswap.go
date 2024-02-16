@@ -338,6 +338,17 @@ func Start() {
 
 	pkStr := address.Calculate(pkBytes[:])
 	fmt.Printf("Unchained Address: %s\n", pkStr)
+	// TODO: Avoid recalculating this
+	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
+
+	if !config.Secrets.InConfig("address") {
+		config.Secrets.Set("address", pkStr)
+		err := config.Secrets.WriteConfig()
+
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	hello := Signer{
 		Name:           config.Config.GetString("name"),
