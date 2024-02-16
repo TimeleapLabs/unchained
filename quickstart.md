@@ -119,7 +119,7 @@ To stop the node, run this command while in the release directory:
 To restart the node, run this command while in the release directory:
 
 ```bash
-./unchained.sh [node] stop
+./unchained.sh [node] restart
 ```
 
 #### View Node
