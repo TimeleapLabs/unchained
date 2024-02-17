@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/ethereum"
+	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
@@ -17,6 +19,12 @@ var workerCmd = &cobra.Command{
 	Short: "Run the Unchained client in worker mode",
 	Long:  `Run the Unchained client in worker mode`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		log.Logger.
+			With("Version", constants.Version).
+			With("Protocol", constants.ProtocolVersion).
+			Info("Running Unchained")
+
 		config.LoadConfig(configPath, secretsPath)
 		ethereum.Start()
 		uniswap.Start()

@@ -219,10 +219,19 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case 1:
-			err := processPriceReport(conn, messageType, payload[1:])
 
-			if err != nil {
-				fmt.Println("write:", err)
+			if payload[1] == 0 {
+				err := processPriceReport(conn, messageType, payload[2:])
+
+				if err != nil {
+					fmt.Println("write:", err)
+				}
+
+			} else {
+				conn.WriteMessage(
+					messageType,
+					append([]byte{2}, []byte("Dataset not supported")...),
+				)
 			}
 
 		case 3:
