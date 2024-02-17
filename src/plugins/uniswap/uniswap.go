@@ -18,6 +18,7 @@ import (
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/kosk"
+	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/utils"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -54,6 +55,7 @@ type PriceReport struct {
 }
 
 var DebouncedSaveSignatures func(key uint64, arg uint64)
+var signatureMutex *sync.Mutex
 
 var priceCache *lru.Cache[uint64, big.Int]
 var signatureCache *lru.Cache[uint64, []Signature]
@@ -66,6 +68,9 @@ var lastBlock uint64
 var lastPrice big.Int
 
 func RecordSignature(signature bls12381.G1Affine, signer Signer, block uint64) {
+
+	signatureMutex.Lock()
+	defer signatureMutex.Unlock()
 
 	// TODO: Needs optimization
 	if !priceCache.Contains(block) {
@@ -81,10 +86,6 @@ func RecordSignature(signature bls12381.G1Affine, signer Signer, block uint64) {
 	if lastBlock-block > 16 {
 		return // Data too old
 	}
-
-	mu := new(sync.Mutex)
-	mu.Lock()
-	defer mu.Unlock()
 
 	cached, ok := signatureCache.Get(block)
 	packed := Signature{Signature: signature, Signer: signer, Processed: false}
@@ -336,13 +337,17 @@ func Start() {
 		panic(err)
 	}
 
-	pkStr := address.Calculate(pkBytes[:])
-	fmt.Printf("Unchained Address: %s\n", pkStr)
+	addrStr := address.Calculate(pkBytes[:])
+
+	log.Logger.
+		With("Address", addrStr).
+		Info("Unchained")
+
 	// TODO: Avoid recalculating this
 	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
 
 	if !config.Secrets.InConfig("address") {
-		config.Secrets.Set("address", pkStr)
+		config.Secrets.Set("address", addrStr)
 		err := config.Secrets.WriteConfig()
 
 		if err != nil {
@@ -373,9 +378,13 @@ func Start() {
 			if err != nil || payload[0] == 5 {
 
 				if err != nil {
-					fmt.Println("Read error:", err)
+					log.Logger.
+						With("Error", err).
+						Error("Read error")
 				} else {
-					fmt.Printf("Broker error: %s\n", payload[1:])
+					log.Logger.
+						With("Error", payload[1:]).
+						Error("Broker error")
 				}
 
 				isSocketClosed = true
@@ -404,7 +413,9 @@ func Start() {
 			switch payload[0] {
 			// TODO: Make a table of call codes
 			case 2:
-				fmt.Printf("Unchained feedback: %s\n", payload[1:])
+				log.Logger.
+					With("Feedback", string(payload[1:])).
+					Info("Broker")
 
 			case 4:
 				// TODO: Refactor into a function
@@ -423,11 +434,15 @@ func Start() {
 				)
 
 				if err != nil {
-					fmt.Println("write:", err)
+					log.Logger.
+						With("Error", err).
+						Error("Write error")
 				}
 
 			default:
-				fmt.Printf("Received unknown call code: %d\n", payload[0])
+				log.Logger.
+					With("Code", payload[0]).
+					Info("Unknown call code")
 			}
 
 		}
@@ -459,7 +474,12 @@ func Start() {
 				var priceF big.Float
 				priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
 
-				fmt.Printf("%d -> $%.18f\n", *blockNumber, &priceF)
+				priceStr := fmt.Sprintf("$%.18f", &priceF)
+
+				log.Logger.
+					With("Block", *blockNumber).
+					With("Price", priceStr).
+					Info("Ethereum")
 
 				priceInfo := PriceInfo{Price: *price, Block: *blockNumber}
 				toHash, err := msgpack.Marshal(&priceInfo)
@@ -482,14 +502,10 @@ func Start() {
 					panic(err)
 				}
 
-				//fmt.Printf("%x\n", payload)
 				if !isSocketClosed {
-					wsClient.WriteMessage(websocket.BinaryMessage, append([]byte{1}, payload...))
+					wsClient.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
 				}
 
-				// fmt.Printf("%x\n", signature.Bytes())
-				// ok, _ := bls.Verify(signature, hash, *pk)
-				// fmt.Printf("Is OK? %t\n", ok)
 			},
 		),
 	)
@@ -512,7 +528,9 @@ func Start() {
 			err := wsClient.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 
 			if err != nil {
-				fmt.Println("write close:", err)
+				log.Logger.
+					With("Error", err).
+					Error("Connection closed")
 				return
 			}
 
@@ -528,6 +546,7 @@ func Start() {
 func init() {
 
 	DebouncedSaveSignatures = utils.Debounce[uint64, uint64](5*time.Second, SaveSignatures)
+	signatureMutex = new(sync.Mutex)
 
 	twoOneNinetyTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
 	tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
