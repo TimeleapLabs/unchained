@@ -46,6 +46,7 @@ Choose which node type you'd like to run on your machine.
 #### Prerequisites
 
 Create a directory for the config files to be mounted in your docker container:
+
 ```bash
 mkdir conf
 ```
@@ -160,7 +161,7 @@ on GitHub, find the latest release corresponding to your architecture and OS and
 On Unix-like operating systems, you'll first need to make the file executable:
 
 ```bash
-chmod +x unchained.OS.ARCH 
+chmod +x unchained.OS.ARCH
 ```
 
 #### Updates
@@ -197,12 +198,20 @@ config:
 ```yaml
 log: info
 name: <name>
-rpc:
-  ethereum:
-    - https://ethereum.publicnode.com
-    - https://eth.llamarpc.com
-    - wss://ethereum.publicnode.com
-    - https://eth.rpc.blxrbdn.com
+
+plugins:
+  uniswap:
+    rpc:
+      ethereum:
+        - https://ethereum.publicnode.com
+        - https://eth.llamarpc.com
+        - wss://ethereum.publicnode.com
+        - https://eth.rpc.blxrbdn.com
+    tokens:
+      - name: ethereum
+        pair: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
+        delta: 6
+        invert: true
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -213,7 +222,7 @@ the following modifications if required:
   messages.
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
-- `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
+- `plugins.rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
   issues are detected with the RPC connection. You can find a list of Ethereum
   RPC nodes on [Chainlist](https://chainlist.org/chain/1).
 

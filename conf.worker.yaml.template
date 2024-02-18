@@ -1,8 +1,16 @@
 log: info
 name: <name>
-rpc:
-  ethereum:
-    - https://ethereum.publicnode.com
-    - https://eth.llamarpc.com
-    - wss://ethereum.publicnode.com
-    - https://eth.rpc.blxrbdn.com
+
+plugins:
+  uniswap:
+    rpc:
+      ethereum: 
+        - https://ethereum.publicnode.com
+        - https://eth.llamarpc.com
+        - wss://ethereum.publicnode.com
+        - https://eth.rpc.blxrbdn.com
+    tokens:
+      - name: ethereum
+        pair: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
+        delta: 6
+        invert: true

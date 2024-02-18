@@ -8,6 +8,18 @@ import (
 	bls12381_fr "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
 )
 
+type Signer struct {
+	Name           string
+	PublicKey      [96]byte
+	ShortPublicKey [48]byte
+}
+
+type Signature struct {
+	Signature bls12381.G1Affine
+	Signer    Signer
+	Processed bool
+}
+
 var (
 	g2Aff bls12381.G2Affine
 	g1Aff bls12381.G1Affine

@@ -4,10 +4,12 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/client"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
@@ -26,8 +28,11 @@ var workerCmd = &cobra.Command{
 			Info("Running Unchained")
 
 		config.LoadConfig(configPath, secretsPath)
+		bls.InitClientIdentity()
+		client.StartClient()
 		ethereum.Start()
 		uniswap.Start()
+		client.ClientBlock()
 	},
 }
 
