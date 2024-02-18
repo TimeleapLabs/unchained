@@ -17,7 +17,7 @@ var rpcIndex int
 var client *ethclient.Client
 
 func Start() {
-	rpcConfig := config.Config.Get("rpc.ethereum")
+	rpcConfig := config.Config.Get("plugins.uniswap.rpc.ethereum")
 	rpcIndex = 0
 
 	switch reflect.TypeOf(rpcConfig).Kind() {

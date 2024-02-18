@@ -4,24 +4,20 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"os"
-	"os/signal"
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/client"
 	"github.com/KenshiTech/unchained/utils"
 
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
@@ -31,34 +27,11 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
-var etherUsdPairAddr = "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-
-type Signer struct {
-	Name           string
-	PublicKey      [96]byte
-	ShortPublicKey [48]byte
-}
-type Signature struct {
-	Signature bls12381.G1Affine
-	Signer    Signer
-	Processed bool
-}
-
-type PriceInfo struct {
-	Block uint64
-	Price big.Int
-}
-
-type PriceReport struct {
-	PriceInfo PriceInfo
-	Signature [48]byte
-}
-
 var DebouncedSaveSignatures func(key uint64, arg uint64)
 var signatureMutex *sync.Mutex
 
 var priceCache *lru.Cache[uint64, big.Int]
-var signatureCache *lru.Cache[uint64, []Signature]
+var signatureCache *lru.Cache[uint64, []bls.Signature]
 var aggregateCache *lru.Cache[uint64, bls12381.G1Affine]
 
 var twoOneNinetyTwo big.Int
@@ -67,14 +40,29 @@ var tenEighteenF big.Float
 var lastBlock uint64
 var lastPrice big.Int
 
-func RecordSignature(signature bls12381.G1Affine, signer Signer, block uint64) {
+type Token struct {
+	Name   string `mapstructure:"name"`
+	Pair   string `mapstructure:"pair"`
+	Delta  int64  `mapstructure:"delta"`
+	Invert bool   `mapstructure:"invert"`
+}
+
+// TODO: This needs to work with different datasets
+func RecordSignature(signature bls12381.G1Affine, signer bls.Signer, block uint64) {
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
 	// TODO: Needs optimization
 	if !priceCache.Contains(block) {
-		blockNumber, _, err := GetPriceFromPair(etherUsdPairAddr, 6, true)
+
+		var tokens []Token
+		if err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens); err != nil {
+			panic(err)
+		}
+
+		eth := tokens[0]
+		blockNumber, _, err := GetPriceFromPair(eth.Pair, eth.Delta, eth.Invert)
 
 		if err != nil {
 			return
@@ -88,10 +76,10 @@ func RecordSignature(signature bls12381.G1Affine, signer Signer, block uint64) {
 	}
 
 	cached, ok := signatureCache.Get(block)
-	packed := Signature{Signature: signature, Signer: signer, Processed: false}
+	packed := bls.Signature{Signature: signature, Signer: signer, Processed: false}
 
 	if !ok {
-		signatureCache.Add(block, []Signature{packed})
+		signatureCache.Add(block, []bls.Signature{packed})
 		// TODO: This looks ugly
 		DebouncedSaveSignatures(block, block)
 		return
@@ -138,7 +126,7 @@ func SaveSignatures(block uint64) {
 		panic(err)
 	}
 
-	var newSigners []Signer
+	var newSigners []bls.Signer
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
@@ -281,185 +269,29 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 
 func Start() {
 
-	brokerUrl := fmt.Sprintf(
-		"%s/%s",
-		config.Config.GetString("broker"),
-		constants.ProtocolVersion,
-	)
-
-	wsClient, _, err := websocket.DefaultDialer.Dial(brokerUrl, nil)
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer wsClient.Close()
-
-	done := make(chan struct{})
-
 	scheduler, err := gocron.NewScheduler()
-	if err != nil {
-		panic(err)
-	}
-
-	var sk *big.Int
-	var pk *bls12381.G2Affine
-	var pkBytes [96]byte
-
-	if config.Secrets.InConfig("secretKey") {
-
-		decoded := base58.Decode(config.Secrets.GetString("secretKey"))
-
-		sk = new(big.Int)
-		sk.SetBytes(decoded)
-
-		pk = bls.GetPublicKey(sk)
-		pkBytes = pk.Bytes()
-
-	} else {
-		sk, pk, err = bls.GenerateKeyPair()
-		pkBytes = pk.Bytes()
-
-		config.Secrets.Set("secretKey", base58.Encode(sk.Bytes()))
-		config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
-
-		err := config.Secrets.WriteConfig()
-
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	spk := bls.GetShortPublicKey(sk)
-	spkBytes := spk.Bytes()
 
 	if err != nil {
 		panic(err)
 	}
 
-	addrStr := address.Calculate(pkBytes[:])
-
-	log.Logger.
-		With("Address", addrStr).
-		Info("Unchained")
-
-	// TODO: Avoid recalculating this
-	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
-
-	if !config.Secrets.InConfig("address") {
-		config.Secrets.Set("address", addrStr)
-		err := config.Secrets.WriteConfig()
-
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	hello := Signer{
-		Name:           config.Config.GetString("name"),
-		PublicKey:      pkBytes,
-		ShortPublicKey: spkBytes,
-	}
-
-	helloPayload, err := msgpack.Marshal(&hello)
-
-	if err != nil {
+	var tokens []Token
+	if err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens); err != nil {
 		panic(err)
 	}
 
-	isSocketClosed := false
-
-	go func() {
-		defer close(done)
-
-		for {
-			_, payload, err := wsClient.ReadMessage()
-
-			if err != nil || payload[0] == 5 {
-
-				if err != nil {
-					log.Logger.
-						With("Error", err).
-						Error("Read error")
-				} else {
-					log.Logger.
-						With("Error", payload[1:]).
-						Error("Broker error")
-				}
-
-				isSocketClosed = true
-
-				if websocket.IsUnexpectedCloseError(err) {
-					for i := 1; i < 6; i++ {
-						time.Sleep(time.Duration(i) * 3 * time.Second)
-						wsClient, _, err = websocket.DefaultDialer.Dial(brokerUrl, nil)
-						if err == nil {
-							isSocketClosed = false
-							wsClient.WriteMessage(
-								websocket.BinaryMessage,
-								append([]byte{0}, helloPayload...),
-							)
-						}
-					}
-				}
-
-				if isSocketClosed {
-					return
-				} else {
-					continue
-				}
-			}
-
-			switch payload[0] {
-			// TODO: Make a table of call codes
-			case 2:
-				log.Logger.
-					With("Feedback", string(payload[1:])).
-					Info("Broker")
-
-			case 4:
-				// TODO: Refactor into a function
-				// TODO: Check for errors!
-				var challenge kosk.Challenge
-				msgpack.Unmarshal(payload[1:], &challenge)
-
-				signature, _ := bls.Sign(*sk, challenge.Random[:])
-				challenge.Signature = signature.Bytes()
-
-				koskPayload, _ := msgpack.Marshal(challenge)
-
-				wsClient.WriteMessage(
-					websocket.BinaryMessage,
-					append([]byte{3}, koskPayload...),
-				)
-
-				if err != nil {
-					log.Logger.
-						With("Error", err).
-						Error("Write error")
-				}
-
-			default:
-				log.Logger.
-					With("Code", payload[0]).
-					Info("Unknown call code")
-			}
-
-		}
-	}()
-
-	wsClient.WriteMessage(websocket.BinaryMessage, append([]byte{0}, helloPayload...))
+	eth := tokens[0]
 
 	_, err = scheduler.NewJob(
 		gocron.DurationJob(5*time.Second),
 		gocron.NewTask(
 			func() {
 
-				if isSocketClosed {
+				if client.IsClientSocketClosed {
 					return
 				}
 
-				blockNumber, price, err := GetPriceFromPair(etherUsdPairAddr, 6, true)
+				blockNumber, price, err := GetPriceFromPair(eth.Pair, eth.Delta, eth.Invert)
 
 				if err != nil {
 					return
@@ -481,17 +313,17 @@ func Start() {
 					With("Price", priceStr).
 					Info("Ethereum")
 
-				priceInfo := PriceInfo{Price: *price, Block: *blockNumber}
+				priceInfo := datasets.PriceInfo{Price: *price, Block: *blockNumber}
 				toHash, err := msgpack.Marshal(&priceInfo)
 
 				if err != nil {
 					panic(err)
 				}
 
-				signature, _ := bls.Sign(*sk, toHash)
+				signature, _ := bls.Sign(*bls.ClientSecretKey, toHash)
 				compressedSignature := signature.Bytes()
 
-				priceReport := PriceReport{
+				priceReport := datasets.PriceReport{
 					PriceInfo: priceInfo,
 					Signature: compressedSignature,
 				}
@@ -502,8 +334,8 @@ func Start() {
 					panic(err)
 				}
 
-				if !isSocketClosed {
-					wsClient.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
+				if !client.IsClientSocketClosed {
+					client.Client.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
 				}
 
 			},
@@ -515,32 +347,6 @@ func Start() {
 	}
 
 	scheduler.Start()
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
-	for {
-		select {
-		case <-done:
-			return
-		case <-interrupt:
-
-			err := wsClient.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-
-			if err != nil {
-				log.Logger.
-					With("Error", err).
-					Error("Connection closed")
-				return
-			}
-
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
-			return
-		}
-	}
 }
 
 func init() {
@@ -559,7 +365,7 @@ func init() {
 		panic(err)
 	}
 
-	signatureCache, err = lru.New[uint64, []Signature](24)
+	signatureCache, err = lru.New[uint64, []bls.Signature](24)
 
 	if err != nil {
 		panic(err)
