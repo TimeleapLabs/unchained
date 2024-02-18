@@ -9,6 +9,7 @@ import (
 
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
@@ -18,7 +19,7 @@ import (
 )
 
 var challenges *xsync.MapOf[*websocket.Conn, kosk.Challenge]
-var signers *xsync.MapOf[*websocket.Conn, uniswap.Signer]
+var signers *xsync.MapOf[*websocket.Conn, bls.Signer]
 var upgrader = websocket.Upgrader{} // use default options
 var addr = "0.0.0.0:9123"           // TODO: port should be passed as a cli option
 
@@ -61,7 +62,7 @@ func processKosk(conn *websocket.Conn, messageType int, payload []byte) error {
 
 func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 
-	var signer uniswap.Signer
+	var signer bls.Signer
 	err := msgpack.Unmarshal(payload, &signer)
 
 	if err != nil {
@@ -81,7 +82,7 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 
 	publicKeyInUse := false
 
-	signers.Range(func(conn *websocket.Conn, signerInMap uniswap.Signer) bool {
+	signers.Range(func(conn *websocket.Conn, signerInMap bls.Signer) bool {
 		publicKeyInUse = signerInMap.PublicKey == signer.PublicKey
 		return !publicKeyInUse
 	})
@@ -137,7 +138,7 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 		return errors.New("hello.missing")
 	}
 
-	var report uniswap.PriceReport
+	var report datasets.PriceReport
 	err := msgpack.Unmarshal(payload, &report)
 
 	if err != nil {
@@ -173,11 +174,7 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 	message := []byte("signature.invalid")
 	if ok {
 		message = []byte("signature.accepted")
-		uniswap.RecordSignature(
-			signature,
-			signer,
-			report.PriceInfo.Block,
-		)
+		uniswap.RecordSignature(signature, signer, report.PriceInfo.Block)
 	}
 
 	err = conn.WriteMessage(messageType, append([]byte{2}, message...))
@@ -262,6 +259,6 @@ func StartServer() {
 }
 
 func init() {
-	signers = xsync.NewMapOf[*websocket.Conn, uniswap.Signer]()
+	signers = xsync.NewMapOf[*websocket.Conn, bls.Signer]()
 	challenges = xsync.NewMapOf[*websocket.Conn, kosk.Challenge]()
 }
