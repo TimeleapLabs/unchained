@@ -11,10 +11,13 @@ var (
 	// AssetPricesColumns holds the columns for the "asset_prices" table.
 	AssetPricesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "block", Type: field.TypeUint64, Unique: true},
+		{Name: "block", Type: field.TypeUint64},
 		{Name: "signers_count", Type: field.TypeUint64, Nullable: true},
 		{Name: "price", Type: field.TypeString},
 		{Name: "signature", Type: field.TypeBytes, Size: 96},
+		{Name: "asset", Type: field.TypeString, Nullable: true},
+		{Name: "chain", Type: field.TypeString, Nullable: true},
+		{Name: "pair", Type: field.TypeString, Nullable: true},
 	}
 	// AssetPricesTable holds the schema information for the "asset_prices" table.
 	AssetPricesTable = &schema.Table{
@@ -23,27 +26,9 @@ var (
 		PrimaryKey: []*schema.Column{AssetPricesColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "assetprice_block",
+				Name:    "assetprice_block_chain_asset_pair",
 				Unique:  true,
-				Columns: []*schema.Column{AssetPricesColumns[1]},
-			},
-		},
-	}
-	// DataSetsColumns holds the columns for the "data_sets" table.
-	DataSetsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
-	}
-	// DataSetsTable holds the schema information for the "data_sets" table.
-	DataSetsTable = &schema.Table{
-		Name:       "data_sets",
-		Columns:    DataSetsColumns,
-		PrimaryKey: []*schema.Column{DataSetsColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "dataset_name",
-				Unique:  true,
-				Columns: []*schema.Column{DataSetsColumns[1]},
+				Columns: []*schema.Column{AssetPricesColumns[1], AssetPricesColumns[6], AssetPricesColumns[5], AssetPricesColumns[7]},
 			},
 		},
 	}
@@ -70,31 +55,6 @@ var (
 				Name:    "signer_shortkey",
 				Unique:  true,
 				Columns: []*schema.Column{SignersColumns[3]},
-			},
-		},
-	}
-	// AssetPriceDataSetColumns holds the columns for the "asset_price_dataSet" table.
-	AssetPriceDataSetColumns = []*schema.Column{
-		{Name: "asset_price_id", Type: field.TypeInt},
-		{Name: "data_set_id", Type: field.TypeInt},
-	}
-	// AssetPriceDataSetTable holds the schema information for the "asset_price_dataSet" table.
-	AssetPriceDataSetTable = &schema.Table{
-		Name:       "asset_price_dataSet",
-		Columns:    AssetPriceDataSetColumns,
-		PrimaryKey: []*schema.Column{AssetPriceDataSetColumns[0], AssetPriceDataSetColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "asset_price_dataSet_asset_price_id",
-				Columns:    []*schema.Column{AssetPriceDataSetColumns[0]},
-				RefColumns: []*schema.Column{AssetPricesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "asset_price_dataSet_data_set_id",
-				Columns:    []*schema.Column{AssetPriceDataSetColumns[1]},
-				RefColumns: []*schema.Column{DataSetsColumns[0]},
-				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -126,16 +86,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AssetPricesTable,
-		DataSetsTable,
 		SignersTable,
-		AssetPriceDataSetTable,
 		AssetPriceSignersTable,
 	}
 )
 
 func init() {
-	AssetPriceDataSetTable.ForeignKeys[0].RefTable = AssetPricesTable
-	AssetPriceDataSetTable.ForeignKeys[1].RefTable = DataSetsTable
 	AssetPriceSignersTable.ForeignKeys[0].RefTable = AssetPricesTable
 	AssetPriceSignersTable.ForeignKeys[1].RefTable = SignersTable
 }

@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/dataset"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
 
@@ -76,7 +75,6 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			assetprice.Table: assetprice.ValidColumn,
-			dataset.Table:    dataset.ValidColumn,
 			signer.Table:     signer.ValidColumn,
 		})
 	})

@@ -77,6 +77,21 @@ func Signature(v []byte) predicate.AssetPrice {
 	return predicate.AssetPrice(sql.FieldEQ(FieldSignature, v))
 }
 
+// Asset applies equality check predicate on the "asset" field. It's identical to AssetEQ.
+func Asset(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldAsset, v))
+}
+
+// Chain applies equality check predicate on the "chain" field. It's identical to ChainEQ.
+func Chain(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldChain, v))
+}
+
+// Pair applies equality check predicate on the "pair" field. It's identical to PairEQ.
+func Pair(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldPair, v))
+}
+
 // BlockEQ applies the EQ predicate on the "block" field.
 func BlockEQ(v uint64) predicate.AssetPrice {
 	return predicate.AssetPrice(sql.FieldEQ(FieldBlock, v))
@@ -321,27 +336,229 @@ func SignatureLTE(v []byte) predicate.AssetPrice {
 	return predicate.AssetPrice(sql.FieldLTE(FieldSignature, v))
 }
 
-// HasDataSet applies the HasEdge predicate on the "dataSet" edge.
-func HasDataSet() predicate.AssetPrice {
-	return predicate.AssetPrice(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, DataSetTable, DataSetPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
+// AssetEQ applies the EQ predicate on the "asset" field.
+func AssetEQ(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldAsset, v))
 }
 
-// HasDataSetWith applies the HasEdge predicate on the "dataSet" edge with a given conditions (other predicates).
-func HasDataSetWith(preds ...predicate.DataSet) predicate.AssetPrice {
-	return predicate.AssetPrice(func(s *sql.Selector) {
-		step := newDataSetStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
+// AssetNEQ applies the NEQ predicate on the "asset" field.
+func AssetNEQ(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNEQ(FieldAsset, v))
+}
+
+// AssetIn applies the In predicate on the "asset" field.
+func AssetIn(vs ...string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIn(FieldAsset, vs...))
+}
+
+// AssetNotIn applies the NotIn predicate on the "asset" field.
+func AssetNotIn(vs ...string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotIn(FieldAsset, vs...))
+}
+
+// AssetGT applies the GT predicate on the "asset" field.
+func AssetGT(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGT(FieldAsset, v))
+}
+
+// AssetGTE applies the GTE predicate on the "asset" field.
+func AssetGTE(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGTE(FieldAsset, v))
+}
+
+// AssetLT applies the LT predicate on the "asset" field.
+func AssetLT(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLT(FieldAsset, v))
+}
+
+// AssetLTE applies the LTE predicate on the "asset" field.
+func AssetLTE(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLTE(FieldAsset, v))
+}
+
+// AssetContains applies the Contains predicate on the "asset" field.
+func AssetContains(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldContains(FieldAsset, v))
+}
+
+// AssetHasPrefix applies the HasPrefix predicate on the "asset" field.
+func AssetHasPrefix(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldHasPrefix(FieldAsset, v))
+}
+
+// AssetHasSuffix applies the HasSuffix predicate on the "asset" field.
+func AssetHasSuffix(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldHasSuffix(FieldAsset, v))
+}
+
+// AssetIsNil applies the IsNil predicate on the "asset" field.
+func AssetIsNil() predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIsNull(FieldAsset))
+}
+
+// AssetNotNil applies the NotNil predicate on the "asset" field.
+func AssetNotNil() predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotNull(FieldAsset))
+}
+
+// AssetEqualFold applies the EqualFold predicate on the "asset" field.
+func AssetEqualFold(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEqualFold(FieldAsset, v))
+}
+
+// AssetContainsFold applies the ContainsFold predicate on the "asset" field.
+func AssetContainsFold(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldContainsFold(FieldAsset, v))
+}
+
+// ChainEQ applies the EQ predicate on the "chain" field.
+func ChainEQ(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldChain, v))
+}
+
+// ChainNEQ applies the NEQ predicate on the "chain" field.
+func ChainNEQ(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNEQ(FieldChain, v))
+}
+
+// ChainIn applies the In predicate on the "chain" field.
+func ChainIn(vs ...string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIn(FieldChain, vs...))
+}
+
+// ChainNotIn applies the NotIn predicate on the "chain" field.
+func ChainNotIn(vs ...string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotIn(FieldChain, vs...))
+}
+
+// ChainGT applies the GT predicate on the "chain" field.
+func ChainGT(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGT(FieldChain, v))
+}
+
+// ChainGTE applies the GTE predicate on the "chain" field.
+func ChainGTE(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGTE(FieldChain, v))
+}
+
+// ChainLT applies the LT predicate on the "chain" field.
+func ChainLT(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLT(FieldChain, v))
+}
+
+// ChainLTE applies the LTE predicate on the "chain" field.
+func ChainLTE(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLTE(FieldChain, v))
+}
+
+// ChainContains applies the Contains predicate on the "chain" field.
+func ChainContains(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldContains(FieldChain, v))
+}
+
+// ChainHasPrefix applies the HasPrefix predicate on the "chain" field.
+func ChainHasPrefix(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldHasPrefix(FieldChain, v))
+}
+
+// ChainHasSuffix applies the HasSuffix predicate on the "chain" field.
+func ChainHasSuffix(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldHasSuffix(FieldChain, v))
+}
+
+// ChainIsNil applies the IsNil predicate on the "chain" field.
+func ChainIsNil() predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIsNull(FieldChain))
+}
+
+// ChainNotNil applies the NotNil predicate on the "chain" field.
+func ChainNotNil() predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotNull(FieldChain))
+}
+
+// ChainEqualFold applies the EqualFold predicate on the "chain" field.
+func ChainEqualFold(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEqualFold(FieldChain, v))
+}
+
+// ChainContainsFold applies the ContainsFold predicate on the "chain" field.
+func ChainContainsFold(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldContainsFold(FieldChain, v))
+}
+
+// PairEQ applies the EQ predicate on the "pair" field.
+func PairEQ(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldPair, v))
+}
+
+// PairNEQ applies the NEQ predicate on the "pair" field.
+func PairNEQ(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNEQ(FieldPair, v))
+}
+
+// PairIn applies the In predicate on the "pair" field.
+func PairIn(vs ...string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIn(FieldPair, vs...))
+}
+
+// PairNotIn applies the NotIn predicate on the "pair" field.
+func PairNotIn(vs ...string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotIn(FieldPair, vs...))
+}
+
+// PairGT applies the GT predicate on the "pair" field.
+func PairGT(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGT(FieldPair, v))
+}
+
+// PairGTE applies the GTE predicate on the "pair" field.
+func PairGTE(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGTE(FieldPair, v))
+}
+
+// PairLT applies the LT predicate on the "pair" field.
+func PairLT(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLT(FieldPair, v))
+}
+
+// PairLTE applies the LTE predicate on the "pair" field.
+func PairLTE(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLTE(FieldPair, v))
+}
+
+// PairContains applies the Contains predicate on the "pair" field.
+func PairContains(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldContains(FieldPair, v))
+}
+
+// PairHasPrefix applies the HasPrefix predicate on the "pair" field.
+func PairHasPrefix(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldHasPrefix(FieldPair, v))
+}
+
+// PairHasSuffix applies the HasSuffix predicate on the "pair" field.
+func PairHasSuffix(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldHasSuffix(FieldPair, v))
+}
+
+// PairIsNil applies the IsNil predicate on the "pair" field.
+func PairIsNil() predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIsNull(FieldPair))
+}
+
+// PairNotNil applies the NotNil predicate on the "pair" field.
+func PairNotNil() predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotNull(FieldPair))
+}
+
+// PairEqualFold applies the EqualFold predicate on the "pair" field.
+func PairEqualFold(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEqualFold(FieldPair, v))
+}
+
+// PairContainsFold applies the ContainsFold predicate on the "pair" field.
+func PairContainsFold(v string) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldContainsFold(FieldPair, v))
 }
 
 // HasSigners applies the HasEdge predicate on the "signers" edge.

@@ -10,7 +10,7 @@ import (
 func defaults() {
 	Config.SetDefault("name", petname.Generate(3, "-"))
 	Config.SetDefault("log", "info")
-	Config.SetDefault("rpc.ethereum", "https://eth.llamarpc.com")
+	Config.SetDefault("plugins.uniswap.rpc.ethereum", "https://ethereum.publicnode.com")
 	Config.SetDefault("broker", "wss://shinobi.brokers.kenshi.io")
 }
 

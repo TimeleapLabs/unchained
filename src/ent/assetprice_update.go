@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/dataset"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -90,19 +89,64 @@ func (apu *AssetPriceUpdate) SetSignature(b []byte) *AssetPriceUpdate {
 	return apu
 }
 
-// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by IDs.
-func (apu *AssetPriceUpdate) AddDataSetIDs(ids ...int) *AssetPriceUpdate {
-	apu.mutation.AddDataSetIDs(ids...)
+// SetAsset sets the "asset" field.
+func (apu *AssetPriceUpdate) SetAsset(s string) *AssetPriceUpdate {
+	apu.mutation.SetAsset(s)
 	return apu
 }
 
-// AddDataSet adds the "dataSet" edges to the DataSet entity.
-func (apu *AssetPriceUpdate) AddDataSet(d ...*DataSet) *AssetPriceUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// SetNillableAsset sets the "asset" field if the given value is not nil.
+func (apu *AssetPriceUpdate) SetNillableAsset(s *string) *AssetPriceUpdate {
+	if s != nil {
+		apu.SetAsset(*s)
 	}
-	return apu.AddDataSetIDs(ids...)
+	return apu
+}
+
+// ClearAsset clears the value of the "asset" field.
+func (apu *AssetPriceUpdate) ClearAsset() *AssetPriceUpdate {
+	apu.mutation.ClearAsset()
+	return apu
+}
+
+// SetChain sets the "chain" field.
+func (apu *AssetPriceUpdate) SetChain(s string) *AssetPriceUpdate {
+	apu.mutation.SetChain(s)
+	return apu
+}
+
+// SetNillableChain sets the "chain" field if the given value is not nil.
+func (apu *AssetPriceUpdate) SetNillableChain(s *string) *AssetPriceUpdate {
+	if s != nil {
+		apu.SetChain(*s)
+	}
+	return apu
+}
+
+// ClearChain clears the value of the "chain" field.
+func (apu *AssetPriceUpdate) ClearChain() *AssetPriceUpdate {
+	apu.mutation.ClearChain()
+	return apu
+}
+
+// SetPair sets the "pair" field.
+func (apu *AssetPriceUpdate) SetPair(s string) *AssetPriceUpdate {
+	apu.mutation.SetPair(s)
+	return apu
+}
+
+// SetNillablePair sets the "pair" field if the given value is not nil.
+func (apu *AssetPriceUpdate) SetNillablePair(s *string) *AssetPriceUpdate {
+	if s != nil {
+		apu.SetPair(*s)
+	}
+	return apu
+}
+
+// ClearPair clears the value of the "pair" field.
+func (apu *AssetPriceUpdate) ClearPair() *AssetPriceUpdate {
+	apu.mutation.ClearPair()
+	return apu
 }
 
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
@@ -123,27 +167,6 @@ func (apu *AssetPriceUpdate) AddSigners(s ...*Signer) *AssetPriceUpdate {
 // Mutation returns the AssetPriceMutation object of the builder.
 func (apu *AssetPriceUpdate) Mutation() *AssetPriceMutation {
 	return apu.mutation
-}
-
-// ClearDataSet clears all "dataSet" edges to the DataSet entity.
-func (apu *AssetPriceUpdate) ClearDataSet() *AssetPriceUpdate {
-	apu.mutation.ClearDataSet()
-	return apu
-}
-
-// RemoveDataSetIDs removes the "dataSet" edge to DataSet entities by IDs.
-func (apu *AssetPriceUpdate) RemoveDataSetIDs(ids ...int) *AssetPriceUpdate {
-	apu.mutation.RemoveDataSetIDs(ids...)
-	return apu
-}
-
-// RemoveDataSet removes "dataSet" edges to DataSet entities.
-func (apu *AssetPriceUpdate) RemoveDataSet(d ...*DataSet) *AssetPriceUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return apu.RemoveDataSetIDs(ids...)
 }
 
 // ClearSigners clears all "signers" edges to the Signer entity.
@@ -241,50 +264,23 @@ func (apu *AssetPriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := apu.mutation.Signature(); ok {
 		_spec.SetField(assetprice.FieldSignature, field.TypeBytes, value)
 	}
-	if apu.mutation.DataSetCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   assetprice.DataSetTable,
-			Columns: assetprice.DataSetPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dataset.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := apu.mutation.Asset(); ok {
+		_spec.SetField(assetprice.FieldAsset, field.TypeString, value)
 	}
-	if nodes := apu.mutation.RemovedDataSetIDs(); len(nodes) > 0 && !apu.mutation.DataSetCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   assetprice.DataSetTable,
-			Columns: assetprice.DataSetPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dataset.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if apu.mutation.AssetCleared() {
+		_spec.ClearField(assetprice.FieldAsset, field.TypeString)
 	}
-	if nodes := apu.mutation.DataSetIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   assetprice.DataSetTable,
-			Columns: assetprice.DataSetPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dataset.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := apu.mutation.Chain(); ok {
+		_spec.SetField(assetprice.FieldChain, field.TypeString, value)
+	}
+	if apu.mutation.ChainCleared() {
+		_spec.ClearField(assetprice.FieldChain, field.TypeString)
+	}
+	if value, ok := apu.mutation.Pair(); ok {
+		_spec.SetField(assetprice.FieldPair, field.TypeString, value)
+	}
+	if apu.mutation.PairCleared() {
+		_spec.ClearField(assetprice.FieldPair, field.TypeString)
 	}
 	if apu.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -411,19 +407,64 @@ func (apuo *AssetPriceUpdateOne) SetSignature(b []byte) *AssetPriceUpdateOne {
 	return apuo
 }
 
-// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by IDs.
-func (apuo *AssetPriceUpdateOne) AddDataSetIDs(ids ...int) *AssetPriceUpdateOne {
-	apuo.mutation.AddDataSetIDs(ids...)
+// SetAsset sets the "asset" field.
+func (apuo *AssetPriceUpdateOne) SetAsset(s string) *AssetPriceUpdateOne {
+	apuo.mutation.SetAsset(s)
 	return apuo
 }
 
-// AddDataSet adds the "dataSet" edges to the DataSet entity.
-func (apuo *AssetPriceUpdateOne) AddDataSet(d ...*DataSet) *AssetPriceUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// SetNillableAsset sets the "asset" field if the given value is not nil.
+func (apuo *AssetPriceUpdateOne) SetNillableAsset(s *string) *AssetPriceUpdateOne {
+	if s != nil {
+		apuo.SetAsset(*s)
 	}
-	return apuo.AddDataSetIDs(ids...)
+	return apuo
+}
+
+// ClearAsset clears the value of the "asset" field.
+func (apuo *AssetPriceUpdateOne) ClearAsset() *AssetPriceUpdateOne {
+	apuo.mutation.ClearAsset()
+	return apuo
+}
+
+// SetChain sets the "chain" field.
+func (apuo *AssetPriceUpdateOne) SetChain(s string) *AssetPriceUpdateOne {
+	apuo.mutation.SetChain(s)
+	return apuo
+}
+
+// SetNillableChain sets the "chain" field if the given value is not nil.
+func (apuo *AssetPriceUpdateOne) SetNillableChain(s *string) *AssetPriceUpdateOne {
+	if s != nil {
+		apuo.SetChain(*s)
+	}
+	return apuo
+}
+
+// ClearChain clears the value of the "chain" field.
+func (apuo *AssetPriceUpdateOne) ClearChain() *AssetPriceUpdateOne {
+	apuo.mutation.ClearChain()
+	return apuo
+}
+
+// SetPair sets the "pair" field.
+func (apuo *AssetPriceUpdateOne) SetPair(s string) *AssetPriceUpdateOne {
+	apuo.mutation.SetPair(s)
+	return apuo
+}
+
+// SetNillablePair sets the "pair" field if the given value is not nil.
+func (apuo *AssetPriceUpdateOne) SetNillablePair(s *string) *AssetPriceUpdateOne {
+	if s != nil {
+		apuo.SetPair(*s)
+	}
+	return apuo
+}
+
+// ClearPair clears the value of the "pair" field.
+func (apuo *AssetPriceUpdateOne) ClearPair() *AssetPriceUpdateOne {
+	apuo.mutation.ClearPair()
+	return apuo
 }
 
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
@@ -444,27 +485,6 @@ func (apuo *AssetPriceUpdateOne) AddSigners(s ...*Signer) *AssetPriceUpdateOne {
 // Mutation returns the AssetPriceMutation object of the builder.
 func (apuo *AssetPriceUpdateOne) Mutation() *AssetPriceMutation {
 	return apuo.mutation
-}
-
-// ClearDataSet clears all "dataSet" edges to the DataSet entity.
-func (apuo *AssetPriceUpdateOne) ClearDataSet() *AssetPriceUpdateOne {
-	apuo.mutation.ClearDataSet()
-	return apuo
-}
-
-// RemoveDataSetIDs removes the "dataSet" edge to DataSet entities by IDs.
-func (apuo *AssetPriceUpdateOne) RemoveDataSetIDs(ids ...int) *AssetPriceUpdateOne {
-	apuo.mutation.RemoveDataSetIDs(ids...)
-	return apuo
-}
-
-// RemoveDataSet removes "dataSet" edges to DataSet entities.
-func (apuo *AssetPriceUpdateOne) RemoveDataSet(d ...*DataSet) *AssetPriceUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return apuo.RemoveDataSetIDs(ids...)
 }
 
 // ClearSigners clears all "signers" edges to the Signer entity.
@@ -592,50 +612,23 @@ func (apuo *AssetPriceUpdateOne) sqlSave(ctx context.Context) (_node *AssetPrice
 	if value, ok := apuo.mutation.Signature(); ok {
 		_spec.SetField(assetprice.FieldSignature, field.TypeBytes, value)
 	}
-	if apuo.mutation.DataSetCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   assetprice.DataSetTable,
-			Columns: assetprice.DataSetPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dataset.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := apuo.mutation.Asset(); ok {
+		_spec.SetField(assetprice.FieldAsset, field.TypeString, value)
 	}
-	if nodes := apuo.mutation.RemovedDataSetIDs(); len(nodes) > 0 && !apuo.mutation.DataSetCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   assetprice.DataSetTable,
-			Columns: assetprice.DataSetPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dataset.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if apuo.mutation.AssetCleared() {
+		_spec.ClearField(assetprice.FieldAsset, field.TypeString)
 	}
-	if nodes := apuo.mutation.DataSetIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   assetprice.DataSetTable,
-			Columns: assetprice.DataSetPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dataset.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := apuo.mutation.Chain(); ok {
+		_spec.SetField(assetprice.FieldChain, field.TypeString, value)
+	}
+	if apuo.mutation.ChainCleared() {
+		_spec.ClearField(assetprice.FieldChain, field.TypeString)
+	}
+	if value, ok := apuo.mutation.Pair(); ok {
+		_spec.SetField(assetprice.FieldPair, field.TypeString, value)
+	}
+	if apuo.mutation.PairCleared() {
+		_spec.ClearField(assetprice.FieldPair, field.TypeString)
 	}
 	if apuo.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
