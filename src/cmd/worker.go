@@ -31,6 +31,7 @@ var workerCmd = &cobra.Command{
 		bls.InitClientIdentity()
 		client.StartClient()
 		ethereum.Start()
+		uniswap.Setup()
 		uniswap.Start()
 		client.ClientBlock()
 	},

@@ -8,6 +8,7 @@ import (
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/net"
+	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
 )
@@ -21,6 +22,7 @@ var brokerCmd = &cobra.Command{
 		config.LoadConfig(configPath, secretsPath)
 		db.Start()
 		ethereum.Start()
+		uniswap.Setup()
 		net.StartServer()
 	},
 }

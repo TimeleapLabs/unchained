@@ -20,8 +20,5 @@ func AssetPriceOrErr(p AssetPrice, err error) AssetPrice {
 	}
 }
 
-// DataSet is the predicate function for dataset builders.
-type DataSet func(*sql.Selector)
-
 // Signer is the predicate function for signer builders.
 type Signer func(*sql.Selector)

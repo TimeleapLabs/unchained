@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/dataset"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -27,7 +26,6 @@ const (
 
 	// Node types.
 	TypeAssetPrice = "AssetPrice"
-	TypeDataSet    = "DataSet"
 	TypeSigner     = "Signer"
 )
 
@@ -43,10 +41,10 @@ type AssetPriceMutation struct {
 	addsignersCount *int64
 	price           **big.Int
 	signature       *[]byte
+	asset           *string
+	chain           *string
+	pair            *string
 	clearedFields   map[string]struct{}
-	dataSet         map[int]struct{}
-	removeddataSet  map[int]struct{}
-	cleareddataSet  bool
 	signers         map[int]struct{}
 	removedsigners  map[int]struct{}
 	clearedsigners  bool
@@ -351,58 +349,151 @@ func (m *AssetPriceMutation) ResetSignature() {
 	m.signature = nil
 }
 
-// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by ids.
-func (m *AssetPriceMutation) AddDataSetIDs(ids ...int) {
-	if m.dataSet == nil {
-		m.dataSet = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.dataSet[ids[i]] = struct{}{}
-	}
+// SetAsset sets the "asset" field.
+func (m *AssetPriceMutation) SetAsset(s string) {
+	m.asset = &s
 }
 
-// ClearDataSet clears the "dataSet" edge to the DataSet entity.
-func (m *AssetPriceMutation) ClearDataSet() {
-	m.cleareddataSet = true
-}
-
-// DataSetCleared reports if the "dataSet" edge to the DataSet entity was cleared.
-func (m *AssetPriceMutation) DataSetCleared() bool {
-	return m.cleareddataSet
-}
-
-// RemoveDataSetIDs removes the "dataSet" edge to the DataSet entity by IDs.
-func (m *AssetPriceMutation) RemoveDataSetIDs(ids ...int) {
-	if m.removeddataSet == nil {
-		m.removeddataSet = make(map[int]struct{})
+// Asset returns the value of the "asset" field in the mutation.
+func (m *AssetPriceMutation) Asset() (r string, exists bool) {
+	v := m.asset
+	if v == nil {
+		return
 	}
-	for i := range ids {
-		delete(m.dataSet, ids[i])
-		m.removeddataSet[ids[i]] = struct{}{}
-	}
+	return *v, true
 }
 
-// RemovedDataSet returns the removed IDs of the "dataSet" edge to the DataSet entity.
-func (m *AssetPriceMutation) RemovedDataSetIDs() (ids []int) {
-	for id := range m.removeddataSet {
-		ids = append(ids, id)
+// OldAsset returns the old "asset" field's value of the AssetPrice entity.
+// If the AssetPrice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AssetPriceMutation) OldAsset(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAsset is only allowed on UpdateOne operations")
 	}
-	return
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAsset requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAsset: %w", err)
+	}
+	return oldValue.Asset, nil
 }
 
-// DataSetIDs returns the "dataSet" edge IDs in the mutation.
-func (m *AssetPriceMutation) DataSetIDs() (ids []int) {
-	for id := range m.dataSet {
-		ids = append(ids, id)
-	}
-	return
+// ClearAsset clears the value of the "asset" field.
+func (m *AssetPriceMutation) ClearAsset() {
+	m.asset = nil
+	m.clearedFields[assetprice.FieldAsset] = struct{}{}
 }
 
-// ResetDataSet resets all changes to the "dataSet" edge.
-func (m *AssetPriceMutation) ResetDataSet() {
-	m.dataSet = nil
-	m.cleareddataSet = false
-	m.removeddataSet = nil
+// AssetCleared returns if the "asset" field was cleared in this mutation.
+func (m *AssetPriceMutation) AssetCleared() bool {
+	_, ok := m.clearedFields[assetprice.FieldAsset]
+	return ok
+}
+
+// ResetAsset resets all changes to the "asset" field.
+func (m *AssetPriceMutation) ResetAsset() {
+	m.asset = nil
+	delete(m.clearedFields, assetprice.FieldAsset)
+}
+
+// SetChain sets the "chain" field.
+func (m *AssetPriceMutation) SetChain(s string) {
+	m.chain = &s
+}
+
+// Chain returns the value of the "chain" field in the mutation.
+func (m *AssetPriceMutation) Chain() (r string, exists bool) {
+	v := m.chain
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChain returns the old "chain" field's value of the AssetPrice entity.
+// If the AssetPrice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AssetPriceMutation) OldChain(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChain is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChain requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChain: %w", err)
+	}
+	return oldValue.Chain, nil
+}
+
+// ClearChain clears the value of the "chain" field.
+func (m *AssetPriceMutation) ClearChain() {
+	m.chain = nil
+	m.clearedFields[assetprice.FieldChain] = struct{}{}
+}
+
+// ChainCleared returns if the "chain" field was cleared in this mutation.
+func (m *AssetPriceMutation) ChainCleared() bool {
+	_, ok := m.clearedFields[assetprice.FieldChain]
+	return ok
+}
+
+// ResetChain resets all changes to the "chain" field.
+func (m *AssetPriceMutation) ResetChain() {
+	m.chain = nil
+	delete(m.clearedFields, assetprice.FieldChain)
+}
+
+// SetPair sets the "pair" field.
+func (m *AssetPriceMutation) SetPair(s string) {
+	m.pair = &s
+}
+
+// Pair returns the value of the "pair" field in the mutation.
+func (m *AssetPriceMutation) Pair() (r string, exists bool) {
+	v := m.pair
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPair returns the old "pair" field's value of the AssetPrice entity.
+// If the AssetPrice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AssetPriceMutation) OldPair(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPair is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPair requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPair: %w", err)
+	}
+	return oldValue.Pair, nil
+}
+
+// ClearPair clears the value of the "pair" field.
+func (m *AssetPriceMutation) ClearPair() {
+	m.pair = nil
+	m.clearedFields[assetprice.FieldPair] = struct{}{}
+}
+
+// PairCleared returns if the "pair" field was cleared in this mutation.
+func (m *AssetPriceMutation) PairCleared() bool {
+	_, ok := m.clearedFields[assetprice.FieldPair]
+	return ok
+}
+
+// ResetPair resets all changes to the "pair" field.
+func (m *AssetPriceMutation) ResetPair() {
+	m.pair = nil
+	delete(m.clearedFields, assetprice.FieldPair)
 }
 
 // AddSignerIDs adds the "signers" edge to the Signer entity by ids.
@@ -493,7 +584,7 @@ func (m *AssetPriceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AssetPriceMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 7)
 	if m.block != nil {
 		fields = append(fields, assetprice.FieldBlock)
 	}
@@ -505,6 +596,15 @@ func (m *AssetPriceMutation) Fields() []string {
 	}
 	if m.signature != nil {
 		fields = append(fields, assetprice.FieldSignature)
+	}
+	if m.asset != nil {
+		fields = append(fields, assetprice.FieldAsset)
+	}
+	if m.chain != nil {
+		fields = append(fields, assetprice.FieldChain)
+	}
+	if m.pair != nil {
+		fields = append(fields, assetprice.FieldPair)
 	}
 	return fields
 }
@@ -522,6 +622,12 @@ func (m *AssetPriceMutation) Field(name string) (ent.Value, bool) {
 		return m.Price()
 	case assetprice.FieldSignature:
 		return m.Signature()
+	case assetprice.FieldAsset:
+		return m.Asset()
+	case assetprice.FieldChain:
+		return m.Chain()
+	case assetprice.FieldPair:
+		return m.Pair()
 	}
 	return nil, false
 }
@@ -539,6 +645,12 @@ func (m *AssetPriceMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldPrice(ctx)
 	case assetprice.FieldSignature:
 		return m.OldSignature(ctx)
+	case assetprice.FieldAsset:
+		return m.OldAsset(ctx)
+	case assetprice.FieldChain:
+		return m.OldChain(ctx)
+	case assetprice.FieldPair:
+		return m.OldPair(ctx)
 	}
 	return nil, fmt.Errorf("unknown AssetPrice field %s", name)
 }
@@ -575,6 +687,27 @@ func (m *AssetPriceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSignature(v)
+		return nil
+	case assetprice.FieldAsset:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAsset(v)
+		return nil
+	case assetprice.FieldChain:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChain(v)
+		return nil
+	case assetprice.FieldPair:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPair(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AssetPrice field %s", name)
@@ -636,6 +769,15 @@ func (m *AssetPriceMutation) ClearedFields() []string {
 	if m.FieldCleared(assetprice.FieldSignersCount) {
 		fields = append(fields, assetprice.FieldSignersCount)
 	}
+	if m.FieldCleared(assetprice.FieldAsset) {
+		fields = append(fields, assetprice.FieldAsset)
+	}
+	if m.FieldCleared(assetprice.FieldChain) {
+		fields = append(fields, assetprice.FieldChain)
+	}
+	if m.FieldCleared(assetprice.FieldPair) {
+		fields = append(fields, assetprice.FieldPair)
+	}
 	return fields
 }
 
@@ -652,6 +794,15 @@ func (m *AssetPriceMutation) ClearField(name string) error {
 	switch name {
 	case assetprice.FieldSignersCount:
 		m.ClearSignersCount()
+		return nil
+	case assetprice.FieldAsset:
+		m.ClearAsset()
+		return nil
+	case assetprice.FieldChain:
+		m.ClearChain()
+		return nil
+	case assetprice.FieldPair:
+		m.ClearPair()
 		return nil
 	}
 	return fmt.Errorf("unknown AssetPrice nullable field %s", name)
@@ -673,16 +824,22 @@ func (m *AssetPriceMutation) ResetField(name string) error {
 	case assetprice.FieldSignature:
 		m.ResetSignature()
 		return nil
+	case assetprice.FieldAsset:
+		m.ResetAsset()
+		return nil
+	case assetprice.FieldChain:
+		m.ResetChain()
+		return nil
+	case assetprice.FieldPair:
+		m.ResetPair()
+		return nil
 	}
 	return fmt.Errorf("unknown AssetPrice field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AssetPriceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.dataSet != nil {
-		edges = append(edges, assetprice.EdgeDataSet)
-	}
+	edges := make([]string, 0, 1)
 	if m.signers != nil {
 		edges = append(edges, assetprice.EdgeSigners)
 	}
@@ -693,12 +850,6 @@ func (m *AssetPriceMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *AssetPriceMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case assetprice.EdgeDataSet:
-		ids := make([]ent.Value, 0, len(m.dataSet))
-		for id := range m.dataSet {
-			ids = append(ids, id)
-		}
-		return ids
 	case assetprice.EdgeSigners:
 		ids := make([]ent.Value, 0, len(m.signers))
 		for id := range m.signers {
@@ -711,10 +862,7 @@ func (m *AssetPriceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AssetPriceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removeddataSet != nil {
-		edges = append(edges, assetprice.EdgeDataSet)
-	}
+	edges := make([]string, 0, 1)
 	if m.removedsigners != nil {
 		edges = append(edges, assetprice.EdgeSigners)
 	}
@@ -725,12 +873,6 @@ func (m *AssetPriceMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AssetPriceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case assetprice.EdgeDataSet:
-		ids := make([]ent.Value, 0, len(m.removeddataSet))
-		for id := range m.removeddataSet {
-			ids = append(ids, id)
-		}
-		return ids
 	case assetprice.EdgeSigners:
 		ids := make([]ent.Value, 0, len(m.removedsigners))
 		for id := range m.removedsigners {
@@ -743,10 +885,7 @@ func (m *AssetPriceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AssetPriceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleareddataSet {
-		edges = append(edges, assetprice.EdgeDataSet)
-	}
+	edges := make([]string, 0, 1)
 	if m.clearedsigners {
 		edges = append(edges, assetprice.EdgeSigners)
 	}
@@ -757,8 +896,6 @@ func (m *AssetPriceMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *AssetPriceMutation) EdgeCleared(name string) bool {
 	switch name {
-	case assetprice.EdgeDataSet:
-		return m.cleareddataSet
 	case assetprice.EdgeSigners:
 		return m.clearedsigners
 	}
@@ -777,433 +914,11 @@ func (m *AssetPriceMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AssetPriceMutation) ResetEdge(name string) error {
 	switch name {
-	case assetprice.EdgeDataSet:
-		m.ResetDataSet()
-		return nil
 	case assetprice.EdgeSigners:
 		m.ResetSigners()
 		return nil
 	}
 	return fmt.Errorf("unknown AssetPrice edge %s", name)
-}
-
-// DataSetMutation represents an operation that mutates the DataSet nodes in the graph.
-type DataSetMutation struct {
-	config
-	op                Op
-	typ               string
-	id                *int
-	name              *string
-	clearedFields     map[string]struct{}
-	assetPrice        map[int]struct{}
-	removedassetPrice map[int]struct{}
-	clearedassetPrice bool
-	done              bool
-	oldValue          func(context.Context) (*DataSet, error)
-	predicates        []predicate.DataSet
-}
-
-var _ ent.Mutation = (*DataSetMutation)(nil)
-
-// datasetOption allows management of the mutation configuration using functional options.
-type datasetOption func(*DataSetMutation)
-
-// newDataSetMutation creates new mutation for the DataSet entity.
-func newDataSetMutation(c config, op Op, opts ...datasetOption) *DataSetMutation {
-	m := &DataSetMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeDataSet,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withDataSetID sets the ID field of the mutation.
-func withDataSetID(id int) datasetOption {
-	return func(m *DataSetMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *DataSet
-		)
-		m.oldValue = func(ctx context.Context) (*DataSet, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().DataSet.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withDataSet sets the old DataSet of the mutation.
-func withDataSet(node *DataSet) datasetOption {
-	return func(m *DataSetMutation) {
-		m.oldValue = func(context.Context) (*DataSet, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m DataSetMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m DataSetMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *DataSetMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *DataSetMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().DataSet.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetName sets the "name" field.
-func (m *DataSetMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *DataSetMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the DataSet entity.
-// If the DataSet object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DataSetMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *DataSetMutation) ResetName() {
-	m.name = nil
-}
-
-// AddAssetPriceIDs adds the "assetPrice" edge to the AssetPrice entity by ids.
-func (m *DataSetMutation) AddAssetPriceIDs(ids ...int) {
-	if m.assetPrice == nil {
-		m.assetPrice = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.assetPrice[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAssetPrice clears the "assetPrice" edge to the AssetPrice entity.
-func (m *DataSetMutation) ClearAssetPrice() {
-	m.clearedassetPrice = true
-}
-
-// AssetPriceCleared reports if the "assetPrice" edge to the AssetPrice entity was cleared.
-func (m *DataSetMutation) AssetPriceCleared() bool {
-	return m.clearedassetPrice
-}
-
-// RemoveAssetPriceIDs removes the "assetPrice" edge to the AssetPrice entity by IDs.
-func (m *DataSetMutation) RemoveAssetPriceIDs(ids ...int) {
-	if m.removedassetPrice == nil {
-		m.removedassetPrice = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.assetPrice, ids[i])
-		m.removedassetPrice[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAssetPrice returns the removed IDs of the "assetPrice" edge to the AssetPrice entity.
-func (m *DataSetMutation) RemovedAssetPriceIDs() (ids []int) {
-	for id := range m.removedassetPrice {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AssetPriceIDs returns the "assetPrice" edge IDs in the mutation.
-func (m *DataSetMutation) AssetPriceIDs() (ids []int) {
-	for id := range m.assetPrice {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAssetPrice resets all changes to the "assetPrice" edge.
-func (m *DataSetMutation) ResetAssetPrice() {
-	m.assetPrice = nil
-	m.clearedassetPrice = false
-	m.removedassetPrice = nil
-}
-
-// Where appends a list predicates to the DataSetMutation builder.
-func (m *DataSetMutation) Where(ps ...predicate.DataSet) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the DataSetMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *DataSetMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.DataSet, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *DataSetMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *DataSetMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (DataSet).
-func (m *DataSetMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *DataSetMutation) Fields() []string {
-	fields := make([]string, 0, 1)
-	if m.name != nil {
-		fields = append(fields, dataset.FieldName)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *DataSetMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case dataset.FieldName:
-		return m.Name()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *DataSetMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case dataset.FieldName:
-		return m.OldName(ctx)
-	}
-	return nil, fmt.Errorf("unknown DataSet field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *DataSetMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case dataset.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	}
-	return fmt.Errorf("unknown DataSet field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *DataSetMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *DataSetMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *DataSetMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown DataSet numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *DataSetMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *DataSetMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *DataSetMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown DataSet nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *DataSetMutation) ResetField(name string) error {
-	switch name {
-	case dataset.FieldName:
-		m.ResetName()
-		return nil
-	}
-	return fmt.Errorf("unknown DataSet field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *DataSetMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.assetPrice != nil {
-		edges = append(edges, dataset.EdgeAssetPrice)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *DataSetMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case dataset.EdgeAssetPrice:
-		ids := make([]ent.Value, 0, len(m.assetPrice))
-		for id := range m.assetPrice {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *DataSetMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedassetPrice != nil {
-		edges = append(edges, dataset.EdgeAssetPrice)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *DataSetMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case dataset.EdgeAssetPrice:
-		ids := make([]ent.Value, 0, len(m.removedassetPrice))
-		for id := range m.removedassetPrice {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *DataSetMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedassetPrice {
-		edges = append(edges, dataset.EdgeAssetPrice)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *DataSetMutation) EdgeCleared(name string) bool {
-	switch name {
-	case dataset.EdgeAssetPrice:
-		return m.clearedassetPrice
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *DataSetMutation) ClearEdge(name string) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown DataSet unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *DataSetMutation) ResetEdge(name string) error {
-	switch name {
-	case dataset.EdgeAssetPrice:
-		m.ResetAssetPrice()
-		return nil
-	}
-	return fmt.Errorf("unknown DataSet edge %s", name)
 }
 
 // SignerMutation represents an operation that mutates the Signer nodes in the graph.
