@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/dataset"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -24,7 +23,6 @@ type AssetPriceQuery struct {
 	order       []assetprice.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.AssetPrice
-	withDataSet *DataSetQuery
 	withSigners *SignerQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -60,28 +58,6 @@ func (apq *AssetPriceQuery) Unique(unique bool) *AssetPriceQuery {
 func (apq *AssetPriceQuery) Order(o ...assetprice.OrderOption) *AssetPriceQuery {
 	apq.order = append(apq.order, o...)
 	return apq
-}
-
-// QueryDataSet chains the current query on the "dataSet" edge.
-func (apq *AssetPriceQuery) QueryDataSet() *DataSetQuery {
-	query := (&DataSetClient{config: apq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := apq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := apq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(assetprice.Table, assetprice.FieldID, selector),
-			sqlgraph.To(dataset.Table, dataset.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, assetprice.DataSetTable, assetprice.DataSetPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(apq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QuerySigners chains the current query on the "signers" edge.
@@ -298,23 +274,11 @@ func (apq *AssetPriceQuery) Clone() *AssetPriceQuery {
 		order:       append([]assetprice.OrderOption{}, apq.order...),
 		inters:      append([]Interceptor{}, apq.inters...),
 		predicates:  append([]predicate.AssetPrice{}, apq.predicates...),
-		withDataSet: apq.withDataSet.Clone(),
 		withSigners: apq.withSigners.Clone(),
 		// clone intermediate query.
 		sql:  apq.sql.Clone(),
 		path: apq.path,
 	}
-}
-
-// WithDataSet tells the query-builder to eager-load the nodes that are connected to
-// the "dataSet" edge. The optional arguments are used to configure the query builder of the edge.
-func (apq *AssetPriceQuery) WithDataSet(opts ...func(*DataSetQuery)) *AssetPriceQuery {
-	query := (&DataSetClient{config: apq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	apq.withDataSet = query
-	return apq
 }
 
 // WithSigners tells the query-builder to eager-load the nodes that are connected to
@@ -406,8 +370,7 @@ func (apq *AssetPriceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	var (
 		nodes       = []*AssetPrice{}
 		_spec       = apq.querySpec()
-		loadedTypes = [2]bool{
-			apq.withDataSet != nil,
+		loadedTypes = [1]bool{
 			apq.withSigners != nil,
 		}
 	)
@@ -429,13 +392,6 @@ func (apq *AssetPriceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := apq.withDataSet; query != nil {
-		if err := apq.loadDataSet(ctx, query, nodes,
-			func(n *AssetPrice) { n.Edges.DataSet = []*DataSet{} },
-			func(n *AssetPrice, e *DataSet) { n.Edges.DataSet = append(n.Edges.DataSet, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := apq.withSigners; query != nil {
 		if err := apq.loadSigners(ctx, query, nodes,
 			func(n *AssetPrice) { n.Edges.Signers = []*Signer{} },
@@ -446,67 +402,6 @@ func (apq *AssetPriceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	return nodes, nil
 }
 
-func (apq *AssetPriceQuery) loadDataSet(ctx context.Context, query *DataSetQuery, nodes []*AssetPrice, init func(*AssetPrice), assign func(*AssetPrice, *DataSet)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*AssetPrice)
-	nids := make(map[int]map[*AssetPrice]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(assetprice.DataSetTable)
-		s.Join(joinT).On(s.C(dataset.FieldID), joinT.C(assetprice.DataSetPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(assetprice.DataSetPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(assetprice.DataSetPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := int(values[0].(*sql.NullInt64).Int64)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*AssetPrice]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*DataSet](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "dataSet" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 func (apq *AssetPriceQuery) loadSigners(ctx context.Context, query *SignerQuery, nodes []*AssetPrice, init func(*AssetPrice), assign func(*AssetPrice, *Signer)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*AssetPrice)

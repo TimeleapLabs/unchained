@@ -16,7 +16,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/dataset"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
 
@@ -27,8 +26,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// AssetPrice is the client for interacting with the AssetPrice builders.
 	AssetPrice *AssetPriceClient
-	// DataSet is the client for interacting with the DataSet builders.
-	DataSet *DataSetClient
 	// Signer is the client for interacting with the Signer builders.
 	Signer *SignerClient
 }
@@ -43,7 +40,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AssetPrice = NewAssetPriceClient(c.config)
-	c.DataSet = NewDataSetClient(c.config)
 	c.Signer = NewSignerClient(c.config)
 }
 
@@ -138,7 +134,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:        ctx,
 		config:     cfg,
 		AssetPrice: NewAssetPriceClient(cfg),
-		DataSet:    NewDataSetClient(cfg),
 		Signer:     NewSignerClient(cfg),
 	}, nil
 }
@@ -160,7 +155,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:        ctx,
 		config:     cfg,
 		AssetPrice: NewAssetPriceClient(cfg),
-		DataSet:    NewDataSetClient(cfg),
 		Signer:     NewSignerClient(cfg),
 	}, nil
 }
@@ -191,7 +185,6 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.AssetPrice.Use(hooks...)
-	c.DataSet.Use(hooks...)
 	c.Signer.Use(hooks...)
 }
 
@@ -199,7 +192,6 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.AssetPrice.Intercept(interceptors...)
-	c.DataSet.Intercept(interceptors...)
 	c.Signer.Intercept(interceptors...)
 }
 
@@ -208,8 +200,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AssetPriceMutation:
 		return c.AssetPrice.mutate(ctx, m)
-	case *DataSetMutation:
-		return c.DataSet.mutate(ctx, m)
 	case *SignerMutation:
 		return c.Signer.mutate(ctx, m)
 	default:
@@ -325,22 +315,6 @@ func (c *AssetPriceClient) GetX(ctx context.Context, id int) *AssetPrice {
 	return obj
 }
 
-// QueryDataSet queries the dataSet edge of a AssetPrice.
-func (c *AssetPriceClient) QueryDataSet(ap *AssetPrice) *DataSetQuery {
-	query := (&DataSetClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ap.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(assetprice.Table, assetprice.FieldID, id),
-			sqlgraph.To(dataset.Table, dataset.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, assetprice.DataSetTable, assetprice.DataSetPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(ap.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QuerySigners queries the signers edge of a AssetPrice.
 func (c *AssetPriceClient) QuerySigners(ap *AssetPrice) *SignerQuery {
 	query := (&SignerClient{config: c.config}).Query()
@@ -379,155 +353,6 @@ func (c *AssetPriceClient) mutate(ctx context.Context, m *AssetPriceMutation) (V
 		return (&AssetPriceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AssetPrice mutation op: %q", m.Op())
-	}
-}
-
-// DataSetClient is a client for the DataSet schema.
-type DataSetClient struct {
-	config
-}
-
-// NewDataSetClient returns a client for the DataSet from the given config.
-func NewDataSetClient(c config) *DataSetClient {
-	return &DataSetClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `dataset.Hooks(f(g(h())))`.
-func (c *DataSetClient) Use(hooks ...Hook) {
-	c.hooks.DataSet = append(c.hooks.DataSet, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `dataset.Intercept(f(g(h())))`.
-func (c *DataSetClient) Intercept(interceptors ...Interceptor) {
-	c.inters.DataSet = append(c.inters.DataSet, interceptors...)
-}
-
-// Create returns a builder for creating a DataSet entity.
-func (c *DataSetClient) Create() *DataSetCreate {
-	mutation := newDataSetMutation(c.config, OpCreate)
-	return &DataSetCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of DataSet entities.
-func (c *DataSetClient) CreateBulk(builders ...*DataSetCreate) *DataSetCreateBulk {
-	return &DataSetCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *DataSetClient) MapCreateBulk(slice any, setFunc func(*DataSetCreate, int)) *DataSetCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &DataSetCreateBulk{err: fmt.Errorf("calling to DataSetClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*DataSetCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &DataSetCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for DataSet.
-func (c *DataSetClient) Update() *DataSetUpdate {
-	mutation := newDataSetMutation(c.config, OpUpdate)
-	return &DataSetUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *DataSetClient) UpdateOne(ds *DataSet) *DataSetUpdateOne {
-	mutation := newDataSetMutation(c.config, OpUpdateOne, withDataSet(ds))
-	return &DataSetUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *DataSetClient) UpdateOneID(id int) *DataSetUpdateOne {
-	mutation := newDataSetMutation(c.config, OpUpdateOne, withDataSetID(id))
-	return &DataSetUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for DataSet.
-func (c *DataSetClient) Delete() *DataSetDelete {
-	mutation := newDataSetMutation(c.config, OpDelete)
-	return &DataSetDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *DataSetClient) DeleteOne(ds *DataSet) *DataSetDeleteOne {
-	return c.DeleteOneID(ds.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *DataSetClient) DeleteOneID(id int) *DataSetDeleteOne {
-	builder := c.Delete().Where(dataset.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &DataSetDeleteOne{builder}
-}
-
-// Query returns a query builder for DataSet.
-func (c *DataSetClient) Query() *DataSetQuery {
-	return &DataSetQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeDataSet},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a DataSet entity by its id.
-func (c *DataSetClient) Get(ctx context.Context, id int) (*DataSet, error) {
-	return c.Query().Where(dataset.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *DataSetClient) GetX(ctx context.Context, id int) *DataSet {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryAssetPrice queries the assetPrice edge of a DataSet.
-func (c *DataSetClient) QueryAssetPrice(ds *DataSet) *AssetPriceQuery {
-	query := (&AssetPriceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ds.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dataset.Table, dataset.FieldID, id),
-			sqlgraph.To(assetprice.Table, assetprice.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, dataset.AssetPriceTable, dataset.AssetPricePrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(ds.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *DataSetClient) Hooks() []Hook {
-	return c.hooks.DataSet
-}
-
-// Interceptors returns the client interceptors.
-func (c *DataSetClient) Interceptors() []Interceptor {
-	return c.inters.DataSet
-}
-
-func (c *DataSetClient) mutate(ctx context.Context, m *DataSetMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&DataSetCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&DataSetUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&DataSetUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&DataSetDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown DataSet mutation op: %q", m.Op())
 	}
 }
 
@@ -683,9 +508,9 @@ func (c *SignerClient) mutate(ctx context.Context, m *SignerMutation) (Value, er
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AssetPrice, DataSet, Signer []ent.Hook
+		AssetPrice, Signer []ent.Hook
 	}
 	inters struct {
-		AssetPrice, DataSet, Signer []ent.Interceptor
+		AssetPrice, Signer []ent.Interceptor
 	}
 )

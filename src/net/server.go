@@ -174,7 +174,8 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 	message := []byte("signature.invalid")
 	if ok {
 		message = []byte("signature.accepted")
-		uniswap.RecordSignature(signature, signer, report.PriceInfo.Block)
+		// TODO: Only Ethereum is supported atm
+		uniswap.RecordSignature(signature, signer, report.PriceInfo)
 	}
 
 	err = conn.WriteMessage(messageType, append([]byte{2}, message...))

@@ -7,7 +7,6 @@ import (
 
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/dataset"
 	"github.com/KenshiTech/unchained/ent/schema"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -25,12 +24,6 @@ func init() {
 	assetpriceDescSignature := assetpriceFields[3].Descriptor()
 	// assetprice.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
 	assetprice.SignatureValidator = assetpriceDescSignature.Validators[0].(func([]byte) error)
-	datasetFields := schema.DataSet{}.Fields()
-	_ = datasetFields
-	// datasetDescName is the schema descriptor for name field.
-	datasetDescName := datasetFields[0].Descriptor()
-	// dataset.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	dataset.NameValidator = datasetDescName.Validators[0].(func(string) error)
 	signerFields := schema.Signer{}.Fields()
 	_ = signerFields
 	// signerDescName is the schema descriptor for name field.
