@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/dataset"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
 
@@ -56,19 +55,46 @@ func (apc *AssetPriceCreate) SetSignature(b []byte) *AssetPriceCreate {
 	return apc
 }
 
-// AddDataSetIDs adds the "dataSet" edge to the DataSet entity by IDs.
-func (apc *AssetPriceCreate) AddDataSetIDs(ids ...int) *AssetPriceCreate {
-	apc.mutation.AddDataSetIDs(ids...)
+// SetAsset sets the "asset" field.
+func (apc *AssetPriceCreate) SetAsset(s string) *AssetPriceCreate {
+	apc.mutation.SetAsset(s)
 	return apc
 }
 
-// AddDataSet adds the "dataSet" edges to the DataSet entity.
-func (apc *AssetPriceCreate) AddDataSet(d ...*DataSet) *AssetPriceCreate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// SetNillableAsset sets the "asset" field if the given value is not nil.
+func (apc *AssetPriceCreate) SetNillableAsset(s *string) *AssetPriceCreate {
+	if s != nil {
+		apc.SetAsset(*s)
 	}
-	return apc.AddDataSetIDs(ids...)
+	return apc
+}
+
+// SetChain sets the "chain" field.
+func (apc *AssetPriceCreate) SetChain(s string) *AssetPriceCreate {
+	apc.mutation.SetChain(s)
+	return apc
+}
+
+// SetNillableChain sets the "chain" field if the given value is not nil.
+func (apc *AssetPriceCreate) SetNillableChain(s *string) *AssetPriceCreate {
+	if s != nil {
+		apc.SetChain(*s)
+	}
+	return apc
+}
+
+// SetPair sets the "pair" field.
+func (apc *AssetPriceCreate) SetPair(s string) *AssetPriceCreate {
+	apc.mutation.SetPair(s)
+	return apc
+}
+
+// SetNillablePair sets the "pair" field if the given value is not nil.
+func (apc *AssetPriceCreate) SetNillablePair(s *string) *AssetPriceCreate {
+	if s != nil {
+		apc.SetPair(*s)
+	}
+	return apc
 }
 
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
@@ -134,9 +160,6 @@ func (apc *AssetPriceCreate) check() error {
 			return &ValidationError{Name: "signature", err: fmt.Errorf(`ent: validator failed for field "AssetPrice.signature": %w`, err)}
 		}
 	}
-	if len(apc.mutation.DataSetIDs()) == 0 {
-		return &ValidationError{Name: "dataSet", err: errors.New(`ent: missing required edge "AssetPrice.dataSet"`)}
-	}
 	if len(apc.mutation.SignersIDs()) == 0 {
 		return &ValidationError{Name: "signers", err: errors.New(`ent: missing required edge "AssetPrice.signers"`)}
 	}
@@ -190,21 +213,17 @@ func (apc *AssetPriceCreate) createSpec() (*AssetPrice, *sqlgraph.CreateSpec, er
 		_spec.SetField(assetprice.FieldSignature, field.TypeBytes, value)
 		_node.Signature = value
 	}
-	if nodes := apc.mutation.DataSetIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   assetprice.DataSetTable,
-			Columns: assetprice.DataSetPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dataset.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
+	if value, ok := apc.mutation.Asset(); ok {
+		_spec.SetField(assetprice.FieldAsset, field.TypeString, value)
+		_node.Asset = value
+	}
+	if value, ok := apc.mutation.Chain(); ok {
+		_spec.SetField(assetprice.FieldChain, field.TypeString, value)
+		_node.Chain = value
+	}
+	if value, ok := apc.mutation.Pair(); ok {
+		_spec.SetField(assetprice.FieldPair, field.TypeString, value)
+		_node.Pair = value
 	}
 	if nodes := apc.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -340,6 +359,60 @@ func (u *AssetPriceUpsert) UpdateSignature() *AssetPriceUpsert {
 	return u
 }
 
+// SetAsset sets the "asset" field.
+func (u *AssetPriceUpsert) SetAsset(v string) *AssetPriceUpsert {
+	u.Set(assetprice.FieldAsset, v)
+	return u
+}
+
+// UpdateAsset sets the "asset" field to the value that was provided on create.
+func (u *AssetPriceUpsert) UpdateAsset() *AssetPriceUpsert {
+	u.SetExcluded(assetprice.FieldAsset)
+	return u
+}
+
+// ClearAsset clears the value of the "asset" field.
+func (u *AssetPriceUpsert) ClearAsset() *AssetPriceUpsert {
+	u.SetNull(assetprice.FieldAsset)
+	return u
+}
+
+// SetChain sets the "chain" field.
+func (u *AssetPriceUpsert) SetChain(v string) *AssetPriceUpsert {
+	u.Set(assetprice.FieldChain, v)
+	return u
+}
+
+// UpdateChain sets the "chain" field to the value that was provided on create.
+func (u *AssetPriceUpsert) UpdateChain() *AssetPriceUpsert {
+	u.SetExcluded(assetprice.FieldChain)
+	return u
+}
+
+// ClearChain clears the value of the "chain" field.
+func (u *AssetPriceUpsert) ClearChain() *AssetPriceUpsert {
+	u.SetNull(assetprice.FieldChain)
+	return u
+}
+
+// SetPair sets the "pair" field.
+func (u *AssetPriceUpsert) SetPair(v string) *AssetPriceUpsert {
+	u.Set(assetprice.FieldPair, v)
+	return u
+}
+
+// UpdatePair sets the "pair" field to the value that was provided on create.
+func (u *AssetPriceUpsert) UpdatePair() *AssetPriceUpsert {
+	u.SetExcluded(assetprice.FieldPair)
+	return u
+}
+
+// ClearPair clears the value of the "pair" field.
+func (u *AssetPriceUpsert) ClearPair() *AssetPriceUpsert {
+	u.SetNull(assetprice.FieldPair)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -454,6 +527,69 @@ func (u *AssetPriceUpsertOne) SetSignature(v []byte) *AssetPriceUpsertOne {
 func (u *AssetPriceUpsertOne) UpdateSignature() *AssetPriceUpsertOne {
 	return u.Update(func(s *AssetPriceUpsert) {
 		s.UpdateSignature()
+	})
+}
+
+// SetAsset sets the "asset" field.
+func (u *AssetPriceUpsertOne) SetAsset(v string) *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetAsset(v)
+	})
+}
+
+// UpdateAsset sets the "asset" field to the value that was provided on create.
+func (u *AssetPriceUpsertOne) UpdateAsset() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateAsset()
+	})
+}
+
+// ClearAsset clears the value of the "asset" field.
+func (u *AssetPriceUpsertOne) ClearAsset() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.ClearAsset()
+	})
+}
+
+// SetChain sets the "chain" field.
+func (u *AssetPriceUpsertOne) SetChain(v string) *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetChain(v)
+	})
+}
+
+// UpdateChain sets the "chain" field to the value that was provided on create.
+func (u *AssetPriceUpsertOne) UpdateChain() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateChain()
+	})
+}
+
+// ClearChain clears the value of the "chain" field.
+func (u *AssetPriceUpsertOne) ClearChain() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.ClearChain()
+	})
+}
+
+// SetPair sets the "pair" field.
+func (u *AssetPriceUpsertOne) SetPair(v string) *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetPair(v)
+	})
+}
+
+// UpdatePair sets the "pair" field to the value that was provided on create.
+func (u *AssetPriceUpsertOne) UpdatePair() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdatePair()
+	})
+}
+
+// ClearPair clears the value of the "pair" field.
+func (u *AssetPriceUpsertOne) ClearPair() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.ClearPair()
 	})
 }
 
@@ -737,6 +873,69 @@ func (u *AssetPriceUpsertBulk) SetSignature(v []byte) *AssetPriceUpsertBulk {
 func (u *AssetPriceUpsertBulk) UpdateSignature() *AssetPriceUpsertBulk {
 	return u.Update(func(s *AssetPriceUpsert) {
 		s.UpdateSignature()
+	})
+}
+
+// SetAsset sets the "asset" field.
+func (u *AssetPriceUpsertBulk) SetAsset(v string) *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetAsset(v)
+	})
+}
+
+// UpdateAsset sets the "asset" field to the value that was provided on create.
+func (u *AssetPriceUpsertBulk) UpdateAsset() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateAsset()
+	})
+}
+
+// ClearAsset clears the value of the "asset" field.
+func (u *AssetPriceUpsertBulk) ClearAsset() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.ClearAsset()
+	})
+}
+
+// SetChain sets the "chain" field.
+func (u *AssetPriceUpsertBulk) SetChain(v string) *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetChain(v)
+	})
+}
+
+// UpdateChain sets the "chain" field to the value that was provided on create.
+func (u *AssetPriceUpsertBulk) UpdateChain() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateChain()
+	})
+}
+
+// ClearChain clears the value of the "chain" field.
+func (u *AssetPriceUpsertBulk) ClearChain() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.ClearChain()
+	})
+}
+
+// SetPair sets the "pair" field.
+func (u *AssetPriceUpsertBulk) SetPair(v string) *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetPair(v)
+	})
+}
+
+// UpdatePair sets the "pair" field to the value that was provided on create.
+func (u *AssetPriceUpsertBulk) UpdatePair() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdatePair()
+	})
+}
+
+// ClearPair clears the value of the "pair" field.
+func (u *AssetPriceUpsertBulk) ClearPair() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.ClearPair()
 	})
 }
 

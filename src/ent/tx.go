@@ -14,8 +14,6 @@ type Tx struct {
 	config
 	// AssetPrice is the client for interacting with the AssetPrice builders.
 	AssetPrice *AssetPriceClient
-	// DataSet is the client for interacting with the DataSet builders.
-	DataSet *DataSetClient
 	// Signer is the client for interacting with the Signer builders.
 	Signer *SignerClient
 
@@ -150,7 +148,6 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AssetPrice = NewAssetPriceClient(tx.config)
-	tx.DataSet = NewDataSetClient(tx.config)
 	tx.Signer = NewSignerClient(tx.config)
 }
 

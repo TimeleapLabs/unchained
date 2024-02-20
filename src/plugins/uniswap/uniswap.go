@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,19 +23,21 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
 	"github.com/vmihailenco/msgpack/v5"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
-var DebouncedSaveSignatures func(key uint64, arg uint64)
+var DebouncedSaveSignatures func(key AssetKey, arg datasets.PriceInfo)
 var signatureMutex *sync.Mutex
 
-var priceCache *lru.Cache[uint64, big.Int]
-var signatureCache *lru.Cache[uint64, []bls.Signature]
-var aggregateCache *lru.Cache[uint64, bls12381.G1Affine]
+var priceCache map[string]*lru.Cache[uint64, big.Int]
+var signatureCache *lru.Cache[AssetKey, []bls.Signature]
+var aggregateCache *lru.Cache[AssetKey, bls12381.G1Affine]
 
-var twoOneNinetyTwo big.Int
+var twoNinetySix big.Int
 var tenEighteen big.Int
 var tenEighteenF big.Float
 var lastBlock uint64
@@ -43,26 +46,61 @@ var lastPrice big.Int
 type Token struct {
 	Name   string `mapstructure:"name"`
 	Pair   string `mapstructure:"pair"`
+	Unit   string `mapstructure:"unit"`
+	Symbol string `mapstructure:"symbol"`
 	Delta  int64  `mapstructure:"delta"`
 	Invert bool   `mapstructure:"invert"`
 }
 
+type AssetKey struct {
+	Asset string
+	Pair  string
+	Chain string
+	Block uint64
+}
+
 // TODO: This needs to work with different datasets
-func RecordSignature(signature bls12381.G1Affine, signer bls.Signer, block uint64) {
+func RecordSignature(
+	signature bls12381.G1Affine,
+	signer bls.Signer,
+	info datasets.PriceInfo) {
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
+	lruCache := priceCache[strings.ToLower(info.Pair)]
+
+	if lruCache == nil {
+		return
+	}
+
 	// TODO: Needs optimization
-	if !priceCache.Contains(block) {
+	if !lruCache.Contains(info.Block) {
 
 		var tokens []Token
 		if err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens); err != nil {
 			panic(err)
 		}
 
-		eth := tokens[0]
-		blockNumber, _, err := GetPriceFromPair(eth.Pair, eth.Delta, eth.Invert)
+		var found Token
+
+		for _, token := range tokens {
+			if strings.EqualFold(token.Pair, info.Pair) &&
+				strings.EqualFold(token.Name, info.Asset) {
+				found = token
+				break
+			}
+		}
+
+		if len(found.Pair) == 0 {
+			return
+		}
+
+		blockNumber, _, err := GetPriceFromPair(
+			found.Pair,
+			found.Delta,
+			found.Invert,
+		)
 
 		if err != nil {
 			return
@@ -71,17 +109,24 @@ func RecordSignature(signature bls12381.G1Affine, signer bls.Signer, block uint6
 		lastBlock = *blockNumber
 	}
 
-	if lastBlock-block > 16 {
+	if lastBlock-info.Block > 16 {
 		return // Data too old
 	}
 
-	cached, ok := signatureCache.Get(block)
+	key := AssetKey{
+		Block: info.Block,
+		Asset: info.Asset,
+		Chain: info.Chain,
+		Pair:  info.Pair,
+	}
+
+	cached, ok := signatureCache.Get(key)
 	packed := bls.Signature{Signature: signature, Signer: signer, Processed: false}
 
 	if !ok {
-		signatureCache.Add(block, []bls.Signature{packed})
+		signatureCache.Add(key, []bls.Signature{packed})
 		// TODO: This looks ugly
-		DebouncedSaveSignatures(block, block)
+		DebouncedSaveSignatures(key, info)
 		return
 	}
 
@@ -92,39 +137,35 @@ func RecordSignature(signature bls12381.G1Affine, signer bls.Signer, block uint6
 	}
 
 	cached = append(cached, packed)
-	signatureCache.Add(block, cached)
+	signatureCache.Add(key, cached)
 
-	DebouncedSaveSignatures(block, block)
+	DebouncedSaveSignatures(key, info)
 }
 
-func SaveSignatures(block uint64) {
+func SaveSignatures(info datasets.PriceInfo) {
 
 	dbClient := db.GetClient()
-	price, ok := priceCache.Get(block)
+	lruCache := priceCache[strings.ToLower(info.Pair)]
+	price, ok := lruCache.Get(info.Block)
 
 	if !ok {
 		return
 	}
 
-	signatures, ok := signatureCache.Get(block)
+	key := AssetKey{
+		Block: info.Block,
+		Asset: info.Asset,
+		Chain: info.Chain,
+		Pair:  info.Pair,
+	}
+
+	signatures, ok := signatureCache.Get(key)
 
 	if !ok {
 		return
 	}
 
 	ctx := context.Background()
-
-	// TODO: Cache this
-	datasetId, err := dbClient.DataSet.
-		Create().
-		SetName("uniswap::ethereum::ethereum").
-		OnConflictColumns("name").
-		UpdateName().
-		ID(ctx)
-
-	if err != nil {
-		panic(err)
-	}
 
 	var newSigners []bls.Signer
 	var newSignatures []bls12381.G1Affine
@@ -139,7 +180,7 @@ func SaveSignatures(block uint64) {
 		}
 	}
 
-	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
+	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
 			SetKey(signer.PublicKey[:]).
@@ -168,7 +209,7 @@ func SaveSignatures(block uint64) {
 	}
 
 	var aggregate bls12381.G1Affine
-	currentAggregate, ok := aggregateCache.Get(block)
+	currentAggregate, ok := aggregateCache.Get(key)
 
 	if ok {
 		newSignatures = append(newSignatures, currentAggregate)
@@ -184,13 +225,15 @@ func SaveSignatures(block uint64) {
 
 	err = dbClient.AssetPrice.
 		Create().
-		SetBlock(block).
+		SetPair(info.Pair).
+		SetAsset(info.Asset).
+		SetChain(info.Chain).
+		SetBlock(info.Block).
 		SetPrice(&price).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
-		AddDataSetIDs(datasetId).
 		AddSignerIDs(signerIds...).
-		OnConflictColumns("block").
+		OnConflictColumns("block", "chain", "asset", "pair").
 		UpdateNewValues().
 		Exec(ctx)
 
@@ -202,32 +245,36 @@ func SaveSignatures(block uint64) {
 		signature.Processed = true
 	}
 
-	aggregateCache.Add(block, aggregate)
-
+	aggregateCache.Add(key, aggregate)
 }
 
-// TODO: Each pair should have its own LRU-Cache
-func GetPriceFromCache(block uint64) (big.Int, bool) {
-	return priceCache.Get(block)
+func GetPriceFromCache(block uint64, pair string) (big.Int, bool) {
+	lruCache := priceCache[strings.ToLower(pair)]
+	return lruCache.Get(block)
 }
 
-func GetPriceFromPair(pairAddr string, decimalDif int64, inverse bool) (*uint64, *big.Int, error) {
+func GetBlockNumber() (*uint64, error) {
 	blockNumber, err := ethereum.GetBlockNumber()
 
 	if err != nil {
 		ethereum.RefreshRPC()
-		return nil, nil, err
+		return nil, err
 	}
 
-	if blockNumber == lastBlock {
-		return &blockNumber, &lastPrice, nil
-	}
+	return &blockNumber, nil
+}
+
+func GetPriceAtBlockFromPair(
+	blockNumber uint64,
+	pairAddr string,
+	decimalDif int64,
+	inverse bool) (*big.Int, error) {
 
 	pair, err := ethereum.GetNewUniV3Contract(pairAddr, false)
 
 	if err != nil {
 		ethereum.RefreshRPC()
-		return nil, nil, err
+		return nil, err
 	}
 
 	data, err := pair.Slot0(
@@ -237,34 +284,76 @@ func GetPriceFromPair(pairAddr string, decimalDif int64, inverse bool) (*uint64,
 
 	if err != nil {
 		ethereum.RefreshRPC()
+		return nil, err
+	}
+
+	lastPrice = *priceFromSqrtX96(data.SqrtPriceX96, decimalDif, inverse)
+	lruCache := priceCache[strings.ToLower(pairAddr)]
+	lruCache.Add(blockNumber, lastPrice)
+
+	return &lastPrice, nil
+}
+
+func GetPriceFromPair(
+	pairAddr string,
+	decimalDif int64,
+	inverse bool) (*uint64, *big.Int, error) {
+
+	blockNumber, err := ethereum.GetBlockNumber()
+
+	if err != nil {
+		ethereum.RefreshRPC()
 		return nil, nil, err
 	}
 
-	lastPrice = *priceFromSqrtX96(data.SqrtPriceX96, 6, true)
-	priceCache.Add(blockNumber, lastPrice)
+	lastPrice, err := GetPriceAtBlockFromPair(
+		blockNumber,
+		pairAddr,
+		decimalDif,
+		inverse)
 
-	return &blockNumber, &lastPrice, nil
+	return &blockNumber, lastPrice, err
 }
 
 func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *big.Int {
-	var priceX96 big.Int
-	var raw big.Int
+	var decimalFix big.Int
+	var sqrtPrice big.Int
+	var rawPrice big.Int
 	var price big.Int
 	var factor big.Int
 
-	// const raw = (fetchedSqrtPriceX96**2 / 2**192) * 10**6;
-	priceX96.Exp(sqrtPriceX96, big.NewInt(2), nil)
-	raw.Div(&priceX96, &twoOneNinetyTwo)
+	decimalFix.Mul(sqrtPriceX96, &tenEighteen)
+	sqrtPrice.Div(&decimalFix, &twoNinetySix)
+	rawPrice.Exp(&sqrtPrice, big.NewInt(2), nil)
 
 	if inverse {
-		factor.Exp(big.NewInt(10), big.NewInt(36-decimalDif), nil)
-		price.Div(&factor, &raw)
+		factor.Exp(big.NewInt(10), big.NewInt(72-decimalDif), nil)
+		price.Div(&factor, &rawPrice)
 	} else {
 		// TODO: needs work
-		factor.Exp(big.NewInt(10), big.NewInt(decimalDif), nil)
-		price.Div(&raw, &factor)
+		factor.Exp(big.NewInt(10), big.NewInt(18-decimalDif), nil)
+		price.Div(&rawPrice, &factor)
 	}
+
 	return &price
+}
+
+func Setup() {
+	var tokens []Token
+
+	err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, token := range tokens {
+		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](24)
+
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func Start() {
@@ -280,7 +369,15 @@ func Start() {
 		panic(err)
 	}
 
-	eth := tokens[0]
+	caser := cases.Title(language.English, cases.NoLower)
+
+	for _, token := range tokens {
+		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](24)
+
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	_, err = scheduler.NewJob(
 		gocron.DurationJob(5*time.Second),
@@ -291,7 +388,7 @@ func Start() {
 					return
 				}
 
-				blockNumber, price, err := GetPriceFromPair(eth.Pair, eth.Delta, eth.Invert)
+				blockNumber, err := GetBlockNumber()
 
 				if err != nil {
 					return
@@ -303,41 +400,62 @@ func Start() {
 
 				lastBlock = *blockNumber
 
-				var priceF big.Float
-				priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
+				for _, token := range tokens {
 
-				priceStr := fmt.Sprintf("$%.18f", &priceF)
+					price, err := GetPriceAtBlockFromPair(
+						*blockNumber,
+						token.Pair,
+						token.Delta,
+						token.Invert,
+					)
 
-				log.Logger.
-					With("Block", *blockNumber).
-					With("Price", priceStr).
-					Info("Ethereum")
+					if err != nil {
+						return
+					}
 
-				priceInfo := datasets.PriceInfo{Price: *price, Block: *blockNumber}
-				toHash, err := msgpack.Marshal(&priceInfo)
+					var priceF big.Float
+					priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
 
-				if err != nil {
-					panic(err)
+					priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
+
+					log.Logger.
+						With("Block", *blockNumber).
+						With("Price", priceStr).
+						Info(caser.String(token.Name))
+
+					priceInfo := datasets.PriceInfo{
+						Price: *price,
+						Block: *blockNumber,
+						Chain: "ethereum",
+						Pair:  strings.ToLower(token.Pair),
+						Asset: strings.ToLower(token.Name),
+					}
+
+					toHash, err := msgpack.Marshal(&priceInfo)
+
+					if err != nil {
+						panic(err)
+					}
+
+					signature, _ := bls.Sign(*bls.ClientSecretKey, toHash)
+					compressedSignature := signature.Bytes()
+
+					priceReport := datasets.PriceReport{
+						PriceInfo: priceInfo,
+						Signature: compressedSignature,
+					}
+
+					payload, err := msgpack.Marshal(&priceReport)
+
+					if err != nil {
+						panic(err)
+					}
+
+					if !client.IsClientSocketClosed {
+						client.Client.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
+					}
+
 				}
-
-				signature, _ := bls.Sign(*bls.ClientSecretKey, toHash)
-				compressedSignature := signature.Bytes()
-
-				priceReport := datasets.PriceReport{
-					PriceInfo: priceInfo,
-					Signature: compressedSignature,
-				}
-
-				payload, err := msgpack.Marshal(&priceReport)
-
-				if err != nil {
-					panic(err)
-				}
-
-				if !client.IsClientSocketClosed {
-					client.Client.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
-				}
-
 			},
 		),
 	)
@@ -351,27 +469,24 @@ func Start() {
 
 func init() {
 
-	DebouncedSaveSignatures = utils.Debounce[uint64, uint64](5*time.Second, SaveSignatures)
+	DebouncedSaveSignatures = utils.Debounce[AssetKey, datasets.PriceInfo](5*time.Second, SaveSignatures)
 	signatureMutex = new(sync.Mutex)
 
-	twoOneNinetyTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
+	twoNinetySix.Exp(big.NewInt(2), big.NewInt(96), nil)
 	tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
 	tenEighteenF.SetInt(&tenEighteen)
 
+	// TODO: Should use AssetKey
+	priceCache = make(map[string]*lru.Cache[uint64, big.Int])
+
 	var err error
-	priceCache, err = lru.New[uint64, big.Int](24)
+	signatureCache, err = lru.New[AssetKey, []bls.Signature](24)
 
 	if err != nil {
 		panic(err)
 	}
 
-	signatureCache, err = lru.New[uint64, []bls.Signature](24)
-
-	if err != nil {
-		panic(err)
-	}
-
-	aggregateCache, err = lru.New[uint64, bls12381.G1Affine](24)
+	aggregateCache, err = lru.New[AssetKey, bls12381.G1Affine](24)
 
 	if err != nil {
 		panic(err)

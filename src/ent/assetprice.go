@@ -25,6 +25,12 @@ type AssetPrice struct {
 	Price *big.Int `json:"price,omitempty"`
 	// Signature holds the value of the "signature" field.
 	Signature []byte `json:"signature,omitempty"`
+	// Asset holds the value of the "asset" field.
+	Asset string `json:"asset,omitempty"`
+	// Chain holds the value of the "chain" field.
+	Chain string `json:"chain,omitempty"`
+	// Pair holds the value of the "pair" field.
+	Pair string `json:"pair,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AssetPriceQuery when eager-loading is set.
 	Edges        AssetPriceEdges `json:"edges"`
@@ -33,28 +39,17 @@ type AssetPrice struct {
 
 // AssetPriceEdges holds the relations/edges for other nodes in the graph.
 type AssetPriceEdges struct {
-	// DataSet holds the value of the dataSet edge.
-	DataSet []*DataSet `json:"dataSet,omitempty"`
 	// Signers holds the value of the signers edge.
 	Signers []*Signer `json:"signers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// DataSetOrErr returns the DataSet value or an error if the edge
-// was not loaded in eager-loading.
-func (e AssetPriceEdges) DataSetOrErr() ([]*DataSet, error) {
-	if e.loadedTypes[0] {
-		return e.DataSet, nil
-	}
-	return nil, &NotLoadedError{edge: "dataSet"}
+	loadedTypes [1]bool
 }
 
 // SignersOrErr returns the Signers value or an error if the edge
 // was not loaded in eager-loading.
 func (e AssetPriceEdges) SignersOrErr() ([]*Signer, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Signers, nil
 	}
 	return nil, &NotLoadedError{edge: "signers"}
@@ -69,6 +64,8 @@ func (*AssetPrice) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case assetprice.FieldID, assetprice.FieldBlock, assetprice.FieldSignersCount:
 			values[i] = new(sql.NullInt64)
+		case assetprice.FieldAsset, assetprice.FieldChain, assetprice.FieldPair:
+			values[i] = new(sql.NullString)
 		case assetprice.FieldPrice:
 			values[i] = assetprice.ValueScanner.Price.ScanValue()
 		default:
@@ -117,6 +114,24 @@ func (ap *AssetPrice) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				ap.Signature = *value
 			}
+		case assetprice.FieldAsset:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field asset", values[i])
+			} else if value.Valid {
+				ap.Asset = value.String
+			}
+		case assetprice.FieldChain:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field chain", values[i])
+			} else if value.Valid {
+				ap.Chain = value.String
+			}
+		case assetprice.FieldPair:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field pair", values[i])
+			} else if value.Valid {
+				ap.Pair = value.String
+			}
 		default:
 			ap.selectValues.Set(columns[i], values[i])
 		}
@@ -128,11 +143,6 @@ func (ap *AssetPrice) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (ap *AssetPrice) Value(name string) (ent.Value, error) {
 	return ap.selectValues.Get(name)
-}
-
-// QueryDataSet queries the "dataSet" edge of the AssetPrice entity.
-func (ap *AssetPrice) QueryDataSet() *DataSetQuery {
-	return NewAssetPriceClient(ap.config).QueryDataSet(ap)
 }
 
 // QuerySigners queries the "signers" edge of the AssetPrice entity.
@@ -176,6 +186,15 @@ func (ap *AssetPrice) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("signature=")
 	builder.WriteString(fmt.Sprintf("%v", ap.Signature))
+	builder.WriteString(", ")
+	builder.WriteString("asset=")
+	builder.WriteString(ap.Asset)
+	builder.WriteString(", ")
+	builder.WriteString("chain=")
+	builder.WriteString(ap.Chain)
+	builder.WriteString(", ")
+	builder.WriteString("pair=")
+	builder.WriteString(ap.Pair)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -23,17 +23,16 @@ const (
 	FieldPrice = "price"
 	// FieldSignature holds the string denoting the signature field in the database.
 	FieldSignature = "signature"
-	// EdgeDataSet holds the string denoting the dataset edge name in mutations.
-	EdgeDataSet = "dataSet"
+	// FieldAsset holds the string denoting the asset field in the database.
+	FieldAsset = "asset"
+	// FieldChain holds the string denoting the chain field in the database.
+	FieldChain = "chain"
+	// FieldPair holds the string denoting the pair field in the database.
+	FieldPair = "pair"
 	// EdgeSigners holds the string denoting the signers edge name in mutations.
 	EdgeSigners = "signers"
 	// Table holds the table name of the assetprice in the database.
 	Table = "asset_prices"
-	// DataSetTable is the table that holds the dataSet relation/edge. The primary key declared below.
-	DataSetTable = "asset_price_dataSet"
-	// DataSetInverseTable is the table name for the DataSet entity.
-	// It exists in this package in order to avoid circular dependency with the "dataset" package.
-	DataSetInverseTable = "data_sets"
 	// SignersTable is the table that holds the signers relation/edge. The primary key declared below.
 	SignersTable = "asset_price_signers"
 	// SignersInverseTable is the table name for the Signer entity.
@@ -48,12 +47,12 @@ var Columns = []string{
 	FieldSignersCount,
 	FieldPrice,
 	FieldSignature,
+	FieldAsset,
+	FieldChain,
+	FieldPair,
 }
 
 var (
-	// DataSetPrimaryKey and DataSetColumn2 are the table columns denoting the
-	// primary key for the dataSet relation (M2M).
-	DataSetPrimaryKey = []string{"asset_price_id", "data_set_id"}
 	// SignersPrimaryKey and SignersColumn2 are the table columns denoting the
 	// primary key for the signers relation (M2M).
 	SignersPrimaryKey = []string{"asset_price_id", "signer_id"}
@@ -101,18 +100,19 @@ func ByPrice(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPrice, opts...).ToFunc()
 }
 
-// ByDataSetCount orders the results by dataSet count.
-func ByDataSetCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newDataSetStep(), opts...)
-	}
+// ByAsset orders the results by the asset field.
+func ByAsset(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAsset, opts...).ToFunc()
 }
 
-// ByDataSet orders the results by dataSet terms.
-func ByDataSet(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newDataSetStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
+// ByChain orders the results by the chain field.
+func ByChain(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChain, opts...).ToFunc()
+}
+
+// ByPair orders the results by the pair field.
+func ByPair(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPair, opts...).ToFunc()
 }
 
 // BySignersCount orders the results by signers count.
@@ -127,13 +127,6 @@ func BySigners(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newSignersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
-}
-func newDataSetStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(DataSetInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, DataSetTable, DataSetPrimaryKey...),
-	)
 }
 func newSignersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
