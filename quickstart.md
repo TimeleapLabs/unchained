@@ -207,11 +207,25 @@ plugins:
         - https://eth.llamarpc.com
         - wss://ethereum.publicnode.com
         - https://eth.rpc.blxrbdn.com
+
     tokens:
       - name: ethereum
         pair: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
         delta: 6
         invert: true
+        unit: USDT
+
+      - name: arbitrum
+        pair: "0x59354356Ec5d56306791873f567d61EBf11dfbD5"
+        delta: 0
+        invert: false
+        unit: ETH
+
+      - name: bitcoin
+        pair: "0x9db9e0e53058c89e5b94e29621a205198648425b"
+        delta: 2
+        invert: false
+        unit: USDT
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make
@@ -222,25 +236,12 @@ the following modifications if required:
   messages.
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
-- `plugins.rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
+- `plugins.uniswap.rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
   issues are detected with the RPC connection. You can find a list of Ethereum
   RPC nodes on [Chainlist](https://chainlist.org/chain/1).
+- `plugins.uniswap.tokens`: UniSwap V3 pool information for fetching and indexing token prices.
 
 You can also use RPC nodes that start with `wss://` instead of `https://`.
-
-## Migrations / Database Initialization
-
-Note: Skip this step if you're running a worker node.
-
-Before running the Unchained client, you need to get your database schema ready
-for storing Unchained data. To do so, you should run:
-
-```bash
-unchained postgres migrate conf.yaml
-```
-
-You'll need to run this command again if you're installing a new version of the
-client that makes changes to the Unchained data structure.
 
 ## Starting an Unchained worker node
 
@@ -253,34 +254,6 @@ unchained.OS.ARCH worker
 ```
 
 **Note: if you are running the node for the first time, Unchained will generate a random secret key. This key will be saved to the `secrets.yaml` file. It is your responsibility to keep this file safe.**
-
-## Max Open Sockets
-
-Depending on your OS and OS configuration, you might run into issues if you have
-too many peers connected. Follow the guides below to increase the maximum open
-connections limit on your OS.
-
-### MacOS
-
-To increase the limit on MacOS, run these commands:
-
-```bash
-sudo sysctl kern.maxfiles=2000000 kern.maxfilesperproc=2000000
-echo "ulimit -Hn 2000000" >> ~/.zshrc
-echo "ulimit -Sn 2000000" >> ~/.zshrc
-source ~/.zshrc
-```
-
-### Linux
-
-To increase the limit on Linux, run these commands:
-
-```bash
-sudo sysctl -w fs.nr_open=33554432
-echo "ulimit -Hn 33554432" >> ~/.bashrc
-echo "ulimit -Sn 33554432" >> ~/.bashrc
-source ~/.bashrc
-```
 
 ## Help
 
