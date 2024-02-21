@@ -17,6 +17,7 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
+	"github.com/KenshiTech/unchained/net/consumer"
 	"github.com/KenshiTech/unchained/utils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -125,7 +126,8 @@ func RecordSignature(
 
 	if !ok {
 		signatureCache.Add(key, []bls.Signature{packed})
-		// TODO: This looks ugly
+		// TODO: This should not only write to DB,
+		// TODO: but also report to "consumers"
 		DebouncedSaveSignatures(key, info)
 		return
 	}
@@ -222,6 +224,19 @@ func SaveSignatures(info datasets.PriceInfo) {
 	}
 
 	signatureBytes := aggregate.Bytes()
+
+	packet := datasets.BroadcastPacket{
+		Info:      info,
+		Signers:   keys,
+		Signature: signatureBytes,
+	}
+
+	payload, err := msgpack.Marshal(&packet)
+
+	if err == nil {
+		// TODO: Handle errors in a proper way
+		consumer.Broadcast(append([]byte{7, 0}, payload...))
+	}
 
 	err = dbClient.AssetPrice.
 		Create().
@@ -415,7 +430,6 @@ func Start() {
 
 					var priceF big.Float
 					priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
-
 					priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
 
 					log.Logger.

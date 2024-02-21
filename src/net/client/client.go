@@ -24,7 +24,7 @@ func StartClient() {
 
 	brokerUrl := fmt.Sprintf(
 		"%s/%s",
-		config.Config.GetString("broker"),
+		config.Config.GetString("broker.uri"),
 		constants.ProtocolVersion,
 	)
 
@@ -63,7 +63,7 @@ func StartClient() {
 						Error("Read error")
 				} else {
 					log.Logger.
-						With("Error", payload[1:]).
+						With("Error", string(payload[1:])).
 						Error("Broker error")
 				}
 
@@ -118,6 +118,9 @@ func StartClient() {
 						With("Error", err).
 						Error("Write error")
 				}
+
+			case 7:
+				Consume(payload[1:])
 
 			default:
 				log.Logger.
