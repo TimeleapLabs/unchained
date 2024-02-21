@@ -18,6 +18,11 @@ var consumerCmd = &cobra.Command{
 	Use:   "consumer",
 	Short: "Run the Unchained client in consumer mode",
 	Long:  `Run the Unchained client in consumer mode`,
+
+	PreRun: func(cmd *cobra.Command, args []string) {
+		config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+	},
+
 	Run: func(cmd *cobra.Command, args []string) {
 
 		log.Logger.
@@ -52,7 +57,4 @@ func init() {
 		"wss://shinobi.brokers.kenshi.io",
 		"Unchained broker to connect to",
 	)
-
-	// TODO: this isn't working
-	config.Config.BindPFlag("broker.uri", consumerCmd.Flags().Lookup("broker"))
 }

@@ -21,6 +21,11 @@ var workerCmd = &cobra.Command{
 	Use:   "worker",
 	Short: "Run the Unchained client in worker mode",
 	Long:  `Run the Unchained client in worker mode`,
+
+	PreRun: func(cmd *cobra.Command, args []string) {
+		config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+	},
+
 	Run: func(cmd *cobra.Command, args []string) {
 
 		log.Logger.
@@ -58,6 +63,4 @@ func init() {
 		"wss://shinobi.brokers.kenshi.io",
 		"Unchained broker to connect to",
 	)
-
-	config.Config.BindPFlag("broker.uri", workerCmd.Flags().Lookup("broker"))
 }
