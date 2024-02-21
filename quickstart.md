@@ -199,15 +199,15 @@ config:
 log: info
 name: <name>
 
+rpc:
+  ethereum:
+    - https://ethereum.publicnode.com
+    - https://eth.llamarpc.com
+    - wss://ethereum.publicnode.com
+    - https://eth.rpc.blxrbdn.com
+
 plugins:
   uniswap:
-    rpc:
-      ethereum:
-        - https://ethereum.publicnode.com
-        - https://eth.llamarpc.com
-        - wss://ethereum.publicnode.com
-        - https://eth.rpc.blxrbdn.com
-
     tokens:
       - name: ethereum
         pair: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
@@ -236,7 +236,7 @@ the following modifications if required:
   messages.
 - `name`: This name will be associated with your validator node, and is published to
   all peers.
-- `plugins.uniswap.rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
+- `rpc.ethereum`: Unchained testnet has automatic RPC rotation and renewal when
   issues are detected with the RPC connection. You can find a list of Ethereum
   RPC nodes on [Chainlist](https://chainlist.org/chain/1).
 - `plugins.uniswap.tokens`: UniSwap V3 pool information for fetching and indexing token prices.

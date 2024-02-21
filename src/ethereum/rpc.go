@@ -14,10 +14,10 @@ import (
 
 var rpcList []string
 var rpcIndex int
-var client *ethclient.Client
+var Client *ethclient.Client
 
 func Start() {
-	rpcConfig := config.Config.Get("plugins.uniswap.rpc.ethereum")
+	rpcConfig := config.Config.Get("rpc.ethereum")
 	rpcIndex = 0
 
 	switch reflect.TypeOf(rpcConfig).Kind() {
@@ -48,7 +48,7 @@ func refreshRPCWithRetries(retries int) bool {
 
 	var err error
 
-	client, err = ethclient.Dial(rpcList[rpcIndex])
+	Client, err = ethclient.Dial(rpcList[rpcIndex])
 
 	if err != nil {
 		return refreshRPCWithRetries(retries - 1)
@@ -66,9 +66,9 @@ func GetNewUniV3Contract(address string, refresh bool) (*contracts.UniV3, error)
 		RefreshRPC()
 	}
 
-	return contracts.NewUniV3(common.HexToAddress(address), client)
+	return contracts.NewUniV3(common.HexToAddress(address), Client)
 }
 
 func GetBlockNumber() (uint64, error) {
-	return client.BlockNumber(context.Background())
+	return Client.BlockNumber(context.Background())
 }

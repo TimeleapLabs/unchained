@@ -8,9 +8,11 @@ import (
 	"net/http"
 
 	"github.com/KenshiTech/unchained/bls"
+	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/kosk"
+	"github.com/KenshiTech/unchained/net/repository"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/gorilla/websocket"
@@ -21,7 +23,6 @@ import (
 var challenges *xsync.MapOf[*websocket.Conn, kosk.Challenge]
 var signers *xsync.MapOf[*websocket.Conn, bls.Signer]
 var upgrader = websocket.Upgrader{} // use default options
-var addr = "0.0.0.0:9123"           // TODO: port should be passed as a cli option
 
 func processKosk(conn *websocket.Conn, messageType int, payload []byte) error {
 	var challenge kosk.Challenge
@@ -198,6 +199,7 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 	defer signers.Delete(conn)
 	defer challenges.Delete(conn)
+	defer repository.Consumers.Delete(conn)
 
 	for {
 		messageType, payload, err := conn.ReadMessage()
@@ -239,10 +241,14 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("write:", err)
 			}
 
+		case 6:
+			// TODO: Consumers must specify what they're subscribing to
+			repository.Consumers.Store(conn, true)
+
 		default:
 			err = conn.WriteMessage(
 				messageType,
-				append([]byte{2}, []byte("Instruction not supported")...),
+				append([]byte{5}, []byte("Instruction not supported")...),
 			)
 			if err != nil {
 				fmt.Println("write:", err)
@@ -256,6 +262,7 @@ func StartServer() {
 	log.SetFlags(0)
 	versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
 	http.HandleFunc(versionedRoot, handleAtRoot)
+	addr := config.Config.GetString("broker.bind")
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
