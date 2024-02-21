@@ -7,20 +7,17 @@ import (
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
-	"github.com/KenshiTech/unchained/plugins/logs"
-	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
 )
 
-// workerCmd represents the worker command
-var workerCmd = &cobra.Command{
-	Use:   "worker",
-	Short: "Run the Unchained client in worker mode",
-	Long:  `Run the Unchained client in worker mode`,
+// consumerCmd represents the consumer command
+var consumerCmd = &cobra.Command{
+	Use:   "consumer",
+	Short: "Run the Unchained client in consumer mode",
+	Long:  `Run the Unchained client in consumer mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
@@ -36,28 +33,25 @@ var workerCmd = &cobra.Command{
 		config.LoadConfig(configPath, secretsPath)
 		bls.InitClientIdentity()
 		client.StartClient()
-		ethereum.Start()
-		uniswap.Setup()
-		uniswap.Start()
-		logs.Start()
+		client.StartConsumer()
 		client.ClientBlock()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(workerCmd)
+	rootCmd.AddCommand(consumerCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// workerCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// consumerCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// workerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// consumerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	workerCmd.Flags().StringP(
+	consumerCmd.Flags().StringP(
 		"broker",
 		"b",
 		"wss://shinobi.brokers.kenshi.io",
