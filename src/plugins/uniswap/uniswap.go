@@ -391,6 +391,79 @@ func Setup() {
 	}
 }
 
+func syncBlocks(token Token, latest uint64) {
+	for block := lastBlock[token.Chain]; block < latest; block++ {
+
+		price, err := GetPriceAtBlockFromPair(
+			token.Chain,
+			block,
+			token.Pair,
+			token.Delta,
+			token.Invert,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+
+		for _, cross := range token.Cross {
+			stored := crossPrices[cross]
+
+			if stored.Cmp(big.NewInt(0)) == 0 {
+				return
+			}
+
+			price.Mul(price, &stored)
+			price.Div(price, &tenEighteen)
+		}
+
+		if token.Id != nil {
+			crossPrices[*token.Id] = *price
+		}
+
+		var priceF big.Float
+		priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
+		priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
+
+		log.Logger.
+			With("Block", block).
+			With("Price", priceStr).
+			Info(caser.String(token.Name))
+
+		priceInfo := datasets.PriceInfo{
+			Price: *price,
+			Block: block,
+			Chain: token.Chain,
+			Pair:  strings.ToLower(token.Pair),
+			Asset: strings.ToLower(token.Name),
+		}
+
+		toHash, err := msgpack.Marshal(&priceInfo)
+
+		if err != nil {
+			panic(err)
+		}
+
+		signature, _ := bls.Sign(*bls.ClientSecretKey, toHash)
+		compressedSignature := signature.Bytes()
+
+		priceReport := datasets.PriceReport{
+			PriceInfo: priceInfo,
+			Signature: compressedSignature,
+		}
+
+		payload, err := msgpack.Marshal(&priceReport)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if !client.IsClientSocketClosed {
+			client.Client.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
+		}
+	}
+}
+
 func createTask(tokens []Token, chain string) func() {
 
 	return func() {
@@ -413,82 +486,13 @@ func createTask(tokens []Token, chain string) func() {
 			lastBlock[chain] = *currBlockNumber - 1
 		}
 
-	TOKENLOOP:
 		for _, token := range tokens {
 
-			for blockNumber := lastBlock[chain]; blockNumber < *currBlockNumber; blockNumber++ {
-				if token.Chain != chain {
-					continue
-				}
-
-				price, err := GetPriceAtBlockFromPair(
-					token.Chain,
-					blockNumber,
-					token.Pair,
-					token.Delta,
-					token.Invert,
-				)
-
-				if err != nil {
-					panic(err)
-				}
-
-				for _, cross := range token.Cross {
-					stored := crossPrices[cross]
-
-					if stored.Cmp(big.NewInt(0)) == 0 {
-						continue TOKENLOOP
-					}
-
-					price.Mul(price, &stored)
-					price.Div(price, &tenEighteen)
-				}
-
-				if token.Id != nil {
-					crossPrices[*token.Id] = *price
-				}
-
-				var priceF big.Float
-				priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
-				priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
-
-				log.Logger.
-					With("Block", blockNumber).
-					With("Price", priceStr).
-					Info(caser.String(token.Name))
-
-				priceInfo := datasets.PriceInfo{
-					Price: *price,
-					Block: blockNumber,
-					Chain: token.Chain,
-					Pair:  strings.ToLower(token.Pair),
-					Asset: strings.ToLower(token.Name),
-				}
-
-				toHash, err := msgpack.Marshal(&priceInfo)
-
-				if err != nil {
-					panic(err)
-				}
-
-				signature, _ := bls.Sign(*bls.ClientSecretKey, toHash)
-				compressedSignature := signature.Bytes()
-
-				priceReport := datasets.PriceReport{
-					PriceInfo: priceInfo,
-					Signature: compressedSignature,
-				}
-
-				payload, err := msgpack.Marshal(&priceReport)
-
-				if err != nil {
-					panic(err)
-				}
-
-				if !client.IsClientSocketClosed {
-					client.Client.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
-				}
+			if token.Chain != chain {
+				continue
 			}
+
+			syncBlocks(token, *currBlockNumber)
 
 		}
 
