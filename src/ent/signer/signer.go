@@ -22,6 +22,8 @@ const (
 	FieldPoints = "points"
 	// EdgeAssetPrice holds the string denoting the assetprice edge name in mutations.
 	EdgeAssetPrice = "assetPrice"
+	// EdgeEventLogs holds the string denoting the eventlogs edge name in mutations.
+	EdgeEventLogs = "eventLogs"
 	// Table holds the table name of the signer in the database.
 	Table = "signers"
 	// AssetPriceTable is the table that holds the assetPrice relation/edge. The primary key declared below.
@@ -29,6 +31,11 @@ const (
 	// AssetPriceInverseTable is the table name for the AssetPrice entity.
 	// It exists in this package in order to avoid circular dependency with the "assetprice" package.
 	AssetPriceInverseTable = "asset_prices"
+	// EventLogsTable is the table that holds the eventLogs relation/edge. The primary key declared below.
+	EventLogsTable = "event_log_signers"
+	// EventLogsInverseTable is the table name for the EventLog entity.
+	// It exists in this package in order to avoid circular dependency with the "eventlog" package.
+	EventLogsInverseTable = "event_logs"
 )
 
 // Columns holds all SQL columns for signer fields.
@@ -44,6 +51,9 @@ var (
 	// AssetPricePrimaryKey and AssetPriceColumn2 are the table columns denoting the
 	// primary key for the assetPrice relation (M2M).
 	AssetPricePrimaryKey = []string{"asset_price_id", "signer_id"}
+	// EventLogsPrimaryKey and EventLogsColumn2 are the table columns denoting the
+	// primary key for the eventLogs relation (M2M).
+	EventLogsPrimaryKey = []string{"event_log_id", "signer_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -96,10 +106,31 @@ func ByAssetPrice(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAssetPriceStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByEventLogsCount orders the results by eventLogs count.
+func ByEventLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEventLogsStep(), opts...)
+	}
+}
+
+// ByEventLogs orders the results by eventLogs terms.
+func ByEventLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAssetPriceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AssetPriceInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, AssetPriceTable, AssetPricePrimaryKey...),
+	)
+}
+func newEventLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, EventLogsTable, EventLogsPrimaryKey...),
 	)
 }

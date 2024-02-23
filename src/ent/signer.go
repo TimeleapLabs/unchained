@@ -34,9 +34,11 @@ type Signer struct {
 type SignerEdges struct {
 	// AssetPrice holds the value of the assetPrice edge.
 	AssetPrice []*AssetPrice `json:"assetPrice,omitempty"`
+	// EventLogs holds the value of the eventLogs edge.
+	EventLogs []*EventLog `json:"eventLogs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // AssetPriceOrErr returns the AssetPrice value or an error if the edge
@@ -46,6 +48,15 @@ func (e SignerEdges) AssetPriceOrErr() ([]*AssetPrice, error) {
 		return e.AssetPrice, nil
 	}
 	return nil, &NotLoadedError{edge: "assetPrice"}
+}
+
+// EventLogsOrErr returns the EventLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e SignerEdges) EventLogsOrErr() ([]*EventLog, error) {
+	if e.loadedTypes[1] {
+		return e.EventLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "eventLogs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -120,6 +131,11 @@ func (s *Signer) Value(name string) (ent.Value, error) {
 // QueryAssetPrice queries the "assetPrice" edge of the Signer entity.
 func (s *Signer) QueryAssetPrice() *AssetPriceQuery {
 	return NewSignerClient(s.config).QueryAssetPrice(s)
+}
+
+// QueryEventLogs queries the "eventLogs" edge of the Signer entity.
+func (s *Signer) QueryEventLogs() *EventLogQuery {
+	return NewSignerClient(s.config).QueryEventLogs(s)
 }
 
 // Update returns a builder for updating this Signer.

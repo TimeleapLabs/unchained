@@ -20,5 +20,11 @@ func AssetPriceOrErr(p AssetPrice, err error) AssetPrice {
 	}
 }
 
+// EventLog is the predicate function for eventlog builders.
+type EventLog func(*sql.Selector)
+
+// EventLogArg is the predicate function for eventlogarg builders.
+type EventLogArg func(*sql.Selector)
+
 // Signer is the predicate function for signer builders.
 type Signer func(*sql.Selector)
