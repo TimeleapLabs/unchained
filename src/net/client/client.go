@@ -9,6 +9,7 @@ import (
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
 
@@ -92,12 +93,12 @@ func StartClient() {
 
 			switch payload[0] {
 			// TODO: Make a table of call codes
-			case 2:
+			case opcodes.Feedback:
 				log.Logger.
 					With("Feedback", string(payload[1:])).
 					Info("Broker")
 
-			case 4:
+			case opcodes.KoskChallenge:
 				// TODO: Refactor into a function
 				// TODO: Check for errors!
 				var challenge kosk.Challenge
@@ -110,7 +111,7 @@ func StartClient() {
 
 				Client.WriteMessage(
 					websocket.BinaryMessage,
-					append([]byte{3}, koskPayload...),
+					append([]byte{opcodes.KoskResult}, koskPayload...),
 				)
 
 				if err != nil {
@@ -119,7 +120,7 @@ func StartClient() {
 						Error("Write error")
 				}
 
-			case 7:
+			case opcodes.ConsumeBroadcast:
 				Consume(payload[1:])
 
 			default:
@@ -131,7 +132,9 @@ func StartClient() {
 		}
 	}()
 
-	Client.WriteMessage(websocket.BinaryMessage, append([]byte{0}, helloPayload...))
+	Client.WriteMessage(
+		websocket.BinaryMessage,
+		append([]byte{opcodes.Hello}, helloPayload...))
 }
 
 func ClientBlock() {

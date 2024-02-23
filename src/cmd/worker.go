@@ -10,6 +10,7 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
+	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
@@ -40,6 +41,7 @@ var workerCmd = &cobra.Command{
 		uniswap.Setup()
 		uniswap.Start()
 		logs.Start()
+		persistence.Start(contextPath)
 		client.ClientBlock()
 	},
 }

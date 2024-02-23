@@ -10,6 +10,7 @@ import (
 
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
@@ -252,7 +253,11 @@ func SaveSignatures(info datasets.PriceInfo) {
 
 	if err == nil {
 		// TODO: Handle errors in a proper way
-		consumer.Broadcast(append([]byte{7, 0}, payload...))
+		consumer.Broadcast(
+			append(
+				[]byte{opcodes.ConsumeBroadcast, 0},
+				payload...),
+		)
 	}
 
 	err = dbClient.AssetPrice.
@@ -414,6 +419,9 @@ func syncBlocks(token Token, latest uint64) {
 			}
 
 			price.Mul(price, &stored)
+		}
+
+		for range token.Cross {
 			price.Div(price, &tenEighteen)
 		}
 
@@ -459,7 +467,10 @@ func syncBlocks(token Token, latest uint64) {
 		}
 
 		if !client.IsClientSocketClosed {
-			client.Client.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
+			client.Client.WriteMessage(
+				websocket.BinaryMessage,
+				append([]byte{opcodes.PriceReport, 0}, payload...),
+			)
 		}
 	}
 }
