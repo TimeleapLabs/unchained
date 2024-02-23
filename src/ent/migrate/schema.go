@@ -32,6 +32,58 @@ var (
 			},
 		},
 	}
+	// EventLogsColumns holds the columns for the "event_logs" table.
+	EventLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "block", Type: field.TypeUint64},
+		{Name: "signers_count", Type: field.TypeUint64},
+		{Name: "signature", Type: field.TypeBytes, Size: 96},
+		{Name: "address", Type: field.TypeString},
+		{Name: "chain", Type: field.TypeString},
+		{Name: "index", Type: field.TypeString},
+		{Name: "event", Type: field.TypeString},
+		{Name: "transaction", Type: field.TypeString},
+	}
+	// EventLogsTable holds the schema information for the "event_logs" table.
+	EventLogsTable = &schema.Table{
+		Name:       "event_logs",
+		Columns:    EventLogsColumns,
+		PrimaryKey: []*schema.Column{EventLogsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "eventlog_transaction_index",
+				Unique:  true,
+				Columns: []*schema.Column{EventLogsColumns[8], EventLogsColumns[6]},
+			},
+			{
+				Name:    "eventlog_block_address_event",
+				Unique:  false,
+				Columns: []*schema.Column{EventLogsColumns[1], EventLogsColumns[4], EventLogsColumns[7]},
+			},
+		},
+	}
+	// EventLogArgsColumns holds the columns for the "event_log_args" table.
+	EventLogArgsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString},
+		{Name: "value", Type: field.TypeString},
+		{Name: "event_log_args", Type: field.TypeInt},
+	}
+	// EventLogArgsTable holds the schema information for the "event_log_args" table.
+	EventLogArgsTable = &schema.Table{
+		Name:       "event_log_args",
+		Columns:    EventLogArgsColumns,
+		PrimaryKey: []*schema.Column{EventLogArgsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "event_log_args_event_logs_args",
+				Columns:    []*schema.Column{EventLogArgsColumns[4]},
+				RefColumns: []*schema.Column{EventLogsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// SignersColumns holds the columns for the "signers" table.
 	SignersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -83,15 +135,46 @@ var (
 			},
 		},
 	}
+	// EventLogSignersColumns holds the columns for the "event_log_signers" table.
+	EventLogSignersColumns = []*schema.Column{
+		{Name: "event_log_id", Type: field.TypeInt},
+		{Name: "signer_id", Type: field.TypeInt},
+	}
+	// EventLogSignersTable holds the schema information for the "event_log_signers" table.
+	EventLogSignersTable = &schema.Table{
+		Name:       "event_log_signers",
+		Columns:    EventLogSignersColumns,
+		PrimaryKey: []*schema.Column{EventLogSignersColumns[0], EventLogSignersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "event_log_signers_event_log_id",
+				Columns:    []*schema.Column{EventLogSignersColumns[0]},
+				RefColumns: []*schema.Column{EventLogsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "event_log_signers_signer_id",
+				Columns:    []*schema.Column{EventLogSignersColumns[1]},
+				RefColumns: []*schema.Column{SignersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AssetPricesTable,
+		EventLogsTable,
+		EventLogArgsTable,
 		SignersTable,
 		AssetPriceSignersTable,
+		EventLogSignersTable,
 	}
 )
 
 func init() {
+	EventLogArgsTable.ForeignKeys[0].RefTable = EventLogsTable
 	AssetPriceSignersTable.ForeignKeys[0].RefTable = AssetPricesTable
 	AssetPriceSignersTable.ForeignKeys[1].RefTable = SignersTable
+	EventLogSignersTable.ForeignKeys[0].RefTable = EventLogsTable
+	EventLogSignersTable.ForeignKeys[1].RefTable = SignersTable
 }

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
 
@@ -59,6 +60,21 @@ func (sc *SignerCreate) AddAssetPrice(a ...*AssetPrice) *SignerCreate {
 		ids[i] = a[i].ID
 	}
 	return sc.AddAssetPriceIDs(ids...)
+}
+
+// AddEventLogIDs adds the "eventLogs" edge to the EventLog entity by IDs.
+func (sc *SignerCreate) AddEventLogIDs(ids ...int) *SignerCreate {
+	sc.mutation.AddEventLogIDs(ids...)
+	return sc
+}
+
+// AddEventLogs adds the "eventLogs" edges to the EventLog entity.
+func (sc *SignerCreate) AddEventLogs(e ...*EventLog) *SignerCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return sc.AddEventLogIDs(ids...)
 }
 
 // Mutation returns the SignerMutation object of the builder.
@@ -174,6 +190,22 @@ func (sc *SignerCreate) createSpec() (*Signer, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(assetprice.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.EventLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.EventLogsTable,
+			Columns: signer.EventLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
