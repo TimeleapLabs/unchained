@@ -2,7 +2,6 @@ package ethereum
 
 import (
 	"context"
-	"log"
 	"reflect"
 
 	"github.com/KenshiTech/unchained/config"
@@ -43,7 +42,7 @@ func Start() {
 
 func refreshRPCWithRetries(network string, retries int) bool {
 	if retries == 0 {
-		log.Fatal("Cannot connect to any of the provided RPCs")
+		panic("Cannot connect to any of the provided RPCs")
 	}
 
 	if rpcIndex[network] == len(rpcList[network])-1 {
