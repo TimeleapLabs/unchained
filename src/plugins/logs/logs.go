@@ -22,21 +22,22 @@ import (
 
 // var lastSynced map[string]uint64
 var abiMap map[string]abi.ABI
-var lastBlock uint64
+var lastBlock map[string]uint64
 
 type LogConf struct {
 	Name    string `mapstructure:"name"`
+	Chain   string `mapstructure:"chain"`
 	Abi     string `mapstructure:"abi"`
 	Event   string `mapstructure:"event"`
 	Address string `mapstructure:"address"`
 	From    uint64 `mapstructure:"from"`
 }
 
-func GetBlockNumber() (*uint64, error) {
-	blockNumber, err := ethereum.GetBlockNumber()
+func GetBlockNumber(network string) (*uint64, error) {
+	blockNumber, err := ethereum.GetBlockNumber(network)
 
 	if err != nil {
-		ethereum.RefreshRPC()
+		ethereum.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -87,29 +88,31 @@ func Start() {
 					return
 				}
 
-				blockNumber, err := GetBlockNumber()
-
-				if err != nil {
-					return
-				}
-
-				if lastBlock == *blockNumber {
-					return
-				}
-
-				lastBlock = *blockNumber
-
 				for _, conf := range configs {
+
+					blockNumber, err := GetBlockNumber(conf.Chain)
+
+					if err != nil {
+						return
+					}
+
+					if lastBlock[conf.Chain] == *blockNumber {
+						return
+					}
+
+					lastBlock[conf.Chain] = *blockNumber
 
 					contractAddress := common.HexToAddress(conf.Address)
 
 					query := goEthereum.FilterQuery{
-						FromBlock: big.NewInt(int64(lastBlock)),
-						ToBlock:   big.NewInt(int64(lastBlock)),
+						FromBlock: big.NewInt(int64(lastBlock[conf.Chain])),
+						ToBlock:   big.NewInt(int64(lastBlock[conf.Chain])),
 						Addresses: []common.Address{contractAddress},
 					}
 
-					logs, err := ethereum.Client.FilterLogs(context.Background(), query)
+					client := ethereum.Clients[conf.Chain]
+					logs, err := client.FilterLogs(context.Background(), query)
+
 					if err != nil {
 						panic(err)
 					}
@@ -160,7 +163,7 @@ func Start() {
 
 						message := log.Logger.
 							With("Event", conf.Event).
-							With("Block", lastBlock)
+							With("Block", lastBlock[conf.Chain])
 
 						sort.Strings(keys)
 						for _, key := range keys {
@@ -183,6 +186,6 @@ func Start() {
 }
 
 func init() {
-	//lastSynced = make(map[string]uint64)
 	abiMap = make(map[string]abi.ABI)
+	lastBlock = make(map[string]uint64)
 }

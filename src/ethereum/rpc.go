@@ -12,63 +12,76 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-var rpcList []string
-var rpcIndex int
-var Client *ethclient.Client
+var rpcList map[string][]string
+var rpcIndex map[string]int
+var Clients map[string]*ethclient.Client
 
 func Start() {
-	rpcConfig := config.Config.Get("rpc.ethereum")
-	rpcIndex = 0
+	rpcConf := config.Config.Sub("rpc")
+	networkNames := rpcConf.AllKeys()
 
-	switch reflect.TypeOf(rpcConfig).Kind() {
-	case reflect.String:
-		rpcList = append(rpcList, rpcConfig.(string))
+	for _, name := range networkNames {
 
-	case reflect.Slice:
-		for _, rpc := range rpcConfig.([]interface{}) {
-			rpcList = append(rpcList, rpc.(string))
+		conf := rpcConf.Get(name)
+		rpcIndex[name] = 0
+
+		switch reflect.TypeOf(conf).Kind() {
+		case reflect.String:
+			rpcList[name] = append(rpcList[name], conf.(string))
+
+		case reflect.Slice:
+			for _, rpc := range conf.([]interface{}) {
+				rpcList[name] = append(rpcList[name], rpc.(string))
+			}
+		default:
+			panic("RPC List Is Invalid")
 		}
-	default:
-		panic("RPC List Is Invalid")
-	}
 
-	RefreshRPC()
+		RefreshRPC(name)
+	}
 }
 
-func refreshRPCWithRetries(retries int) bool {
+func refreshRPCWithRetries(network string, retries int) bool {
 	if retries == 0 {
 		log.Fatal("Cannot connect to any of the provided RPCs")
 	}
 
-	if rpcIndex == len(rpcList)-1 {
-		rpcIndex = 0
+	if rpcIndex[network] == len(rpcList[network])-1 {
+		rpcIndex[network] = 0
 	} else {
-		rpcIndex++
+		rpcIndex[network]++
 	}
 
 	var err error
 
-	Client, err = ethclient.Dial(rpcList[rpcIndex])
+	index := rpcIndex[network]
+	Clients[network], err = ethclient.Dial(rpcList[network][index])
 
 	if err != nil {
-		return refreshRPCWithRetries(retries - 1)
+		return refreshRPCWithRetries(network, retries-1)
 	}
 
 	return true
 }
 
-func RefreshRPC() {
-	refreshRPCWithRetries(len(rpcList))
+func RefreshRPC(network string) {
+	refreshRPCWithRetries(network, len(rpcList))
 }
 
-func GetNewUniV3Contract(address string, refresh bool) (*contracts.UniV3, error) {
+func GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
 	if refresh {
-		RefreshRPC()
+		RefreshRPC(network)
 	}
 
-	return contracts.NewUniV3(common.HexToAddress(address), Client)
+	return contracts.NewUniV3(common.HexToAddress(address), Clients[network])
 }
 
-func GetBlockNumber() (uint64, error) {
-	return Client.BlockNumber(context.Background())
+func GetBlockNumber(network string) (uint64, error) {
+	return Clients[network].BlockNumber(context.Background())
+}
+
+func init() {
+	rpcList = make(map[string][]string)
+	rpcIndex = make(map[string]int)
+	Clients = make(map[string]*ethclient.Client)
 }
