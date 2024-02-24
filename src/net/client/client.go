@@ -125,7 +125,10 @@ func StartClient() {
 				}
 
 			case opcodes.PriceReportBroadcast:
-				Consume(payload[1:])
+				ConsumePriceReport(payload[1:])
+
+			case opcodes.EventLogBroadcast:
+				ConsumeEventLog(payload[1:])
 
 			default:
 				log.Logger.
@@ -141,11 +144,17 @@ func StartClient() {
 		append([]byte{opcodes.Hello}, helloPayload...))
 }
 
+func closeConnection() {
+	if config.Config.InConfig("broker.uri") {
+		Client.Close()
+	}
+}
+
 func ClientBlock() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	defer Client.Close()
+	defer closeConnection()
 
 	for {
 		select {
@@ -153,13 +162,15 @@ func ClientBlock() {
 			return
 		case <-interrupt:
 
-			err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if config.Config.InConfig("broker.uri") {
+				err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 
-			if err != nil {
-				log.Logger.
-					With("Error", err).
-					Error("Connection closed")
-				return
+				if err != nil {
+					log.Logger.
+						With("Error", err).
+						Error("Connection closed")
+					return
+				}
 			}
 
 			select {
