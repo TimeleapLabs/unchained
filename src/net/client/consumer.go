@@ -8,7 +8,7 @@ import (
 )
 
 func Consume(message []byte) {
-	var packet datasets.BroadcastPacket
+	var packet datasets.BroadcastPricePacket
 	err := msgpack.Unmarshal(message[1:], &packet)
 	if err != nil {
 		panic(err)

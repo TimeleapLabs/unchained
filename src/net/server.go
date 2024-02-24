@@ -14,6 +14,7 @@ import (
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/net/repository"
+	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/gorilla/websocket"
@@ -185,8 +186,7 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 	return nil
 }
 
-func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) error {
-
+func checkPublicKey(conn *websocket.Conn, messageType int) (*bls.Signer, error) {
 	challenge, ok := challenges.Load(conn)
 
 	if !ok || !challenge.Passed {
@@ -196,7 +196,7 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 				[]byte{opcodes.Feedback},
 				[]byte("kosk.missing")...),
 		)
-		return errors.New("kosk.missing")
+		return nil, errors.New("kosk.missing")
 	}
 
 	signer, ok := signers.Load(conn)
@@ -208,11 +208,23 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 				[]byte{opcodes.Feedback},
 				[]byte("hello.missing")...),
 		)
-		return errors.New("hello.missing")
+		return nil, errors.New("hello.missing")
+	}
+
+	return &signer, nil
+}
+
+// TODO: Can we use any part of this?
+func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) error {
+
+	signer, err := checkPublicKey(conn, messageType)
+
+	if err != nil {
+		return err
 	}
 
 	var report datasets.PriceReport
-	err := msgpack.Unmarshal(payload, &report)
+	err = msgpack.Unmarshal(payload, &report)
 
 	if err != nil {
 		return nil
@@ -242,13 +254,76 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 		return nil
 	}
 
-	ok, _ = bls.Verify(signature, hash, pk)
+	ok, _ := bls.Verify(signature, hash, pk)
 
 	message := []byte("signature.invalid")
 	if ok {
 		message = []byte("signature.accepted")
 		// TODO: Only Ethereum is supported atm
-		uniswap.RecordSignature(signature, signer, hash, report.PriceInfo)
+		uniswap.RecordSignature(signature, *signer, hash, report.PriceInfo, true)
+	}
+
+	err = conn.WriteMessage(
+		messageType,
+		append(
+			[]byte{opcodes.Feedback},
+			message...),
+	)
+
+	if err != nil {
+		fmt.Println("write:", err)
+		return err
+	}
+
+	return nil
+}
+
+func processEventLog(conn *websocket.Conn, messageType int, payload []byte) error {
+
+	signer, err := checkPublicKey(conn, messageType)
+
+	if err != nil {
+		return err
+	}
+
+	var logReport datasets.EventLogReport
+	err = msgpack.Unmarshal(payload, &logReport)
+
+	if err != nil {
+		return nil
+	}
+
+	toHash, err := msgpack.Marshal(&logReport.EventLog)
+
+	if err != nil {
+		return nil
+	}
+
+	hash, err := bls.Hash(toHash)
+
+	if err != nil {
+		return nil
+	}
+
+	signature, err := bls.RecoverSignature(logReport.Signature)
+
+	if err != nil {
+		return nil
+	}
+
+	pk, err := bls.RecoverPublicKey(signer.PublicKey)
+
+	if err != nil {
+		return nil
+	}
+
+	ok, _ := bls.Verify(signature, hash, pk)
+
+	message := []byte("signature.invalid")
+	if ok {
+		message = []byte("signature.accepted")
+		// TODO: Only Ethereum is supported atm
+		logs.RecordSignature(signature, *signer, hash, logReport.EventLog, true)
 	}
 
 	err = conn.WriteMessage(
@@ -296,9 +371,27 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case opcodes.PriceReport:
-
+			// TODO: Maybe this is unnecessary
 			if payload[1] == 0 {
 				err := processPriceReport(conn, messageType, payload[2:])
+
+				if err != nil {
+					fmt.Println("write:", err)
+				}
+
+			} else {
+				conn.WriteMessage(
+					messageType,
+					append(
+						[]byte{opcodes.Feedback},
+						[]byte("Dataset not supported")...),
+				)
+			}
+
+		case opcodes.EventLog:
+			// TODO: Maybe this is unnecessary
+			if payload[1] == 0 {
+				err := processEventLog(conn, messageType, payload[2:])
 
 				if err != nil {
 					fmt.Println("write:", err)

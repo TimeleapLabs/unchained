@@ -15,6 +15,7 @@ import (
 var ClientSecretKey *big.Int
 var ClientPublicKey *bls12381.G2Affine
 var ClientShortPublicKey *bls12381.G1Affine
+var ClientSigner Signer
 
 func InitClientIdentity() {
 	var err error
@@ -51,6 +52,12 @@ func InitClientIdentity() {
 
 	ClientShortPublicKey = GetShortPublicKey(ClientSecretKey)
 	addrStr := address.Calculate(pkBytes[:])
+
+	ClientSigner = Signer{
+		Name:           config.Config.GetString("name"),
+		PublicKey:      ClientPublicKey.Bytes(),
+		ShortPublicKey: ClientShortPublicKey.Bytes(),
+	}
 
 	log.Logger.
 		With("Address", addrStr).

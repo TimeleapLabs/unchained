@@ -40,7 +40,6 @@ func (AssetPrice) Edges() []ent.Edge {
 // Edges of the DataSet.
 func (AssetPrice) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("hash").Unique(),
-		index.Fields("block", "chain", "asset", "pair"),
+		index.Fields("block", "chain", "asset", "pair").Unique(),
 	}
 }

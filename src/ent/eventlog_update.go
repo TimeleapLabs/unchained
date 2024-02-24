@@ -9,9 +9,10 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/eventlogarg"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -106,16 +107,23 @@ func (elu *EventLogUpdate) SetNillableChain(s *string) *EventLogUpdate {
 }
 
 // SetIndex sets the "index" field.
-func (elu *EventLogUpdate) SetIndex(s string) *EventLogUpdate {
-	elu.mutation.SetIndex(s)
+func (elu *EventLogUpdate) SetIndex(u uint64) *EventLogUpdate {
+	elu.mutation.ResetIndex()
+	elu.mutation.SetIndex(u)
 	return elu
 }
 
 // SetNillableIndex sets the "index" field if the given value is not nil.
-func (elu *EventLogUpdate) SetNillableIndex(s *string) *EventLogUpdate {
-	if s != nil {
-		elu.SetIndex(*s)
+func (elu *EventLogUpdate) SetNillableIndex(u *uint64) *EventLogUpdate {
+	if u != nil {
+		elu.SetIndex(*u)
 	}
+	return elu
+}
+
+// AddIndex adds u to the "index" field.
+func (elu *EventLogUpdate) AddIndex(u int64) *EventLogUpdate {
+	elu.mutation.AddIndex(u)
 	return elu
 }
 
@@ -134,16 +142,20 @@ func (elu *EventLogUpdate) SetNillableEvent(s *string) *EventLogUpdate {
 }
 
 // SetTransaction sets the "transaction" field.
-func (elu *EventLogUpdate) SetTransaction(s string) *EventLogUpdate {
-	elu.mutation.SetTransaction(s)
+func (elu *EventLogUpdate) SetTransaction(b []byte) *EventLogUpdate {
+	elu.mutation.SetTransaction(b)
 	return elu
 }
 
-// SetNillableTransaction sets the "transaction" field if the given value is not nil.
-func (elu *EventLogUpdate) SetNillableTransaction(s *string) *EventLogUpdate {
-	if s != nil {
-		elu.SetTransaction(*s)
-	}
+// SetArgs sets the "args" field.
+func (elu *EventLogUpdate) SetArgs(dla []datasets.EventLogArg) *EventLogUpdate {
+	elu.mutation.SetArgs(dla)
+	return elu
+}
+
+// AppendArgs appends dla to the "args" field.
+func (elu *EventLogUpdate) AppendArgs(dla []datasets.EventLogArg) *EventLogUpdate {
+	elu.mutation.AppendArgs(dla)
 	return elu
 }
 
@@ -160,21 +172,6 @@ func (elu *EventLogUpdate) AddSigners(s ...*Signer) *EventLogUpdate {
 		ids[i] = s[i].ID
 	}
 	return elu.AddSignerIDs(ids...)
-}
-
-// AddArgIDs adds the "args" edge to the EventLogArg entity by IDs.
-func (elu *EventLogUpdate) AddArgIDs(ids ...int) *EventLogUpdate {
-	elu.mutation.AddArgIDs(ids...)
-	return elu
-}
-
-// AddArgs adds the "args" edges to the EventLogArg entity.
-func (elu *EventLogUpdate) AddArgs(e ...*EventLogArg) *EventLogUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return elu.AddArgIDs(ids...)
 }
 
 // Mutation returns the EventLogMutation object of the builder.
@@ -201,27 +198,6 @@ func (elu *EventLogUpdate) RemoveSigners(s ...*Signer) *EventLogUpdate {
 		ids[i] = s[i].ID
 	}
 	return elu.RemoveSignerIDs(ids...)
-}
-
-// ClearArgs clears all "args" edges to the EventLogArg entity.
-func (elu *EventLogUpdate) ClearArgs() *EventLogUpdate {
-	elu.mutation.ClearArgs()
-	return elu
-}
-
-// RemoveArgIDs removes the "args" edge to EventLogArg entities by IDs.
-func (elu *EventLogUpdate) RemoveArgIDs(ids ...int) *EventLogUpdate {
-	elu.mutation.RemoveArgIDs(ids...)
-	return elu
-}
-
-// RemoveArgs removes "args" edges to EventLogArg entities.
-func (elu *EventLogUpdate) RemoveArgs(e ...*EventLogArg) *EventLogUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return elu.RemoveArgIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -256,6 +232,11 @@ func (elu *EventLogUpdate) check() error {
 	if v, ok := elu.mutation.Signature(); ok {
 		if err := eventlog.SignatureValidator(v); err != nil {
 			return &ValidationError{Name: "signature", err: fmt.Errorf(`ent: validator failed for field "EventLog.signature": %w`, err)}
+		}
+	}
+	if v, ok := elu.mutation.Transaction(); ok {
+		if err := eventlog.TransactionValidator(v); err != nil {
+			return &ValidationError{Name: "transaction", err: fmt.Errorf(`ent: validator failed for field "EventLog.transaction": %w`, err)}
 		}
 	}
 	return nil
@@ -295,13 +276,24 @@ func (elu *EventLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(eventlog.FieldChain, field.TypeString, value)
 	}
 	if value, ok := elu.mutation.Index(); ok {
-		_spec.SetField(eventlog.FieldIndex, field.TypeString, value)
+		_spec.SetField(eventlog.FieldIndex, field.TypeUint64, value)
+	}
+	if value, ok := elu.mutation.AddedIndex(); ok {
+		_spec.AddField(eventlog.FieldIndex, field.TypeUint64, value)
 	}
 	if value, ok := elu.mutation.Event(); ok {
 		_spec.SetField(eventlog.FieldEvent, field.TypeString, value)
 	}
 	if value, ok := elu.mutation.Transaction(); ok {
-		_spec.SetField(eventlog.FieldTransaction, field.TypeString, value)
+		_spec.SetField(eventlog.FieldTransaction, field.TypeBytes, value)
+	}
+	if value, ok := elu.mutation.Args(); ok {
+		_spec.SetField(eventlog.FieldArgs, field.TypeJSON, value)
+	}
+	if value, ok := elu.mutation.AppendedArgs(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, eventlog.FieldArgs, value)
+		})
 	}
 	if elu.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -341,51 +333,6 @@ func (elu *EventLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if elu.mutation.ArgsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   eventlog.ArgsTable,
-			Columns: []string{eventlog.ArgsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(eventlogarg.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := elu.mutation.RemovedArgsIDs(); len(nodes) > 0 && !elu.mutation.ArgsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   eventlog.ArgsTable,
-			Columns: []string{eventlog.ArgsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(eventlogarg.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := elu.mutation.ArgsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   eventlog.ArgsTable,
-			Columns: []string{eventlog.ArgsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(eventlogarg.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -490,16 +437,23 @@ func (eluo *EventLogUpdateOne) SetNillableChain(s *string) *EventLogUpdateOne {
 }
 
 // SetIndex sets the "index" field.
-func (eluo *EventLogUpdateOne) SetIndex(s string) *EventLogUpdateOne {
-	eluo.mutation.SetIndex(s)
+func (eluo *EventLogUpdateOne) SetIndex(u uint64) *EventLogUpdateOne {
+	eluo.mutation.ResetIndex()
+	eluo.mutation.SetIndex(u)
 	return eluo
 }
 
 // SetNillableIndex sets the "index" field if the given value is not nil.
-func (eluo *EventLogUpdateOne) SetNillableIndex(s *string) *EventLogUpdateOne {
-	if s != nil {
-		eluo.SetIndex(*s)
+func (eluo *EventLogUpdateOne) SetNillableIndex(u *uint64) *EventLogUpdateOne {
+	if u != nil {
+		eluo.SetIndex(*u)
 	}
+	return eluo
+}
+
+// AddIndex adds u to the "index" field.
+func (eluo *EventLogUpdateOne) AddIndex(u int64) *EventLogUpdateOne {
+	eluo.mutation.AddIndex(u)
 	return eluo
 }
 
@@ -518,16 +472,20 @@ func (eluo *EventLogUpdateOne) SetNillableEvent(s *string) *EventLogUpdateOne {
 }
 
 // SetTransaction sets the "transaction" field.
-func (eluo *EventLogUpdateOne) SetTransaction(s string) *EventLogUpdateOne {
-	eluo.mutation.SetTransaction(s)
+func (eluo *EventLogUpdateOne) SetTransaction(b []byte) *EventLogUpdateOne {
+	eluo.mutation.SetTransaction(b)
 	return eluo
 }
 
-// SetNillableTransaction sets the "transaction" field if the given value is not nil.
-func (eluo *EventLogUpdateOne) SetNillableTransaction(s *string) *EventLogUpdateOne {
-	if s != nil {
-		eluo.SetTransaction(*s)
-	}
+// SetArgs sets the "args" field.
+func (eluo *EventLogUpdateOne) SetArgs(dla []datasets.EventLogArg) *EventLogUpdateOne {
+	eluo.mutation.SetArgs(dla)
+	return eluo
+}
+
+// AppendArgs appends dla to the "args" field.
+func (eluo *EventLogUpdateOne) AppendArgs(dla []datasets.EventLogArg) *EventLogUpdateOne {
+	eluo.mutation.AppendArgs(dla)
 	return eluo
 }
 
@@ -544,21 +502,6 @@ func (eluo *EventLogUpdateOne) AddSigners(s ...*Signer) *EventLogUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return eluo.AddSignerIDs(ids...)
-}
-
-// AddArgIDs adds the "args" edge to the EventLogArg entity by IDs.
-func (eluo *EventLogUpdateOne) AddArgIDs(ids ...int) *EventLogUpdateOne {
-	eluo.mutation.AddArgIDs(ids...)
-	return eluo
-}
-
-// AddArgs adds the "args" edges to the EventLogArg entity.
-func (eluo *EventLogUpdateOne) AddArgs(e ...*EventLogArg) *EventLogUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return eluo.AddArgIDs(ids...)
 }
 
 // Mutation returns the EventLogMutation object of the builder.
@@ -585,27 +528,6 @@ func (eluo *EventLogUpdateOne) RemoveSigners(s ...*Signer) *EventLogUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return eluo.RemoveSignerIDs(ids...)
-}
-
-// ClearArgs clears all "args" edges to the EventLogArg entity.
-func (eluo *EventLogUpdateOne) ClearArgs() *EventLogUpdateOne {
-	eluo.mutation.ClearArgs()
-	return eluo
-}
-
-// RemoveArgIDs removes the "args" edge to EventLogArg entities by IDs.
-func (eluo *EventLogUpdateOne) RemoveArgIDs(ids ...int) *EventLogUpdateOne {
-	eluo.mutation.RemoveArgIDs(ids...)
-	return eluo
-}
-
-// RemoveArgs removes "args" edges to EventLogArg entities.
-func (eluo *EventLogUpdateOne) RemoveArgs(e ...*EventLogArg) *EventLogUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return eluo.RemoveArgIDs(ids...)
 }
 
 // Where appends a list predicates to the EventLogUpdate builder.
@@ -653,6 +575,11 @@ func (eluo *EventLogUpdateOne) check() error {
 	if v, ok := eluo.mutation.Signature(); ok {
 		if err := eventlog.SignatureValidator(v); err != nil {
 			return &ValidationError{Name: "signature", err: fmt.Errorf(`ent: validator failed for field "EventLog.signature": %w`, err)}
+		}
+	}
+	if v, ok := eluo.mutation.Transaction(); ok {
+		if err := eventlog.TransactionValidator(v); err != nil {
+			return &ValidationError{Name: "transaction", err: fmt.Errorf(`ent: validator failed for field "EventLog.transaction": %w`, err)}
 		}
 	}
 	return nil
@@ -709,13 +636,24 @@ func (eluo *EventLogUpdateOne) sqlSave(ctx context.Context) (_node *EventLog, er
 		_spec.SetField(eventlog.FieldChain, field.TypeString, value)
 	}
 	if value, ok := eluo.mutation.Index(); ok {
-		_spec.SetField(eventlog.FieldIndex, field.TypeString, value)
+		_spec.SetField(eventlog.FieldIndex, field.TypeUint64, value)
+	}
+	if value, ok := eluo.mutation.AddedIndex(); ok {
+		_spec.AddField(eventlog.FieldIndex, field.TypeUint64, value)
 	}
 	if value, ok := eluo.mutation.Event(); ok {
 		_spec.SetField(eventlog.FieldEvent, field.TypeString, value)
 	}
 	if value, ok := eluo.mutation.Transaction(); ok {
-		_spec.SetField(eventlog.FieldTransaction, field.TypeString, value)
+		_spec.SetField(eventlog.FieldTransaction, field.TypeBytes, value)
+	}
+	if value, ok := eluo.mutation.Args(); ok {
+		_spec.SetField(eventlog.FieldArgs, field.TypeJSON, value)
+	}
+	if value, ok := eluo.mutation.AppendedArgs(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, eventlog.FieldArgs, value)
+		})
 	}
 	if eluo.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -755,51 +693,6 @@ func (eluo *EventLogUpdateOne) sqlSave(ctx context.Context) (_node *EventLog, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if eluo.mutation.ArgsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   eventlog.ArgsTable,
-			Columns: []string{eventlog.ArgsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(eventlogarg.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eluo.mutation.RemovedArgsIDs(); len(nodes) > 0 && !eluo.mutation.ArgsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   eventlog.ArgsTable,
-			Columns: []string{eventlog.ArgsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(eventlogarg.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eluo.mutation.ArgsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   eventlog.ArgsTable,
-			Columns: []string{eventlog.ArgsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(eventlogarg.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

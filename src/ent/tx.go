@@ -16,8 +16,6 @@ type Tx struct {
 	AssetPrice *AssetPriceClient
 	// EventLog is the client for interacting with the EventLog builders.
 	EventLog *EventLogClient
-	// EventLogArg is the client for interacting with the EventLogArg builders.
-	EventLogArg *EventLogArgClient
 	// Signer is the client for interacting with the Signer builders.
 	Signer *SignerClient
 
@@ -153,7 +151,6 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.AssetPrice = NewAssetPriceClient(tx.config)
 	tx.EventLog = NewEventLogClient(tx.config)
-	tx.EventLogArg = NewEventLogArgClient(tx.config)
 	tx.Signer = NewSignerClient(tx.config)
 }
 

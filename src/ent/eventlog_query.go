@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/eventlogarg"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -25,7 +24,6 @@ type EventLogQuery struct {
 	inters      []Interceptor
 	predicates  []predicate.EventLog
 	withSigners *SignerQuery
-	withArgs    *EventLogArgQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,28 +75,6 @@ func (elq *EventLogQuery) QuerySigners() *SignerQuery {
 			sqlgraph.From(eventlog.Table, eventlog.FieldID, selector),
 			sqlgraph.To(signer.Table, signer.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, eventlog.SignersTable, eventlog.SignersPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(elq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryArgs chains the current query on the "args" edge.
-func (elq *EventLogQuery) QueryArgs() *EventLogArgQuery {
-	query := (&EventLogArgClient{config: elq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := elq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := elq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(eventlog.Table, eventlog.FieldID, selector),
-			sqlgraph.To(eventlogarg.Table, eventlogarg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, eventlog.ArgsTable, eventlog.ArgsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(elq.driver.Dialect(), step)
 		return fromU, nil
@@ -299,7 +275,6 @@ func (elq *EventLogQuery) Clone() *EventLogQuery {
 		inters:      append([]Interceptor{}, elq.inters...),
 		predicates:  append([]predicate.EventLog{}, elq.predicates...),
 		withSigners: elq.withSigners.Clone(),
-		withArgs:    elq.withArgs.Clone(),
 		// clone intermediate query.
 		sql:  elq.sql.Clone(),
 		path: elq.path,
@@ -314,17 +289,6 @@ func (elq *EventLogQuery) WithSigners(opts ...func(*SignerQuery)) *EventLogQuery
 		opt(query)
 	}
 	elq.withSigners = query
-	return elq
-}
-
-// WithArgs tells the query-builder to eager-load the nodes that are connected to
-// the "args" edge. The optional arguments are used to configure the query builder of the edge.
-func (elq *EventLogQuery) WithArgs(opts ...func(*EventLogArgQuery)) *EventLogQuery {
-	query := (&EventLogArgClient{config: elq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	elq.withArgs = query
 	return elq
 }
 
@@ -406,9 +370,8 @@ func (elq *EventLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ev
 	var (
 		nodes       = []*EventLog{}
 		_spec       = elq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			elq.withSigners != nil,
-			elq.withArgs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -433,13 +396,6 @@ func (elq *EventLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ev
 		if err := elq.loadSigners(ctx, query, nodes,
 			func(n *EventLog) { n.Edges.Signers = []*Signer{} },
 			func(n *EventLog, e *Signer) { n.Edges.Signers = append(n.Edges.Signers, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := elq.withArgs; query != nil {
-		if err := elq.loadArgs(ctx, query, nodes,
-			func(n *EventLog) { n.Edges.Args = []*EventLogArg{} },
-			func(n *EventLog, e *EventLogArg) { n.Edges.Args = append(n.Edges.Args, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -504,37 +460,6 @@ func (elq *EventLogQuery) loadSigners(ctx context.Context, query *SignerQuery, n
 		for kn := range nodes {
 			assign(kn, n)
 		}
-	}
-	return nil
-}
-func (elq *EventLogQuery) loadArgs(ctx context.Context, query *EventLogArgQuery, nodes []*EventLog, init func(*EventLog), assign func(*EventLog, *EventLogArg)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*EventLog)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.EventLogArg(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(eventlog.ArgsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.event_log_args
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "event_log_args" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "event_log_args" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

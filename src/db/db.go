@@ -14,6 +14,10 @@ var dbClient *ent.Client
 
 func Start() {
 
+	if !config.Config.InConfig("database.url") {
+		return
+	}
+
 	var err error
 
 	dbUrl := config.Config.GetString("database.url")

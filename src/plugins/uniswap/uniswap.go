@@ -70,15 +70,19 @@ type Token struct {
 	Symbol string   `mapstructure:"symbol"`
 	Delta  int64    `mapstructure:"delta"`
 	Invert bool     `mapstructure:"invert"`
+	Store  bool     `mapstructure:"store"`
+	Send   bool     `mapstructure:"send"`
 	Cross  []string `mapstructure:"cross"`
 }
 
 // TODO: This needs to work with different datasets
+// TODO: Can we turn this into a library func?
 func RecordSignature(
 	signature bls12381.G1Affine,
 	signer bls.Signer,
 	hash bls12381.G1Affine,
-	info datasets.PriceInfo) {
+	info datasets.PriceInfo,
+	debounce bool) {
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
@@ -136,9 +140,11 @@ func RecordSignature(
 		// TODO: This should not only write to DB,
 		// TODO: but also report to "consumers"
 		if isMajority {
-			DebouncedSaveSignatures(
-				hash,
-				SaveSignatureArgs{Hash: hash, Info: info})
+			if debounce {
+				DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+			} else {
+				SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+			}
 		}
 		return
 	}
@@ -153,7 +159,11 @@ func RecordSignature(
 	signatureCache.Add(hash, cached)
 
 	if isMajority {
-		DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+		if debounce {
+			DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+		} else {
+			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+		}
 	}
 }
 
@@ -229,7 +239,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	signatureBytes := aggregate.Bytes()
 
-	packet := datasets.BroadcastPacket{
+	packet := datasets.BroadcastPricePacket{
 		Info:      args.Info,
 		Signers:   keys,
 		Signature: signatureBytes,
@@ -241,7 +251,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 		// TODO: Handle errors in a proper way
 		consumer.Broadcast(
 			append(
-				[]byte{opcodes.ConsumeBroadcast, 0},
+				[]byte{opcodes.PriceReportBroadcast, 0},
 				payload...),
 		)
 	}
@@ -445,7 +455,7 @@ func syncBlocks(token Token, latest uint64) {
 			panic(err)
 		}
 
-		signature, _ := bls.Sign(*bls.ClientSecretKey, toHash)
+		signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
 		compressedSignature := signature.Bytes()
 
 		priceReport := datasets.PriceReport{
@@ -459,11 +469,15 @@ func syncBlocks(token Token, latest uint64) {
 			panic(err)
 		}
 
-		if !client.IsClientSocketClosed {
+		if token.Send && !client.IsClientSocketClosed {
 			client.Client.WriteMessage(
 				websocket.BinaryMessage,
 				append([]byte{opcodes.PriceReport, 0}, payload...),
 			)
+		}
+
+		if token.Store {
+			RecordSignature(signature, bls.ClientSigner, hash, priceInfo, false)
 		}
 	}
 }
@@ -471,10 +485,6 @@ func syncBlocks(token Token, latest uint64) {
 func createTask(tokens []Token, chain string) func() {
 
 	return func() {
-
-		if client.IsClientSocketClosed {
-			return
-		}
 
 		currBlockNumber, err := GetBlockNumber(chain)
 
@@ -582,7 +592,5 @@ func init() {
 
 	lastBlock = make(map[string]uint64)
 	crossPrices = make(map[string]big.Int)
-
 	caser = cases.Title(language.English, cases.NoLower)
-
 }

@@ -23,6 +23,10 @@ var Done chan struct{}
 
 func StartClient() {
 
+	if !config.Config.InConfig("broker.uri") {
+		return
+	}
+
 	brokerUrl := fmt.Sprintf(
 		"%s/%s",
 		config.Config.GetString("broker.uri"),
@@ -56,7 +60,7 @@ func StartClient() {
 		for {
 			_, payload, err := Client.ReadMessage()
 
-			if err != nil || payload[0] == 5 {
+			if err != nil || payload[0] == opcodes.Error {
 
 				if err != nil {
 					log.Logger.
@@ -120,7 +124,7 @@ func StartClient() {
 						Error("Write error")
 				}
 
-			case opcodes.ConsumeBroadcast:
+			case opcodes.PriceReportBroadcast:
 				Consume(payload[1:])
 
 			default:
