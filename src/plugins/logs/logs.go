@@ -99,7 +99,8 @@ func RecordSignature(
 	signer bls.Signer,
 	hash bls12381.G1Affine,
 	info datasets.EventLog,
-	debounce bool) {
+	debounce bool,
+	historical bool) {
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
@@ -114,16 +115,19 @@ func RecordSignature(
 		return
 	}
 
-	blockNumber, err := GetBlockNumber(info.Chain)
+	if !historical {
 
-	if err != nil {
-		panic(err)
-	}
+		blockNumber, err := GetBlockNumber(info.Chain)
 
-	// TODO: this won't work for Arbitrum
-	// TODO: we disallow syncing historical events here
-	if *blockNumber-info.Block > 16 {
-		return // Data too old
+		if err != nil {
+			panic(err)
+		}
+
+		// TODO: this won't work for Arbitrum
+		// TODO: we disallow syncing historical events here
+		if *blockNumber-info.Block > 16 {
+			return // Data too old
+		}
 	}
 
 	key := EventKey{
@@ -464,7 +468,14 @@ func createTask(configs []LogConf, chain string) func() {
 				}
 
 				if conf.Store {
-					RecordSignature(signature, bls.ClientSigner, hash, event, false)
+					RecordSignature(
+						signature,
+						bls.ClientSigner,
+						hash,
+						event,
+						false,
+						true,
+					)
 				}
 			}
 
