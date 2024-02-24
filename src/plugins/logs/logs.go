@@ -182,6 +182,10 @@ func createTask(configs []LogConf, chain string) func() {
 
 func Start() {
 
+	if !config.Config.InConfig("plugins.logs") {
+		return
+	}
+
 	scheduler, err := gocron.NewScheduler()
 
 	if err != nil {

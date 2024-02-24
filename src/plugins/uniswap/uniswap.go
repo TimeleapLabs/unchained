@@ -32,12 +32,20 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
-var DebouncedSaveSignatures func(key AssetKey, arg datasets.PriceInfo)
+var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 
+type AssetKey struct {
+	Asset string
+	Pair  string
+	Chain string
+	Block uint64
+}
+
 var priceCache map[string]*lru.Cache[uint64, big.Int]
-var signatureCache *lru.Cache[AssetKey, []bls.Signature]
-var aggregateCache *lru.Cache[AssetKey, bls12381.G1Affine]
+var consensus *lru.Cache[AssetKey, map[bls12381.G1Affine]uint64]
+var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
+var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 
 var twoOneNineTwo big.Int
 var tenEighteen big.Int
@@ -59,94 +67,71 @@ type Token struct {
 	Cross  []string `mapstructure:"cross"`
 }
 
-type AssetKey struct {
-	Asset string
-	Pair  string
-	Chain string
-	Block uint64
-}
-
 // TODO: This needs to work with different datasets
 func RecordSignature(
 	signature bls12381.G1Affine,
 	signer bls.Signer,
+	hash bls12381.G1Affine,
 	info datasets.PriceInfo) {
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
-	// TODO: This needs to take `chain` into account
-	lruCache := priceCache[strings.ToLower(info.Pair)]
-
-	if lruCache == nil {
+	if ethereum.Clients[info.Chain] == nil {
 		return
 	}
 
-	// TODO: Needs optimization
-	if !lruCache.Contains(info.Block) {
+	blockNumber, err := GetBlockNumber(info.Chain)
 
-		var tokens []Token
-		if err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens); err != nil {
-			panic(err)
-		}
-
-		var found Token
-
-		for _, token := range tokens {
-			if strings.EqualFold(token.Pair, info.Pair) &&
-				strings.EqualFold(token.Name, info.Asset) {
-				found = token
-				break
-			}
-		}
-
-		if len(found.Pair) == 0 {
-			return
-		}
-
-		blockNumber, _, err := GetPriceFromPair(
-			info.Chain,
-			found.Pair,
-			found.Delta,
-			found.Invert,
-		)
-
-		if err != nil {
-			return
-		}
-
-		lastBlock[info.Chain] = *blockNumber
+	if err != nil {
+		panic(err)
 	}
 
-	if lastBlock[info.Chain]-info.Block > 16 {
+	// TODO: this won't work for Arbitrum
+	if *blockNumber-info.Block > 16 {
 		return // Data too old
 	}
 
 	key := AssetKey{
-		Block: info.Block,
 		Asset: info.Asset,
 		Chain: info.Chain,
 		Pair:  info.Pair,
+		Block: info.Block,
 	}
 
-	cachedPrice, ok := lruCache.Get(info.Block)
+	if !consensus.Contains(key) {
+		consensus.Add(key, make(map[bls12381.G1Affine]uint64))
+	}
+
+	reportedValues, _ := consensus.Get(key)
+	reportedValues[hash]++
+	isMajority := true
+	count := reportedValues[hash]
+
+	for _, reportCount := range reportedValues {
+		if reportCount > count {
+			isMajority = false
+			break
+		}
+	}
+
+	cached, ok := signatureCache.Get(hash)
+
+	packed := bls.Signature{
+		Signature: signature,
+		Signer:    signer,
+		Processed: false,
+	}
 
 	if !ok {
-		return
-	}
-
-	if cachedPrice.Cmp(&info.Price) != 0 {
-		return
-	}
-
-	cached, ok := signatureCache.Get(key)
-	packed := bls.Signature{Signature: signature, Signer: signer, Processed: false}
-
-	if !ok {
-		signatureCache.Add(key, []bls.Signature{packed})
+		signatureCache.Add(hash, []bls.Signature{packed})
 		// TODO: This should not only write to DB,
 		// TODO: but also report to "consumers"
-		DebouncedSaveSignatures(key, info)
+		if isMajority {
+			DebouncedSaveSignatures(
+				hash,
+				SaveSignatureArgs{Hash: hash, Info: info})
+		}
 		return
 	}
 
@@ -157,29 +142,22 @@ func RecordSignature(
 	}
 
 	cached = append(cached, packed)
-	signatureCache.Add(key, cached)
+	signatureCache.Add(hash, cached)
 
-	DebouncedSaveSignatures(key, info)
+	if isMajority {
+		DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+	}
 }
 
-func SaveSignatures(info datasets.PriceInfo) {
+type SaveSignatureArgs struct {
+	Info datasets.PriceInfo
+	Hash bls12381.G1Affine
+}
+
+func SaveSignatures(args SaveSignatureArgs) {
 
 	dbClient := db.GetClient()
-	lruCache := priceCache[strings.ToLower(info.Pair)]
-	price, ok := lruCache.Get(info.Block)
-
-	if !ok {
-		return
-	}
-
-	key := AssetKey{
-		Block: info.Block,
-		Asset: info.Asset,
-		Chain: info.Chain,
-		Pair:  info.Pair,
-	}
-
-	signatures, ok := signatureCache.Get(key)
+	signatures, ok := signatureCache.Get(args.Hash)
 
 	if !ok {
 		return
@@ -229,7 +207,7 @@ func SaveSignatures(info datasets.PriceInfo) {
 	}
 
 	var aggregate bls12381.G1Affine
-	currentAggregate, ok := aggregateCache.Get(key)
+	currentAggregate, ok := aggregateCache.Get(args.Hash)
 
 	if ok {
 		newSignatures = append(newSignatures, currentAggregate)
@@ -244,7 +222,7 @@ func SaveSignatures(info datasets.PriceInfo) {
 	signatureBytes := aggregate.Bytes()
 
 	packet := datasets.BroadcastPacket{
-		Info:      info,
+		Info:      args.Info,
 		Signers:   keys,
 		Signature: signatureBytes,
 	}
@@ -262,11 +240,11 @@ func SaveSignatures(info datasets.PriceInfo) {
 
 	err = dbClient.AssetPrice.
 		Create().
-		SetPair(info.Pair).
-		SetAsset(info.Asset).
-		SetChain(info.Chain).
-		SetBlock(info.Block).
-		SetPrice(&price).
+		SetPair(args.Info.Pair).
+		SetAsset(args.Info.Asset).
+		SetChain(args.Info.Chain).
+		SetBlock(args.Info.Block).
+		SetPrice(&args.Info.Price).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
 		AddSignerIDs(signerIds...).
@@ -282,7 +260,7 @@ func SaveSignatures(info datasets.PriceInfo) {
 		signature.Processed = true
 	}
 
-	aggregateCache.Add(key, aggregate)
+	aggregateCache.Add(args.Hash, aggregate)
 }
 
 func GetPriceFromCache(block uint64, pair string) (big.Int, bool) {
@@ -379,6 +357,10 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 }
 
 func Setup() {
+	if !config.Config.InConfig("plugins.uniswap") {
+		return
+	}
+
 	var tokens []Token
 
 	err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens)
@@ -557,7 +539,7 @@ func Start() {
 
 func init() {
 
-	DebouncedSaveSignatures = utils.Debounce[AssetKey, datasets.PriceInfo](5*time.Second, SaveSignatures)
+	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
 	signatureMutex = new(sync.Mutex)
 
 	twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
@@ -568,13 +550,19 @@ func init() {
 	priceCache = make(map[string]*lru.Cache[uint64, big.Int])
 
 	var err error
-	signatureCache, err = lru.New[AssetKey, []bls.Signature](24)
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](24)
 
 	if err != nil {
 		panic(err)
 	}
 
-	aggregateCache, err = lru.New[AssetKey, bls12381.G1Affine](24)
+	consensus, err = lru.New[AssetKey, map[bls12381.G1Affine]uint64](24)
+
+	if err != nil {
+		panic(err)
+	}
+
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](24)
 
 	if err != nil {
 		panic(err)
