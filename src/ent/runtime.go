@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/schema"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -24,6 +25,16 @@ func init() {
 	assetpriceDescSignature := assetpriceFields[3].Descriptor()
 	// assetprice.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
 	assetprice.SignatureValidator = assetpriceDescSignature.Validators[0].(func([]byte) error)
+	eventlogFields := schema.EventLog{}.Fields()
+	_ = eventlogFields
+	// eventlogDescSignature is the schema descriptor for signature field.
+	eventlogDescSignature := eventlogFields[2].Descriptor()
+	// eventlog.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
+	eventlog.SignatureValidator = eventlogDescSignature.Validators[0].(func([]byte) error)
+	// eventlogDescTransaction is the schema descriptor for transaction field.
+	eventlogDescTransaction := eventlogFields[7].Descriptor()
+	// eventlog.TransactionValidator is a validator for the "transaction" field. It is called by the builders before save.
+	eventlog.TransactionValidator = eventlogDescTransaction.Validators[0].(func([]byte) error)
 	signerFields := schema.Signer{}.Fields()
 	_ = signerFields
 	// signerDescName is the schema descriptor for name field.

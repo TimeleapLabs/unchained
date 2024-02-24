@@ -15,7 +15,7 @@ type PriceReport struct {
 	Signature [48]byte
 }
 
-type BroadcastPacket struct {
+type BroadcastPricePacket struct {
 	Info      PriceInfo
 	Signature [48]byte
 	Signers   [][]byte

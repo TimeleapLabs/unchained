@@ -10,6 +10,7 @@ import (
 
 var configPath string
 var secretsPath string
+var contextPath string
 var printVersion bool
 
 // rootCmd represents the base command when called without any subcommands
@@ -50,6 +51,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./conf.yaml", "Config file")
 	rootCmd.PersistentFlags().StringVarP(&secretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
+	rootCmd.PersistentFlags().StringVarP(&contextPath, "context", "x", "./context", "Context DB")
 	rootCmd.MarkFlagFilename("config", "yaml")
 	rootCmd.MarkFlagRequired("config")
 }

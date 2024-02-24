@@ -15,12 +15,13 @@ import (
 var ClientSecretKey *big.Int
 var ClientPublicKey *bls12381.G2Affine
 var ClientShortPublicKey *bls12381.G1Affine
+var ClientSigner Signer
 
 func InitClientIdentity() {
 	var err error
 	var pkBytes [96]byte
 
-	if config.Secrets.InConfig("secretKey") {
+	if config.Secrets.IsSet("secretKey") {
 
 		decoded := base58.Decode(config.Secrets.GetString("secretKey"))
 
@@ -52,6 +53,12 @@ func InitClientIdentity() {
 	ClientShortPublicKey = GetShortPublicKey(ClientSecretKey)
 	addrStr := address.Calculate(pkBytes[:])
 
+	ClientSigner = Signer{
+		Name:           config.Config.GetString("name"),
+		PublicKey:      ClientPublicKey.Bytes(),
+		ShortPublicKey: ClientShortPublicKey.Bytes(),
+	}
+
 	log.Logger.
 		With("Address", addrStr).
 		Info("Unchained")
@@ -59,7 +66,7 @@ func InitClientIdentity() {
 	// TODO: Avoid recalculating this
 	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
 
-	if !config.Secrets.InConfig("address") {
+	if !config.Secrets.IsSet("address") {
 		config.Secrets.Set("address", addrStr)
 		err := config.Secrets.WriteConfig()
 
