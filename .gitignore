@@ -5,6 +5,7 @@ node_modules
 **/secrets.yaml
 **/secrets.*.yaml
 **/conf
+**/abi
 **/context
 **/.env
 dist
