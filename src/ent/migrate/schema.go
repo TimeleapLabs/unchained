@@ -52,9 +52,9 @@ var (
 		PrimaryKey: []*schema.Column{EventLogsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "eventlog_transaction_index",
+				Name:    "eventlog_block_transaction_index",
 				Unique:  true,
-				Columns: []*schema.Column{EventLogsColumns[8], EventLogsColumns[6]},
+				Columns: []*schema.Column{EventLogsColumns[1], EventLogsColumns[8], EventLogsColumns[6]},
 			},
 			{
 				Name:    "eventlog_block_address_event",

@@ -121,6 +121,7 @@ func RecordSignature(
 	}
 
 	// TODO: this won't work for Arbitrum
+	// TODO: we disallow syncing historical events here
 	if *blockNumber-info.Block > 16 {
 		return // Data too old
 	}
@@ -263,14 +264,15 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	payload, err := msgpack.Marshal(&packet)
 
-	if err == nil {
-		// TODO: Handle errors in a proper way
-		consumer.Broadcast(
-			append(
-				[]byte{opcodes.EventLogBroadcast, 0},
-				payload...),
-		)
+	if err != nil {
+		panic(err)
 	}
+
+	consumer.Broadcast(
+		append(
+			[]byte{opcodes.EventLogBroadcast, 0},
+			payload...),
+	)
 
 	err = dbClient.EventLog.
 		Create().

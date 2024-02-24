@@ -42,6 +42,7 @@ var workerCmd = &cobra.Command{
 		ethereum.Start()
 		uniswap.Setup()
 		uniswap.Start()
+		logs.Setup()
 		logs.Start()
 		persistence.Start(contextPath)
 		client.ClientBlock()
