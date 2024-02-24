@@ -13,6 +13,10 @@ rpc:
 
 plugins:
   uniswap:
+    schedule:
+      arbitrum: 100
+      ethereum: 5000
+
     tokens:
       - name: ethereum
         pair: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"

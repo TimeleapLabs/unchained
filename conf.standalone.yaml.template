@@ -1,8 +1,8 @@
 log: info
 name: <name>
 
-broker:
-  uri: wss://shinobi.brokers.kenshi.io
+database:
+  url: postgres://<user>:<pass>@<host>:<port>/<db>
 
 rpc:
   ethereum: 
@@ -11,7 +11,29 @@ rpc:
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
 
+  arbitrum:
+    - https://arbitrum-one.publicnode.com
+    - https://arbitrum.llamarpc.com
+    - wss://arbitrum-one.publicnode.com
+    - https://arbitrum-one.public.blastapi.io
+
 plugins:
+  logs:
+    schedule:
+      arbitrum: 100
+      ethereum: 5000
+
+    events:
+      - name: DAI
+        chain: ethereum
+        abi: ./abi/ERC20.json
+        event: Transfer
+        address: "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+        from: 19271250
+        step: 8
+        confirmations: 8
+        store: true
+
   uniswap:
     schedule:
       arbitrum: 100
@@ -23,18 +45,21 @@ plugins:
         delta: 6
         invert: true
         unit: USDT
-        send: true
+        send: false
+        store: true
 
       - name: arbitrum
         pair: "0x59354356Ec5d56306791873f567d61EBf11dfbD5"
         delta: 0
         invert: false
         unit: ETH
-        send: true
+        send: false
+        store: true
 
       - name: bitcoin
         pair: "0x9db9e0e53058c89e5b94e29621a205198648425b"
         delta: 2
         invert: false
         unit: USDT
-        send: true
+        send: false
+        store: true
