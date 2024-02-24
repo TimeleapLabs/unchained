@@ -15,21 +15,35 @@ services:
   #  profiles: ["broker"]
   #  restart: always
 
-  #postgres:
-  #  image: postgres:16.1
-  #  container_name: postgres
-  #  hostname: postgres
-  #  env_file:
-  #    - .env
-  #  volumes:
-  #    - ./data:/var/lib/postgresql/data
-  #  profiles: ["broker"]
-  #  restart: always
-  #  healthcheck:
-  #    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-  #    interval: 10s
-  #    timeout: 5s
-  #    retries: 5
+  unchained_standalone:
+    image: ghcr.io/kenshitech/unchained:latest
+    container_name: unchained_standalone
+    hostname: unchained_standalone
+    volumes:
+      - ./conf.standalone.yaml:/app/conf.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - UNCHAINED_NODE_TYPE=standalone
+    profiles: ["standalone"]
+    restart: always
+
+  postgres:
+    image: postgres:16.1
+    container_name: postgres
+    hostname: postgres
+    env_file:
+      - .env
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    profiles: ["standalone"]
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB_STANDALONE"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   #grafana:
   #  image: grafana/grafana-oss:latest
