@@ -35,6 +35,11 @@ import (
 var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 
+type TokenKey struct {
+	Pair  string
+	Chain string
+}
+
 type AssetKey struct {
 	Asset string
 	Pair  string
@@ -46,6 +51,7 @@ var priceCache map[string]*lru.Cache[uint64, big.Int]
 var consensus *lru.Cache[AssetKey, map[bls12381.G1Affine]uint64]
 var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
+var supportedTokens map[TokenKey]bool
 
 var twoOneNineTwo big.Int
 var tenEighteen big.Int
@@ -77,7 +83,9 @@ func RecordSignature(
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
-	if ethereum.Clients[info.Chain] == nil {
+	// TODO: Invert makes a difference here
+	tokenKey := TokenKey{Chain: info.Chain, Pair: info.Pair}
+	if supported := supportedTokens[tokenKey]; !supported {
 		return
 	}
 
@@ -372,6 +380,9 @@ func Setup() {
 	for _, token := range tokens {
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](24)
 
+		key := TokenKey{Chain: token.Chain, Pair: token.Pair}
+		supportedTokens[key] = true
+
 		if err != nil {
 			panic(err)
 		}
@@ -548,6 +559,7 @@ func init() {
 
 	// TODO: Should use AssetKey
 	priceCache = make(map[string]*lru.Cache[uint64, big.Int])
+	supportedTokens = make(map[TokenKey]bool)
 
 	var err error
 	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](24)
