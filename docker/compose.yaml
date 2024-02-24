@@ -21,6 +21,7 @@ services:
     hostname: unchained_standalone
     volumes:
       - ./conf:/app/conf
+      - ./abi:/app/abi
       - ./context:/app/context
     depends_on:
       postgres:
