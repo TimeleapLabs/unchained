@@ -16,16 +16,18 @@ services:
   #  restart: always
 
   unchained_standalone:
-    image: ghcr.io/kenshitech/unchained:latest
+    image: ghcr.io/kenshitech/unchained:v0.11.9-rc.5
     container_name: unchained_standalone
     hostname: unchained_standalone
     volumes:
-      - ./conf.standalone.yaml:/app/conf.yaml
+      - ./conf:/app/conf
+      - ./context:/app/context
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       - UNCHAINED_NODE_TYPE=standalone
+      - UNCHAINED_CMD=worker
     profiles: ["standalone"]
     restart: always
 
@@ -40,7 +42,7 @@ services:
     profiles: ["standalone"]
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB_STANDALONE"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -71,6 +73,7 @@ services:
       - ./context:/app/context
     environment:
       - UNCHAINED_NODE_TYPE=worker
+      - UNCHAINED_CMD=worker
     profiles: ["worker"]
     restart: always
 
