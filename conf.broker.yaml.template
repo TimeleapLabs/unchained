@@ -5,7 +5,7 @@ database:
   url: postgres://<user>:<pass>@<host>:<port>/<db>
 
 rpc:
-  ethereum: 
+  ethereum:
     - https://ethereum.publicnode.com
     - https://eth.llamarpc.com
     - wss://ethereum.publicnode.com

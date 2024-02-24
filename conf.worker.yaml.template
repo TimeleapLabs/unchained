@@ -5,7 +5,7 @@ broker:
   uri: wss://shinobi.brokers.kenshi.io
 
 rpc:
-  ethereum: 
+  ethereum:
     - https://ethereum.publicnode.com
     - https://eth.llamarpc.com
     - wss://ethereum.publicnode.com
