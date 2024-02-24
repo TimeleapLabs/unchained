@@ -16,7 +16,7 @@ services:
   #  restart: always
 
   unchained_standalone:
-    image: ghcr.io/kenshitech/unchained:v0.11.9-rc.5
+    image: ghcr.io/kenshitech/unchained:latest
     container_name: unchained_standalone
     hostname: unchained_standalone
     volumes:
