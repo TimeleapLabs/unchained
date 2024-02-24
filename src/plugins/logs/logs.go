@@ -482,7 +482,7 @@ func createTask(configs []LogConf, chain string) func() {
 }
 
 func Setup() {
-	if !config.Config.InConfig("plugins.logs") {
+	if !config.Config.IsSet("plugins.logs") {
 		return
 	}
 
@@ -504,7 +504,7 @@ func Setup() {
 
 func Start() {
 
-	if !config.Config.InConfig("plugins.logs") {
+	if !config.Config.IsSet("plugins.logs") {
 		return
 	}
 

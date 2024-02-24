@@ -23,7 +23,7 @@ var Done chan struct{}
 
 func StartClient() {
 
-	if !config.Config.InConfig("broker.uri") {
+	if !config.Config.IsSet("broker.uri") {
 		return
 	}
 
@@ -145,7 +145,7 @@ func StartClient() {
 }
 
 func closeConnection() {
-	if config.Config.InConfig("broker.uri") {
+	if config.Config.IsSet("broker.uri") {
 		Client.Close()
 	}
 }
@@ -162,7 +162,7 @@ func ClientBlock() {
 			return
 		case <-interrupt:
 
-			if config.Config.InConfig("broker.uri") {
+			if config.Config.IsSet("broker.uri") {
 				err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 
 				if err != nil {

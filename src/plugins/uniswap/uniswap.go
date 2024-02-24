@@ -379,7 +379,7 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 }
 
 func Setup() {
-	if !config.Config.InConfig("plugins.uniswap") {
+	if !config.Config.IsSet("plugins.uniswap") {
 		return
 	}
 
