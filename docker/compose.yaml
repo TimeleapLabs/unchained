@@ -54,6 +54,7 @@ services:
     hostname: unchained_worker
     volumes:
       - ./conf:/app/conf
+      - ./context:/app/context
     environment:
       - UNCHAINED_NODE_TYPE=worker
     profiles: ["worker"]
