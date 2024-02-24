@@ -82,7 +82,8 @@ func RecordSignature(
 	signer bls.Signer,
 	hash bls12381.G1Affine,
 	info datasets.PriceInfo,
-	debounce bool) {
+	debounce bool,
+	historical bool) {
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
@@ -93,15 +94,18 @@ func RecordSignature(
 		return
 	}
 
-	blockNumber, err := GetBlockNumber(info.Chain)
+	if !historical {
 
-	if err != nil {
-		panic(err)
-	}
+		blockNumber, err := GetBlockNumber(info.Chain)
 
-	// TODO: this won't work for Arbitrum
-	if *blockNumber-info.Block > 16 {
-		return // Data too old
+		if err != nil {
+			panic(err)
+		}
+
+		// TODO: this won't work for Arbitrum
+		if *blockNumber-info.Block > 16 {
+			return // Data too old
+		}
 	}
 
 	key := AssetKey{
@@ -477,7 +481,14 @@ func syncBlocks(token Token, latest uint64) {
 		}
 
 		if token.Store {
-			RecordSignature(signature, bls.ClientSigner, hash, priceInfo, false)
+			RecordSignature(
+				signature,
+				bls.ClientSigner,
+				hash,
+				priceInfo,
+				false,
+				true,
+			)
 		}
 	}
 }
