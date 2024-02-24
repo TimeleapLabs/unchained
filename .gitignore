@@ -5,6 +5,8 @@ node_modules
 **/secrets.yaml
 **/secrets.*.yaml
 **/conf
+docker/abi
+**/context
 **/.env
 dist
 **/data

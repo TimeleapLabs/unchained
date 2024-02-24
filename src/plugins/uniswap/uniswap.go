@@ -10,6 +10,7 @@ import (
 
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
@@ -31,26 +32,12 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
-var DebouncedSaveSignatures func(key AssetKey, arg datasets.PriceInfo)
+var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 
-var priceCache map[string]*lru.Cache[uint64, big.Int]
-var signatureCache *lru.Cache[AssetKey, []bls.Signature]
-var aggregateCache *lru.Cache[AssetKey, bls12381.G1Affine]
-
-var twoNinetySix big.Int
-var tenEighteen big.Int
-var tenEighteenF big.Float
-var lastBlock uint64
-var lastPrice big.Int
-
-type Token struct {
-	Name   string `mapstructure:"name"`
-	Pair   string `mapstructure:"pair"`
-	Unit   string `mapstructure:"unit"`
-	Symbol string `mapstructure:"symbol"`
-	Delta  int64  `mapstructure:"delta"`
-	Invert bool   `mapstructure:"invert"`
+type TokenKey struct {
+	Pair  string
+	Chain string
 }
 
 type AssetKey struct {
@@ -60,75 +47,109 @@ type AssetKey struct {
 	Block uint64
 }
 
+var priceCache map[string]*lru.Cache[uint64, big.Int]
+var consensus *lru.Cache[AssetKey, map[bls12381.G1Affine]uint64]
+var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
+var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
+var supportedTokens map[TokenKey]bool
+
+var twoOneNineTwo big.Int
+var tenEighteen big.Int
+var tenEighteenF big.Float
+var lastBlock map[string]uint64
+var crossPrices map[string]big.Int
+var lastPrice big.Int
+var caser cases.Caser
+
+type Token struct {
+	Id     *string  `mapstructure:"id"`
+	Chain  string   `mapstructure:"chain"`
+	Name   string   `mapstructure:"name"`
+	Pair   string   `mapstructure:"pair"`
+	Unit   string   `mapstructure:"unit"`
+	Symbol string   `mapstructure:"symbol"`
+	Delta  int64    `mapstructure:"delta"`
+	Invert bool     `mapstructure:"invert"`
+	Store  bool     `mapstructure:"store"`
+	Send   bool     `mapstructure:"send"`
+	Cross  []string `mapstructure:"cross"`
+}
+
 // TODO: This needs to work with different datasets
+// TODO: Can we turn this into a library func?
 func RecordSignature(
 	signature bls12381.G1Affine,
 	signer bls.Signer,
-	info datasets.PriceInfo) {
+	hash bls12381.G1Affine,
+	info datasets.PriceInfo,
+	debounce bool,
+	historical bool) {
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
-	lruCache := priceCache[strings.ToLower(info.Pair)]
-
-	if lruCache == nil {
+	// TODO: Invert makes a difference here
+	tokenKey := TokenKey{Chain: info.Chain, Pair: info.Pair}
+	if supported := supportedTokens[tokenKey]; !supported {
 		return
 	}
 
-	// TODO: Needs optimization
-	if !lruCache.Contains(info.Block) {
+	if !historical {
 
-		var tokens []Token
-		if err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens); err != nil {
+		blockNumber, err := GetBlockNumber(info.Chain)
+
+		if err != nil {
 			panic(err)
 		}
 
-		var found Token
-
-		for _, token := range tokens {
-			if strings.EqualFold(token.Pair, info.Pair) &&
-				strings.EqualFold(token.Name, info.Asset) {
-				found = token
-				break
-			}
+		// TODO: this won't work for Arbitrum
+		if *blockNumber-info.Block > 16 {
+			return // Data too old
 		}
-
-		if len(found.Pair) == 0 {
-			return
-		}
-
-		blockNumber, _, err := GetPriceFromPair(
-			found.Pair,
-			found.Delta,
-			found.Invert,
-		)
-
-		if err != nil {
-			return
-		}
-
-		lastBlock = *blockNumber
-	}
-
-	if lastBlock-info.Block > 16 {
-		return // Data too old
 	}
 
 	key := AssetKey{
-		Block: info.Block,
 		Asset: info.Asset,
 		Chain: info.Chain,
 		Pair:  info.Pair,
+		Block: info.Block,
 	}
 
-	cached, ok := signatureCache.Get(key)
-	packed := bls.Signature{Signature: signature, Signer: signer, Processed: false}
+	if !consensus.Contains(key) {
+		consensus.Add(key, make(map[bls12381.G1Affine]uint64))
+	}
+
+	reportedValues, _ := consensus.Get(key)
+	reportedValues[hash]++
+	isMajority := true
+	count := reportedValues[hash]
+
+	for _, reportCount := range reportedValues {
+		if reportCount > count {
+			isMajority = false
+			break
+		}
+	}
+
+	cached, ok := signatureCache.Get(hash)
+
+	packed := bls.Signature{
+		Signature: signature,
+		Signer:    signer,
+		Processed: false,
+	}
 
 	if !ok {
-		signatureCache.Add(key, []bls.Signature{packed})
+		signatureCache.Add(hash, []bls.Signature{packed})
 		// TODO: This should not only write to DB,
 		// TODO: but also report to "consumers"
-		DebouncedSaveSignatures(key, info)
+		if isMajority {
+			if debounce {
+				DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+			} else {
+				SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+			}
+		}
 		return
 	}
 
@@ -139,29 +160,26 @@ func RecordSignature(
 	}
 
 	cached = append(cached, packed)
-	signatureCache.Add(key, cached)
+	signatureCache.Add(hash, cached)
 
-	DebouncedSaveSignatures(key, info)
+	if isMajority {
+		if debounce {
+			DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+		} else {
+			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+		}
+	}
 }
 
-func SaveSignatures(info datasets.PriceInfo) {
+type SaveSignatureArgs struct {
+	Info datasets.PriceInfo
+	Hash bls12381.G1Affine
+}
+
+func SaveSignatures(args SaveSignatureArgs) {
 
 	dbClient := db.GetClient()
-	lruCache := priceCache[strings.ToLower(info.Pair)]
-	price, ok := lruCache.Get(info.Block)
-
-	if !ok {
-		return
-	}
-
-	key := AssetKey{
-		Block: info.Block,
-		Asset: info.Asset,
-		Chain: info.Chain,
-		Pair:  info.Pair,
-	}
-
-	signatures, ok := signatureCache.Get(key)
+	signatures, ok := signatureCache.Get(args.Hash)
 
 	if !ok {
 		return
@@ -211,7 +229,7 @@ func SaveSignatures(info datasets.PriceInfo) {
 	}
 
 	var aggregate bls12381.G1Affine
-	currentAggregate, ok := aggregateCache.Get(key)
+	currentAggregate, ok := aggregateCache.Get(args.Hash)
 
 	if ok {
 		newSignatures = append(newSignatures, currentAggregate)
@@ -225,8 +243,8 @@ func SaveSignatures(info datasets.PriceInfo) {
 
 	signatureBytes := aggregate.Bytes()
 
-	packet := datasets.BroadcastPacket{
-		Info:      info,
+	packet := datasets.BroadcastPricePacket{
+		Info:      args.Info,
 		Signers:   keys,
 		Signature: signatureBytes,
 	}
@@ -235,16 +253,20 @@ func SaveSignatures(info datasets.PriceInfo) {
 
 	if err == nil {
 		// TODO: Handle errors in a proper way
-		consumer.Broadcast(append([]byte{7, 0}, payload...))
+		consumer.Broadcast(
+			append(
+				[]byte{opcodes.PriceReportBroadcast, 0},
+				payload...),
+		)
 	}
 
 	err = dbClient.AssetPrice.
 		Create().
-		SetPair(info.Pair).
-		SetAsset(info.Asset).
-		SetChain(info.Chain).
-		SetBlock(info.Block).
-		SetPrice(&price).
+		SetPair(args.Info.Pair).
+		SetAsset(args.Info.Asset).
+		SetChain(args.Info.Chain).
+		SetBlock(args.Info.Block).
+		SetPrice(&args.Info.Price).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
 		AddSignerIDs(signerIds...).
@@ -260,7 +282,7 @@ func SaveSignatures(info datasets.PriceInfo) {
 		signature.Processed = true
 	}
 
-	aggregateCache.Add(key, aggregate)
+	aggregateCache.Add(args.Hash, aggregate)
 }
 
 func GetPriceFromCache(block uint64, pair string) (big.Int, bool) {
@@ -268,11 +290,11 @@ func GetPriceFromCache(block uint64, pair string) (big.Int, bool) {
 	return lruCache.Get(block)
 }
 
-func GetBlockNumber() (*uint64, error) {
-	blockNumber, err := ethereum.GetBlockNumber()
+func GetBlockNumber(network string) (*uint64, error) {
+	blockNumber, err := ethereum.GetBlockNumber(network)
 
 	if err != nil {
-		ethereum.RefreshRPC()
+		ethereum.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -280,15 +302,16 @@ func GetBlockNumber() (*uint64, error) {
 }
 
 func GetPriceAtBlockFromPair(
+	network string,
 	blockNumber uint64,
 	pairAddr string,
 	decimalDif int64,
 	inverse bool) (*big.Int, error) {
 
-	pair, err := ethereum.GetNewUniV3Contract(pairAddr, false)
+	pair, err := ethereum.GetNewUniV3Contract(network, pairAddr, false)
 
 	if err != nil {
-		ethereum.RefreshRPC()
+		ethereum.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -298,7 +321,7 @@ func GetPriceAtBlockFromPair(
 		})
 
 	if err != nil {
-		ethereum.RefreshRPC()
+		ethereum.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -310,18 +333,20 @@ func GetPriceAtBlockFromPair(
 }
 
 func GetPriceFromPair(
+	network string,
 	pairAddr string,
 	decimalDif int64,
 	inverse bool) (*uint64, *big.Int, error) {
 
-	blockNumber, err := ethereum.GetBlockNumber()
+	blockNumber, err := ethereum.GetBlockNumber(network)
 
 	if err != nil {
-		ethereum.RefreshRPC()
+		ethereum.RefreshRPC(network)
 		return nil, nil, err
 	}
 
 	lastPrice, err := GetPriceAtBlockFromPair(
+		network,
 		blockNumber,
 		pairAddr,
 		decimalDif,
@@ -332,17 +357,17 @@ func GetPriceFromPair(
 
 func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *big.Int {
 	var decimalFix big.Int
-	var sqrtPrice big.Int
+	var powerUp big.Int
 	var rawPrice big.Int
 	var price big.Int
 	var factor big.Int
 
 	decimalFix.Mul(sqrtPriceX96, &tenEighteen)
-	sqrtPrice.Div(&decimalFix, &twoNinetySix)
-	rawPrice.Exp(&sqrtPrice, big.NewInt(2), nil)
+	powerUp.Exp(&decimalFix, big.NewInt(2), nil)
+	rawPrice.Div(&powerUp, &twoOneNineTwo)
 
 	if inverse {
-		factor.Exp(big.NewInt(10), big.NewInt(72-decimalDif), nil)
+		factor.Exp(big.NewInt(10), big.NewInt(54+decimalDif), nil)
 		price.Div(&factor, &rawPrice)
 	} else {
 		// TODO: needs work
@@ -354,6 +379,10 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 }
 
 func Setup() {
+	if !config.Config.IsSet("plugins.uniswap") {
+		return
+	}
+
 	var tokens []Token
 
 	err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens)
@@ -365,9 +394,135 @@ func Setup() {
 	for _, token := range tokens {
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](24)
 
+		key := TokenKey{Chain: token.Chain, Pair: token.Pair}
+		supportedTokens[key] = true
+
 		if err != nil {
 			panic(err)
 		}
+	}
+}
+
+func syncBlocks(token Token, latest uint64) {
+	for block := lastBlock[token.Chain]; block < latest; block++ {
+
+		price, err := GetPriceAtBlockFromPair(
+			token.Chain,
+			block,
+			token.Pair,
+			token.Delta,
+			token.Invert,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+
+		for _, cross := range token.Cross {
+			stored := crossPrices[cross]
+
+			if stored.Cmp(big.NewInt(0)) == 0 {
+				return
+			}
+
+			price.Mul(price, &stored)
+		}
+
+		for range token.Cross {
+			price.Div(price, &tenEighteen)
+		}
+
+		if token.Id != nil {
+			crossPrices[*token.Id] = *price
+		}
+
+		var priceF big.Float
+		priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
+		priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
+
+		log.Logger.
+			With("Block", block).
+			With("Price", priceStr).
+			Info(caser.String(token.Name))
+
+		priceInfo := datasets.PriceInfo{
+			Price: *price,
+			Block: block,
+			Chain: token.Chain,
+			Pair:  strings.ToLower(token.Pair),
+			Asset: strings.ToLower(token.Name),
+		}
+
+		toHash, err := msgpack.Marshal(&priceInfo)
+
+		if err != nil {
+			panic(err)
+		}
+
+		signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
+		compressedSignature := signature.Bytes()
+
+		priceReport := datasets.PriceReport{
+			PriceInfo: priceInfo,
+			Signature: compressedSignature,
+		}
+
+		payload, err := msgpack.Marshal(&priceReport)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if token.Send && !client.IsClientSocketClosed {
+			client.Client.WriteMessage(
+				websocket.BinaryMessage,
+				append([]byte{opcodes.PriceReport, 0}, payload...),
+			)
+		}
+
+		if token.Store {
+			RecordSignature(
+				signature,
+				bls.ClientSigner,
+				hash,
+				priceInfo,
+				false,
+				true,
+			)
+		}
+	}
+}
+
+func createTask(tokens []Token, chain string) func() {
+
+	return func() {
+
+		currBlockNumber, err := GetBlockNumber(chain)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if lastBlock[chain] == *currBlockNumber {
+			return
+		}
+
+		if lastBlock[chain] == 0 {
+			lastBlock[chain] = *currBlockNumber - 1
+		}
+
+		for _, token := range tokens {
+
+			if token.Chain != chain {
+				continue
+			}
+
+			syncBlocks(token, *currBlockNumber)
+
+		}
+
+		// TODO: block numbers should be tracked separately for each token
+		lastBlock[chain] = *currBlockNumber
 	}
 }
 
@@ -384,8 +539,6 @@ func Start() {
 		panic(err)
 	}
 
-	caser := cases.Title(language.English, cases.NoLower)
-
 	for _, token := range tokens {
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](24)
 
@@ -394,88 +547,23 @@ func Start() {
 		}
 	}
 
-	_, err = scheduler.NewJob(
-		gocron.DurationJob(5*time.Second),
-		gocron.NewTask(
-			func() {
+	scheduleConfs := config.Config.Sub("plugins.uniswap.schedule")
+	scheduleNames := scheduleConfs.AllKeys()
 
-				if client.IsClientSocketClosed {
-					return
-				}
+	for index := range scheduleNames {
+		name := scheduleNames[index]
+		duration := scheduleConfs.GetDuration(name) * time.Millisecond
+		task := createTask(tokens, name)
 
-				blockNumber, err := GetBlockNumber()
+		_, err = scheduler.NewJob(
+			gocron.DurationJob(duration),
+			gocron.NewTask(task),
+			gocron.WithSingletonMode(gocron.LimitModeReschedule),
+		)
 
-				if err != nil {
-					return
-				}
-
-				if lastBlock == *blockNumber {
-					return
-				}
-
-				lastBlock = *blockNumber
-
-				for _, token := range tokens {
-
-					price, err := GetPriceAtBlockFromPair(
-						*blockNumber,
-						token.Pair,
-						token.Delta,
-						token.Invert,
-					)
-
-					if err != nil {
-						return
-					}
-
-					var priceF big.Float
-					priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
-					priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
-
-					log.Logger.
-						With("Block", *blockNumber).
-						With("Price", priceStr).
-						Info(caser.String(token.Name))
-
-					priceInfo := datasets.PriceInfo{
-						Price: *price,
-						Block: *blockNumber,
-						Chain: "ethereum",
-						Pair:  strings.ToLower(token.Pair),
-						Asset: strings.ToLower(token.Name),
-					}
-
-					toHash, err := msgpack.Marshal(&priceInfo)
-
-					if err != nil {
-						panic(err)
-					}
-
-					signature, _ := bls.Sign(*bls.ClientSecretKey, toHash)
-					compressedSignature := signature.Bytes()
-
-					priceReport := datasets.PriceReport{
-						PriceInfo: priceInfo,
-						Signature: compressedSignature,
-					}
-
-					payload, err := msgpack.Marshal(&priceReport)
-
-					if err != nil {
-						panic(err)
-					}
-
-					if !client.IsClientSocketClosed {
-						client.Client.WriteMessage(websocket.BinaryMessage, append([]byte{1, 0}, payload...))
-					}
-
-				}
-			},
-		),
-	)
-
-	if err != nil {
-		panic(err)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	scheduler.Start()
@@ -483,26 +571,37 @@ func Start() {
 
 func init() {
 
-	DebouncedSaveSignatures = utils.Debounce[AssetKey, datasets.PriceInfo](5*time.Second, SaveSignatures)
+	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
 	signatureMutex = new(sync.Mutex)
 
-	twoNinetySix.Exp(big.NewInt(2), big.NewInt(96), nil)
+	twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
 	tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
 	tenEighteenF.SetInt(&tenEighteen)
 
 	// TODO: Should use AssetKey
 	priceCache = make(map[string]*lru.Cache[uint64, big.Int])
+	supportedTokens = make(map[TokenKey]bool)
 
 	var err error
-	signatureCache, err = lru.New[AssetKey, []bls.Signature](24)
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](24)
 
 	if err != nil {
 		panic(err)
 	}
 
-	aggregateCache, err = lru.New[AssetKey, bls12381.G1Affine](24)
+	consensus, err = lru.New[AssetKey, map[bls12381.G1Affine]uint64](24)
 
 	if err != nil {
 		panic(err)
 	}
+
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](24)
+
+	if err != nil {
+		panic(err)
+	}
+
+	lastBlock = make(map[string]uint64)
+	crossPrices = make(map[string]big.Int)
+	caser = cases.Title(language.English, cases.NoLower)
 }

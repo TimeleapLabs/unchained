@@ -199,6 +199,9 @@ config:
 log: info
 name: <name>
 
+broker:
+  uri: wss://shinobi.brokers.kenshi.io
+
 rpc:
   ethereum:
     - https://ethereum.publicnode.com
@@ -208,24 +211,33 @@ rpc:
 
 plugins:
   uniswap:
+    schedule:
+      ethereum: 5000
+
     tokens:
       - name: ethereum
+        chain: ethereum
         pair: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-        delta: 6
+        delta: 12
         invert: true
         unit: USDT
+        send: true
 
       - name: arbitrum
+        chain: ethereum
         pair: "0x59354356Ec5d56306791873f567d61EBf11dfbD5"
         delta: 0
         invert: false
         unit: ETH
+        send: true
 
       - name: bitcoin
+        chain: ethereum
         pair: "0x9db9e0e53058c89e5b94e29621a205198648425b"
         delta: 2
         invert: false
         unit: USDT
+        send: true
 ```
 
 Save the above configuration in a file named `conf.yaml` on your system and make

@@ -10,9 +10,11 @@ import (
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/net/repository"
+	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/gorilla/websocket"
@@ -29,18 +31,30 @@ func processKosk(conn *websocket.Conn, messageType int, payload []byte) error {
 	err := msgpack.Unmarshal(payload, &challenge)
 
 	if err != nil {
-		err = conn.WriteMessage(messageType, append([]byte{2}, []byte("packet.invalid")...))
+		err = conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Feedback},
+				[]byte("packet.invalid")...),
+		)
+
 		if err != nil {
 			fmt.Println("write:", err)
 			return err
 		}
+
 		return nil
 	}
 
 	signer, ok := signers.Load(conn)
 
 	if !ok {
-		conn.WriteMessage(messageType, append([]byte{2}, []byte("hello.missing")...))
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Feedback},
+				[]byte("hello.missing")...),
+		)
 		return errors.New("hello.missing")
 	}
 
@@ -51,11 +65,22 @@ func processKosk(conn *websocket.Conn, messageType int, payload []byte) error {
 	)
 
 	if err != nil || !challenge.Passed {
-		conn.WriteMessage(messageType, append([]byte{5}, []byte("kosk.invalid")...))
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Error},
+				[]byte("kosk.invalid")...),
+		)
 		return errors.New("kosk.invalid")
 	}
 
-	conn.WriteMessage(messageType, append([]byte{2}, []byte("kosk.ok")...))
+	conn.WriteMessage(
+		messageType,
+		append(
+			[]byte{opcodes.Feedback},
+			[]byte("kosk.ok")...),
+	)
+
 	challenges.Store(conn, challenge)
 
 	return nil
@@ -68,16 +93,28 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 
 	if err != nil {
 		// TODO: what's the best way of doing this?
-		err = conn.WriteMessage(messageType, append([]byte{2}, []byte("packet.invalid")...))
+		err = conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Feedback},
+				[]byte("packet.invalid")...),
+		)
+
 		if err != nil {
 			fmt.Println("write:", err)
 			return err
 		}
+
 		return nil
 	}
 
 	if signer.Name == "" || len(signer.PublicKey) != 96 {
-		conn.WriteMessage(messageType, append([]byte{5}, []byte("conf.invalid")...))
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Error},
+				[]byte("conf.invalid")...),
+		)
 		return errors.New("conf.invalid")
 	}
 
@@ -89,12 +126,23 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 	})
 
 	if publicKeyInUse {
-		conn.WriteMessage(messageType, append([]byte{5}, []byte("key.duplicate")...))
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Error},
+				[]byte("key.duplicate")...),
+		)
 		return errors.New("key.duplicate")
 	}
 
 	signers.Store(conn, signer)
-	err = conn.WriteMessage(messageType, append([]byte{2}, []byte("conf.ok")...))
+
+	err = conn.WriteMessage(
+		messageType,
+		append(
+			[]byte{opcodes.Feedback},
+			[]byte("conf.ok")...),
+	)
 
 	if err != nil {
 		fmt.Println("write:", err)
@@ -109,38 +157,74 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 
 	// TODO: Client should hang on error
 	if err != nil {
-		conn.WriteMessage(messageType, append([]byte{5}, []byte("kosk.error")...))
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Error},
+				[]byte("kosk.error")...),
+		)
 		return err
 	}
 
-	err = conn.WriteMessage(messageType, append([]byte{4}, koskPayload...))
+	err = conn.WriteMessage(
+		messageType,
+		append(
+			[]byte{opcodes.KoskChallenge},
+			koskPayload...),
+	)
 
 	if err != nil {
-		conn.WriteMessage(messageType, append([]byte{5}, []byte("kosk.error")...))
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Error},
+				[]byte("kosk.error")...),
+		)
 		return err
 	}
 
 	return nil
 }
 
-func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) error {
-
+func checkPublicKey(conn *websocket.Conn, messageType int) (*bls.Signer, error) {
 	challenge, ok := challenges.Load(conn)
 
 	if !ok || !challenge.Passed {
-		conn.WriteMessage(messageType, append([]byte{2}, []byte("kosk.missing")...))
-		return errors.New("kosk.missing")
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Feedback},
+				[]byte("kosk.missing")...),
+		)
+		return nil, errors.New("kosk.missing")
 	}
 
 	signer, ok := signers.Load(conn)
 
 	if !ok {
-		conn.WriteMessage(messageType, append([]byte{2}, []byte("hello.missing")...))
-		return errors.New("hello.missing")
+		conn.WriteMessage(
+			messageType,
+			append(
+				[]byte{opcodes.Feedback},
+				[]byte("hello.missing")...),
+		)
+		return nil, errors.New("hello.missing")
+	}
+
+	return &signer, nil
+}
+
+// TODO: Can we use any part of this?
+func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) error {
+
+	signer, err := checkPublicKey(conn, messageType)
+
+	if err != nil {
+		return err
 	}
 
 	var report datasets.PriceReport
-	err := msgpack.Unmarshal(payload, &report)
+	err = msgpack.Unmarshal(payload, &report)
 
 	if err != nil {
 		return nil
@@ -170,16 +254,98 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 		return nil
 	}
 
-	ok, _ = bls.Verify(signature, hash, pk)
+	ok, _ := bls.Verify(signature, hash, pk)
 
 	message := []byte("signature.invalid")
 	if ok {
 		message = []byte("signature.accepted")
 		// TODO: Only Ethereum is supported atm
-		uniswap.RecordSignature(signature, signer, report.PriceInfo)
+		uniswap.RecordSignature(
+			signature,
+			*signer,
+			hash,
+			report.PriceInfo,
+			true,
+			false,
+		)
 	}
 
-	err = conn.WriteMessage(messageType, append([]byte{2}, message...))
+	err = conn.WriteMessage(
+		messageType,
+		append(
+			[]byte{opcodes.Feedback},
+			message...),
+	)
+
+	if err != nil {
+		fmt.Println("write:", err)
+		return err
+	}
+
+	return nil
+}
+
+func processEventLog(conn *websocket.Conn, messageType int, payload []byte) error {
+
+	signer, err := checkPublicKey(conn, messageType)
+
+	if err != nil {
+		return err
+	}
+
+	var logReport datasets.EventLogReport
+	err = msgpack.Unmarshal(payload, &logReport)
+
+	if err != nil {
+		return nil
+	}
+
+	toHash, err := msgpack.Marshal(&logReport.EventLog)
+
+	if err != nil {
+		return nil
+	}
+
+	hash, err := bls.Hash(toHash)
+
+	if err != nil {
+		return nil
+	}
+
+	signature, err := bls.RecoverSignature(logReport.Signature)
+
+	if err != nil {
+		return nil
+	}
+
+	pk, err := bls.RecoverPublicKey(signer.PublicKey)
+
+	if err != nil {
+		return nil
+	}
+
+	ok, _ := bls.Verify(signature, hash, pk)
+
+	message := []byte("signature.invalid")
+	if ok {
+		message = []byte("signature.accepted")
+		// TODO: Only Ethereum is supported atm
+		logs.RecordSignature(
+			signature,
+			*signer,
+			hash,
+			logReport.EventLog,
+			true,
+			false,
+		)
+	}
+
+	err = conn.WriteMessage(
+		messageType,
+		append(
+			[]byte{opcodes.Feedback},
+			message...),
+	)
 
 	if err != nil {
 		fmt.Println("write:", err)
@@ -211,15 +377,15 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 
 		switch payload[0] {
 		// TODO: Make a table of call codes
-		case 0:
+		case opcodes.Hello:
 			err := processHello(conn, messageType, payload[1:])
 
 			if err != nil {
 				fmt.Println("write:", err)
 			}
 
-		case 1:
-
+		case opcodes.PriceReport:
+			// TODO: Maybe this is unnecessary
 			if payload[1] == 0 {
 				err := processPriceReport(conn, messageType, payload[2:])
 
@@ -230,25 +396,47 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 			} else {
 				conn.WriteMessage(
 					messageType,
-					append([]byte{2}, []byte("Dataset not supported")...),
+					append(
+						[]byte{opcodes.Feedback},
+						[]byte("Dataset not supported")...),
 				)
 			}
 
-		case 3:
+		case opcodes.EventLog:
+			// TODO: Maybe this is unnecessary
+			if payload[1] == 0 {
+				err := processEventLog(conn, messageType, payload[2:])
+
+				if err != nil {
+					fmt.Println("write:", err)
+				}
+
+			} else {
+				conn.WriteMessage(
+					messageType,
+					append(
+						[]byte{opcodes.Feedback},
+						[]byte("Dataset not supported")...),
+				)
+			}
+
+		case opcodes.KoskResult:
 			err := processKosk(conn, messageType, payload[1:])
 
 			if err != nil {
 				fmt.Println("write:", err)
 			}
 
-		case 6:
+		case opcodes.RegisterConsumer:
 			// TODO: Consumers must specify what they're subscribing to
 			repository.Consumers.Store(conn, true)
 
 		default:
 			err = conn.WriteMessage(
 				messageType,
-				append([]byte{5}, []byte("Instruction not supported")...),
+				append(
+					[]byte{opcodes.Error},
+					[]byte("Instruction not supported")...),
 			)
 			if err != nil {
 				fmt.Println("write:", err)

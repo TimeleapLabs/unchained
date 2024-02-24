@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
 
@@ -26,6 +27,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// AssetPrice is the client for interacting with the AssetPrice builders.
 	AssetPrice *AssetPriceClient
+	// EventLog is the client for interacting with the EventLog builders.
+	EventLog *EventLogClient
 	// Signer is the client for interacting with the Signer builders.
 	Signer *SignerClient
 }
@@ -40,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AssetPrice = NewAssetPriceClient(c.config)
+	c.EventLog = NewEventLogClient(c.config)
 	c.Signer = NewSignerClient(c.config)
 }
 
@@ -134,6 +138,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:        ctx,
 		config:     cfg,
 		AssetPrice: NewAssetPriceClient(cfg),
+		EventLog:   NewEventLogClient(cfg),
 		Signer:     NewSignerClient(cfg),
 	}, nil
 }
@@ -155,6 +160,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:        ctx,
 		config:     cfg,
 		AssetPrice: NewAssetPriceClient(cfg),
+		EventLog:   NewEventLogClient(cfg),
 		Signer:     NewSignerClient(cfg),
 	}, nil
 }
@@ -185,6 +191,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.AssetPrice.Use(hooks...)
+	c.EventLog.Use(hooks...)
 	c.Signer.Use(hooks...)
 }
 
@@ -192,6 +199,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.AssetPrice.Intercept(interceptors...)
+	c.EventLog.Intercept(interceptors...)
 	c.Signer.Intercept(interceptors...)
 }
 
@@ -200,6 +208,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AssetPriceMutation:
 		return c.AssetPrice.mutate(ctx, m)
+	case *EventLogMutation:
+		return c.EventLog.mutate(ctx, m)
 	case *SignerMutation:
 		return c.Signer.mutate(ctx, m)
 	default:
@@ -356,6 +366,155 @@ func (c *AssetPriceClient) mutate(ctx context.Context, m *AssetPriceMutation) (V
 	}
 }
 
+// EventLogClient is a client for the EventLog schema.
+type EventLogClient struct {
+	config
+}
+
+// NewEventLogClient returns a client for the EventLog from the given config.
+func NewEventLogClient(c config) *EventLogClient {
+	return &EventLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `eventlog.Hooks(f(g(h())))`.
+func (c *EventLogClient) Use(hooks ...Hook) {
+	c.hooks.EventLog = append(c.hooks.EventLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `eventlog.Intercept(f(g(h())))`.
+func (c *EventLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EventLog = append(c.inters.EventLog, interceptors...)
+}
+
+// Create returns a builder for creating a EventLog entity.
+func (c *EventLogClient) Create() *EventLogCreate {
+	mutation := newEventLogMutation(c.config, OpCreate)
+	return &EventLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EventLog entities.
+func (c *EventLogClient) CreateBulk(builders ...*EventLogCreate) *EventLogCreateBulk {
+	return &EventLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EventLogClient) MapCreateBulk(slice any, setFunc func(*EventLogCreate, int)) *EventLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EventLogCreateBulk{err: fmt.Errorf("calling to EventLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EventLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EventLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EventLog.
+func (c *EventLogClient) Update() *EventLogUpdate {
+	mutation := newEventLogMutation(c.config, OpUpdate)
+	return &EventLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EventLogClient) UpdateOne(el *EventLog) *EventLogUpdateOne {
+	mutation := newEventLogMutation(c.config, OpUpdateOne, withEventLog(el))
+	return &EventLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EventLogClient) UpdateOneID(id int) *EventLogUpdateOne {
+	mutation := newEventLogMutation(c.config, OpUpdateOne, withEventLogID(id))
+	return &EventLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EventLog.
+func (c *EventLogClient) Delete() *EventLogDelete {
+	mutation := newEventLogMutation(c.config, OpDelete)
+	return &EventLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EventLogClient) DeleteOne(el *EventLog) *EventLogDeleteOne {
+	return c.DeleteOneID(el.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EventLogClient) DeleteOneID(id int) *EventLogDeleteOne {
+	builder := c.Delete().Where(eventlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EventLogDeleteOne{builder}
+}
+
+// Query returns a query builder for EventLog.
+func (c *EventLogClient) Query() *EventLogQuery {
+	return &EventLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEventLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EventLog entity by its id.
+func (c *EventLogClient) Get(ctx context.Context, id int) (*EventLog, error) {
+	return c.Query().Where(eventlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EventLogClient) GetX(ctx context.Context, id int) *EventLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySigners queries the signers edge of a EventLog.
+func (c *EventLogClient) QuerySigners(el *EventLog) *SignerQuery {
+	query := (&SignerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := el.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(eventlog.Table, eventlog.FieldID, id),
+			sqlgraph.To(signer.Table, signer.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, eventlog.SignersTable, eventlog.SignersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(el.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EventLogClient) Hooks() []Hook {
+	return c.hooks.EventLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *EventLogClient) Interceptors() []Interceptor {
+	return c.inters.EventLog
+}
+
+func (c *EventLogClient) mutate(ctx context.Context, m *EventLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EventLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EventLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EventLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EventLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EventLog mutation op: %q", m.Op())
+	}
+}
+
 // SignerClient is a client for the Signer schema.
 type SignerClient struct {
 	config
@@ -480,6 +639,22 @@ func (c *SignerClient) QueryAssetPrice(s *Signer) *AssetPriceQuery {
 	return query
 }
 
+// QueryEventLogs queries the eventLogs edge of a Signer.
+func (c *SignerClient) QueryEventLogs(s *Signer) *EventLogQuery {
+	query := (&EventLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(signer.Table, signer.FieldID, id),
+			sqlgraph.To(eventlog.Table, eventlog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, signer.EventLogsTable, signer.EventLogsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *SignerClient) Hooks() []Hook {
 	return c.hooks.Signer
@@ -508,9 +683,9 @@ func (c *SignerClient) mutate(ctx context.Context, m *SignerMutation) (Value, er
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AssetPrice, Signer []ent.Hook
+		AssetPrice, EventLog, Signer []ent.Hook
 	}
 	inters struct {
-		AssetPrice, Signer []ent.Interceptor
+		AssetPrice, EventLog, Signer []ent.Interceptor
 	}
 )

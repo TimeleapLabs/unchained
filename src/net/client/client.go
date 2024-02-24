@@ -9,6 +9,7 @@ import (
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
 
@@ -21,6 +22,10 @@ var IsClientSocketClosed = false
 var Done chan struct{}
 
 func StartClient() {
+
+	if !config.Config.IsSet("broker.uri") {
+		return
+	}
 
 	brokerUrl := fmt.Sprintf(
 		"%s/%s",
@@ -55,7 +60,7 @@ func StartClient() {
 		for {
 			_, payload, err := Client.ReadMessage()
 
-			if err != nil || payload[0] == 5 {
+			if err != nil || payload[0] == opcodes.Error {
 
 				if err != nil {
 					log.Logger.
@@ -92,12 +97,12 @@ func StartClient() {
 
 			switch payload[0] {
 			// TODO: Make a table of call codes
-			case 2:
+			case opcodes.Feedback:
 				log.Logger.
 					With("Feedback", string(payload[1:])).
 					Info("Broker")
 
-			case 4:
+			case opcodes.KoskChallenge:
 				// TODO: Refactor into a function
 				// TODO: Check for errors!
 				var challenge kosk.Challenge
@@ -110,7 +115,7 @@ func StartClient() {
 
 				Client.WriteMessage(
 					websocket.BinaryMessage,
-					append([]byte{3}, koskPayload...),
+					append([]byte{opcodes.KoskResult}, koskPayload...),
 				)
 
 				if err != nil {
@@ -119,8 +124,11 @@ func StartClient() {
 						Error("Write error")
 				}
 
-			case 7:
-				Consume(payload[1:])
+			case opcodes.PriceReportBroadcast:
+				ConsumePriceReport(payload[1:])
+
+			case opcodes.EventLogBroadcast:
+				ConsumeEventLog(payload[1:])
 
 			default:
 				log.Logger.
@@ -131,14 +139,22 @@ func StartClient() {
 		}
 	}()
 
-	Client.WriteMessage(websocket.BinaryMessage, append([]byte{0}, helloPayload...))
+	Client.WriteMessage(
+		websocket.BinaryMessage,
+		append([]byte{opcodes.Hello}, helloPayload...))
+}
+
+func closeConnection() {
+	if config.Config.IsSet("broker.uri") {
+		Client.Close()
+	}
 }
 
 func ClientBlock() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	defer Client.Close()
+	defer closeConnection()
 
 	for {
 		select {
@@ -146,13 +162,15 @@ func ClientBlock() {
 			return
 		case <-interrupt:
 
-			err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if config.Config.IsSet("broker.uri") {
+				err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 
-			if err != nil {
-				log.Logger.
-					With("Error", err).
-					Error("Connection closed")
-				return
+				if err != nil {
+					log.Logger.
+						With("Error", err).
+						Error("Connection closed")
+					return
+				}
 			}
 
 			select {

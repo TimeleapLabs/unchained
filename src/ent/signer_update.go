@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -90,6 +91,21 @@ func (su *SignerUpdate) AddAssetPrice(a ...*AssetPrice) *SignerUpdate {
 	return su.AddAssetPriceIDs(ids...)
 }
 
+// AddEventLogIDs adds the "eventLogs" edge to the EventLog entity by IDs.
+func (su *SignerUpdate) AddEventLogIDs(ids ...int) *SignerUpdate {
+	su.mutation.AddEventLogIDs(ids...)
+	return su
+}
+
+// AddEventLogs adds the "eventLogs" edges to the EventLog entity.
+func (su *SignerUpdate) AddEventLogs(e ...*EventLog) *SignerUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return su.AddEventLogIDs(ids...)
+}
+
 // Mutation returns the SignerMutation object of the builder.
 func (su *SignerUpdate) Mutation() *SignerMutation {
 	return su.mutation
@@ -114,6 +130,27 @@ func (su *SignerUpdate) RemoveAssetPrice(a ...*AssetPrice) *SignerUpdate {
 		ids[i] = a[i].ID
 	}
 	return su.RemoveAssetPriceIDs(ids...)
+}
+
+// ClearEventLogs clears all "eventLogs" edges to the EventLog entity.
+func (su *SignerUpdate) ClearEventLogs() *SignerUpdate {
+	su.mutation.ClearEventLogs()
+	return su
+}
+
+// RemoveEventLogIDs removes the "eventLogs" edge to EventLog entities by IDs.
+func (su *SignerUpdate) RemoveEventLogIDs(ids ...int) *SignerUpdate {
+	su.mutation.RemoveEventLogIDs(ids...)
+	return su
+}
+
+// RemoveEventLogs removes "eventLogs" edges to EventLog entities.
+func (su *SignerUpdate) RemoveEventLogs(e ...*EventLog) *SignerUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return su.RemoveEventLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -235,6 +272,51 @@ func (su *SignerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.EventLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.EventLogsTable,
+			Columns: signer.EventLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.RemovedEventLogsIDs(); len(nodes) > 0 && !su.mutation.EventLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.EventLogsTable,
+			Columns: signer.EventLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.EventLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.EventLogsTable,
+			Columns: signer.EventLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{signer.Label}
@@ -317,6 +399,21 @@ func (suo *SignerUpdateOne) AddAssetPrice(a ...*AssetPrice) *SignerUpdateOne {
 	return suo.AddAssetPriceIDs(ids...)
 }
 
+// AddEventLogIDs adds the "eventLogs" edge to the EventLog entity by IDs.
+func (suo *SignerUpdateOne) AddEventLogIDs(ids ...int) *SignerUpdateOne {
+	suo.mutation.AddEventLogIDs(ids...)
+	return suo
+}
+
+// AddEventLogs adds the "eventLogs" edges to the EventLog entity.
+func (suo *SignerUpdateOne) AddEventLogs(e ...*EventLog) *SignerUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return suo.AddEventLogIDs(ids...)
+}
+
 // Mutation returns the SignerMutation object of the builder.
 func (suo *SignerUpdateOne) Mutation() *SignerMutation {
 	return suo.mutation
@@ -341,6 +438,27 @@ func (suo *SignerUpdateOne) RemoveAssetPrice(a ...*AssetPrice) *SignerUpdateOne 
 		ids[i] = a[i].ID
 	}
 	return suo.RemoveAssetPriceIDs(ids...)
+}
+
+// ClearEventLogs clears all "eventLogs" edges to the EventLog entity.
+func (suo *SignerUpdateOne) ClearEventLogs() *SignerUpdateOne {
+	suo.mutation.ClearEventLogs()
+	return suo
+}
+
+// RemoveEventLogIDs removes the "eventLogs" edge to EventLog entities by IDs.
+func (suo *SignerUpdateOne) RemoveEventLogIDs(ids ...int) *SignerUpdateOne {
+	suo.mutation.RemoveEventLogIDs(ids...)
+	return suo
+}
+
+// RemoveEventLogs removes "eventLogs" edges to EventLog entities.
+func (suo *SignerUpdateOne) RemoveEventLogs(e ...*EventLog) *SignerUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return suo.RemoveEventLogIDs(ids...)
 }
 
 // Where appends a list predicates to the SignerUpdate builder.
@@ -485,6 +603,51 @@ func (suo *SignerUpdateOne) sqlSave(ctx context.Context) (_node *Signer, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(assetprice.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.EventLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.EventLogsTable,
+			Columns: signer.EventLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.RemovedEventLogsIDs(); len(nodes) > 0 && !suo.mutation.EventLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.EventLogsTable,
+			Columns: signer.EventLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.EventLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.EventLogsTable,
+			Columns: signer.EventLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

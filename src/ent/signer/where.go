@@ -281,6 +281,29 @@ func HasAssetPriceWith(preds ...predicate.AssetPrice) predicate.Signer {
 	})
 }
 
+// HasEventLogs applies the HasEdge predicate on the "eventLogs" edge.
+func HasEventLogs() predicate.Signer {
+	return predicate.Signer(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, EventLogsTable, EventLogsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventLogsWith applies the HasEdge predicate on the "eventLogs" edge with a given conditions (other predicates).
+func HasEventLogsWith(preds ...predicate.EventLog) predicate.Signer {
+	return predicate.Signer(func(s *sql.Selector) {
+		step := newEventLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Signer) predicate.Signer {
 	return predicate.Signer(sql.AndPredicates(predicates...))

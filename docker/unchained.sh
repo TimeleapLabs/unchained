@@ -4,8 +4,9 @@ usage() {
   echo "Usage: $0 [node] [options]"
   echo "Node:"
   #echo "  broker  - Manage unchained broker node"
-  #echo "  remote - Manage unchained remote node"
-  echo "  worker   - Manage unchained worker node"
+  #echo "  remote  - Manage unchained remote node"
+  echo "  worker     - Manage unchained worker node"
+  echo "  standalone - Manage unchained standalone node"
   echo "Options:"
   echo "  Additional options passed directly to 'docker compose'"
   echo "Examples:"
@@ -29,7 +30,7 @@ if ! docker compose version &>/dev/null; then
   exit 1
 fi
 
-if [ ! $1 == 'worker' ]; then #&& [ ! $1 == 'remote' ] && [ ! $1 == 'lite' ] || [ -z $2 ]; then
+if [ ! $1 == 'worker' ] && [ ! $1 == 'standalone' ]; then #&& [ ! $1 == 'remote' ] && [ ! $1 == 'lite' ] || [ -z $2 ]; then
   usage
   exit 1
 fi
