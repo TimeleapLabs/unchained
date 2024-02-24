@@ -212,7 +212,6 @@ rpc:
 plugins:
   uniswap:
     schedule:
-      arbitrum: 100
       ethereum: 5000
 
     tokens:
