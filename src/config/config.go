@@ -11,7 +11,6 @@ func defaults() {
 	Config.SetDefault("name", petname.Generate(3, "-"))
 	Config.SetDefault("log", "info")
 	Config.SetDefault("rpc.ethereum", "https://ethereum.publicnode.com")
-	Config.SetDefault("broker.uri", "wss://shinobi.brokers.kenshi.io")
 	Config.SetDefault("broker.bind", "0.0.0.0:9123")
 }
 

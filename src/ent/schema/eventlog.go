@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/KenshiTech/unchained/datasets"
 )
 
 // DataSet holds the schema definition for the DataSet entity.
@@ -20,9 +21,10 @@ func (EventLog) Fields() []ent.Field {
 		field.Bytes("signature").MaxLen(96),
 		field.String("address"),
 		field.String("chain"),
-		field.String("index"),
+		field.Uint64("index"),
 		field.String("event"),
-		field.String("transaction"),
+		field.Bytes("transaction").MaxLen(32),
+		field.JSON("args", []datasets.EventLogArg{}),
 	}
 }
 
@@ -31,14 +33,13 @@ func (EventLog) Edges() []ent.Edge {
 	return []ent.Edge{
 		// TODO: Make these required on next migrate
 		edge.To("signers", Signer.Type).Required(),
-		edge.To("args", EventLogArg.Type),
 	}
 }
 
 // Edges of the DataSet.
 func (EventLog) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("transaction", "index").Unique(),
+		index.Fields("block", "transaction", "index").Unique(),
 		index.Fields("block", "address", "event"),
 	}
 }

@@ -40,9 +40,10 @@ var (
 		{Name: "signature", Type: field.TypeBytes, Size: 96},
 		{Name: "address", Type: field.TypeString},
 		{Name: "chain", Type: field.TypeString},
-		{Name: "index", Type: field.TypeString},
+		{Name: "index", Type: field.TypeUint64},
 		{Name: "event", Type: field.TypeString},
-		{Name: "transaction", Type: field.TypeString},
+		{Name: "transaction", Type: field.TypeBytes, Size: 32},
+		{Name: "args", Type: field.TypeJSON},
 	}
 	// EventLogsTable holds the schema information for the "event_logs" table.
 	EventLogsTable = &schema.Table{
@@ -59,28 +60,6 @@ var (
 				Name:    "eventlog_block_address_event",
 				Unique:  false,
 				Columns: []*schema.Column{EventLogsColumns[1], EventLogsColumns[4], EventLogsColumns[7]},
-			},
-		},
-	}
-	// EventLogArgsColumns holds the columns for the "event_log_args" table.
-	EventLogArgsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "type", Type: field.TypeString},
-		{Name: "value", Type: field.TypeString},
-		{Name: "event_log_args", Type: field.TypeInt},
-	}
-	// EventLogArgsTable holds the schema information for the "event_log_args" table.
-	EventLogArgsTable = &schema.Table{
-		Name:       "event_log_args",
-		Columns:    EventLogArgsColumns,
-		PrimaryKey: []*schema.Column{EventLogArgsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "event_log_args_event_logs_args",
-				Columns:    []*schema.Column{EventLogArgsColumns[4]},
-				RefColumns: []*schema.Column{EventLogsColumns[0]},
-				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -164,7 +143,6 @@ var (
 	Tables = []*schema.Table{
 		AssetPricesTable,
 		EventLogsTable,
-		EventLogArgsTable,
 		SignersTable,
 		AssetPriceSignersTable,
 		EventLogSignersTable,
@@ -172,7 +150,6 @@ var (
 )
 
 func init() {
-	EventLogArgsTable.ForeignKeys[0].RefTable = EventLogsTable
 	AssetPriceSignersTable.ForeignKeys[0].RefTable = AssetPricesTable
 	AssetPriceSignersTable.ForeignKeys[1].RefTable = SignersTable
 	EventLogSignersTable.ForeignKeys[0].RefTable = EventLogsTable

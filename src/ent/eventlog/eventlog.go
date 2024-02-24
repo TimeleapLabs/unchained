@@ -28,10 +28,10 @@ const (
 	FieldEvent = "event"
 	// FieldTransaction holds the string denoting the transaction field in the database.
 	FieldTransaction = "transaction"
+	// FieldArgs holds the string denoting the args field in the database.
+	FieldArgs = "args"
 	// EdgeSigners holds the string denoting the signers edge name in mutations.
 	EdgeSigners = "signers"
-	// EdgeArgs holds the string denoting the args edge name in mutations.
-	EdgeArgs = "args"
 	// Table holds the table name of the eventlog in the database.
 	Table = "event_logs"
 	// SignersTable is the table that holds the signers relation/edge. The primary key declared below.
@@ -39,13 +39,6 @@ const (
 	// SignersInverseTable is the table name for the Signer entity.
 	// It exists in this package in order to avoid circular dependency with the "signer" package.
 	SignersInverseTable = "signers"
-	// ArgsTable is the table that holds the args relation/edge.
-	ArgsTable = "event_log_args"
-	// ArgsInverseTable is the table name for the EventLogArg entity.
-	// It exists in this package in order to avoid circular dependency with the "eventlogarg" package.
-	ArgsInverseTable = "event_log_args"
-	// ArgsColumn is the table column denoting the args relation/edge.
-	ArgsColumn = "event_log_args"
 )
 
 // Columns holds all SQL columns for eventlog fields.
@@ -59,6 +52,7 @@ var Columns = []string{
 	FieldIndex,
 	FieldEvent,
 	FieldTransaction,
+	FieldArgs,
 }
 
 var (
@@ -80,6 +74,8 @@ func ValidColumn(column string) bool {
 var (
 	// SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
 	SignatureValidator func([]byte) error
+	// TransactionValidator is a validator for the "transaction" field. It is called by the builders before save.
+	TransactionValidator func([]byte) error
 )
 
 // OrderOption defines the ordering options for the EventLog queries.
@@ -120,11 +116,6 @@ func ByEvent(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEvent, opts...).ToFunc()
 }
 
-// ByTransaction orders the results by the transaction field.
-func ByTransaction(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTransaction, opts...).ToFunc()
-}
-
 // BySignersCount orders the results by signers count.
 func BySignersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -138,31 +129,10 @@ func BySigners(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSignersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByArgsCount orders the results by args count.
-func ByArgsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newArgsStep(), opts...)
-	}
-}
-
-// ByArgs orders the results by args terms.
-func ByArgs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newArgsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newSignersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SignersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, SignersTable, SignersPrimaryKey...),
-	)
-}
-func newArgsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ArgsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ArgsTable, ArgsColumn),
 	)
 }

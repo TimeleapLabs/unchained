@@ -7,6 +7,7 @@ import (
 	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
@@ -36,6 +37,7 @@ var workerCmd = &cobra.Command{
 
 		config.LoadConfig(configPath, secretsPath)
 		bls.InitClientIdentity()
+		db.Start()
 		client.StartClient()
 		ethereum.Start()
 		uniswap.Setup()

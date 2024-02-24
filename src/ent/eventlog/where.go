@@ -79,7 +79,7 @@ func Chain(v string) predicate.EventLog {
 }
 
 // Index applies equality check predicate on the "index" field. It's identical to IndexEQ.
-func Index(v string) predicate.EventLog {
+func Index(v uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldEQ(FieldIndex, v))
 }
 
@@ -89,7 +89,7 @@ func Event(v string) predicate.EventLog {
 }
 
 // Transaction applies equality check predicate on the "transaction" field. It's identical to TransactionEQ.
-func Transaction(v string) predicate.EventLog {
+func Transaction(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldEQ(FieldTransaction, v))
 }
 
@@ -344,68 +344,43 @@ func ChainContainsFold(v string) predicate.EventLog {
 }
 
 // IndexEQ applies the EQ predicate on the "index" field.
-func IndexEQ(v string) predicate.EventLog {
+func IndexEQ(v uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldEQ(FieldIndex, v))
 }
 
 // IndexNEQ applies the NEQ predicate on the "index" field.
-func IndexNEQ(v string) predicate.EventLog {
+func IndexNEQ(v uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldNEQ(FieldIndex, v))
 }
 
 // IndexIn applies the In predicate on the "index" field.
-func IndexIn(vs ...string) predicate.EventLog {
+func IndexIn(vs ...uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldIn(FieldIndex, vs...))
 }
 
 // IndexNotIn applies the NotIn predicate on the "index" field.
-func IndexNotIn(vs ...string) predicate.EventLog {
+func IndexNotIn(vs ...uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldNotIn(FieldIndex, vs...))
 }
 
 // IndexGT applies the GT predicate on the "index" field.
-func IndexGT(v string) predicate.EventLog {
+func IndexGT(v uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldGT(FieldIndex, v))
 }
 
 // IndexGTE applies the GTE predicate on the "index" field.
-func IndexGTE(v string) predicate.EventLog {
+func IndexGTE(v uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldGTE(FieldIndex, v))
 }
 
 // IndexLT applies the LT predicate on the "index" field.
-func IndexLT(v string) predicate.EventLog {
+func IndexLT(v uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldLT(FieldIndex, v))
 }
 
 // IndexLTE applies the LTE predicate on the "index" field.
-func IndexLTE(v string) predicate.EventLog {
+func IndexLTE(v uint64) predicate.EventLog {
 	return predicate.EventLog(sql.FieldLTE(FieldIndex, v))
-}
-
-// IndexContains applies the Contains predicate on the "index" field.
-func IndexContains(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldContains(FieldIndex, v))
-}
-
-// IndexHasPrefix applies the HasPrefix predicate on the "index" field.
-func IndexHasPrefix(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldHasPrefix(FieldIndex, v))
-}
-
-// IndexHasSuffix applies the HasSuffix predicate on the "index" field.
-func IndexHasSuffix(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldHasSuffix(FieldIndex, v))
-}
-
-// IndexEqualFold applies the EqualFold predicate on the "index" field.
-func IndexEqualFold(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldEqualFold(FieldIndex, v))
-}
-
-// IndexContainsFold applies the ContainsFold predicate on the "index" field.
-func IndexContainsFold(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldContainsFold(FieldIndex, v))
 }
 
 // EventEQ applies the EQ predicate on the "event" field.
@@ -474,68 +449,43 @@ func EventContainsFold(v string) predicate.EventLog {
 }
 
 // TransactionEQ applies the EQ predicate on the "transaction" field.
-func TransactionEQ(v string) predicate.EventLog {
+func TransactionEQ(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldEQ(FieldTransaction, v))
 }
 
 // TransactionNEQ applies the NEQ predicate on the "transaction" field.
-func TransactionNEQ(v string) predicate.EventLog {
+func TransactionNEQ(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldNEQ(FieldTransaction, v))
 }
 
 // TransactionIn applies the In predicate on the "transaction" field.
-func TransactionIn(vs ...string) predicate.EventLog {
+func TransactionIn(vs ...[]byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldIn(FieldTransaction, vs...))
 }
 
 // TransactionNotIn applies the NotIn predicate on the "transaction" field.
-func TransactionNotIn(vs ...string) predicate.EventLog {
+func TransactionNotIn(vs ...[]byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldNotIn(FieldTransaction, vs...))
 }
 
 // TransactionGT applies the GT predicate on the "transaction" field.
-func TransactionGT(v string) predicate.EventLog {
+func TransactionGT(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldGT(FieldTransaction, v))
 }
 
 // TransactionGTE applies the GTE predicate on the "transaction" field.
-func TransactionGTE(v string) predicate.EventLog {
+func TransactionGTE(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldGTE(FieldTransaction, v))
 }
 
 // TransactionLT applies the LT predicate on the "transaction" field.
-func TransactionLT(v string) predicate.EventLog {
+func TransactionLT(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldLT(FieldTransaction, v))
 }
 
 // TransactionLTE applies the LTE predicate on the "transaction" field.
-func TransactionLTE(v string) predicate.EventLog {
+func TransactionLTE(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldLTE(FieldTransaction, v))
-}
-
-// TransactionContains applies the Contains predicate on the "transaction" field.
-func TransactionContains(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldContains(FieldTransaction, v))
-}
-
-// TransactionHasPrefix applies the HasPrefix predicate on the "transaction" field.
-func TransactionHasPrefix(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldHasPrefix(FieldTransaction, v))
-}
-
-// TransactionHasSuffix applies the HasSuffix predicate on the "transaction" field.
-func TransactionHasSuffix(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldHasSuffix(FieldTransaction, v))
-}
-
-// TransactionEqualFold applies the EqualFold predicate on the "transaction" field.
-func TransactionEqualFold(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldEqualFold(FieldTransaction, v))
-}
-
-// TransactionContainsFold applies the ContainsFold predicate on the "transaction" field.
-func TransactionContainsFold(v string) predicate.EventLog {
-	return predicate.EventLog(sql.FieldContainsFold(FieldTransaction, v))
 }
 
 // HasSigners applies the HasEdge predicate on the "signers" edge.
@@ -553,29 +503,6 @@ func HasSigners() predicate.EventLog {
 func HasSignersWith(preds ...predicate.Signer) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		step := newSignersStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasArgs applies the HasEdge predicate on the "args" edge.
-func HasArgs() predicate.EventLog {
-	return predicate.EventLog(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ArgsTable, ArgsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasArgsWith applies the HasEdge predicate on the "args" edge with a given conditions (other predicates).
-func HasArgsWith(preds ...predicate.EventLogArg) predicate.EventLog {
-	return predicate.EventLog(func(s *sql.Selector) {
-		step := newArgsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -6,22 +6,54 @@ import (
 	"math/big"
 	"os"
 	"sort"
+	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/constants/opcodes"
+	"github.com/KenshiTech/unchained/datasets"
+	"github.com/KenshiTech/unchained/db"
+	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
+	"github.com/KenshiTech/unchained/net/consumer"
 	"github.com/KenshiTech/unchained/persistence"
-	"github.com/dgraph-io/badger/v4"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+	"github.com/KenshiTech/unchained/utils"
+	"github.com/gorilla/websocket"
 
+	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
+	"github.com/dgraph-io/badger/v4"
 	goEthereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-co-op/gocron/v2"
+	lru "github.com/hashicorp/golang-lru/v2"
+	"github.com/vmihailenco/msgpack/v5"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
+
+type EventKey struct {
+	Chain    string
+	LogIndex uint64
+	TxHash   [32]byte
+}
+
+type SupportKey struct {
+	Chain   string
+	Address string
+	Event   string
+}
+
+var consensus *lru.Cache[EventKey, map[bls12381.G1Affine]uint64]
+var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
+var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
+var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
+var signatureMutex *sync.Mutex
+var supportedEvents map[SupportKey]bool
 
 type LogConf struct {
 	Name          string  `mapstructure:"name"`
@@ -31,6 +63,8 @@ type LogConf struct {
 	Address       string  `mapstructure:"address"`
 	From          *uint64 `mapstructure:"from"`
 	Step          uint64  `mapstructure:"step"`
+	Store         bool    `mapstructure:"store"`
+	Send          bool    `mapstructure:"send"`
 	Confrimations uint64  `mapstructure:"confirmations"`
 }
 
@@ -53,6 +87,216 @@ func GetBlockNumber(network string) (*uint64, error) {
 type Event struct {
 	Key   [32]byte
 	Value [32]byte
+}
+
+type SaveSignatureArgs struct {
+	Info datasets.EventLog
+	Hash bls12381.G1Affine
+}
+
+func RecordSignature(
+	signature bls12381.G1Affine,
+	signer bls.Signer,
+	hash bls12381.G1Affine,
+	info datasets.EventLog,
+	debounce bool) {
+
+	signatureMutex.Lock()
+	defer signatureMutex.Unlock()
+
+	supportKey := SupportKey{
+		Chain:   info.Chain,
+		Address: info.Address,
+		Event:   info.Event,
+	}
+
+	if supported := supportedEvents[supportKey]; !supported {
+		return
+	}
+
+	blockNumber, err := GetBlockNumber(info.Chain)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// TODO: this won't work for Arbitrum
+	if *blockNumber-info.Block > 16 {
+		return // Data too old
+	}
+
+	key := EventKey{
+		Chain:    info.Chain,
+		TxHash:   info.TxHash,
+		LogIndex: info.LogIndex,
+	}
+
+	if !consensus.Contains(key) {
+		consensus.Add(key, make(map[bls12381.G1Affine]uint64))
+	}
+
+	reportedValues, _ := consensus.Get(key)
+	reportedValues[hash]++
+	isMajority := true
+	count := reportedValues[hash]
+
+	for _, reportCount := range reportedValues {
+		if reportCount > count {
+			isMajority = false
+			break
+		}
+	}
+
+	cached, ok := signatureCache.Get(hash)
+
+	packed := bls.Signature{
+		Signature: signature,
+		Signer:    signer,
+		Processed: false,
+	}
+
+	if !ok {
+		signatureCache.Add(hash, []bls.Signature{packed})
+		// TODO: This should not only write to DB,
+		// TODO: but also report to "consumers"
+		if isMajority {
+			if debounce {
+				DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+			} else {
+				SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+			}
+		}
+		return
+	}
+
+	for _, item := range cached {
+		if item.Signer.PublicKey == signer.PublicKey {
+			return
+		}
+	}
+
+	cached = append(cached, packed)
+	signatureCache.Add(hash, cached)
+
+	if isMajority {
+		if debounce {
+			DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+		} else {
+			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+		}
+	}
+}
+
+func SaveSignatures(args SaveSignatureArgs) {
+
+	dbClient := db.GetClient()
+	signatures, ok := signatureCache.Get(args.Hash)
+
+	if !ok {
+		return
+	}
+
+	ctx := context.Background()
+
+	var newSigners []bls.Signer
+	var newSignatures []bls12381.G1Affine
+	var keys [][]byte
+
+	for i := range signatures {
+		signature := signatures[i]
+		keys = append(keys, signature.Signer.PublicKey[:])
+		if !signature.Processed {
+			newSignatures = append(newSignatures, signature.Signature)
+			newSigners = append(newSigners, signature.Signer)
+		}
+	}
+
+	// TODO: This part can be a shared library
+	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
+		signer := newSigners[i]
+		sc.SetName(signer.Name).
+			SetKey(signer.PublicKey[:]).
+			SetShortkey(signer.ShortPublicKey[:]).
+			SetPoints(0)
+	}).
+		OnConflictColumns("shortkey").
+		UpdateName().
+		UpdateKey().
+		Update(func(su *ent.SignerUpsert) {
+			su.AddPoints(1)
+		}).
+		Exec(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	signerIds, err := dbClient.Signer.
+		Query().
+		Where(signer.KeyIn(keys...)).
+		IDs(ctx)
+
+	if err != nil {
+		return
+	}
+
+	var aggregate bls12381.G1Affine
+	currentAggregate, ok := aggregateCache.Get(args.Hash)
+
+	if ok {
+		newSignatures = append(newSignatures, currentAggregate)
+	}
+
+	aggregate, err = bls.AggregateSignatures(newSignatures)
+
+	if err != nil {
+		return
+	}
+
+	signatureBytes := aggregate.Bytes()
+
+	packet := datasets.BroadcastEventPacket{
+		Info:      args.Info,
+		Signers:   keys,
+		Signature: signatureBytes,
+	}
+
+	payload, err := msgpack.Marshal(&packet)
+
+	if err == nil {
+		// TODO: Handle errors in a proper way
+		consumer.Broadcast(
+			append(
+				[]byte{opcodes.EventLogBroadcast, 0},
+				payload...),
+		)
+	}
+
+	err = dbClient.EventLog.
+		Create().
+		SetBlock(args.Info.Block).
+		SetChain(args.Info.Chain).
+		SetAddress(args.Info.Address).
+		SetEvent(args.Info.Event).
+		SetIndex(args.Info.LogIndex).
+		SetTransaction(args.Info.TxHash[:]).
+		SetSignersCount(uint64(len(signatures))).
+		SetSignature(signatureBytes[:]).
+		SetArgs(args.Info.Args).
+		AddSignerIDs(signerIds...).
+		OnConflictColumns("block", "transaction", "index").
+		UpdateNewValues().
+		Exec(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, signature := range signatures {
+		signature.Processed = true
+	}
+
+	aggregateCache.Add(args.Hash, aggregate)
 }
 
 func createTask(configs []LogConf, chain string) func() {
@@ -111,8 +355,8 @@ func createTask(configs []LogConf, chain string) func() {
 				Addresses: []common.Address{contractAddress},
 			}
 
-			client := ethereum.Clients[conf.Chain]
-			logs, err := client.FilterLogs(context.Background(), query)
+			rpcClient := ethereum.Clients[conf.Chain]
+			logs, err := rpcClient.FilterLogs(context.Background(), query)
 
 			if err != nil {
 				panic(err)
@@ -171,6 +415,55 @@ func createTask(configs []LogConf, chain string) func() {
 				}
 
 				message.Info(conf.Name)
+
+				args := []datasets.EventLogArg{}
+				for _, key := range keys {
+					args = append(
+						args,
+						datasets.EventLogArg{Name: key, Value: eventData[key]},
+					)
+				}
+
+				event := datasets.EventLog{
+					LogIndex: uint64(vLog.Index),
+					Block:    vLog.BlockNumber,
+					Address:  vLog.Address.Hex(),
+					Event:    conf.Event,
+					Chain:    conf.Chain,
+					TxHash:   vLog.TxHash,
+					Args:     args,
+				}
+
+				toHash, err := msgpack.Marshal(&event)
+
+				if err != nil {
+					panic(err)
+				}
+
+				signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
+				compressedSignature := signature.Bytes()
+
+				priceReport := datasets.EventLogReport{
+					EventLog:  event,
+					Signature: compressedSignature,
+				}
+
+				payload, err := msgpack.Marshal(&priceReport)
+
+				if err != nil {
+					panic(err)
+				}
+
+				if conf.Send {
+					client.Client.WriteMessage(
+						websocket.BinaryMessage,
+						append([]byte{opcodes.EventLog, 0}, payload...),
+					)
+				}
+
+				if conf.Store {
+					RecordSignature(signature, bls.ClientSigner, hash, event, false)
+				}
 			}
 
 			lastSyncedBlock[conf] = toBlock
@@ -178,6 +471,27 @@ func createTask(configs []LogConf, chain string) func() {
 		}
 
 	}
+}
+
+func Setup() {
+	if !config.Config.InConfig("plugins.logs") {
+		return
+	}
+
+	var configs []LogConf
+	if err := config.Config.UnmarshalKey("plugins.logs.events", &configs); err != nil {
+		panic(err)
+	}
+
+	for _, conf := range configs {
+		key := SupportKey{
+			Chain:   conf.Chain,
+			Address: conf.Address,
+			Event:   conf.Event,
+		}
+		supportedEvents[key] = true
+	}
+
 }
 
 func Start() {
@@ -240,7 +554,31 @@ func Start() {
 }
 
 func init() {
+
+	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
+	signatureMutex = new(sync.Mutex)
+
 	abiMap = make(map[string]abi.ABI)
 	lastSyncedBlock = make(map[LogConf]uint64)
 	caser = cases.Title(language.English, cases.NoLower)
+	supportedEvents = make(map[SupportKey]bool)
+
+	var err error
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](24)
+
+	if err != nil {
+		panic(err)
+	}
+
+	consensus, err = lru.New[EventKey, map[bls12381.G1Affine]uint64](24)
+
+	if err != nil {
+		panic(err)
+	}
+
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](24)
+
+	if err != nil {
+		panic(err)
+	}
 }

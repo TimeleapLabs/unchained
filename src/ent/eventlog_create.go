@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/eventlogarg"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
 
@@ -54,8 +54,8 @@ func (elc *EventLogCreate) SetChain(s string) *EventLogCreate {
 }
 
 // SetIndex sets the "index" field.
-func (elc *EventLogCreate) SetIndex(s string) *EventLogCreate {
-	elc.mutation.SetIndex(s)
+func (elc *EventLogCreate) SetIndex(u uint64) *EventLogCreate {
+	elc.mutation.SetIndex(u)
 	return elc
 }
 
@@ -66,8 +66,14 @@ func (elc *EventLogCreate) SetEvent(s string) *EventLogCreate {
 }
 
 // SetTransaction sets the "transaction" field.
-func (elc *EventLogCreate) SetTransaction(s string) *EventLogCreate {
-	elc.mutation.SetTransaction(s)
+func (elc *EventLogCreate) SetTransaction(b []byte) *EventLogCreate {
+	elc.mutation.SetTransaction(b)
+	return elc
+}
+
+// SetArgs sets the "args" field.
+func (elc *EventLogCreate) SetArgs(dla []datasets.EventLogArg) *EventLogCreate {
+	elc.mutation.SetArgs(dla)
 	return elc
 }
 
@@ -84,21 +90,6 @@ func (elc *EventLogCreate) AddSigners(s ...*Signer) *EventLogCreate {
 		ids[i] = s[i].ID
 	}
 	return elc.AddSignerIDs(ids...)
-}
-
-// AddArgIDs adds the "args" edge to the EventLogArg entity by IDs.
-func (elc *EventLogCreate) AddArgIDs(ids ...int) *EventLogCreate {
-	elc.mutation.AddArgIDs(ids...)
-	return elc
-}
-
-// AddArgs adds the "args" edges to the EventLogArg entity.
-func (elc *EventLogCreate) AddArgs(e ...*EventLogArg) *EventLogCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return elc.AddArgIDs(ids...)
 }
 
 // Mutation returns the EventLogMutation object of the builder.
@@ -164,6 +155,14 @@ func (elc *EventLogCreate) check() error {
 	if _, ok := elc.mutation.Transaction(); !ok {
 		return &ValidationError{Name: "transaction", err: errors.New(`ent: missing required field "EventLog.transaction"`)}
 	}
+	if v, ok := elc.mutation.Transaction(); ok {
+		if err := eventlog.TransactionValidator(v); err != nil {
+			return &ValidationError{Name: "transaction", err: fmt.Errorf(`ent: validator failed for field "EventLog.transaction": %w`, err)}
+		}
+	}
+	if _, ok := elc.mutation.Args(); !ok {
+		return &ValidationError{Name: "args", err: errors.New(`ent: missing required field "EventLog.args"`)}
+	}
 	if len(elc.mutation.SignersIDs()) == 0 {
 		return &ValidationError{Name: "signers", err: errors.New(`ent: missing required edge "EventLog.signers"`)}
 	}
@@ -215,7 +214,7 @@ func (elc *EventLogCreate) createSpec() (*EventLog, *sqlgraph.CreateSpec) {
 		_node.Chain = value
 	}
 	if value, ok := elc.mutation.Index(); ok {
-		_spec.SetField(eventlog.FieldIndex, field.TypeString, value)
+		_spec.SetField(eventlog.FieldIndex, field.TypeUint64, value)
 		_node.Index = value
 	}
 	if value, ok := elc.mutation.Event(); ok {
@@ -223,8 +222,12 @@ func (elc *EventLogCreate) createSpec() (*EventLog, *sqlgraph.CreateSpec) {
 		_node.Event = value
 	}
 	if value, ok := elc.mutation.Transaction(); ok {
-		_spec.SetField(eventlog.FieldTransaction, field.TypeString, value)
+		_spec.SetField(eventlog.FieldTransaction, field.TypeBytes, value)
 		_node.Transaction = value
+	}
+	if value, ok := elc.mutation.Args(); ok {
+		_spec.SetField(eventlog.FieldArgs, field.TypeJSON, value)
+		_node.Args = value
 	}
 	if nodes := elc.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -235,22 +238,6 @@ func (elc *EventLogCreate) createSpec() (*EventLog, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := elc.mutation.ArgsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   eventlog.ArgsTable,
-			Columns: []string{eventlog.ArgsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(eventlogarg.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -383,7 +370,7 @@ func (u *EventLogUpsert) UpdateChain() *EventLogUpsert {
 }
 
 // SetIndex sets the "index" field.
-func (u *EventLogUpsert) SetIndex(v string) *EventLogUpsert {
+func (u *EventLogUpsert) SetIndex(v uint64) *EventLogUpsert {
 	u.Set(eventlog.FieldIndex, v)
 	return u
 }
@@ -391,6 +378,12 @@ func (u *EventLogUpsert) SetIndex(v string) *EventLogUpsert {
 // UpdateIndex sets the "index" field to the value that was provided on create.
 func (u *EventLogUpsert) UpdateIndex() *EventLogUpsert {
 	u.SetExcluded(eventlog.FieldIndex)
+	return u
+}
+
+// AddIndex adds v to the "index" field.
+func (u *EventLogUpsert) AddIndex(v uint64) *EventLogUpsert {
+	u.Add(eventlog.FieldIndex, v)
 	return u
 }
 
@@ -407,7 +400,7 @@ func (u *EventLogUpsert) UpdateEvent() *EventLogUpsert {
 }
 
 // SetTransaction sets the "transaction" field.
-func (u *EventLogUpsert) SetTransaction(v string) *EventLogUpsert {
+func (u *EventLogUpsert) SetTransaction(v []byte) *EventLogUpsert {
 	u.Set(eventlog.FieldTransaction, v)
 	return u
 }
@@ -415,6 +408,18 @@ func (u *EventLogUpsert) SetTransaction(v string) *EventLogUpsert {
 // UpdateTransaction sets the "transaction" field to the value that was provided on create.
 func (u *EventLogUpsert) UpdateTransaction() *EventLogUpsert {
 	u.SetExcluded(eventlog.FieldTransaction)
+	return u
+}
+
+// SetArgs sets the "args" field.
+func (u *EventLogUpsert) SetArgs(v []datasets.EventLogArg) *EventLogUpsert {
+	u.Set(eventlog.FieldArgs, v)
+	return u
+}
+
+// UpdateArgs sets the "args" field to the value that was provided on create.
+func (u *EventLogUpsert) UpdateArgs() *EventLogUpsert {
+	u.SetExcluded(eventlog.FieldArgs)
 	return u
 }
 
@@ -543,9 +548,16 @@ func (u *EventLogUpsertOne) UpdateChain() *EventLogUpsertOne {
 }
 
 // SetIndex sets the "index" field.
-func (u *EventLogUpsertOne) SetIndex(v string) *EventLogUpsertOne {
+func (u *EventLogUpsertOne) SetIndex(v uint64) *EventLogUpsertOne {
 	return u.Update(func(s *EventLogUpsert) {
 		s.SetIndex(v)
+	})
+}
+
+// AddIndex adds v to the "index" field.
+func (u *EventLogUpsertOne) AddIndex(v uint64) *EventLogUpsertOne {
+	return u.Update(func(s *EventLogUpsert) {
+		s.AddIndex(v)
 	})
 }
 
@@ -571,7 +583,7 @@ func (u *EventLogUpsertOne) UpdateEvent() *EventLogUpsertOne {
 }
 
 // SetTransaction sets the "transaction" field.
-func (u *EventLogUpsertOne) SetTransaction(v string) *EventLogUpsertOne {
+func (u *EventLogUpsertOne) SetTransaction(v []byte) *EventLogUpsertOne {
 	return u.Update(func(s *EventLogUpsert) {
 		s.SetTransaction(v)
 	})
@@ -581,6 +593,20 @@ func (u *EventLogUpsertOne) SetTransaction(v string) *EventLogUpsertOne {
 func (u *EventLogUpsertOne) UpdateTransaction() *EventLogUpsertOne {
 	return u.Update(func(s *EventLogUpsert) {
 		s.UpdateTransaction()
+	})
+}
+
+// SetArgs sets the "args" field.
+func (u *EventLogUpsertOne) SetArgs(v []datasets.EventLogArg) *EventLogUpsertOne {
+	return u.Update(func(s *EventLogUpsert) {
+		s.SetArgs(v)
+	})
+}
+
+// UpdateArgs sets the "args" field to the value that was provided on create.
+func (u *EventLogUpsertOne) UpdateArgs() *EventLogUpsertOne {
+	return u.Update(func(s *EventLogUpsert) {
+		s.UpdateArgs()
 	})
 }
 
@@ -872,9 +898,16 @@ func (u *EventLogUpsertBulk) UpdateChain() *EventLogUpsertBulk {
 }
 
 // SetIndex sets the "index" field.
-func (u *EventLogUpsertBulk) SetIndex(v string) *EventLogUpsertBulk {
+func (u *EventLogUpsertBulk) SetIndex(v uint64) *EventLogUpsertBulk {
 	return u.Update(func(s *EventLogUpsert) {
 		s.SetIndex(v)
+	})
+}
+
+// AddIndex adds v to the "index" field.
+func (u *EventLogUpsertBulk) AddIndex(v uint64) *EventLogUpsertBulk {
+	return u.Update(func(s *EventLogUpsert) {
+		s.AddIndex(v)
 	})
 }
 
@@ -900,7 +933,7 @@ func (u *EventLogUpsertBulk) UpdateEvent() *EventLogUpsertBulk {
 }
 
 // SetTransaction sets the "transaction" field.
-func (u *EventLogUpsertBulk) SetTransaction(v string) *EventLogUpsertBulk {
+func (u *EventLogUpsertBulk) SetTransaction(v []byte) *EventLogUpsertBulk {
 	return u.Update(func(s *EventLogUpsert) {
 		s.SetTransaction(v)
 	})
@@ -910,6 +943,20 @@ func (u *EventLogUpsertBulk) SetTransaction(v string) *EventLogUpsertBulk {
 func (u *EventLogUpsertBulk) UpdateTransaction() *EventLogUpsertBulk {
 	return u.Update(func(s *EventLogUpsert) {
 		s.UpdateTransaction()
+	})
+}
+
+// SetArgs sets the "args" field.
+func (u *EventLogUpsertBulk) SetArgs(v []datasets.EventLogArg) *EventLogUpsertBulk {
+	return u.Update(func(s *EventLogUpsert) {
+		s.SetArgs(v)
+	})
+}
+
+// UpdateArgs sets the "args" field to the value that was provided on create.
+func (u *EventLogUpsertBulk) UpdateArgs() *EventLogUpsertBulk {
+	return u.Update(func(s *EventLogUpsert) {
+		s.UpdateArgs()
 	})
 }
 

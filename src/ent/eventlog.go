@@ -3,11 +3,13 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 )
 
@@ -27,11 +29,13 @@ type EventLog struct {
 	// Chain holds the value of the "chain" field.
 	Chain string `json:"chain,omitempty"`
 	// Index holds the value of the "index" field.
-	Index string `json:"index,omitempty"`
+	Index uint64 `json:"index,omitempty"`
 	// Event holds the value of the "event" field.
 	Event string `json:"event,omitempty"`
 	// Transaction holds the value of the "transaction" field.
-	Transaction string `json:"transaction,omitempty"`
+	Transaction []byte `json:"transaction,omitempty"`
+	// Args holds the value of the "args" field.
+	Args []datasets.EventLogArg `json:"args,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventLogQuery when eager-loading is set.
 	Edges        EventLogEdges `json:"edges"`
@@ -42,11 +46,9 @@ type EventLog struct {
 type EventLogEdges struct {
 	// Signers holds the value of the signers edge.
 	Signers []*Signer `json:"signers,omitempty"`
-	// Args holds the value of the args edge.
-	Args []*EventLogArg `json:"args,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // SignersOrErr returns the Signers value or an error if the edge
@@ -58,25 +60,16 @@ func (e EventLogEdges) SignersOrErr() ([]*Signer, error) {
 	return nil, &NotLoadedError{edge: "signers"}
 }
 
-// ArgsOrErr returns the Args value or an error if the edge
-// was not loaded in eager-loading.
-func (e EventLogEdges) ArgsOrErr() ([]*EventLogArg, error) {
-	if e.loadedTypes[1] {
-		return e.Args, nil
-	}
-	return nil, &NotLoadedError{edge: "args"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*EventLog) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case eventlog.FieldSignature:
+		case eventlog.FieldSignature, eventlog.FieldTransaction, eventlog.FieldArgs:
 			values[i] = new([]byte)
-		case eventlog.FieldID, eventlog.FieldBlock, eventlog.FieldSignersCount:
+		case eventlog.FieldID, eventlog.FieldBlock, eventlog.FieldSignersCount, eventlog.FieldIndex:
 			values[i] = new(sql.NullInt64)
-		case eventlog.FieldAddress, eventlog.FieldChain, eventlog.FieldIndex, eventlog.FieldEvent, eventlog.FieldTransaction:
+		case eventlog.FieldAddress, eventlog.FieldChain, eventlog.FieldEvent:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -130,10 +123,10 @@ func (el *EventLog) assignValues(columns []string, values []any) error {
 				el.Chain = value.String
 			}
 		case eventlog.FieldIndex:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field index", values[i])
 			} else if value.Valid {
-				el.Index = value.String
+				el.Index = uint64(value.Int64)
 			}
 		case eventlog.FieldEvent:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -142,10 +135,18 @@ func (el *EventLog) assignValues(columns []string, values []any) error {
 				el.Event = value.String
 			}
 		case eventlog.FieldTransaction:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field transaction", values[i])
-			} else if value.Valid {
-				el.Transaction = value.String
+			} else if value != nil {
+				el.Transaction = *value
+			}
+		case eventlog.FieldArgs:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field args", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &el.Args); err != nil {
+					return fmt.Errorf("unmarshal field args: %w", err)
+				}
 			}
 		default:
 			el.selectValues.Set(columns[i], values[i])
@@ -163,11 +164,6 @@ func (el *EventLog) Value(name string) (ent.Value, error) {
 // QuerySigners queries the "signers" edge of the EventLog entity.
 func (el *EventLog) QuerySigners() *SignerQuery {
 	return NewEventLogClient(el.config).QuerySigners(el)
-}
-
-// QueryArgs queries the "args" edge of the EventLog entity.
-func (el *EventLog) QueryArgs() *EventLogArgQuery {
-	return NewEventLogClient(el.config).QueryArgs(el)
 }
 
 // Update returns a builder for updating this EventLog.
@@ -209,13 +205,16 @@ func (el *EventLog) String() string {
 	builder.WriteString(el.Chain)
 	builder.WriteString(", ")
 	builder.WriteString("index=")
-	builder.WriteString(el.Index)
+	builder.WriteString(fmt.Sprintf("%v", el.Index))
 	builder.WriteString(", ")
 	builder.WriteString("event=")
 	builder.WriteString(el.Event)
 	builder.WriteString(", ")
 	builder.WriteString("transaction=")
-	builder.WriteString(el.Transaction)
+	builder.WriteString(fmt.Sprintf("%v", el.Transaction))
+	builder.WriteString(", ")
+	builder.WriteString("args=")
+	builder.WriteString(fmt.Sprintf("%v", el.Args))
 	builder.WriteByte(')')
 	return builder.String()
 }
