@@ -2,7 +2,7 @@ log: info
 name: <name>
 
 database:
-  url: postgres://<user>:<pass>@<host>:<port>/<db>
+  url: postgres://<user>:<pass>@<host>:<port>/<db>?sslmode=disable
 
 rpc:
   ethereum: 
