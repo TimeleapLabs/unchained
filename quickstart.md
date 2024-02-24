@@ -212,14 +212,13 @@ rpc:
 plugins:
   uniswap:
     schedule:
-      arbitrum: 100
       ethereum: 5000
 
     tokens:
       - name: ethereum
         chain: ethereum
         pair: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-        delta: 6
+        delta: 12
         invert: true
         unit: USDT
         send: true
