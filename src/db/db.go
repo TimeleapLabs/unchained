@@ -14,7 +14,7 @@ var dbClient *ent.Client
 
 func Start() {
 
-	if !config.Config.InConfig("database.url") {
+	if !config.Config.IsSet("database.url") {
 		return
 	}
 

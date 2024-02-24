@@ -21,7 +21,7 @@ func InitClientIdentity() {
 	var err error
 	var pkBytes [96]byte
 
-	if config.Secrets.InConfig("secretKey") {
+	if config.Secrets.IsSet("secretKey") {
 
 		decoded := base58.Decode(config.Secrets.GetString("secretKey"))
 
@@ -66,7 +66,7 @@ func InitClientIdentity() {
 	// TODO: Avoid recalculating this
 	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
 
-	if !config.Secrets.InConfig("address") {
+	if !config.Secrets.IsSet("address") {
 		config.Secrets.Set("address", addrStr)
 		err := config.Secrets.WriteConfig()
 
