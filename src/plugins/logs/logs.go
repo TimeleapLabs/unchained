@@ -388,21 +388,16 @@ func createTask(configs []LogConf, chain string) func() {
 					panic(err)
 				}
 
-				for i, arg := range eventAbi.Inputs {
-					if arg.Indexed {
-						switch arg.Type.String() {
-						case "address":
-							if len(vLog.Topics) > i {
-								eventData[arg.Name] = common.BytesToAddress(vLog.Topics[i+1].Bytes()).Hex()
-							}
-						case "uint256", "uint8", "uint16", "uint32", "uint64":
-							if len(vLog.Topics) > i {
-								num := new(big.Int).SetBytes(vLog.Topics[i+1][:])
-								eventData[arg.Name] = num
-							}
-						}
-						// TODO: Add support for more types
+				indexedParams := make([]abi.Argument, 0)
+				for _, input := range eventAbi.Inputs {
+					if input.Indexed {
+						indexedParams = append(indexedParams, input)
 					}
+				}
+
+				err = abi.ParseTopicsIntoMap(eventData, indexedParams, vLog.Topics[1:])
+				if err != nil {
+					panic(err)
 				}
 
 				var keys []string
