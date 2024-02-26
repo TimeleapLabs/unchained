@@ -24,6 +24,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/gorilla/websocket"
+	"github.com/puzpuzpuz/xsync/v3"
 	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -47,20 +48,6 @@ type AssetKey struct {
 	Block uint64
 }
 
-var priceCache map[string]*lru.Cache[uint64, big.Int]
-var consensus *lru.Cache[AssetKey, map[bls12381.G1Affine]uint64]
-var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
-var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
-var supportedTokens map[TokenKey]bool
-
-var twoOneNineTwo big.Int
-var tenEighteen big.Int
-var tenEighteenF big.Float
-var lastBlock map[string]uint64
-var crossPrices map[string]big.Int
-var lastPrice big.Int
-var caser cases.Caser
-
 type Token struct {
 	Id     *string  `mapstructure:"id"`
 	Chain  string   `mapstructure:"chain"`
@@ -75,6 +62,19 @@ type Token struct {
 	Cross  []string `mapstructure:"cross"`
 }
 
+var priceCache map[string]*lru.Cache[uint64, big.Int]
+var consensus *lru.Cache[AssetKey, map[bls12381.G1Affine]uint64]
+var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
+var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
+var supportedTokens map[TokenKey]bool
+
+var twoOneNineTwo big.Int
+var tenEighteen big.Int
+var tenEighteenF big.Float
+var lastBlock *xsync.MapOf[TokenKey, uint64]
+var crossPrices map[string]big.Int
+var lastPrice big.Int
+
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func RecordSignature(
@@ -85,17 +85,13 @@ func RecordSignature(
 	debounce bool,
 	historical bool) {
 
-	signatureMutex.Lock()
-	defer signatureMutex.Unlock()
-
 	// TODO: Invert makes a difference here
-	tokenKey := TokenKey{Chain: info.Chain, Pair: info.Pair}
+	tokenKey := TokenKey{Chain: info.Chain, Pair: strings.ToLower(info.Pair)}
 	if supported := supportedTokens[tokenKey]; !supported {
 		return
 	}
 
 	if !historical {
-
 		blockNumber, err := GetBlockNumber(info.Chain)
 
 		if err != nil {
@@ -103,7 +99,7 @@ func RecordSignature(
 		}
 
 		// TODO: this won't work for Arbitrum
-		if *blockNumber-info.Block > 16 {
+		if *blockNumber-info.Block > 96 {
 			return // Data too old
 		}
 	}
@@ -111,9 +107,12 @@ func RecordSignature(
 	key := AssetKey{
 		Asset: info.Asset,
 		Chain: info.Chain,
-		Pair:  info.Pair,
+		Pair:  strings.ToLower(info.Pair),
 		Block: info.Block,
 	}
+
+	signatureMutex.Lock()
+	defer signatureMutex.Unlock()
 
 	if !consensus.Contains(key) {
 		consensus.Add(key, make(map[bls12381.G1Affine]uint64))
@@ -262,7 +261,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	err = dbClient.AssetPrice.
 		Create().
-		SetPair(args.Info.Pair).
+		SetPair(strings.ToLower(args.Info.Pair)).
 		SetAsset(args.Info.Asset).
 		SetChain(args.Info.Chain).
 		SetBlock(args.Info.Block).
@@ -392,9 +391,9 @@ func Setup() {
 	}
 
 	for _, token := range tokens {
-		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](24)
+		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](128)
 
-		key := TokenKey{Chain: token.Chain, Pair: token.Pair}
+		key := TokenKey{Chain: token.Chain, Pair: strings.ToLower(token.Pair)}
 		supportedTokens[key] = true
 
 		if err != nil {
@@ -403,12 +402,26 @@ func Setup() {
 	}
 }
 
-func syncBlocks(token Token, latest uint64) {
-	for block := lastBlock[token.Chain]; block < latest; block++ {
+func syncBlocks(token Token, key TokenKey, latest uint64) {
+	block, ok := lastBlock.Load(key)
+
+	if !ok {
+		return
+	}
+
+	caser := cases.Title(language.English, cases.NoLower)
+
+	for currBlock := block + 1; currBlock < latest; currBlock++ {
+
+		lastSycned, ok := lastBlock.Load(key)
+
+		if ok && currBlock <= lastSycned {
+			return
+		}
 
 		price, err := GetPriceAtBlockFromPair(
 			token.Chain,
-			block,
+			currBlock,
 			token.Pair,
 			token.Delta,
 			token.Invert,
@@ -440,14 +453,20 @@ func syncBlocks(token Token, latest uint64) {
 		priceF.Quo(new(big.Float).SetInt(price), &tenEighteenF)
 		priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
 
+		lastSycned, ok = lastBlock.Load(key)
+
+		if ok && currBlock <= lastSycned {
+			return
+		}
+
 		log.Logger.
-			With("Block", block).
+			With("Block", currBlock).
 			With("Price", priceStr).
 			Info(caser.String(token.Name))
 
 		priceInfo := datasets.PriceInfo{
 			Price: *price,
-			Block: block,
+			Block: currBlock,
 			Chain: token.Chain,
 			Pair:  strings.ToLower(token.Pair),
 			Asset: strings.ToLower(token.Name),
@@ -490,6 +509,8 @@ func syncBlocks(token Token, latest uint64) {
 				true,
 			)
 		}
+
+		lastBlock.Store(key, currBlock)
 	}
 }
 
@@ -503,26 +524,23 @@ func createTask(tokens []Token, chain string) func() {
 			panic(err)
 		}
 
-		if lastBlock[chain] == *currBlockNumber {
-			return
-		}
-
-		if lastBlock[chain] == 0 {
-			lastBlock[chain] = *currBlockNumber - 1
-		}
-
 		for _, token := range tokens {
 
 			if token.Chain != chain {
 				continue
 			}
 
-			syncBlocks(token, *currBlockNumber)
+			key := TokenKey{Chain: token.Chain, Pair: token.Pair}
+			tokenLastBlock, exists := lastBlock.Load(key)
 
+			if !exists {
+				lastBlock.Store(key, *currBlockNumber-1)
+			} else if tokenLastBlock == *currBlockNumber {
+				return
+			}
+
+			syncBlocks(token, key, *currBlockNumber)
 		}
-
-		// TODO: block numbers should be tracked separately for each token
-		lastBlock[chain] = *currBlockNumber
 	}
 }
 
@@ -540,7 +558,7 @@ func Start() {
 	}
 
 	for _, token := range tokens {
-		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](24)
+		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](128)
 
 		if err != nil {
 			panic(err)
@@ -558,7 +576,6 @@ func Start() {
 		_, err = scheduler.NewJob(
 			gocron.DurationJob(duration),
 			gocron.NewTask(task),
-			gocron.WithSingletonMode(gocron.LimitModeReschedule),
 		)
 
 		if err != nil {
@@ -583,25 +600,24 @@ func init() {
 	supportedTokens = make(map[TokenKey]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](24)
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
 
 	if err != nil {
 		panic(err)
 	}
 
-	consensus, err = lru.New[AssetKey, map[bls12381.G1Affine]uint64](24)
+	consensus, err = lru.New[AssetKey, map[bls12381.G1Affine]uint64](128)
 
 	if err != nil {
 		panic(err)
 	}
 
-	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](24)
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](128)
 
 	if err != nil {
 		panic(err)
 	}
 
-	lastBlock = make(map[string]uint64)
+	lastBlock = xsync.NewMapOf[TokenKey, uint64]()
 	crossPrices = make(map[string]big.Int)
-	caser = cases.Title(language.English, cases.NoLower)
 }
