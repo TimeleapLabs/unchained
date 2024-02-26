@@ -145,8 +145,17 @@ func StartClient() {
 }
 
 func closeConnection() {
+
 	if config.Config.IsSet("broker.uri") {
+		err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		Client.Close()
+
+		if err != nil {
+			log.Logger.
+				With("Error", err).
+				Error("Connection closed")
+			return
+		}
 	}
 }
 
@@ -161,17 +170,6 @@ func ClientBlock() {
 		case <-Done:
 			return
 		case <-interrupt:
-
-			if config.Config.IsSet("broker.uri") {
-				err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-
-				if err != nil {
-					log.Logger.
-						With("Error", err).
-						Error("Connection closed")
-					return
-				}
-			}
 
 			select {
 			case <-Done:
