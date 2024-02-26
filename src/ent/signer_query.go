@@ -20,12 +20,16 @@ import (
 // SignerQuery is the builder for querying Signer entities.
 type SignerQuery struct {
 	config
-	ctx            *QueryContext
-	order          []signer.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.Signer
-	withAssetPrice *AssetPriceQuery
-	withEventLogs  *EventLogQuery
+	ctx                 *QueryContext
+	order               []signer.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Signer
+	withAssetPrice      *AssetPriceQuery
+	withEventLogs       *EventLogQuery
+	modifiers           []func(*sql.Selector)
+	loadTotal           []func(context.Context, []*Signer) error
+	withNamedAssetPrice map[string]*AssetPriceQuery
+	withNamedEventLogs  map[string]*EventLogQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -420,6 +424,9 @@ func (sq *SignerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Signe
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -440,6 +447,25 @@ func (sq *SignerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Signe
 		if err := sq.loadEventLogs(ctx, query, nodes,
 			func(n *Signer) { n.Edges.EventLogs = []*EventLog{} },
 			func(n *Signer, e *EventLog) { n.Edges.EventLogs = append(n.Edges.EventLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range sq.withNamedAssetPrice {
+		if err := sq.loadAssetPrice(ctx, query, nodes,
+			func(n *Signer) { n.appendNamedAssetPrice(name) },
+			func(n *Signer, e *AssetPrice) { n.appendNamedAssetPrice(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range sq.withNamedEventLogs {
+		if err := sq.loadEventLogs(ctx, query, nodes,
+			func(n *Signer) { n.appendNamedEventLogs(name) },
+			func(n *Signer, e *EventLog) { n.appendNamedEventLogs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for i := range sq.loadTotal {
+		if err := sq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -571,6 +597,9 @@ func (sq *SignerQuery) loadEventLogs(ctx context.Context, query *EventLogQuery, 
 
 func (sq *SignerQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	_spec.Node.Columns = sq.ctx.Fields
 	if len(sq.ctx.Fields) > 0 {
 		_spec.Unique = sq.ctx.Unique != nil && *sq.ctx.Unique
@@ -648,6 +677,34 @@ func (sq *SignerQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedAssetPrice tells the query-builder to eager-load the nodes that are connected to the "assetPrice"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (sq *SignerQuery) WithNamedAssetPrice(name string, opts ...func(*AssetPriceQuery)) *SignerQuery {
+	query := (&AssetPriceClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if sq.withNamedAssetPrice == nil {
+		sq.withNamedAssetPrice = make(map[string]*AssetPriceQuery)
+	}
+	sq.withNamedAssetPrice[name] = query
+	return sq
+}
+
+// WithNamedEventLogs tells the query-builder to eager-load the nodes that are connected to the "eventLogs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (sq *SignerQuery) WithNamedEventLogs(name string, opts ...func(*EventLogQuery)) *SignerQuery {
+	query := (&EventLogClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if sq.withNamedEventLogs == nil {
+		sq.withNamedEventLogs = make(map[string]*EventLogQuery)
+	}
+	sq.withNamedEventLogs[name] = query
+	return sq
 }
 
 // SignerGroupBy is the group-by builder for Signer entities.

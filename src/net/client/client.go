@@ -146,7 +146,7 @@ func StartClient() {
 
 func closeConnection() {
 
-	if config.Config.IsSet("broker.uri") {
+	if Client != nil && config.Config.IsSet("broker.uri") {
 		err := Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		Client.Close()
 

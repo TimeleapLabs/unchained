@@ -39,6 +39,11 @@ type SignerEdges struct {
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
+	// totalCount holds the count of the edges above.
+	totalCount [2]map[string]int
+
+	namedAssetPrice map[string][]*AssetPrice
+	namedEventLogs  map[string][]*EventLog
 }
 
 // AssetPriceOrErr returns the AssetPrice value or an error if the edge
@@ -174,6 +179,54 @@ func (s *Signer) String() string {
 	builder.WriteString(fmt.Sprintf("%v", s.Points))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedAssetPrice returns the AssetPrice named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (s *Signer) NamedAssetPrice(name string) ([]*AssetPrice, error) {
+	if s.Edges.namedAssetPrice == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := s.Edges.namedAssetPrice[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (s *Signer) appendNamedAssetPrice(name string, edges ...*AssetPrice) {
+	if s.Edges.namedAssetPrice == nil {
+		s.Edges.namedAssetPrice = make(map[string][]*AssetPrice)
+	}
+	if len(edges) == 0 {
+		s.Edges.namedAssetPrice[name] = []*AssetPrice{}
+	} else {
+		s.Edges.namedAssetPrice[name] = append(s.Edges.namedAssetPrice[name], edges...)
+	}
+}
+
+// NamedEventLogs returns the EventLogs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (s *Signer) NamedEventLogs(name string) ([]*EventLog, error) {
+	if s.Edges.namedEventLogs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := s.Edges.namedEventLogs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (s *Signer) appendNamedEventLogs(name string, edges ...*EventLog) {
+	if s.Edges.namedEventLogs == nil {
+		s.Edges.namedEventLogs = make(map[string][]*EventLog)
+	}
+	if len(edges) == 0 {
+		s.Edges.namedEventLogs[name] = []*EventLog{}
+	} else {
+		s.Edges.namedEventLogs[name] = append(s.Edges.namedEventLogs[name], edges...)
+	}
 }
 
 // Signers is a parsable slice of Signer.

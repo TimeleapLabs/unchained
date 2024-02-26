@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -16,14 +18,24 @@ type EventLog struct {
 // Fields of the DataSet.
 func (EventLog) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint64("block"),
-		field.Uint64("signersCount"),
-		field.Bytes("signature").MaxLen(96),
+		field.Uint64("block").
+			Annotations(
+				entgql.Type("Uint"),
+				entgql.OrderField("BLOCK"),
+			),
+		field.Uint64("signersCount").
+			Annotations(entgql.Type("Uint")),
+		field.Bytes("signature").
+			MaxLen(96).
+			Annotations(entgql.Type("Bytes")),
 		field.String("address"),
 		field.String("chain"),
-		field.Uint64("index"),
+		field.Uint64("index").
+			Annotations(entgql.Type("Uint")),
 		field.String("event"),
-		field.Bytes("transaction").MaxLen(32),
+		field.Bytes("transaction").
+			MaxLen(32).
+			Annotations(entgql.Type("Bytes")),
 		field.JSON("args", []datasets.EventLogArg{}),
 	}
 }
@@ -41,5 +53,12 @@ func (EventLog) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("block", "transaction", "index").Unique(),
 		index.Fields("block", "address", "event"),
+	}
+}
+
+func (EventLog) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField(),
 	}
 }

@@ -4,12 +4,12 @@ package ent
 
 import (
 	"fmt"
-	"math/big"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/helpers"
 )
 
 // AssetPrice is the model entity for the AssetPrice schema.
@@ -22,7 +22,7 @@ type AssetPrice struct {
 	// SignersCount holds the value of the "signersCount" field.
 	SignersCount *uint64 `json:"signersCount,omitempty"`
 	// Price holds the value of the "price" field.
-	Price *big.Int `json:"price,omitempty"`
+	Price *helpers.BigInt `json:"price,omitempty"`
 	// Signature holds the value of the "signature" field.
 	Signature []byte `json:"signature,omitempty"`
 	// Asset holds the value of the "asset" field.
@@ -44,6 +44,10 @@ type AssetPriceEdges struct {
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
+	// totalCount holds the count of the edges above.
+	totalCount [1]map[string]int
+
+	namedSigners map[string][]*Signer
 }
 
 // SignersOrErr returns the Signers value or an error if the edge
@@ -62,12 +66,12 @@ func (*AssetPrice) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case assetprice.FieldSignature:
 			values[i] = new([]byte)
+		case assetprice.FieldPrice:
+			values[i] = new(helpers.BigInt)
 		case assetprice.FieldID, assetprice.FieldBlock, assetprice.FieldSignersCount:
 			values[i] = new(sql.NullInt64)
 		case assetprice.FieldAsset, assetprice.FieldChain, assetprice.FieldPair:
 			values[i] = new(sql.NullString)
-		case assetprice.FieldPrice:
-			values[i] = assetprice.ValueScanner.Price.ScanValue()
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -103,9 +107,9 @@ func (ap *AssetPrice) assignValues(columns []string, values []any) error {
 				*ap.SignersCount = uint64(value.Int64)
 			}
 		case assetprice.FieldPrice:
-			if value, err := assetprice.ValueScanner.Price.FromValue(values[i]); err != nil {
-				return err
-			} else {
+			if value, ok := values[i].(*helpers.BigInt); !ok {
+				return fmt.Errorf("unexpected type %T for field price", values[i])
+			} else if value != nil {
 				ap.Price = value
 			}
 		case assetprice.FieldSignature:
@@ -197,6 +201,30 @@ func (ap *AssetPrice) String() string {
 	builder.WriteString(ap.Pair)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedSigners returns the Signers named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (ap *AssetPrice) NamedSigners(name string) ([]*Signer, error) {
+	if ap.Edges.namedSigners == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := ap.Edges.namedSigners[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (ap *AssetPrice) appendNamedSigners(name string, edges ...*Signer) {
+	if ap.Edges.namedSigners == nil {
+		ap.Edges.namedSigners = make(map[string][]*Signer)
+	}
+	if len(edges) == 0 {
+		ap.Edges.namedSigners[name] = []*Signer{}
+	} else {
+		ap.Edges.namedSigners[name] = append(ap.Edges.namedSigners[name], edges...)
+	}
 }
 
 // AssetPrices is a parsable slice of AssetPrice.

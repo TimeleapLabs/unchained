@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
 	"sync"
 
 	"entgo.io/ent"
@@ -14,6 +13,7 @@ import (
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/ent/assetprice"
 	"github.com/KenshiTech/unchained/ent/eventlog"
+	"github.com/KenshiTech/unchained/ent/helpers"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -42,7 +42,7 @@ type AssetPriceMutation struct {
 	addblock        *int64
 	signersCount    *uint64
 	addsignersCount *int64
-	price           **big.Int
+	price           **helpers.BigInt
 	signature       *[]byte
 	asset           *string
 	chain           *string
@@ -281,12 +281,12 @@ func (m *AssetPriceMutation) ResetSignersCount() {
 }
 
 // SetPrice sets the "price" field.
-func (m *AssetPriceMutation) SetPrice(b *big.Int) {
-	m.price = &b
+func (m *AssetPriceMutation) SetPrice(hi *helpers.BigInt) {
+	m.price = &hi
 }
 
 // Price returns the value of the "price" field in the mutation.
-func (m *AssetPriceMutation) Price() (r *big.Int, exists bool) {
+func (m *AssetPriceMutation) Price() (r *helpers.BigInt, exists bool) {
 	v := m.price
 	if v == nil {
 		return
@@ -297,7 +297,7 @@ func (m *AssetPriceMutation) Price() (r *big.Int, exists bool) {
 // OldPrice returns the old "price" field's value of the AssetPrice entity.
 // If the AssetPrice object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AssetPriceMutation) OldPrice(ctx context.Context) (v *big.Int, err error) {
+func (m *AssetPriceMutation) OldPrice(ctx context.Context) (v *helpers.BigInt, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPrice is only allowed on UpdateOne operations")
 	}
@@ -678,7 +678,7 @@ func (m *AssetPriceMutation) SetField(name string, value ent.Value) error {
 		m.SetSignersCount(v)
 		return nil
 	case assetprice.FieldPrice:
-		v, ok := value.(*big.Int)
+		v, ok := value.(*helpers.BigInt)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
