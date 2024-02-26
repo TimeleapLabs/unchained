@@ -436,7 +436,7 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 				messageType,
 				append(
 					[]byte{opcodes.Error},
-					[]byte("Instruction not supported")...),
+					[]byte(fmt.Sprintf("Instruction not supported: %x", payload[0]))...),
 			)
 			if err != nil {
 				fmt.Println("write:", err)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/KenshiTech/unchained/bls"
@@ -20,6 +21,13 @@ import (
 var Client *websocket.Conn
 var IsClientSocketClosed = false
 var Done chan struct{}
+var mu *sync.Mutex
+
+func Send(data []byte) error {
+	mu.Lock()
+	defer mu.Unlock()
+	return Client.WriteMessage(websocket.BinaryMessage, data)
+}
 
 func StartClient() {
 
@@ -178,4 +186,8 @@ func ClientBlock() {
 			return
 		}
 	}
+}
+
+func init() {
+	mu = new(sync.Mutex)
 }

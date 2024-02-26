@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/KenshiTech/unchained/net/consumer"
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/utils"
-	"github.com/gorilla/websocket"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/dgraph-io/badger/v4"
@@ -121,7 +121,7 @@ func RecordSignature(
 
 		// TODO: this won't work for Arbitrum
 		// TODO: we disallow syncing historical events here
-		if *blockNumber-info.Block > 16 {
+		if *blockNumber-info.Block > 96 {
 			return // Data too old
 		}
 	}
@@ -324,15 +324,15 @@ func createTask(configs []LogConf, chain string) func() {
 				return
 			}
 
-			if lastSyncedBlock[conf] == allowedBlock {
+			if lastSyncedBlock[conf]+1 >= allowedBlock {
 				return
 			}
 
 			contractAddress := common.HexToAddress(conf.Address)
 			contextKey := fmt.Sprintf("plugins.logs.events.%s", conf.Name)
-			fromBlock := lastSyncedBlock[conf]
+			fromBlock := lastSyncedBlock[conf] + 1
 
-			if fromBlock == 0 {
+			if lastSyncedBlock[conf] == 0 {
 				contextBlock, err := persistence.ReadUInt64(contextKey)
 
 				if err != nil && err != badger.ErrKeyNotFound {
@@ -417,11 +417,27 @@ func createTask(configs []LogConf, chain string) func() {
 
 				message.Info(conf.Name)
 
+				argTypes := make(map[string]string)
+				for _, input := range eventAbi.Inputs {
+					argTypes[input.Name] = input.Type.String()
+				}
+
 				args := []datasets.EventLogArg{}
 				for _, key := range keys {
+
+					value := eventData[key]
+
+					if strings.HasPrefix(argTypes[key], "uint") || strings.HasPrefix(argTypes[key], "int") {
+						value = value.(*big.Int).String()
+					}
+
 					args = append(
 						args,
-						datasets.EventLogArg{Name: key, Value: eventData[key]},
+						datasets.EventLogArg{
+							Name:  key,
+							Value: value,
+							Type:  argTypes[key],
+						},
 					)
 				}
 
@@ -456,8 +472,7 @@ func createTask(configs []LogConf, chain string) func() {
 				}
 
 				if conf.Send {
-					client.Client.WriteMessage(
-						websocket.BinaryMessage,
+					client.Send(
 						append([]byte{opcodes.EventLog, 0}, payload...),
 					)
 				}
@@ -571,19 +586,19 @@ func init() {
 	supportedEvents = make(map[SupportKey]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](24)
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
 
 	if err != nil {
 		panic(err)
 	}
 
-	consensus, err = lru.New[EventKey, map[bls12381.G1Affine]uint64](24)
+	consensus, err = lru.New[EventKey, map[bls12381.G1Affine]uint64](128)
 
 	if err != nil {
 		panic(err)
 	}
 
-	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](24)
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](128)
 
 	if err != nil {
 		panic(err)
