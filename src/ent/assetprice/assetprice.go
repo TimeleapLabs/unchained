@@ -3,11 +3,8 @@
 package assetprice
 
 import (
-	"math/big"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 )
 
 const (
@@ -71,10 +68,6 @@ func ValidColumn(column string) bool {
 var (
 	// SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
 	SignatureValidator func([]byte) error
-	// ValueScanner of all AssetPrice fields.
-	ValueScanner struct {
-		Price field.TypeValueScanner[*big.Int]
-	}
 )
 
 // OrderOption defines the ordering options for the AssetPrice queries.

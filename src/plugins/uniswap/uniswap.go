@@ -14,6 +14,7 @@ import (
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/ent/helpers"
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
@@ -265,7 +266,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 		SetAsset(args.Info.Asset).
 		SetChain(args.Info.Chain).
 		SetBlock(args.Info.Block).
-		SetPrice(&args.Info.Price).
+		SetPrice(&helpers.BigInt{Int: args.Info.Price}).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
 		AddSignerIDs(signerIds...).

@@ -19,11 +19,14 @@ import (
 // AssetPriceQuery is the builder for querying AssetPrice entities.
 type AssetPriceQuery struct {
 	config
-	ctx         *QueryContext
-	order       []assetprice.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.AssetPrice
-	withSigners *SignerQuery
+	ctx              *QueryContext
+	order            []assetprice.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.AssetPrice
+	withSigners      *SignerQuery
+	modifiers        []func(*sql.Selector)
+	loadTotal        []func(context.Context, []*AssetPrice) error
+	withNamedSigners map[string]*SignerQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -383,6 +386,9 @@ func (apq *AssetPriceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(apq.modifiers) > 0 {
+		_spec.Modifiers = apq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -396,6 +402,18 @@ func (apq *AssetPriceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		if err := apq.loadSigners(ctx, query, nodes,
 			func(n *AssetPrice) { n.Edges.Signers = []*Signer{} },
 			func(n *AssetPrice, e *Signer) { n.Edges.Signers = append(n.Edges.Signers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range apq.withNamedSigners {
+		if err := apq.loadSigners(ctx, query, nodes,
+			func(n *AssetPrice) { n.appendNamedSigners(name) },
+			func(n *AssetPrice, e *Signer) { n.appendNamedSigners(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for i := range apq.loadTotal {
+		if err := apq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -466,6 +484,9 @@ func (apq *AssetPriceQuery) loadSigners(ctx context.Context, query *SignerQuery,
 
 func (apq *AssetPriceQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := apq.querySpec()
+	if len(apq.modifiers) > 0 {
+		_spec.Modifiers = apq.modifiers
+	}
 	_spec.Node.Columns = apq.ctx.Fields
 	if len(apq.ctx.Fields) > 0 {
 		_spec.Unique = apq.ctx.Unique != nil && *apq.ctx.Unique
@@ -543,6 +564,20 @@ func (apq *AssetPriceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedSigners tells the query-builder to eager-load the nodes that are connected to the "signers"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (apq *AssetPriceQuery) WithNamedSigners(name string, opts ...func(*SignerQuery)) *AssetPriceQuery {
+	query := (&SignerClient{config: apq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if apq.withNamedSigners == nil {
+		apq.withNamedSigners = make(map[string]*SignerQuery)
+	}
+	apq.withNamedSigners[name] = query
+	return apq
 }
 
 // AssetPriceGroupBy is the group-by builder for AssetPrice entities.

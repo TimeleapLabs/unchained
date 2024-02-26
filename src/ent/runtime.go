@@ -3,9 +3,6 @@
 package ent
 
 import (
-	"math/big"
-
-	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/schema"
@@ -18,9 +15,6 @@ import (
 func init() {
 	assetpriceFields := schema.AssetPrice{}.Fields()
 	_ = assetpriceFields
-	// assetpriceDescPrice is the schema descriptor for price field.
-	assetpriceDescPrice := assetpriceFields[2].Descriptor()
-	assetprice.ValueScanner.Price = assetpriceDescPrice.ValueScanner.(field.TypeValueScanner[*big.Int])
 	// assetpriceDescSignature is the schema descriptor for signature field.
 	assetpriceDescSignature := assetpriceFields[3].Descriptor()
 	// assetprice.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.

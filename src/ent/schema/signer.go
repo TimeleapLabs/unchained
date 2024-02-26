@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -16,8 +17,16 @@ type Signer struct {
 func (Signer) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty(),
-		field.Bytes("key").MaxLen(96).Unique().NotEmpty(),
-		field.Bytes("shortkey").MaxLen(96).Unique().NotEmpty(),
+		field.Bytes("key").
+			MaxLen(96).
+			Unique().
+			NotEmpty().
+			Annotations(entgql.Type("Bytes")),
+		field.Bytes("shortkey").
+			MaxLen(96).
+			Unique().
+			NotEmpty().
+			Annotations(entgql.Type("Bytes")),
 		field.Int64("points"),
 	}
 }
