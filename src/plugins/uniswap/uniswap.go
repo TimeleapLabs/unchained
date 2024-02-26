@@ -24,7 +24,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/go-co-op/gocron/v2"
-	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"
 	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/text/cases"
@@ -494,8 +493,7 @@ func syncBlocks(token Token, key TokenKey, latest uint64) {
 		}
 
 		if token.Send && !client.IsClientSocketClosed {
-			client.Client.WriteMessage(
-				websocket.BinaryMessage,
+			client.Send(
 				append([]byte{opcodes.PriceReport, 0}, payload...),
 			)
 		}

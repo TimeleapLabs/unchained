@@ -7,6 +7,7 @@ package gql
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/gql/generated"
@@ -14,7 +15,22 @@ import (
 
 // Value is the resolver for the value field.
 func (r *eventLogArgResolver) Value(ctx context.Context, obj *datasets.EventLogArg) (string, error) {
-	panic(fmt.Errorf("not implemented: Value - value"))
+	switch {
+	case strings.HasPrefix(obj.Type, "uint"), strings.HasPrefix(obj.Type, "int"):
+		return obj.Value.(string), nil
+
+	case obj.Type == "bool":
+		return fmt.Sprintf("%t", obj.Value), nil
+
+	case obj.Type == "string":
+		return obj.Value.(string), nil
+
+	case obj.Type == "address":
+		return obj.Value.(string), nil
+
+	default:
+		return "", fmt.Errorf("unsupported type: %s", obj.Type)
+	}
 }
 
 // EventLogArg returns generated.EventLogArgResolver implementation.

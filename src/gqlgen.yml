@@ -45,4 +45,8 @@ models:
       - github.com/99designs/gqlgen/graphql.Uint
       - github.com/99designs/gqlgen/graphql.Uint32
   Bytes:
-    model: github.com/KenshiTech/unchained/gql/types.Bytes
+    model:
+      - github.com/KenshiTech/unchained/gql/types.Bytes
+  Any:
+    model:
+      - github.com/99designs/gqlgen/graphql.Any

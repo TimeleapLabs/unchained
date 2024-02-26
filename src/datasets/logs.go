@@ -1,8 +1,36 @@
 package datasets
 
+import (
+	"encoding/json"
+
+	"github.com/vmihailenco/msgpack/v5"
+)
+
 type EventLogArg struct {
 	Name  string
+	Type  string
 	Value any
+}
+
+var _ msgpack.CustomEncoder = (*EventLogArg)(nil)
+
+// TODO: this can be improved
+func (eventLog *EventLogArg) EncodeMsgpack(enc *msgpack.Encoder) error {
+	encoded, err := json.Marshal(eventLog)
+	if err != nil {
+		return err
+	}
+	return enc.EncodeBytes(encoded)
+}
+
+var _ msgpack.CustomDecoder = (*EventLogArg)(nil)
+
+func (eventLog *EventLogArg) DecodeMsgpack(dec *msgpack.Decoder) error {
+	bytes, err := dec.DecodeBytes()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bytes, eventLog)
 }
 
 type EventLog struct {
