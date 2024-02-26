@@ -3,11 +3,9 @@
 package assetprice
 
 import (
-	"fmt"
-	"math/big"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/KenshiTech/unchained/ent/helpers"
 	"github.com/KenshiTech/unchained/ent/predicate"
 )
 
@@ -67,9 +65,8 @@ func SignersCount(v uint64) predicate.AssetPrice {
 }
 
 // Price applies equality check predicate on the "price" field. It's identical to PriceEQ.
-func Price(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	return predicate.AssetPriceOrErr(sql.FieldEQ(FieldPrice, vc), err)
+func Price(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldPrice, v))
 }
 
 // Signature applies equality check predicate on the "signature" field. It's identical to SignatureEQ.
@@ -183,117 +180,43 @@ func SignersCountNotNil() predicate.AssetPrice {
 }
 
 // PriceEQ applies the EQ predicate on the "price" field.
-func PriceEQ(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	return predicate.AssetPriceOrErr(sql.FieldEQ(FieldPrice, vc), err)
+func PriceEQ(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldPrice, v))
 }
 
 // PriceNEQ applies the NEQ predicate on the "price" field.
-func PriceNEQ(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	return predicate.AssetPriceOrErr(sql.FieldNEQ(FieldPrice, vc), err)
+func PriceNEQ(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNEQ(FieldPrice, v))
 }
 
 // PriceIn applies the In predicate on the "price" field.
-func PriceIn(vs ...*big.Int) predicate.AssetPrice {
-	var (
-		err error
-		v   = make([]any, len(vs))
-	)
-	for i := range v {
-		if v[i], err = ValueScanner.Price.Value(vs[i]); err != nil {
-			break
-		}
-	}
-	return predicate.AssetPriceOrErr(sql.FieldIn(FieldPrice, v...), err)
+func PriceIn(vs ...*helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIn(FieldPrice, vs...))
 }
 
 // PriceNotIn applies the NotIn predicate on the "price" field.
-func PriceNotIn(vs ...*big.Int) predicate.AssetPrice {
-	var (
-		err error
-		v   = make([]any, len(vs))
-	)
-	for i := range v {
-		if v[i], err = ValueScanner.Price.Value(vs[i]); err != nil {
-			break
-		}
-	}
-	return predicate.AssetPriceOrErr(sql.FieldNotIn(FieldPrice, v...), err)
+func PriceNotIn(vs ...*helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotIn(FieldPrice, vs...))
 }
 
 // PriceGT applies the GT predicate on the "price" field.
-func PriceGT(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	return predicate.AssetPriceOrErr(sql.FieldGT(FieldPrice, vc), err)
+func PriceGT(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGT(FieldPrice, v))
 }
 
 // PriceGTE applies the GTE predicate on the "price" field.
-func PriceGTE(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	return predicate.AssetPriceOrErr(sql.FieldGTE(FieldPrice, vc), err)
+func PriceGTE(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGTE(FieldPrice, v))
 }
 
 // PriceLT applies the LT predicate on the "price" field.
-func PriceLT(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	return predicate.AssetPriceOrErr(sql.FieldLT(FieldPrice, vc), err)
+func PriceLT(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLT(FieldPrice, v))
 }
 
 // PriceLTE applies the LTE predicate on the "price" field.
-func PriceLTE(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	return predicate.AssetPriceOrErr(sql.FieldLTE(FieldPrice, vc), err)
-}
-
-// PriceContains applies the Contains predicate on the "price" field.
-func PriceContains(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	vcs, ok := vc.(string)
-	if err == nil && !ok {
-		err = fmt.Errorf("price value is not a string: %T", vc)
-	}
-	return predicate.AssetPriceOrErr(sql.FieldContains(FieldPrice, vcs), err)
-}
-
-// PriceHasPrefix applies the HasPrefix predicate on the "price" field.
-func PriceHasPrefix(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	vcs, ok := vc.(string)
-	if err == nil && !ok {
-		err = fmt.Errorf("price value is not a string: %T", vc)
-	}
-	return predicate.AssetPriceOrErr(sql.FieldHasPrefix(FieldPrice, vcs), err)
-}
-
-// PriceHasSuffix applies the HasSuffix predicate on the "price" field.
-func PriceHasSuffix(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	vcs, ok := vc.(string)
-	if err == nil && !ok {
-		err = fmt.Errorf("price value is not a string: %T", vc)
-	}
-	return predicate.AssetPriceOrErr(sql.FieldHasSuffix(FieldPrice, vcs), err)
-}
-
-// PriceEqualFold applies the EqualFold predicate on the "price" field.
-func PriceEqualFold(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	vcs, ok := vc.(string)
-	if err == nil && !ok {
-		err = fmt.Errorf("price value is not a string: %T", vc)
-	}
-	return predicate.AssetPriceOrErr(sql.FieldEqualFold(FieldPrice, vcs), err)
-}
-
-// PriceContainsFold applies the ContainsFold predicate on the "price" field.
-func PriceContainsFold(v *big.Int) predicate.AssetPrice {
-	vc, err := ValueScanner.Price.Value(v)
-	vcs, ok := vc.(string)
-	if err == nil && !ok {
-		err = fmt.Errorf("price value is not a string: %T", vc)
-	}
-	return predicate.AssetPriceOrErr(sql.FieldContainsFold(FieldPrice, vcs), err)
+func PriceLTE(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLTE(FieldPrice, v))
 }
 
 // SignatureEQ applies the EQ predicate on the "signature" field.

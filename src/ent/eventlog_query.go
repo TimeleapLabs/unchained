@@ -19,11 +19,14 @@ import (
 // EventLogQuery is the builder for querying EventLog entities.
 type EventLogQuery struct {
 	config
-	ctx         *QueryContext
-	order       []eventlog.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.EventLog
-	withSigners *SignerQuery
+	ctx              *QueryContext
+	order            []eventlog.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.EventLog
+	withSigners      *SignerQuery
+	modifiers        []func(*sql.Selector)
+	loadTotal        []func(context.Context, []*EventLog) error
+	withNamedSigners map[string]*SignerQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -383,6 +386,9 @@ func (elq *EventLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ev
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(elq.modifiers) > 0 {
+		_spec.Modifiers = elq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -396,6 +402,18 @@ func (elq *EventLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ev
 		if err := elq.loadSigners(ctx, query, nodes,
 			func(n *EventLog) { n.Edges.Signers = []*Signer{} },
 			func(n *EventLog, e *Signer) { n.Edges.Signers = append(n.Edges.Signers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range elq.withNamedSigners {
+		if err := elq.loadSigners(ctx, query, nodes,
+			func(n *EventLog) { n.appendNamedSigners(name) },
+			func(n *EventLog, e *Signer) { n.appendNamedSigners(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for i := range elq.loadTotal {
+		if err := elq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -466,6 +484,9 @@ func (elq *EventLogQuery) loadSigners(ctx context.Context, query *SignerQuery, n
 
 func (elq *EventLogQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := elq.querySpec()
+	if len(elq.modifiers) > 0 {
+		_spec.Modifiers = elq.modifiers
+	}
 	_spec.Node.Columns = elq.ctx.Fields
 	if len(elq.ctx.Fields) > 0 {
 		_spec.Unique = elq.ctx.Unique != nil && *elq.ctx.Unique
@@ -543,6 +564,20 @@ func (elq *EventLogQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedSigners tells the query-builder to eager-load the nodes that are connected to the "signers"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (elq *EventLogQuery) WithNamedSigners(name string, opts ...func(*SignerQuery)) *EventLogQuery {
+	query := (&SignerClient{config: elq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if elq.withNamedSigners == nil {
+		elq.withNamedSigners = make(map[string]*SignerQuery)
+	}
+	elq.withNamedSigners[name] = query
+	return elq
 }
 
 // EventLogGroupBy is the group-by builder for EventLog entities.

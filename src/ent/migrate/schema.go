@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "block", Type: field.TypeUint64},
 		{Name: "signers_count", Type: field.TypeUint64, Nullable: true},
-		{Name: "price", Type: field.TypeString},
+		{Name: "price", Type: field.TypeUint, SchemaType: map[string]string{"postgres": "numeric(78, 0)", "sqlite3": "numeric(78, 0)"}},
 		{Name: "signature", Type: field.TypeBytes, Size: 96},
 		{Name: "asset", Type: field.TypeString, Nullable: true},
 		{Name: "chain", Type: field.TypeString, Nullable: true},

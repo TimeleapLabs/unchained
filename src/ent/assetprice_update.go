@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/helpers"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -78,8 +78,8 @@ func (apu *AssetPriceUpdate) ClearSignersCount() *AssetPriceUpdate {
 }
 
 // SetPrice sets the "price" field.
-func (apu *AssetPriceUpdate) SetPrice(b *big.Int) *AssetPriceUpdate {
-	apu.mutation.SetPrice(b)
+func (apu *AssetPriceUpdate) SetPrice(hi *helpers.BigInt) *AssetPriceUpdate {
+	apu.mutation.SetPrice(hi)
 	return apu
 }
 
@@ -255,11 +255,7 @@ func (apu *AssetPriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.ClearField(assetprice.FieldSignersCount, field.TypeUint64)
 	}
 	if value, ok := apu.mutation.Price(); ok {
-		vv, err := assetprice.ValueScanner.Price.Value(value)
-		if err != nil {
-			return 0, err
-		}
-		_spec.SetField(assetprice.FieldPrice, field.TypeString, vv)
+		_spec.SetField(assetprice.FieldPrice, field.TypeUint, value)
 	}
 	if value, ok := apu.mutation.Signature(); ok {
 		_spec.SetField(assetprice.FieldSignature, field.TypeBytes, value)
@@ -396,8 +392,8 @@ func (apuo *AssetPriceUpdateOne) ClearSignersCount() *AssetPriceUpdateOne {
 }
 
 // SetPrice sets the "price" field.
-func (apuo *AssetPriceUpdateOne) SetPrice(b *big.Int) *AssetPriceUpdateOne {
-	apuo.mutation.SetPrice(b)
+func (apuo *AssetPriceUpdateOne) SetPrice(hi *helpers.BigInt) *AssetPriceUpdateOne {
+	apuo.mutation.SetPrice(hi)
 	return apuo
 }
 
@@ -603,11 +599,7 @@ func (apuo *AssetPriceUpdateOne) sqlSave(ctx context.Context) (_node *AssetPrice
 		_spec.ClearField(assetprice.FieldSignersCount, field.TypeUint64)
 	}
 	if value, ok := apuo.mutation.Price(); ok {
-		vv, err := assetprice.ValueScanner.Price.Value(value)
-		if err != nil {
-			return nil, err
-		}
-		_spec.SetField(assetprice.FieldPrice, field.TypeString, vv)
+		_spec.SetField(assetprice.FieldPrice, field.TypeUint, value)
 	}
 	if value, ok := apuo.mutation.Signature(); ok {
 		_spec.SetField(assetprice.FieldSignature, field.TypeBytes, value)

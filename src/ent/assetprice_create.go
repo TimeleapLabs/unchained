@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/helpers"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
 
@@ -44,8 +44,8 @@ func (apc *AssetPriceCreate) SetNillableSignersCount(u *uint64) *AssetPriceCreat
 }
 
 // SetPrice sets the "price" field.
-func (apc *AssetPriceCreate) SetPrice(b *big.Int) *AssetPriceCreate {
-	apc.mutation.SetPrice(b)
+func (apc *AssetPriceCreate) SetPrice(hi *helpers.BigInt) *AssetPriceCreate {
+	apc.mutation.SetPrice(hi)
 	return apc
 }
 
@@ -170,10 +170,7 @@ func (apc *AssetPriceCreate) sqlSave(ctx context.Context) (*AssetPrice, error) {
 	if err := apc.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec, err := apc.createSpec()
-	if err != nil {
-		return nil, err
-	}
+	_node, _spec := apc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, apc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -187,7 +184,7 @@ func (apc *AssetPriceCreate) sqlSave(ctx context.Context) (*AssetPrice, error) {
 	return _node, nil
 }
 
-func (apc *AssetPriceCreate) createSpec() (*AssetPrice, *sqlgraph.CreateSpec, error) {
+func (apc *AssetPriceCreate) createSpec() (*AssetPrice, *sqlgraph.CreateSpec) {
 	var (
 		_node = &AssetPrice{config: apc.config}
 		_spec = sqlgraph.NewCreateSpec(assetprice.Table, sqlgraph.NewFieldSpec(assetprice.FieldID, field.TypeInt))
@@ -202,11 +199,7 @@ func (apc *AssetPriceCreate) createSpec() (*AssetPrice, *sqlgraph.CreateSpec, er
 		_node.SignersCount = &value
 	}
 	if value, ok := apc.mutation.Price(); ok {
-		vv, err := assetprice.ValueScanner.Price.Value(value)
-		if err != nil {
-			return nil, nil, err
-		}
-		_spec.SetField(assetprice.FieldPrice, field.TypeString, vv)
+		_spec.SetField(assetprice.FieldPrice, field.TypeUint, value)
 		_node.Price = value
 	}
 	if value, ok := apc.mutation.Signature(); ok {
@@ -241,7 +234,7 @@ func (apc *AssetPriceCreate) createSpec() (*AssetPrice, *sqlgraph.CreateSpec, er
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec, nil
+	return _node, _spec
 }
 
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
@@ -336,7 +329,7 @@ func (u *AssetPriceUpsert) ClearSignersCount() *AssetPriceUpsert {
 }
 
 // SetPrice sets the "price" field.
-func (u *AssetPriceUpsert) SetPrice(v *big.Int) *AssetPriceUpsert {
+func (u *AssetPriceUpsert) SetPrice(v *helpers.BigInt) *AssetPriceUpsert {
 	u.Set(assetprice.FieldPrice, v)
 	return u
 }
@@ -503,7 +496,7 @@ func (u *AssetPriceUpsertOne) ClearSignersCount() *AssetPriceUpsertOne {
 }
 
 // SetPrice sets the "price" field.
-func (u *AssetPriceUpsertOne) SetPrice(v *big.Int) *AssetPriceUpsertOne {
+func (u *AssetPriceUpsertOne) SetPrice(v *helpers.BigInt) *AssetPriceUpsertOne {
 	return u.Update(func(s *AssetPriceUpsert) {
 		s.SetPrice(v)
 	})
@@ -655,10 +648,7 @@ func (apcb *AssetPriceCreateBulk) Save(ctx context.Context) ([]*AssetPrice, erro
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i], err = builder.createSpec()
-				if err != nil {
-					return nil, err
-				}
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, apcb.builders[i+1].mutation)
 				} else {
@@ -849,7 +839,7 @@ func (u *AssetPriceUpsertBulk) ClearSignersCount() *AssetPriceUpsertBulk {
 }
 
 // SetPrice sets the "price" field.
-func (u *AssetPriceUpsertBulk) SetPrice(v *big.Int) *AssetPriceUpsertBulk {
+func (u *AssetPriceUpsertBulk) SetPrice(v *helpers.BigInt) *AssetPriceUpsertBulk {
 	return u.Update(func(s *AssetPriceUpsert) {
 		s.SetPrice(v)
 	})
