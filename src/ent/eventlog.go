@@ -49,6 +49,10 @@ type EventLogEdges struct {
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
+	// totalCount holds the count of the edges above.
+	totalCount [1]map[string]int
+
+	namedSigners map[string][]*Signer
 }
 
 // SignersOrErr returns the Signers value or an error if the edge
@@ -217,6 +221,30 @@ func (el *EventLog) String() string {
 	builder.WriteString(fmt.Sprintf("%v", el.Args))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedSigners returns the Signers named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (el *EventLog) NamedSigners(name string) ([]*Signer, error) {
+	if el.Edges.namedSigners == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := el.Edges.namedSigners[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (el *EventLog) appendNamedSigners(name string, edges ...*Signer) {
+	if el.Edges.namedSigners == nil {
+		el.Edges.namedSigners = make(map[string][]*Signer)
+	}
+	if len(edges) == 0 {
+		el.Edges.namedSigners[name] = []*Signer{}
+	} else {
+		el.Edges.namedSigners[name] = append(el.Edges.namedSigners[name], edges...)
+	}
 }
 
 // EventLogs is a parsable slice of EventLog.

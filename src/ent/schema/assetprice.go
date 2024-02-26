@@ -1,12 +1,14 @@
 package schema
 
 import (
-	"math/big"
-
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/KenshiTech/unchained/ent/helpers"
 )
 
 // DataSet holds the schema definition for the DataSet entity.
@@ -17,12 +19,24 @@ type AssetPrice struct {
 // Fields of the DataSet.
 func (AssetPrice) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint64("block"),
-		field.Uint64("signersCount").Nillable().Optional(),
-		field.String("price").
-			GoType(&big.Int{}).
-			ValueScanner(field.TextValueScanner[*big.Int]{}),
-		field.Bytes("signature").MaxLen(96),
+		field.Uint64("block").
+			Annotations(
+				entgql.Type("Uint"),
+				entgql.OrderField("BLOCK"),
+			),
+		field.Uint64("signersCount").Nillable().Optional().
+			Annotations(entgql.Type("Uint")),
+		field.Uint("price").
+			GoType(new(helpers.BigInt)).
+			SchemaType(map[string]string{
+				// Uint256
+				dialect.SQLite:   "numeric(78, 0)",
+				dialect.Postgres: "numeric(78, 0)",
+			}).
+			Annotations(entgql.Type("Uint")),
+		field.Bytes("signature").
+			MaxLen(96).
+			Annotations(entgql.Type("Bytes")),
 		field.String("asset").Optional(),
 		field.String("chain").Optional(),
 		field.String("pair").Optional(),
@@ -41,5 +55,12 @@ func (AssetPrice) Edges() []ent.Edge {
 func (AssetPrice) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("block", "chain", "asset", "pair").Unique(),
+	}
+}
+
+func (AssetPrice) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField(),
 	}
 }
