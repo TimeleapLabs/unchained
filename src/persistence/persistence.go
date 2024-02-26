@@ -10,8 +10,10 @@ var DB *badger.DB
 
 func Start(contextPath string) {
 	var err error
-	options := badger.DefaultOptions(contextPath)
-	options.Logger = nil
+	options := badger.
+		DefaultOptions(contextPath).
+		WithLogger(nil).
+		WithValueLogFileSize(64 * 1024 * 1024)
 	DB, err = badger.Open(options)
 	if err != nil {
 		panic(err)

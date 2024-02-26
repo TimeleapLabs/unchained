@@ -71,7 +71,6 @@ type LogConf struct {
 // var lastSynced map[string]uint64
 var abiMap map[string]abi.ABI
 var lastSyncedBlock map[LogConf]uint64
-var caser cases.Caser
 
 func GetBlockNumber(network string) (*uint64, error) {
 	blockNumber, err := ethereum.GetBlockNumber(network)
@@ -102,9 +101,6 @@ func RecordSignature(
 	debounce bool,
 	historical bool) {
 
-	signatureMutex.Lock()
-	defer signatureMutex.Unlock()
-
 	supportKey := SupportKey{
 		Chain:   info.Chain,
 		Address: info.Address,
@@ -129,6 +125,9 @@ func RecordSignature(
 			return // Data too old
 		}
 	}
+
+	signatureMutex.Lock()
+	defer signatureMutex.Unlock()
 
 	key := EventKey{
 		Chain:    info.Chain,
@@ -369,6 +368,7 @@ func createTask(configs []LogConf, chain string) func() {
 			}
 
 			contractAbi := abiMap[conf.Abi]
+			caser := cases.Title(language.English, cases.NoLower)
 
 			for _, vLog := range logs {
 				eventSignature := vLog.Topics[0]
@@ -568,7 +568,6 @@ func init() {
 
 	abiMap = make(map[string]abi.ABI)
 	lastSyncedBlock = make(map[LogConf]uint64)
-	caser = cases.Title(language.English, cases.NoLower)
 	supportedEvents = make(map[SupportKey]bool)
 
 	var err error
