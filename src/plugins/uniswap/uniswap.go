@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -95,7 +96,11 @@ func RecordSignature(
 		blockNumber, err := GetBlockNumber(info.Chain)
 
 		if err != nil {
-			panic(err)
+			log.Logger.Error(
+				fmt.Sprintf("Failed to get the latest block number for %s.", info.Chain))
+			ethereum.RefreshRPC(info.Chain)
+			// TODO: we should retry
+			return
 		}
 
 		// TODO: this won't work for Arbitrum
@@ -215,7 +220,8 @@ func SaveSignatures(args SaveSignatureArgs) {
 		Exec(ctx)
 
 	if err != nil {
-		panic(err)
+		log.Logger.Error("Failed to upsert token signers.")
+		os.Exit(1)
 	}
 
 	signerIds, err := dbClient.Signer.
@@ -274,7 +280,8 @@ func SaveSignatures(args SaveSignatureArgs) {
 		Exec(ctx)
 
 	if err != nil {
-		panic(err)
+		log.Logger.Error("Failed to upsert asset price.")
+		os.Exit(1)
 	}
 
 	for _, signature := range signatures {
@@ -387,18 +394,21 @@ func Setup() {
 	err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens)
 
 	if err != nil {
-		panic(err)
+		log.Logger.Error(`Couldn't read "plugins.uniswap.tokens" from config file.`)
+		os.Exit(1)
 	}
 
 	for _, token := range tokens {
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](128)
 
+		if err != nil {
+			log.Logger.Error("Failed to initalize token map.")
+			os.Exit(1)
+		}
+
 		key := TokenKey{Chain: token.Chain, Pair: strings.ToLower(token.Pair)}
 		supportedTokens[key] = true
 
-		if err != nil {
-			panic(err)
-		}
 	}
 }
 
@@ -428,7 +438,10 @@ func syncBlocks(token Token, key TokenKey, latest uint64) {
 		)
 
 		if err != nil {
-			panic(err)
+			log.Logger.Error(
+				fmt.Sprintf("Failed to get token price from %s RPC.", token.Chain))
+			ethereum.RefreshRPC(token.Chain)
+			continue
 		}
 
 		for _, cross := range token.Cross {
@@ -475,7 +488,8 @@ func syncBlocks(token Token, key TokenKey, latest uint64) {
 		toHash, err := msgpack.Marshal(&priceInfo)
 
 		if err != nil {
-			panic(err)
+			log.Logger.Error("Couldn't marshal price info.")
+			os.Exit(1)
 		}
 
 		signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
@@ -489,7 +503,8 @@ func syncBlocks(token Token, key TokenKey, latest uint64) {
 		payload, err := msgpack.Marshal(&priceReport)
 
 		if err != nil {
-			panic(err)
+			log.Logger.Error("Couldn't marshal price report.")
+			os.Exit(1)
 		}
 
 		if token.Send && !client.IsClientSocketClosed {
@@ -520,7 +535,10 @@ func createTask(tokens []Token, chain string) func() {
 		currBlockNumber, err := GetBlockNumber(chain)
 
 		if err != nil {
-			panic(err)
+			log.Logger.Error(
+				fmt.Sprintf("Couldn't get latest block from %s RPC.", chain))
+			ethereum.RefreshRPC(chain)
+			return
 		}
 
 		for _, token := range tokens {
@@ -548,19 +566,22 @@ func Start() {
 	scheduler, err := gocron.NewScheduler()
 
 	if err != nil {
-		panic(err)
+		log.Logger.Error("Failed to create token scheduler.")
+		os.Exit(1)
 	}
 
 	var tokens []Token
 	if err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens); err != nil {
-		panic(err)
+		log.Logger.Error(`Failed to read "plugins.uniswap.tokens" from config file.`)
+		os.Exit(1)
 	}
 
 	for _, token := range tokens {
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](128)
 
 		if err != nil {
-			panic(err)
+			log.Logger.Error("Failed to create token price cache.")
+			os.Exit(1)
 		}
 	}
 
@@ -578,7 +599,8 @@ func Start() {
 		)
 
 		if err != nil {
-			panic(err)
+			log.Logger.Error("Failed to schedule token price task.")
+			os.Exit(1)
 		}
 	}
 
@@ -602,19 +624,22 @@ func init() {
 	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
 
 	if err != nil {
-		panic(err)
+		log.Logger.Error("Failed to create token price signature cache.")
+		os.Exit(1)
 	}
 
 	consensus, err = lru.New[AssetKey, map[bls12381.G1Affine]uint64](128)
 
 	if err != nil {
-		panic(err)
+		log.Logger.Error("Failed to create token price consensus cache.")
+		os.Exit(1)
 	}
 
 	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](128)
 
 	if err != nil {
-		panic(err)
+		log.Logger.Error("Failed to create token price aggregate cache.")
+		os.Exit(1)
 	}
 
 	lastBlock = xsync.NewMapOf[TokenKey, uint64]()
