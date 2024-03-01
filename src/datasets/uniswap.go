@@ -2,12 +2,23 @@ package datasets
 
 import "math/big"
 
-type PriceInfo struct {
+type TokenKey struct {
+	Name   string
+	Pair   string
+	Chain  string
+	Delta  int64
+	Invert bool
+	Cross  string
+}
+
+type AssetKey struct {
+	Token TokenKey
 	Block uint64
+}
+
+type PriceInfo struct {
+	Asset AssetKey
 	Price big.Int
-	Asset string
-	Chain string
-	Pair  string
 }
 
 type PriceReport struct {

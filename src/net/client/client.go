@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/constants/opcodes"
+	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
 
@@ -90,7 +90,7 @@ func StartClient() {
 							IsClientSocketClosed = false
 							Client.WriteMessage(
 								websocket.BinaryMessage,
-								append([]byte{0}, helloPayload...),
+								append([]byte{opcodes.Hello}, helloPayload...),
 							)
 						}
 					}
