@@ -5,7 +5,7 @@ package kosk
 import (
 	"crypto/rand"
 
-	"github.com/KenshiTech/unchained/bls"
+	"github.com/KenshiTech/unchained/crypto/bls"
 )
 
 type Challenge struct {

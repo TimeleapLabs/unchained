@@ -9,9 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants/opcodes"
+	"github.com/KenshiTech/unchained/crypto/bls"
+	"github.com/KenshiTech/unchained/crypto/shake"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
@@ -37,18 +38,6 @@ import (
 var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 
-type TokenKey struct {
-	Pair  string
-	Chain string
-}
-
-type AssetKey struct {
-	Asset string
-	Pair  string
-	Chain string
-	Block uint64
-}
-
 type Token struct {
 	Id     *string  `mapstructure:"id"`
 	Chain  string   `mapstructure:"chain"`
@@ -64,16 +53,17 @@ type Token struct {
 }
 
 var priceCache map[string]*lru.Cache[uint64, big.Int]
-var consensus *lru.Cache[AssetKey, map[bls12381.G1Affine]uint64]
+var consensus *lru.Cache[datasets.AssetKey, map[bls12381.G1Affine]uint64]
 var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
-var supportedTokens map[TokenKey]bool
+var supportedTokens map[datasets.TokenKey]bool
 
 var twoOneNineTwo big.Int
 var tenEighteen big.Int
 var tenEighteenF big.Float
-var lastBlock *xsync.MapOf[TokenKey, uint64]
+var lastBlock *xsync.MapOf[datasets.TokenKey, uint64]
 var crossPrices map[string]big.Int
+var crossTokens map[string]datasets.TokenKey
 var lastPrice big.Int
 
 // TODO: This needs to work with different datasets
@@ -86,44 +76,38 @@ func RecordSignature(
 	debounce bool,
 	historical bool) {
 
-	// TODO: Invert makes a difference here
-	tokenKey := TokenKey{Chain: info.Chain, Pair: strings.ToLower(info.Pair)}
-	if supported := supportedTokens[tokenKey]; !supported {
+	if supported := supportedTokens[info.Asset.Token]; !supported {
 		return
 	}
 
 	if !historical {
-		blockNumber, err := GetBlockNumber(info.Chain)
+		blockNumber, err := GetBlockNumber(info.Asset.Token.Chain)
 
 		if err != nil {
 			log.Logger.Error(
-				fmt.Sprintf("Failed to get the latest block number for %s.", info.Chain))
-			ethereum.RefreshRPC(info.Chain)
+				fmt.Sprintf(
+					"Failed to get the latest block number for %s.",
+					info.Asset.Token.Chain,
+				))
+			ethereum.RefreshRPC(info.Asset.Token.Chain)
 			// TODO: we should retry
 			return
 		}
 
 		// TODO: this won't work for Arbitrum
-		if *blockNumber-info.Block > 96 {
+		if *blockNumber-info.Asset.Block > 96 {
 			return // Data too old
 		}
-	}
-
-	key := AssetKey{
-		Asset: info.Asset,
-		Chain: info.Chain,
-		Pair:  strings.ToLower(info.Pair),
-		Block: info.Block,
 	}
 
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
-	if !consensus.Contains(key) {
-		consensus.Add(key, make(map[bls12381.G1Affine]uint64))
+	if !consensus.Contains(info.Asset) {
+		consensus.Add(info.Asset, make(map[bls12381.G1Affine]uint64))
 	}
 
-	reportedValues, _ := consensus.Get(key)
+	reportedValues, _ := consensus.Get(info.Asset)
 	reportedValues[hash]++
 	isMajority := true
 	count := reportedValues[hash]
@@ -267,10 +251,10 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	err = dbClient.AssetPrice.
 		Create().
-		SetPair(strings.ToLower(args.Info.Pair)).
-		SetAsset(args.Info.Asset).
-		SetChain(args.Info.Chain).
-		SetBlock(args.Info.Block).
+		SetPair(strings.ToLower(args.Info.Asset.Token.Pair)).
+		SetAsset(args.Info.Asset.Token.Name).
+		SetChain(args.Info.Asset.Token.Chain).
+		SetBlock(args.Info.Asset.Block).
 		SetPrice(&helpers.BigInt{Int: args.Info.Price}).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
@@ -406,13 +390,19 @@ func Setup() {
 			os.Exit(1)
 		}
 
-		key := TokenKey{Chain: token.Chain, Pair: strings.ToLower(token.Pair)}
-		supportedTokens[key] = true
+		key, err := tokenKey(token)
+
+		if err != nil {
+			log.Logger.Error("Failed to compute token key.")
+			os.Exit(1)
+		}
+
+		supportedTokens[*key] = true
 
 	}
 }
 
-func syncBlocks(token Token, key TokenKey, latest uint64) {
+func syncBlocks(token Token, key datasets.TokenKey, latest uint64) {
 	block, ok := lastBlock.Load(key)
 
 	if !ok {
@@ -441,7 +431,7 @@ func syncBlocks(token Token, key TokenKey, latest uint64) {
 			log.Logger.Error(
 				fmt.Sprintf("Failed to get token price from %s RPC.", token.Chain))
 			ethereum.RefreshRPC(token.Chain)
-			continue
+			return
 		}
 
 		for _, cross := range token.Cross {
@@ -477,12 +467,18 @@ func syncBlocks(token Token, key TokenKey, latest uint64) {
 			With("Price", priceStr).
 			Info(caser.String(token.Name))
 
+		key, err := tokenKey(token)
+
+		if err != nil {
+			return
+		}
+
 		priceInfo := datasets.PriceInfo{
 			Price: *price,
-			Block: currBlock,
-			Chain: token.Chain,
-			Pair:  strings.ToLower(token.Pair),
-			Asset: strings.ToLower(token.Name),
+			Asset: datasets.AssetKey{
+				Block: currBlock,
+				Token: *key,
+			},
 		}
 
 		toHash, err := msgpack.Marshal(&priceInfo)
@@ -524,8 +520,36 @@ func syncBlocks(token Token, key TokenKey, latest uint64) {
 			)
 		}
 
-		lastBlock.Store(key, currBlock)
+		lastBlock.Store(*key, currBlock)
 	}
+}
+
+func tokenKey(token Token) (*datasets.TokenKey, error) {
+	var cross []datasets.TokenKey
+
+	for _, id := range token.Cross {
+		cross = append(cross, crossTokens[id])
+	}
+
+	toHash, err := msgpack.Marshal(cross)
+
+	if err != nil {
+		log.Logger.Error("Couldn't hash token key")
+		return nil, err
+	}
+
+	hash := shake.Shake(toHash)
+
+	key := datasets.TokenKey{
+		Name:   strings.ToLower(token.Name),
+		Pair:   strings.ToLower(token.Pair),
+		Chain:  strings.ToLower(token.Chain),
+		Delta:  token.Delta,
+		Invert: token.Invert,
+		Cross:  string(hash),
+	}
+
+	return &key, nil
 }
 
 func createTask(tokens []Token, chain string) func() {
@@ -547,16 +571,22 @@ func createTask(tokens []Token, chain string) func() {
 				continue
 			}
 
-			key := TokenKey{Chain: token.Chain, Pair: token.Pair}
-			tokenLastBlock, exists := lastBlock.Load(key)
+			// TODO: this can be cached
+			key, err := tokenKey(token)
+
+			if err != nil {
+				continue
+			}
+
+			tokenLastBlock, exists := lastBlock.Load(*key)
 
 			if !exists {
-				lastBlock.Store(key, *currBlockNumber-1)
+				lastBlock.Store(*key, *currBlockNumber-1)
 			} else if tokenLastBlock == *currBlockNumber {
 				return
 			}
 
-			syncBlocks(token, key, *currBlockNumber)
+			syncBlocks(token, *key, *currBlockNumber)
 		}
 	}
 }
@@ -618,7 +648,7 @@ func init() {
 
 	// TODO: Should use AssetKey
 	priceCache = make(map[string]*lru.Cache[uint64, big.Int])
-	supportedTokens = make(map[TokenKey]bool)
+	supportedTokens = make(map[datasets.TokenKey]bool)
 
 	var err error
 	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
@@ -628,7 +658,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	consensus, err = lru.New[AssetKey, map[bls12381.G1Affine]uint64](128)
+	consensus, err = lru.New[datasets.AssetKey, map[bls12381.G1Affine]uint64](128)
 
 	if err != nil {
 		log.Logger.Error("Failed to create token price consensus cache.")
@@ -642,6 +672,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	lastBlock = xsync.NewMapOf[TokenKey, uint64]()
+	lastBlock = xsync.NewMapOf[datasets.TokenKey, uint64]()
 	crossPrices = make(map[string]big.Int)
+	crossTokens = make(map[string]datasets.TokenKey)
 }

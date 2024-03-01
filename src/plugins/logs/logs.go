@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants/opcodes"
+	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"

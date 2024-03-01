@@ -4,9 +4,9 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
 

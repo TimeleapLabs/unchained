@@ -3,7 +3,7 @@ package address
 import (
 	"fmt"
 
-	"golang.org/x/crypto/sha3"
+	"github.com/KenshiTech/unchained/crypto/shake"
 )
 
 var chars = "0123456789ABCDEFGHJKMNPQTSTUVXYZ"
@@ -32,17 +32,10 @@ func ToBase32(input []byte) string {
 	return string(output)
 }
 
-func Shake(input []byte) []byte {
-	shake := sha3.NewShake256()
-	shake.Write(input)
-	hash := shake.Sum(nil)
-	return hash
-}
-
 func Calculate(input []byte) string {
-	hash := Shake(input)
+	hash := shake.Shake(input)
 	address := ToBase32(hash[:20])
-	checksum := Shake([]byte(address))
+	checksum := shake.Shake([]byte(address))
 	checkchars := []byte{chars[checksum[0]%32], chars[checksum[1]%32]}
 
 	return fmt.Sprintf("%s%s", address, checkchars)
