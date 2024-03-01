@@ -15,8 +15,8 @@ func ConsumePriceReport(message []byte) {
 	}
 	log.Logger.
 		With("Validators", len(packet.Signers)).
-		With("Asset", packet.Info.Asset).
-		With("Block", packet.Info.Block).
+		With("Asset", packet.Info.Asset.Token.Name).
+		With("Block", packet.Info.Asset.Block).
 		With("Price", packet.Info.Price.Text(10)).
 		Info("Attestation")
 }

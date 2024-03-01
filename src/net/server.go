@@ -4,15 +4,16 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 
-	"github.com/KenshiTech/unchained/bls"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/constants/opcodes"
+	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/kosk"
+	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/repository"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
@@ -118,22 +119,23 @@ func processHello(conn *websocket.Conn, messageType int, payload []byte) error {
 		return errors.New("conf.invalid")
 	}
 
-	publicKeyInUse := false
-
 	signers.Range(func(conn *websocket.Conn, signerInMap bls.Signer) bool {
-		publicKeyInUse = signerInMap.PublicKey == signer.PublicKey
+		publicKeyInUse := signerInMap.PublicKey == signer.PublicKey
+		if publicKeyInUse {
+			err := conn.WriteMessage(
+				websocket.CloseMessage,
+				websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+
+			conn.Close()
+
+			if err != nil {
+				log.Logger.
+					With("Error", err).
+					Error("Connection closed")
+			}
+		}
 		return !publicKeyInUse
 	})
-
-	if publicKeyInUse {
-		conn.WriteMessage(
-			messageType,
-			append(
-				[]byte{opcodes.Error},
-				[]byte("key.duplicate")...),
-		)
-		return errors.New("key.duplicate")
-	}
 
 	signers.Store(conn, signer)
 
@@ -447,11 +449,17 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 
 func StartServer() {
 	flag.Parse()
-	log.SetFlags(0)
 	versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
 	http.HandleFunc(versionedRoot, handleAtRoot)
 	addr := config.Config.GetString("broker.bind")
-	log.Fatal(http.ListenAndServe(addr, nil))
+	err := http.ListenAndServe(addr, nil)
+
+	if err != nil {
+		log.Logger.
+			With("err", err).
+			Error("Cound't start the websocket server")
+		os.Exit(1)
+	}
 }
 
 func init() {
