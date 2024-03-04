@@ -2,10 +2,13 @@ package ethereum
 
 import (
 	"context"
+	"fmt"
 	"reflect"
+	"sync"
 
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ethereum/contracts"
+	"github.com/KenshiTech/unchained/log"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -14,6 +17,7 @@ import (
 var rpcList map[string][]string
 var rpcIndex map[string]int
 var Clients map[string]*ethclient.Client
+var rpcMutex *sync.Mutex
 
 func Start() {
 	rpcConf := config.Config.Sub("rpc")
@@ -64,6 +68,8 @@ func refreshRPCWithRetries(network string, retries int) bool {
 }
 
 func RefreshRPC(network string) {
+	rpcMutex.Lock()
+	defer rpcMutex.Unlock()
 	refreshRPCWithRetries(network, len(rpcList))
 }
 
@@ -76,11 +82,19 @@ func GetNewUniV3Contract(network string, address string, refresh bool) (*contrac
 }
 
 func GetBlockNumber(network string) (uint64, error) {
-	return Clients[network].BlockNumber(context.Background())
+	client, ok := Clients[network]
+
+	if !ok {
+		log.Logger.With("Network", network).Error("Client not found")
+		return 0, fmt.Errorf("client not found")
+	}
+
+	return client.BlockNumber(context.Background())
 }
 
 func init() {
 	rpcList = make(map[string][]string)
 	rpcIndex = make(map[string]int)
 	Clients = make(map[string]*ethclient.Client)
+	rpcMutex = new(sync.Mutex)
 }
