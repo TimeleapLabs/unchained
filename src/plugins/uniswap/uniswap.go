@@ -35,7 +35,7 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
-var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
+var DebouncedSaveSignatures func(key datasets.AssetKey, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 
 type Token struct {
@@ -53,7 +53,7 @@ type Token struct {
 }
 
 var priceCache map[string]*lru.Cache[uint64, big.Int]
-var consensus *lru.Cache[datasets.AssetKey, map[bls12381.G1Affine]uint64]
+var consensus *lru.Cache[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, uint64]]
 var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 var supportedTokens map[datasets.TokenKey]bool
@@ -84,11 +84,10 @@ func RecordSignature(
 		blockNumber, err := GetBlockNumber(info.Asset.Token.Chain)
 
 		if err != nil {
-			log.Logger.Error(
-				fmt.Sprintf(
-					"Failed to get the latest block number for %s.",
-					info.Asset.Token.Chain,
-				))
+			log.Logger.
+				With("Network", info.Asset.Token.Chain).
+				With("Error", err).
+				Error("Failed to get the latest block number")
 			ethereum.RefreshRPC(info.Asset.Token.Chain)
 			// TODO: we should retry
 			return
@@ -104,41 +103,30 @@ func RecordSignature(
 	defer signatureMutex.Unlock()
 
 	if !consensus.Contains(info.Asset) {
-		consensus.Add(info.Asset, make(map[bls12381.G1Affine]uint64))
+		consensus.Add(info.Asset, *xsync.NewMapOf[bls12381.G1Affine, uint64]())
 	}
 
 	reportedValues, _ := consensus.Get(info.Asset)
-	reportedValues[hash]++
 	isMajority := true
-	count := reportedValues[hash]
+	count, ok := reportedValues.Load(hash)
 
-	for _, reportCount := range reportedValues {
-		if reportCount > count {
-			isMajority = false
-			break
-		}
+	if !ok {
+		count = 0
 	}
 
-	cached, ok := signatureCache.Get(hash)
+	reportedValues.Range(func(_ bls12381.G1Affine, value uint64) bool {
+		if value > count+1 {
+			isMajority = false
+		}
+		return isMajority
+	})
+
+	cached, _ := signatureCache.Get(hash)
 
 	packed := bls.Signature{
 		Signature: signature,
 		Signer:    signer,
 		Processed: false,
-	}
-
-	if !ok {
-		signatureCache.Add(hash, []bls.Signature{packed})
-		// TODO: This should not only write to DB,
-		// TODO: but also report to "consumers"
-		if isMajority {
-			if debounce {
-				DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
-			} else {
-				SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
-			}
-		}
-		return
 	}
 
 	for _, item := range cached {
@@ -147,12 +135,31 @@ func RecordSignature(
 		}
 	}
 
+	reportedValues.Store(hash, count+1)
 	cached = append(cached, packed)
 	signatureCache.Add(hash, cached)
 
 	if isMajority {
 		if debounce {
-			DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+
+			reportLog := log.Logger.
+				With("Block", info.Asset.Block).
+				With("Price", info.Price.String()).
+				With("Token", info.Asset.Token.Name)
+
+			reportedValues.Range(func(hash bls12381.G1Affine, value uint64) bool {
+				reportLog = reportLog.With(fmt.Sprintf("%x", hash.Bytes())[:8], value)
+				return true
+			})
+
+			reportLog.
+				With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+				Debug("Values")
+
+			DebouncedSaveSignatures(
+				info.Asset,
+				SaveSignatureArgs{Hash: hash, Info: info},
+			)
 		} else {
 			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
 		}
@@ -169,7 +176,16 @@ func SaveSignatures(args SaveSignatureArgs) {
 	dbClient := db.GetClient()
 	signatures, ok := signatureCache.Get(args.Hash)
 
+	log.Logger.
+		With("Block", args.Info.Asset.Block).
+		With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+		Debug("Saving into DB")
+
 	if !ok {
+		log.Logger.
+			With("Block", args.Info.Asset.Block).
+			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+			Debug("Cache not found")
 		return
 	}
 
@@ -204,7 +220,10 @@ func SaveSignatures(args SaveSignatureArgs) {
 		Exec(ctx)
 
 	if err != nil {
-		log.Logger.Error("Failed to upsert token signers.")
+		log.Logger.
+			With("Block", args.Info.Asset.Block).
+			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+			Debug("Failed to upsert token signers.")
 		os.Exit(1)
 	}
 
@@ -214,6 +233,10 @@ func SaveSignatures(args SaveSignatureArgs) {
 		IDs(ctx)
 
 	if err != nil {
+		log.Logger.
+			With("Block", args.Info.Asset.Block).
+			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+			Debug("Filed to upsert signers")
 		return
 	}
 
@@ -227,6 +250,10 @@ func SaveSignatures(args SaveSignatureArgs) {
 	aggregate, err = bls.AggregateSignatures(newSignatures)
 
 	if err != nil {
+		log.Logger.
+			With("Block", args.Info.Asset.Block).
+			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+			Debug("Filed to aggregate signatures")
 		return
 	}
 
@@ -249,6 +276,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 		)
 	}
 
+	// TODO: Handle cases where signerIds need to be removed
 	err = dbClient.AssetPrice.
 		Create().
 		SetPair(strings.ToLower(args.Info.Asset.Token.Pair)).
@@ -264,10 +292,14 @@ func SaveSignatures(args SaveSignatureArgs) {
 		Exec(ctx)
 
 	if err != nil {
-		log.Logger.Error("Failed to upsert asset price.")
+		log.Logger.
+			With("Block", args.Info.Asset.Block).
+			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+			Debug("Failed to upsert asset price")
 		os.Exit(1)
 	}
 
+	// TODO: We probably need a context-aware mutex here
 	for _, signature := range signatures {
 		signature.Processed = true
 	}
@@ -639,7 +671,7 @@ func Start() {
 
 func init() {
 
-	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
+	DebouncedSaveSignatures = utils.Debounce[datasets.AssetKey, SaveSignatureArgs](5*time.Second, SaveSignatures)
 	signatureMutex = new(sync.Mutex)
 
 	twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
@@ -651,21 +683,22 @@ func init() {
 	supportedTokens = make(map[datasets.TokenKey]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](1024)
 
 	if err != nil {
 		log.Logger.Error("Failed to create token price signature cache.")
 		os.Exit(1)
 	}
 
-	consensus, err = lru.New[datasets.AssetKey, map[bls12381.G1Affine]uint64](128)
+	// TODO: This is vulnerable to flood attacks
+	consensus, err = lru.New[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, uint64]](1024)
 
 	if err != nil {
 		log.Logger.Error("Failed to create token price consensus cache.")
 		os.Exit(1)
 	}
 
-	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](128)
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](1024)
 
 	if err != nil {
 		log.Logger.Error("Failed to create token price aggregate cache.")
