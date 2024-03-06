@@ -19,8 +19,7 @@ import (
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net/client"
-	"github.com/KenshiTech/unchained/net/consumer"
+	"github.com/KenshiTech/unchained/net/shared"
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/utils"
 
@@ -122,6 +121,10 @@ func RecordSignature(
 		// TODO: this won't work for Arbitrum
 		// TODO: we disallow syncing historical events here
 		if *blockNumber-info.Block > 96 {
+			log.Logger.
+				With("Packet", info.Block).
+				With("Current", *blockNumber).
+				Debug("Data too old")
 			return // Data too old
 		}
 	}
@@ -259,24 +262,6 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	signatureBytes := aggregate.Bytes()
 
-	packet := datasets.BroadcastEventPacket{
-		Info:      args.Info,
-		Signers:   keys,
-		Signature: signatureBytes,
-	}
-
-	payload, err := msgpack.Marshal(&packet)
-
-	if err != nil {
-		panic(err)
-	}
-
-	consumer.Broadcast(
-		append(
-			[]byte{opcodes.EventLogBroadcast, 0},
-			payload...),
-	)
-
 	err = dbClient.EventLog.
 		Create().
 		SetBlock(args.Info.Block).
@@ -307,7 +292,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 func createTask(configs []LogConf, chain string) func() {
 	return func() {
 
-		if client.IsClientSocketClosed {
+		if shared.IsClientSocketClosed {
 			return
 		}
 
@@ -472,7 +457,7 @@ func createTask(configs []LogConf, chain string) func() {
 				}
 
 				if conf.Send {
-					client.Send(
+					shared.Send(
 						append([]byte{opcodes.EventLog, 0}, payload...),
 					)
 				}
