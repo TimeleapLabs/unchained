@@ -18,6 +18,8 @@ type Signer struct {
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Evm holds the value of the "evm" field.
+	Evm *string `json:"evm,omitempty"`
 	// Key holds the value of the "key" field.
 	Key []byte `json:"key,omitempty"`
 	// Shortkey holds the value of the "shortkey" field.
@@ -73,7 +75,7 @@ func (*Signer) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case signer.FieldID, signer.FieldPoints:
 			values[i] = new(sql.NullInt64)
-		case signer.FieldName:
+		case signer.FieldName, signer.FieldEvm:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -101,6 +103,13 @@ func (s *Signer) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				s.Name = value.String
+			}
+		case signer.FieldEvm:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field evm", values[i])
+			} else if value.Valid {
+				s.Evm = new(string)
+				*s.Evm = value.String
 			}
 		case signer.FieldKey:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -168,6 +177,11 @@ func (s *Signer) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
 	builder.WriteString("name=")
 	builder.WriteString(s.Name)
+	builder.WriteString(", ")
+	if v := s.Evm; v != nil {
+		builder.WriteString("evm=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("key=")
 	builder.WriteString(fmt.Sprintf("%v", s.Key))

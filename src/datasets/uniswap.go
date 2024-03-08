@@ -1,6 +1,10 @@
 package datasets
 
-import "math/big"
+import (
+	"math/big"
+
+	"github.com/KenshiTech/unchained/crypto/bls"
+)
 
 type TokenKey struct {
 	Name   string
@@ -29,5 +33,5 @@ type PriceReport struct {
 type BroadcastPricePacket struct {
 	Info      PriceInfo
 	Signature [48]byte
-	Signers   [][]byte
+	Signer    bls.Signer
 }

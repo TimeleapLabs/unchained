@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
@@ -20,8 +21,7 @@ import (
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net/client"
-	"github.com/KenshiTech/unchained/net/consumer"
+	"github.com/KenshiTech/unchained/net/shared"
 	"github.com/KenshiTech/unchained/utils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -77,6 +77,13 @@ func RecordSignature(
 	historical bool) {
 
 	if supported := supportedTokens[info.Asset.Token]; !supported {
+
+		log.Logger.
+			With("Name", info.Asset.Token.Name).
+			With("Chain", info.Asset.Token.Chain).
+			With("Pair", info.Asset.Token.Pair).
+			Debug("Token not supported")
+
 		return
 	}
 
@@ -95,6 +102,10 @@ func RecordSignature(
 
 		// TODO: this won't work for Arbitrum
 		if *blockNumber-info.Asset.Block > 96 {
+			log.Logger.
+				With("Packet", info.Asset.Block).
+				With("Current", *blockNumber).
+				Debug("Data too old")
 			return // Data too old
 		}
 	}
@@ -131,6 +142,9 @@ func RecordSignature(
 
 	for _, item := range cached {
 		if item.Signer.PublicKey == signer.PublicKey {
+			log.Logger.
+				With("Address", address.Calculate(signer.PublicKey[:])).
+				Debug("Duplicated signature")
 			return
 		}
 	}
@@ -141,7 +155,6 @@ func RecordSignature(
 
 	if isMajority {
 		if debounce {
-
 			reportLog := log.Logger.
 				With("Block", info.Asset.Block).
 				With("Price", info.Price.String()).
@@ -163,6 +176,8 @@ func RecordSignature(
 		} else {
 			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
 		}
+	} else {
+		log.Logger.Debug("Not a majority")
 	}
 }
 
@@ -207,12 +222,14 @@ func SaveSignatures(args SaveSignatureArgs) {
 	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
+			SetEvm(signer.EvmWallet).
 			SetKey(signer.PublicKey[:]).
 			SetShortkey(signer.ShortPublicKey[:]).
 			SetPoints(0)
 	}).
 		OnConflictColumns("shortkey").
 		UpdateName().
+		UpdateEvm().
 		UpdateKey().
 		Update(func(su *ent.SignerUpsert) {
 			su.AddPoints(1)
@@ -258,23 +275,6 @@ func SaveSignatures(args SaveSignatureArgs) {
 	}
 
 	signatureBytes := aggregate.Bytes()
-
-	packet := datasets.BroadcastPricePacket{
-		Info:      args.Info,
-		Signers:   keys,
-		Signature: signatureBytes,
-	}
-
-	payload, err := msgpack.Marshal(&packet)
-
-	if err == nil {
-		// TODO: Handle errors in a proper way
-		consumer.Broadcast(
-			append(
-				[]byte{opcodes.PriceReportBroadcast, 0},
-				payload...),
-		)
-	}
 
 	// TODO: Handle cases where signerIds need to be removed
 	err = dbClient.AssetPrice.
@@ -535,8 +535,8 @@ func syncBlocks(token Token, key datasets.TokenKey, latest uint64) {
 			os.Exit(1)
 		}
 
-		if token.Send && !client.IsClientSocketClosed {
-			client.Send(
+		if token.Send && !shared.IsClientSocketClosed {
+			shared.Send(
 				append([]byte{opcodes.PriceReport, 0}, payload...),
 			)
 		}

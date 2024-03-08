@@ -14,9 +14,8 @@ import (
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/consumer"
 	"github.com/KenshiTech/unchained/net/repository"
-	"github.com/KenshiTech/unchained/plugins/logs"
-	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"
@@ -261,15 +260,29 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 	message := []byte("signature.invalid")
 	if ok {
 		message = []byte("signature.accepted")
-		// TODO: Only Ethereum is supported atm
-		uniswap.RecordSignature(
-			signature,
-			*signer,
-			hash,
-			report.PriceInfo,
-			true,
-			false,
-		)
+
+		broadcastPacket := datasets.BroadcastPricePacket{
+			Info:      report.PriceInfo,
+			Signature: report.Signature,
+			Signer:    *signer,
+		}
+
+		broadcastPayload, err := msgpack.Marshal(&broadcastPacket)
+
+		// TODO: Handle this error properly
+		// TODO: Maybe notify the peer so they can resend
+		if err != nil {
+			log.Logger.
+				With("Error", err).
+				Error("Cannot marshal the broadcast packet")
+		} else {
+			consumer.Broadcast(
+				append(
+					[]byte{opcodes.PriceReportBroadcast},
+					broadcastPayload...,
+				),
+			)
+		}
 	}
 
 	err = conn.WriteMessage(
@@ -295,14 +308,14 @@ func processEventLog(conn *websocket.Conn, messageType int, payload []byte) erro
 		return err
 	}
 
-	var logReport datasets.EventLogReport
-	err = msgpack.Unmarshal(payload, &logReport)
+	var report datasets.EventLogReport
+	err = msgpack.Unmarshal(payload, &report)
 
 	if err != nil {
 		return nil
 	}
 
-	toHash, err := msgpack.Marshal(&logReport.EventLog)
+	toHash, err := msgpack.Marshal(&report.EventLog)
 
 	if err != nil {
 		return nil
@@ -314,7 +327,7 @@ func processEventLog(conn *websocket.Conn, messageType int, payload []byte) erro
 		return nil
 	}
 
-	signature, err := bls.RecoverSignature(logReport.Signature)
+	signature, err := bls.RecoverSignature(report.Signature)
 
 	if err != nil {
 		return nil
@@ -331,15 +344,27 @@ func processEventLog(conn *websocket.Conn, messageType int, payload []byte) erro
 	message := []byte("signature.invalid")
 	if ok {
 		message = []byte("signature.accepted")
-		// TODO: Only Ethereum is supported atm
-		logs.RecordSignature(
-			signature,
-			*signer,
-			hash,
-			logReport.EventLog,
-			true,
-			false,
-		)
+		broadcastPacket := datasets.BroadcastEventPacket{
+			Info:      report.EventLog,
+			Signature: report.Signature,
+			Signer:    *signer,
+		}
+
+		broadcastPayload, err := msgpack.Marshal(&broadcastPacket)
+
+		// TODO: Handle this error properly
+		// TODO: Maybe notify the peer so they can resend
+		if err != nil {
+			log.Logger.
+				With("Error", err).
+				Error("Cannot marshal the broadcast packet")
+		} else {
+			consumer.Broadcast(
+				append(
+					[]byte{opcodes.EventLogBroadcast},
+					broadcastPayload...,
+				))
+		}
 	}
 
 	err = conn.WriteMessage(

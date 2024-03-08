@@ -3,6 +3,7 @@ package datasets
 import (
 	"encoding/json"
 
+	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -51,5 +52,5 @@ type EventLogReport struct {
 type BroadcastEventPacket struct {
 	Info      EventLog
 	Signature [48]byte
-	Signers   [][]byte
+	Signer    bls.Signer
 }

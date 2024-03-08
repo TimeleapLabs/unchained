@@ -29,6 +29,20 @@ func (sc *SignerCreate) SetName(s string) *SignerCreate {
 	return sc
 }
 
+// SetEvm sets the "evm" field.
+func (sc *SignerCreate) SetEvm(s string) *SignerCreate {
+	sc.mutation.SetEvm(s)
+	return sc
+}
+
+// SetNillableEvm sets the "evm" field if the given value is not nil.
+func (sc *SignerCreate) SetNillableEvm(s *string) *SignerCreate {
+	if s != nil {
+		sc.SetEvm(*s)
+	}
+	return sc
+}
+
 // SetKey sets the "key" field.
 func (sc *SignerCreate) SetKey(b []byte) *SignerCreate {
 	sc.mutation.SetKey(b)
@@ -169,6 +183,10 @@ func (sc *SignerCreate) createSpec() (*Signer, *sqlgraph.CreateSpec) {
 		_spec.SetField(signer.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := sc.mutation.Evm(); ok {
+		_spec.SetField(signer.FieldEvm, field.TypeString, value)
+		_node.Evm = &value
+	}
 	if value, ok := sc.mutation.Key(); ok {
 		_spec.SetField(signer.FieldKey, field.TypeBytes, value)
 		_node.Key = value
@@ -277,6 +295,24 @@ func (u *SignerUpsert) UpdateName() *SignerUpsert {
 	return u
 }
 
+// SetEvm sets the "evm" field.
+func (u *SignerUpsert) SetEvm(v string) *SignerUpsert {
+	u.Set(signer.FieldEvm, v)
+	return u
+}
+
+// UpdateEvm sets the "evm" field to the value that was provided on create.
+func (u *SignerUpsert) UpdateEvm() *SignerUpsert {
+	u.SetExcluded(signer.FieldEvm)
+	return u
+}
+
+// ClearEvm clears the value of the "evm" field.
+func (u *SignerUpsert) ClearEvm() *SignerUpsert {
+	u.SetNull(signer.FieldEvm)
+	return u
+}
+
 // SetKey sets the "key" field.
 func (u *SignerUpsert) SetKey(v []byte) *SignerUpsert {
 	u.Set(signer.FieldKey, v)
@@ -370,6 +406,27 @@ func (u *SignerUpsertOne) SetName(v string) *SignerUpsertOne {
 func (u *SignerUpsertOne) UpdateName() *SignerUpsertOne {
 	return u.Update(func(s *SignerUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetEvm sets the "evm" field.
+func (u *SignerUpsertOne) SetEvm(v string) *SignerUpsertOne {
+	return u.Update(func(s *SignerUpsert) {
+		s.SetEvm(v)
+	})
+}
+
+// UpdateEvm sets the "evm" field to the value that was provided on create.
+func (u *SignerUpsertOne) UpdateEvm() *SignerUpsertOne {
+	return u.Update(func(s *SignerUpsert) {
+		s.UpdateEvm()
+	})
+}
+
+// ClearEvm clears the value of the "evm" field.
+func (u *SignerUpsertOne) ClearEvm() *SignerUpsertOne {
+	return u.Update(func(s *SignerUpsert) {
+		s.ClearEvm()
 	})
 }
 
@@ -636,6 +693,27 @@ func (u *SignerUpsertBulk) SetName(v string) *SignerUpsertBulk {
 func (u *SignerUpsertBulk) UpdateName() *SignerUpsertBulk {
 	return u.Update(func(s *SignerUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetEvm sets the "evm" field.
+func (u *SignerUpsertBulk) SetEvm(v string) *SignerUpsertBulk {
+	return u.Update(func(s *SignerUpsert) {
+		s.SetEvm(v)
+	})
+}
+
+// UpdateEvm sets the "evm" field to the value that was provided on create.
+func (u *SignerUpsertBulk) UpdateEvm() *SignerUpsertBulk {
+	return u.Update(func(s *SignerUpsert) {
+		s.UpdateEvm()
+	})
+}
+
+// ClearEvm clears the value of the "evm" field.
+func (u *SignerUpsertBulk) ClearEvm() *SignerUpsertBulk {
+	return u.Update(func(s *SignerUpsert) {
+		s.ClearEvm()
 	})
 }
 

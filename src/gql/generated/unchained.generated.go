@@ -612,6 +612,8 @@ func (ec *executionContext) fieldContext_AssetPrice_signers(ctx context.Context,
 				return ec.fieldContext_Signer_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Signer_name(ctx, field)
+			case "evm":
+				return ec.fieldContext_Signer_evm(ctx, field)
 			case "key":
 				return ec.fieldContext_Signer_key(ctx, field)
 			case "shortkey":
@@ -1368,6 +1370,8 @@ func (ec *executionContext) fieldContext_EventLog_signers(ctx context.Context, f
 				return ec.fieldContext_Signer_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Signer_name(ctx, field)
+			case "evm":
+				return ec.fieldContext_Signer_evm(ctx, field)
 			case "key":
 				return ec.fieldContext_Signer_key(ctx, field)
 			case "shortkey":
@@ -2247,6 +2251,47 @@ func (ec *executionContext) _Signer_name(ctx context.Context, field graphql.Coll
 }
 
 func (ec *executionContext) fieldContext_Signer_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Signer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Signer_evm(ctx context.Context, field graphql.CollectedField, obj *ent.Signer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Signer_evm(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Evm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Signer_evm(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Signer",
 		Field:      field,
@@ -3780,7 +3825,7 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "points", "pointsNEQ", "pointsIn", "pointsNotIn", "pointsGT", "pointsGTE", "pointsLT", "pointsLTE", "hasAssetPrice", "hasAssetPriceWith", "hasEventLogs", "hasEventLogsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "evm", "evmNEQ", "evmIn", "evmNotIn", "evmGT", "evmGTE", "evmLT", "evmLTE", "evmContains", "evmHasPrefix", "evmHasSuffix", "evmIsNil", "evmNotNil", "evmEqualFold", "evmContainsFold", "points", "pointsNEQ", "pointsIn", "pointsNotIn", "pointsGT", "pointsGTE", "pointsLT", "pointsLTE", "hasAssetPrice", "hasAssetPriceWith", "hasEventLogs", "hasEventLogsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3955,6 +4000,111 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.NameContainsFold = data
+		case "evm":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evm"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Evm = data
+		case "evmNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmNEQ = data
+		case "evmIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmIn = data
+		case "evmNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmNotIn = data
+		case "evmGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmGT = data
+		case "evmGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmGTE = data
+		case "evmLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmLT = data
+		case "evmLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmLTE = data
+		case "evmContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmContains = data
+		case "evmHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmHasPrefix = data
+		case "evmHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmHasSuffix = data
+		case "evmIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmIsNil = data
+		case "evmNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmNotNil = data
+		case "evmEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmEqualFold = data
+		case "evmContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evmContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EvmContainsFold = data
 		case "points":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("points"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -4797,6 +4947,8 @@ func (ec *executionContext) _Signer(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "evm":
+			out.Values[i] = ec._Signer_evm(ctx, field, obj)
 		case "key":
 			field := field
 
