@@ -55,7 +55,7 @@ func InitClientIdentity() {
 
 	ClientSigner = Signer{
 		Name:           config.Config.GetString("name"),
-		EvmWallet:      config.Config.GetString("evmWallet"),
+		EvmWallet:      config.Secrets.GetString("evmwallet"),
 		PublicKey:      ClientPublicKey.Bytes(),
 		ShortPublicKey: ClientShortPublicKey.Bytes(),
 	}
