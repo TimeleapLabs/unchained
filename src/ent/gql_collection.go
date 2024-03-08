@@ -335,6 +335,11 @@ func (s *SignerQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 				selectedFields = append(selectedFields, signer.FieldName)
 				fieldSeen[signer.FieldName] = struct{}{}
 			}
+		case "evm":
+			if _, ok := fieldSeen[signer.FieldEvm]; !ok {
+				selectedFields = append(selectedFields, signer.FieldEvm)
+				fieldSeen[signer.FieldEvm] = struct{}{}
+			}
 		case "key":
 			if _, ok := fieldSeen[signer.FieldKey]; !ok {
 				selectedFields = append(selectedFields, signer.FieldKey)

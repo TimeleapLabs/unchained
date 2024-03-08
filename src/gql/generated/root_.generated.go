@@ -116,6 +116,7 @@ type ComplexityRoot struct {
 	Signer struct {
 		AssetPrice func(childComplexity int) int
 		EventLogs  func(childComplexity int) int
+		Evm        func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Key        func(childComplexity int) int
 		Name       func(childComplexity int) int
@@ -456,6 +457,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Signer.EventLogs(childComplexity), true
+
+	case "Signer.evm":
+		if e.complexity.Signer.Evm == nil {
+			break
+		}
+
+		return e.complexity.Signer.Evm(childComplexity), true
 
 	case "Signer.id":
 		if e.complexity.Signer.ID == nil {
@@ -1074,6 +1082,7 @@ type Query {
 type Signer implements Node {
   id: ID!
   name: String!
+  evm: String
   key: Bytes!
   shortkey: Bytes!
   points: Int!
@@ -1115,6 +1124,24 @@ input SignerWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
+  """
+  evm field predicates
+  """
+  evm: String
+  evmNEQ: String
+  evmIn: [String!]
+  evmNotIn: [String!]
+  evmGT: String
+  evmGTE: String
+  evmLT: String
+  evmLTE: String
+  evmContains: String
+  evmHasPrefix: String
+  evmHasSuffix: String
+  evmIsNil: Boolean
+  evmNotNil: Boolean
+  evmEqualFold: String
+  evmContainsFold: String
   """
   points field predicates
   """

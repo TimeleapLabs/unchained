@@ -222,12 +222,14 @@ func SaveSignatures(args SaveSignatureArgs) {
 	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
+			SetEvm(signer.EvmWallet).
 			SetKey(signer.PublicKey[:]).
 			SetShortkey(signer.ShortPublicKey[:]).
 			SetPoints(0)
 	}).
 		OnConflictColumns("shortkey").
 		UpdateName().
+		UpdateEvm().
 		UpdateKey().
 		Update(func(su *ent.SignerUpsert) {
 			su.AddPoints(1)

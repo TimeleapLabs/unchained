@@ -42,12 +42,7 @@ func StartClient() {
 
 	Done = make(chan struct{})
 
-	hello := bls.Signer{
-		Name:           config.Config.GetString("name"),
-		PublicKey:      bls.ClientPublicKey.Bytes(),
-		ShortPublicKey: bls.ClientShortPublicKey.Bytes(),
-	}
-
+	hello := bls.ClientSigner
 	helloPayload, err := msgpack.Marshal(&hello)
 
 	if err != nil {

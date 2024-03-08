@@ -16,7 +16,11 @@ type Signer struct {
 // Fields of the DataSet.
 func (Signer) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").NotEmpty(),
+		field.String("name").
+			NotEmpty(),
+		field.String("evm").
+			Nillable().
+			Optional(),
 		field.Bytes("key").
 			MaxLen(96).
 			Unique().

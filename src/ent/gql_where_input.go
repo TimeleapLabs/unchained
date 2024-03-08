@@ -897,6 +897,23 @@ type SignerWhereInput struct {
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
+	// "evm" field predicates.
+	Evm             *string  `json:"evm,omitempty"`
+	EvmNEQ          *string  `json:"evmNEQ,omitempty"`
+	EvmIn           []string `json:"evmIn,omitempty"`
+	EvmNotIn        []string `json:"evmNotIn,omitempty"`
+	EvmGT           *string  `json:"evmGT,omitempty"`
+	EvmGTE          *string  `json:"evmGTE,omitempty"`
+	EvmLT           *string  `json:"evmLT,omitempty"`
+	EvmLTE          *string  `json:"evmLTE,omitempty"`
+	EvmContains     *string  `json:"evmContains,omitempty"`
+	EvmHasPrefix    *string  `json:"evmHasPrefix,omitempty"`
+	EvmHasSuffix    *string  `json:"evmHasSuffix,omitempty"`
+	EvmIsNil        bool     `json:"evmIsNil,omitempty"`
+	EvmNotNil       bool     `json:"evmNotNil,omitempty"`
+	EvmEqualFold    *string  `json:"evmEqualFold,omitempty"`
+	EvmContainsFold *string  `json:"evmContainsFold,omitempty"`
+
 	// "points" field predicates.
 	Points      *int64  `json:"points,omitempty"`
 	PointsNEQ   *int64  `json:"pointsNEQ,omitempty"`
@@ -1049,6 +1066,51 @@ func (i *SignerWhereInput) P() (predicate.Signer, error) {
 	}
 	if i.NameContainsFold != nil {
 		predicates = append(predicates, signer.NameContainsFold(*i.NameContainsFold))
+	}
+	if i.Evm != nil {
+		predicates = append(predicates, signer.EvmEQ(*i.Evm))
+	}
+	if i.EvmNEQ != nil {
+		predicates = append(predicates, signer.EvmNEQ(*i.EvmNEQ))
+	}
+	if len(i.EvmIn) > 0 {
+		predicates = append(predicates, signer.EvmIn(i.EvmIn...))
+	}
+	if len(i.EvmNotIn) > 0 {
+		predicates = append(predicates, signer.EvmNotIn(i.EvmNotIn...))
+	}
+	if i.EvmGT != nil {
+		predicates = append(predicates, signer.EvmGT(*i.EvmGT))
+	}
+	if i.EvmGTE != nil {
+		predicates = append(predicates, signer.EvmGTE(*i.EvmGTE))
+	}
+	if i.EvmLT != nil {
+		predicates = append(predicates, signer.EvmLT(*i.EvmLT))
+	}
+	if i.EvmLTE != nil {
+		predicates = append(predicates, signer.EvmLTE(*i.EvmLTE))
+	}
+	if i.EvmContains != nil {
+		predicates = append(predicates, signer.EvmContains(*i.EvmContains))
+	}
+	if i.EvmHasPrefix != nil {
+		predicates = append(predicates, signer.EvmHasPrefix(*i.EvmHasPrefix))
+	}
+	if i.EvmHasSuffix != nil {
+		predicates = append(predicates, signer.EvmHasSuffix(*i.EvmHasSuffix))
+	}
+	if i.EvmIsNil {
+		predicates = append(predicates, signer.EvmIsNil())
+	}
+	if i.EvmNotNil {
+		predicates = append(predicates, signer.EvmNotNil())
+	}
+	if i.EvmEqualFold != nil {
+		predicates = append(predicates, signer.EvmEqualFold(*i.EvmEqualFold))
+	}
+	if i.EvmContainsFold != nil {
+		predicates = append(predicates, signer.EvmContainsFold(*i.EvmContainsFold))
 	}
 	if i.Points != nil {
 		predicates = append(predicates, signer.PointsEQ(*i.Points))

@@ -58,6 +58,11 @@ func Name(v string) predicate.Signer {
 	return predicate.Signer(sql.FieldEQ(FieldName, v))
 }
 
+// Evm applies equality check predicate on the "evm" field. It's identical to EvmEQ.
+func Evm(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldEQ(FieldEvm, v))
+}
+
 // Key applies equality check predicate on the "key" field. It's identical to KeyEQ.
 func Key(v []byte) predicate.Signer {
 	return predicate.Signer(sql.FieldEQ(FieldKey, v))
@@ -136,6 +141,81 @@ func NameEqualFold(v string) predicate.Signer {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Signer {
 	return predicate.Signer(sql.FieldContainsFold(FieldName, v))
+}
+
+// EvmEQ applies the EQ predicate on the "evm" field.
+func EvmEQ(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldEQ(FieldEvm, v))
+}
+
+// EvmNEQ applies the NEQ predicate on the "evm" field.
+func EvmNEQ(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldNEQ(FieldEvm, v))
+}
+
+// EvmIn applies the In predicate on the "evm" field.
+func EvmIn(vs ...string) predicate.Signer {
+	return predicate.Signer(sql.FieldIn(FieldEvm, vs...))
+}
+
+// EvmNotIn applies the NotIn predicate on the "evm" field.
+func EvmNotIn(vs ...string) predicate.Signer {
+	return predicate.Signer(sql.FieldNotIn(FieldEvm, vs...))
+}
+
+// EvmGT applies the GT predicate on the "evm" field.
+func EvmGT(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldGT(FieldEvm, v))
+}
+
+// EvmGTE applies the GTE predicate on the "evm" field.
+func EvmGTE(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldGTE(FieldEvm, v))
+}
+
+// EvmLT applies the LT predicate on the "evm" field.
+func EvmLT(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldLT(FieldEvm, v))
+}
+
+// EvmLTE applies the LTE predicate on the "evm" field.
+func EvmLTE(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldLTE(FieldEvm, v))
+}
+
+// EvmContains applies the Contains predicate on the "evm" field.
+func EvmContains(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldContains(FieldEvm, v))
+}
+
+// EvmHasPrefix applies the HasPrefix predicate on the "evm" field.
+func EvmHasPrefix(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldHasPrefix(FieldEvm, v))
+}
+
+// EvmHasSuffix applies the HasSuffix predicate on the "evm" field.
+func EvmHasSuffix(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldHasSuffix(FieldEvm, v))
+}
+
+// EvmIsNil applies the IsNil predicate on the "evm" field.
+func EvmIsNil() predicate.Signer {
+	return predicate.Signer(sql.FieldIsNull(FieldEvm))
+}
+
+// EvmNotNil applies the NotNil predicate on the "evm" field.
+func EvmNotNil() predicate.Signer {
+	return predicate.Signer(sql.FieldNotNull(FieldEvm))
+}
+
+// EvmEqualFold applies the EqualFold predicate on the "evm" field.
+func EvmEqualFold(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldEqualFold(FieldEvm, v))
+}
+
+// EvmContainsFold applies the ContainsFold predicate on the "evm" field.
+func EvmContainsFold(v string) predicate.Signer {
+	return predicate.Signer(sql.FieldContainsFold(FieldEvm, v))
 }
 
 // KeyEQ applies the EQ predicate on the "key" field.
