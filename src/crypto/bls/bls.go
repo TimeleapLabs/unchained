@@ -10,6 +10,7 @@ import (
 
 type Signer struct {
 	Name           string
+	EvmWallet      string
 	PublicKey      [96]byte
 	ShortPublicKey [48]byte
 }

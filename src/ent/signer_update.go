@@ -43,6 +43,26 @@ func (su *SignerUpdate) SetNillableName(s *string) *SignerUpdate {
 	return su
 }
 
+// SetEvm sets the "evm" field.
+func (su *SignerUpdate) SetEvm(s string) *SignerUpdate {
+	su.mutation.SetEvm(s)
+	return su
+}
+
+// SetNillableEvm sets the "evm" field if the given value is not nil.
+func (su *SignerUpdate) SetNillableEvm(s *string) *SignerUpdate {
+	if s != nil {
+		su.SetEvm(*s)
+	}
+	return su
+}
+
+// ClearEvm clears the value of the "evm" field.
+func (su *SignerUpdate) ClearEvm() *SignerUpdate {
+	su.mutation.ClearEvm()
+	return su
+}
+
 // SetKey sets the "key" field.
 func (su *SignerUpdate) SetKey(b []byte) *SignerUpdate {
 	su.mutation.SetKey(b)
@@ -215,6 +235,12 @@ func (su *SignerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.Name(); ok {
 		_spec.SetField(signer.FieldName, field.TypeString, value)
 	}
+	if value, ok := su.mutation.Evm(); ok {
+		_spec.SetField(signer.FieldEvm, field.TypeString, value)
+	}
+	if su.mutation.EvmCleared() {
+		_spec.ClearField(signer.FieldEvm, field.TypeString)
+	}
 	if value, ok := su.mutation.Key(); ok {
 		_spec.SetField(signer.FieldKey, field.TypeBytes, value)
 	}
@@ -348,6 +374,26 @@ func (suo *SignerUpdateOne) SetNillableName(s *string) *SignerUpdateOne {
 	if s != nil {
 		suo.SetName(*s)
 	}
+	return suo
+}
+
+// SetEvm sets the "evm" field.
+func (suo *SignerUpdateOne) SetEvm(s string) *SignerUpdateOne {
+	suo.mutation.SetEvm(s)
+	return suo
+}
+
+// SetNillableEvm sets the "evm" field if the given value is not nil.
+func (suo *SignerUpdateOne) SetNillableEvm(s *string) *SignerUpdateOne {
+	if s != nil {
+		suo.SetEvm(*s)
+	}
+	return suo
+}
+
+// ClearEvm clears the value of the "evm" field.
+func (suo *SignerUpdateOne) ClearEvm() *SignerUpdateOne {
+	suo.mutation.ClearEvm()
 	return suo
 }
 
@@ -552,6 +598,12 @@ func (suo *SignerUpdateOne) sqlSave(ctx context.Context) (_node *Signer, err err
 	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.SetField(signer.FieldName, field.TypeString, value)
+	}
+	if value, ok := suo.mutation.Evm(); ok {
+		_spec.SetField(signer.FieldEvm, field.TypeString, value)
+	}
+	if suo.mutation.EvmCleared() {
+		_spec.ClearField(signer.FieldEvm, field.TypeString)
 	}
 	if value, ok := suo.mutation.Key(); ok {
 		_spec.SetField(signer.FieldKey, field.TypeBytes, value)

@@ -6,9 +6,14 @@ package cmd
 import (
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/consumers"
 	"github.com/KenshiTech/unchained/crypto/bls"
+	"github.com/KenshiTech/unchained/db"
+	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
+	"github.com/KenshiTech/unchained/plugins/logs"
+	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
 )
@@ -32,8 +37,12 @@ var consumerCmd = &cobra.Command{
 
 		config.LoadConfig(configPath, secretsPath)
 		bls.InitClientIdentity()
+		db.Start()
+		ethereum.Start()
+		uniswap.Setup()
+		logs.Setup()
 		client.StartClient()
-		client.StartConsumer()
+		consumers.StartConsumer()
 		client.ClientBlock()
 	},
 }

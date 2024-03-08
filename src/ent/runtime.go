@@ -36,7 +36,7 @@ func init() {
 	// signer.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	signer.NameValidator = signerDescName.Validators[0].(func(string) error)
 	// signerDescKey is the schema descriptor for key field.
-	signerDescKey := signerFields[1].Descriptor()
+	signerDescKey := signerFields[2].Descriptor()
 	// signer.KeyValidator is a validator for the "key" field. It is called by the builders before save.
 	signer.KeyValidator = func() func([]byte) error {
 		validators := signerDescKey.Validators
@@ -54,7 +54,7 @@ func init() {
 		}
 	}()
 	// signerDescShortkey is the schema descriptor for shortkey field.
-	signerDescShortkey := signerFields[2].Descriptor()
+	signerDescShortkey := signerFields[3].Descriptor()
 	// signer.ShortkeyValidator is a validator for the "shortkey" field. It is called by the builders before save.
 	signer.ShortkeyValidator = func() func([]byte) error {
 		validators := signerDescShortkey.Validators
