@@ -1900,6 +1900,7 @@ type SignerMutation struct {
 	typ               string
 	id                *int
 	name              *string
+	evm               *string
 	key               *[]byte
 	shortkey          *[]byte
 	points            *int64
@@ -2048,6 +2049,55 @@ func (m *SignerMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *SignerMutation) ResetName() {
 	m.name = nil
+}
+
+// SetEvm sets the "evm" field.
+func (m *SignerMutation) SetEvm(s string) {
+	m.evm = &s
+}
+
+// Evm returns the value of the "evm" field in the mutation.
+func (m *SignerMutation) Evm() (r string, exists bool) {
+	v := m.evm
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEvm returns the old "evm" field's value of the Signer entity.
+// If the Signer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SignerMutation) OldEvm(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEvm is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEvm requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEvm: %w", err)
+	}
+	return oldValue.Evm, nil
+}
+
+// ClearEvm clears the value of the "evm" field.
+func (m *SignerMutation) ClearEvm() {
+	m.evm = nil
+	m.clearedFields[signer.FieldEvm] = struct{}{}
+}
+
+// EvmCleared returns if the "evm" field was cleared in this mutation.
+func (m *SignerMutation) EvmCleared() bool {
+	_, ok := m.clearedFields[signer.FieldEvm]
+	return ok
+}
+
+// ResetEvm resets all changes to the "evm" field.
+func (m *SignerMutation) ResetEvm() {
+	m.evm = nil
+	delete(m.clearedFields, signer.FieldEvm)
 }
 
 // SetKey sets the "key" field.
@@ -2320,9 +2370,12 @@ func (m *SignerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SignerMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, signer.FieldName)
+	}
+	if m.evm != nil {
+		fields = append(fields, signer.FieldEvm)
 	}
 	if m.key != nil {
 		fields = append(fields, signer.FieldKey)
@@ -2343,6 +2396,8 @@ func (m *SignerMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case signer.FieldName:
 		return m.Name()
+	case signer.FieldEvm:
+		return m.Evm()
 	case signer.FieldKey:
 		return m.Key()
 	case signer.FieldShortkey:
@@ -2360,6 +2415,8 @@ func (m *SignerMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case signer.FieldName:
 		return m.OldName(ctx)
+	case signer.FieldEvm:
+		return m.OldEvm(ctx)
 	case signer.FieldKey:
 		return m.OldKey(ctx)
 	case signer.FieldShortkey:
@@ -2381,6 +2438,13 @@ func (m *SignerMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case signer.FieldEvm:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEvm(v)
 		return nil
 	case signer.FieldKey:
 		v, ok := value.([]byte)
@@ -2447,7 +2511,11 @@ func (m *SignerMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *SignerMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(signer.FieldEvm) {
+		fields = append(fields, signer.FieldEvm)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2460,6 +2528,11 @@ func (m *SignerMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *SignerMutation) ClearField(name string) error {
+	switch name {
+	case signer.FieldEvm:
+		m.ClearEvm()
+		return nil
+	}
 	return fmt.Errorf("unknown Signer nullable field %s", name)
 }
 
@@ -2469,6 +2542,9 @@ func (m *SignerMutation) ResetField(name string) error {
 	switch name {
 	case signer.FieldName:
 		m.ResetName()
+		return nil
+	case signer.FieldEvm:
+		m.ResetEvm()
 		return nil
 	case signer.FieldKey:
 		m.ResetKey()

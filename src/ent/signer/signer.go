@@ -14,6 +14,8 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldEvm holds the string denoting the evm field in the database.
+	FieldEvm = "evm"
 	// FieldKey holds the string denoting the key field in the database.
 	FieldKey = "key"
 	// FieldShortkey holds the string denoting the shortkey field in the database.
@@ -42,6 +44,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
+	FieldEvm,
 	FieldKey,
 	FieldShortkey,
 	FieldPoints,
@@ -86,6 +89,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByEvm orders the results by the evm field.
+func ByEvm(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEvm, opts...).ToFunc()
 }
 
 // ByPoints orders the results by the points field.

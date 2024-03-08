@@ -477,6 +477,7 @@ type Query {
 type Signer implements Node {
   id: ID!
   name: String!
+  evm: String
   key: Bytes!
   shortkey: Bytes!
   points: Int!
@@ -518,6 +519,24 @@ input SignerWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
+  """
+  evm field predicates
+  """
+  evm: String
+  evmNEQ: String
+  evmIn: [String!]
+  evmNotIn: [String!]
+  evmGT: String
+  evmGTE: String
+  evmLT: String
+  evmLTE: String
+  evmContains: String
+  evmHasPrefix: String
+  evmHasSuffix: String
+  evmIsNil: Boolean
+  evmNotNil: Boolean
+  evmEqualFold: String
+  evmContainsFold: String
   """
   points field predicates
   """
