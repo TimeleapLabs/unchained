@@ -40,3 +40,9 @@ func Calculate(input []byte) string {
 
 	return fmt.Sprintf("%s%s", address, checkchars)
 }
+
+func CalculateHex(input []byte) (string, [20]byte) {
+	hash := shake.Shake(input)
+	addressBytes := hash[:20]
+	return fmt.Sprintf("0x%x", addressBytes), [20]byte(addressBytes)
+}

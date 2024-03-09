@@ -5,6 +5,7 @@ import (
 
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -52,6 +53,7 @@ func InitClientIdentity() {
 
 	ClientShortPublicKey = GetShortPublicKey(ClientSecretKey)
 	addrStr := address.Calculate(pkBytes[:])
+	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 
 	ClientSigner = Signer{
 		Name:           config.Config.GetString("name"),
@@ -62,7 +64,24 @@ func InitClientIdentity() {
 
 	log.Logger.
 		With("Address", addrStr).
+		With("Hex", addrHexStr).
 		Info("Unchained")
+
+	// TODO: Add the PoS contract addr to config
+	pos, err := ethereum.GetNewStakingContract(
+		"arbitrum_sepolia",
+		"0xDC41ecbd0dE8105420e8754c04a1d35C869D94cC",
+		false)
+
+	if err == nil {
+		stake, _ := pos.StakeOf0(nil, addrHex)
+		total, _ := pos.TotalVotingPower(nil)
+
+		log.Logger.
+			With("Power", stake.Amount.String()).
+			With("Network", total.String()).
+			Info("Voting power")
+	}
 
 	// TODO: Avoid recalculating this
 	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))

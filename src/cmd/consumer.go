@@ -30,15 +30,17 @@ var consumerCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
+		config.LoadConfig(configPath, secretsPath)
+		log.Start()
+
 		log.Logger.
 			With("Version", constants.Version).
 			With("Protocol", constants.ProtocolVersion).
 			Info("Running Unchained")
 
-		config.LoadConfig(configPath, secretsPath)
+		ethereum.Start()
 		bls.InitClientIdentity()
 		db.Start()
-		ethereum.Start()
 		uniswap.Setup()
 		logs.Setup()
 		client.StartClient()
