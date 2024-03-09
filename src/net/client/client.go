@@ -120,10 +120,10 @@ func StartClient() {
 				}
 
 			case opcodes.PriceReportBroadcast:
-				consumers.ConsumePriceReport(payload[1:])
+				go consumers.ConsumePriceReport(payload[1:])
 
 			case opcodes.EventLogBroadcast:
-				consumers.ConsumeEventLog(payload[1:])
+				go consumers.ConsumeEventLog(payload[1:])
 
 			default:
 				log.Logger.

@@ -8,6 +8,7 @@ import (
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/gql"
+	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
@@ -22,6 +23,7 @@ var brokerCmd = &cobra.Command{
 	Long:  `Run the Unchained client in broker mode`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config.LoadConfig(configPath, secretsPath)
+		log.Start()
 		db.Start()
 		ethereum.Start()
 		uniswap.Setup()
