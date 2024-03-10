@@ -7,7 +7,12 @@ import (
 
 func Broadcast(message []byte) {
 	repository.Consumers.Range(func(consumer *websocket.Conn, _ bool) bool {
-		consumer.WriteMessage(websocket.BinaryMessage, message)
+		mu, ok := repository.BroadcastMutex.Load(consumer)
+		if ok {
+			mu.Lock()
+			defer mu.Unlock()
+			consumer.WriteMessage(websocket.BinaryMessage, message)
+		}
 		return true
 	})
 }

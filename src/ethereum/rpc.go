@@ -73,6 +73,18 @@ func RefreshRPC(network string) {
 	refreshRPCWithRetries(network, len(rpcList))
 }
 
+func GetNewStakingContract(
+	network string,
+	address string,
+	refresh bool) (*contracts.UnchainedStaking, error) {
+
+	if refresh {
+		RefreshRPC(network)
+	}
+
+	return contracts.NewUnchainedStaking(common.HexToAddress(address), Clients[network])
+}
+
 func GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
 	if refresh {
 		RefreshRPC(network)

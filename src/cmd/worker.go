@@ -14,6 +14,7 @@ import (
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
+	"github.com/KenshiTech/unchained/pos"
 
 	"github.com/spf13/cobra"
 )
@@ -30,16 +31,19 @@ var workerCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
+		config.LoadConfig(configPath, secretsPath)
+		log.Start()
+
 		log.Logger.
 			With("Version", constants.Version).
 			With("Protocol", constants.ProtocolVersion).
 			Info("Running Unchained")
 
-		config.LoadConfig(configPath, secretsPath)
+		ethereum.Start()
 		bls.InitClientIdentity()
+		pos.Start()
 		db.Start()
 		client.StartClient()
-		ethereum.Start()
 		uniswap.Setup()
 		uniswap.Start()
 		logs.Setup()
