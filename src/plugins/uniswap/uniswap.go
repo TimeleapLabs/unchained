@@ -132,12 +132,18 @@ func RecordSignature(
 	var votingPower *big.Int
 	var totalVoted *big.Int
 
-	base := big.NewInt(config.Config.GetInt64("pos.base"))
+	base := big.NewInt(0)
+	base.SetString(config.Config.GetString("pos.base"), 10)
+
+	nft := big.NewInt(0)
+	nft.SetString(config.Config.GetString("pos.nft"), 10)
 
 	if err != nil {
 		votingPower = base
 	} else {
-		votingPower = new(big.Int).Add(userStake.Amount, base)
+		tokenPower := new(big.Int).Add(userStake.Amount, base)
+		nftPower := new(big.Int).Mul(nft, big.NewInt(int64(len(userStake.NftIds))))
+		votingPower = new(big.Int).Add(tokenPower, nftPower)
 	}
 
 	totalVoted = new(big.Int).Add(votingPower, &voted)

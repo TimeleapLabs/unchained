@@ -57,8 +57,24 @@ func Start() {
 	stake, _ := GetVotingPower(addrHex)
 	total, _ := GetTotalVotingPower()
 
+	var votingPower *big.Int
+
+	base := big.NewInt(0)
+	base.SetString(config.Config.GetString("pos.base"), 10)
+
+	nft := big.NewInt(0)
+	nft.SetString(config.Config.GetString("pos.nft"), 10)
+
+	if err != nil {
+		votingPower = base
+	} else {
+		tokenPower := new(big.Int).Add(stake.Amount, base)
+		nftPower := new(big.Int).Mul(nft, big.NewInt(int64(len(stake.NftIds))))
+		votingPower = new(big.Int).Add(tokenPower, nftPower)
+	}
+
 	log.Logger.
-		With("Power", stake.Amount.String()).
+		With("Power", votingPower.String()).
 		With("Network", total.String()).
 		Info("Voting power")
 }
