@@ -17,6 +17,9 @@ rpc:
     - wss://arbitrum-one.publicnode.com
     - https://arbitrum-one.public.blastapi.io
 
+  arbitrum_sepolia:
+    - https://sepolia-rollup.arbitrum.io/rpc
+
 plugins:
   logs:
     schedule:
