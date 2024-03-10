@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
@@ -276,6 +277,7 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 				With("Error", err).
 				Error("Cannot marshal the broadcast packet")
 		} else {
+			// TODO: Safe to use 'go' here?
 			consumer.Broadcast(
 				append(
 					[]byte{opcodes.PriceReportBroadcast},
@@ -359,6 +361,7 @@ func processEventLog(conn *websocket.Conn, messageType int, payload []byte) erro
 				With("Error", err).
 				Error("Cannot marshal the broadcast packet")
 		} else {
+			// TODO: Safe to use 'go' here?
 			consumer.Broadcast(
 				append(
 					[]byte{opcodes.EventLogBroadcast},
@@ -393,6 +396,7 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 	defer signers.Delete(conn)
 	defer challenges.Delete(conn)
 	defer repository.Consumers.Delete(conn)
+	defer repository.BroadcastMutex.Delete(conn)
 
 	for {
 		messageType, payload, err := conn.ReadMessage()
@@ -457,6 +461,7 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 		case opcodes.RegisterConsumer:
 			// TODO: Consumers must specify what they're subscribing to
 			repository.Consumers.Store(conn, true)
+			repository.BroadcastMutex.Store(conn, new(sync.Mutex))
 
 		default:
 			err = conn.WriteMessage(
