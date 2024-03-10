@@ -12,6 +12,9 @@ func defaults() {
 	Config.SetDefault("log", "info")
 	Config.SetDefault("rpc.ethereum", "https://ethereum.publicnode.com")
 	Config.SetDefault("broker.bind", "0.0.0.0:9123")
+	Config.SetDefault("pos.chain", "arbitrum_sepolia")
+	Config.SetDefault("pos.address", "0x08cE842914b7313E16DBA708ccF0418bE3dE05c6")
+	Config.SetDefault("pos.base", int64(1))
 }
 
 var Config *viper.Viper

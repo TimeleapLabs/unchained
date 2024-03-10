@@ -14,6 +14,7 @@ import (
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
+	"github.com/KenshiTech/unchained/pos"
 
 	"github.com/spf13/cobra"
 )
@@ -40,6 +41,7 @@ var workerCmd = &cobra.Command{
 
 		ethereum.Start()
 		bls.InitClientIdentity()
+		pos.Start()
 		db.Start()
 		client.StartClient()
 		uniswap.Setup()
