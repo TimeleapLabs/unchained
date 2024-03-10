@@ -21,6 +21,7 @@ import (
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/shared"
 	"github.com/KenshiTech/unchained/persistence"
+	"github.com/KenshiTech/unchained/pos"
 	"github.com/KenshiTech/unchained/utils"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
@@ -47,7 +48,7 @@ type SupportKey struct {
 	Event   string
 }
 
-var consensus *lru.Cache[EventKey, map[bls12381.G1Affine]uint64]
+var consensus *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
 var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
@@ -139,41 +140,41 @@ func RecordSignature(
 	}
 
 	if !consensus.Contains(key) {
-		consensus.Add(key, make(map[bls12381.G1Affine]uint64))
+		consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
+	}
+
+	// TODO: This will lead to too many PoS requests
+	userStake, err := pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+
+	var votingPower *big.Int
+	var totalVoted *big.Int
+
+	base := big.NewInt(config.Config.GetInt64("pos.base"))
+
+	if err != nil {
+		votingPower = base
+	} else {
+		votingPower = new(big.Int).Add(userStake.Amount, base)
 	}
 
 	reportedValues, _ := consensus.Get(key)
-	reportedValues[hash]++
+	voted := reportedValues[hash]
+	totalVoted = new(big.Int).Add(votingPower, &voted)
 	isMajority := true
-	count := reportedValues[hash]
 
 	for _, reportCount := range reportedValues {
-		if reportCount > count {
+		if reportCount.Cmp(totalVoted) == 1 {
 			isMajority = false
 			break
 		}
 	}
 
-	cached, ok := signatureCache.Get(hash)
+	cached, _ := signatureCache.Get(hash)
 
 	packed := bls.Signature{
 		Signature: signature,
 		Signer:    signer,
 		Processed: false,
-	}
-
-	if !ok {
-		signatureCache.Add(hash, []bls.Signature{packed})
-		// TODO: This should not only write to DB,
-		// TODO: but also report to "consumers"
-		if isMajority {
-			if debounce {
-				DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
-			} else {
-				SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
-			}
-		}
-		return
 	}
 
 	for _, item := range cached {
@@ -182,6 +183,7 @@ func RecordSignature(
 		}
 	}
 
+	reportedValues[hash] = *totalVoted
 	cached = append(cached, packed)
 	signatureCache.Add(hash, cached)
 
@@ -579,7 +581,7 @@ func init() {
 		panic(err)
 	}
 
-	consensus, err = lru.New[EventKey, map[bls12381.G1Affine]uint64](128)
+	consensus, err = lru.New[EventKey, map[bls12381.G1Affine]big.Int](128)
 
 	if err != nil {
 		panic(err)

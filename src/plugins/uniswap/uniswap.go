@@ -22,6 +22,7 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/shared"
+	"github.com/KenshiTech/unchained/pos"
 	"github.com/KenshiTech/unchained/utils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -53,7 +54,7 @@ type Token struct {
 }
 
 var priceCache map[string]*lru.Cache[uint64, big.Int]
-var consensus *lru.Cache[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, uint64]]
+var consensus *lru.Cache[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
 var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 var supportedTokens map[datasets.TokenKey]bool
@@ -114,19 +115,35 @@ func RecordSignature(
 	defer signatureMutex.Unlock()
 
 	if !consensus.Contains(info.Asset) {
-		consensus.Add(info.Asset, *xsync.NewMapOf[bls12381.G1Affine, uint64]())
+		consensus.Add(info.Asset, *xsync.NewMapOf[bls12381.G1Affine, big.Int]())
 	}
 
 	reportedValues, _ := consensus.Get(info.Asset)
 	isMajority := true
-	count, ok := reportedValues.Load(hash)
+	voted, ok := reportedValues.Load(hash)
 
 	if !ok {
-		count = 0
+		voted = *big.NewInt(0)
 	}
 
-	reportedValues.Range(func(_ bls12381.G1Affine, value uint64) bool {
-		if value > count+1 {
+	// TODO: This will lead to too many PoS requests
+	userStake, err := pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+
+	var votingPower *big.Int
+	var totalVoted *big.Int
+
+	base := big.NewInt(config.Config.GetInt64("pos.base"))
+
+	if err != nil {
+		votingPower = base
+	} else {
+		votingPower = new(big.Int).Add(userStake.Amount, base)
+	}
+
+	totalVoted = new(big.Int).Add(votingPower, &voted)
+
+	reportedValues.Range(func(_ bls12381.G1Affine, value big.Int) bool {
+		if value.Cmp(totalVoted) == 1 {
 			isMajority = false
 		}
 		return isMajority
@@ -149,7 +166,7 @@ func RecordSignature(
 		}
 	}
 
-	reportedValues.Store(hash, count+1)
+	reportedValues.Store(hash, *totalVoted)
 	cached = append(cached, packed)
 	signatureCache.Add(hash, cached)
 
@@ -160,8 +177,11 @@ func RecordSignature(
 				With("Price", info.Price.String()).
 				With("Token", info.Asset.Token.Name)
 
-			reportedValues.Range(func(hash bls12381.G1Affine, value uint64) bool {
-				reportLog = reportLog.With(fmt.Sprintf("%x", hash.Bytes())[:8], value)
+			reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+				reportLog = reportLog.With(
+					fmt.Sprintf("%x", hash.Bytes())[:8],
+					value.String(),
+				)
 				return true
 			})
 
@@ -691,7 +711,7 @@ func init() {
 	}
 
 	// TODO: This is vulnerable to flood attacks
-	consensus, err = lru.New[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, uint64]](1024)
+	consensus, err = lru.New[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]](1024)
 
 	if err != nil {
 		log.Logger.Error("Failed to create token price consensus cache.")
