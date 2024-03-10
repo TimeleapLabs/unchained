@@ -209,6 +209,9 @@ rpc:
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
 
+  arbitrum_sepolia:
+    - https://sepolia-rollup.arbitrum.io/rpc
+
 plugins:
   uniswap:
     schedule:
