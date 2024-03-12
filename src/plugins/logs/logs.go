@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
@@ -111,13 +112,14 @@ func RecordSignature(
 		return
 	}
 
+	// TODO: Standalone mode shouldn't call this or check consensus
+	blockNumber, err := GetBlockNumber(info.Chain)
+
+	if err != nil {
+		panic(err)
+	}
+
 	if !historical {
-
-		blockNumber, err := GetBlockNumber(info.Chain)
-
-		if err != nil {
-			panic(err)
-		}
 
 		// TODO: this won't work for Arbitrum
 		// TODO: we disallow syncing historical events here
@@ -143,29 +145,22 @@ func RecordSignature(
 		consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
 	}
 
-	// TODO: This will lead to too many PoS requests
-	userStake, err := pos.GetVotingPowerOfPublicKey(signer.PublicKey)
-
-	var votingPower *big.Int
-	var totalVoted *big.Int
-
-	base := big.NewInt(0)
-	base.SetString(config.Config.GetString("pos.base"), 10)
-
-	nft := big.NewInt(0)
-	nft.SetString(config.Config.GetString("pos.nft"), 10)
+	votingPower, err := pos.GetVotingPowerOfPublicKey(
+		signer.PublicKey,
+		big.NewInt(int64(*blockNumber)),
+	)
 
 	if err != nil {
-		votingPower = base
-	} else {
-		tokenPower := new(big.Int).Add(userStake.Amount, base)
-		nftPower := new(big.Int).Mul(nft, big.NewInt(int64(len(userStake.NftIds))))
-		votingPower = new(big.Int).Add(tokenPower, nftPower)
+		log.Logger.
+			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Error", err).
+			Error("Failed to get voting power")
+		return
 	}
 
 	reportedValues, _ := consensus.Get(key)
 	voted := reportedValues[hash]
-	totalVoted = new(big.Int).Add(votingPower, &voted)
+	totalVoted := new(big.Int).Add(votingPower, &voted)
 	isMajority := true
 
 	for _, reportCount := range reportedValues {
