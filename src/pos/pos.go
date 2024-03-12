@@ -13,20 +13,77 @@ import (
 )
 
 var posContract *contracts.UnchainedStaking
+var votingPowers map[[20]byte]big.Int
+var stakes map[[20]byte]contracts.UnchainedStakingStake
 
 func GetTotalVotingPower() (*big.Int, error) {
 	return posContract.TotalVotingPower(nil)
 }
 
-func GetVotingPower(address [20]byte) (contracts.UnchainedStakingStake, error) {
+func GetStake(address [20]byte, block *big.Int) (contracts.UnchainedStakingStake, error) {
+	cached, ok := stakes[address]
+
+	if ok && cached.Unlock.Cmp(block) >= 0 {
+		return cached, nil
+	}
+
 	stake, err := posContract.StakeOf0(nil, address)
+
+	if err == nil {
+		if stake.Amount.Cmp(big.NewInt(0)) == 0 {
+			// TODO: we should listen to stake changed events
+			// TODO: and update stakes accordingly
+			stake.Unlock = new(big.Int).Add(block, big.NewInt(25000))
+		}
+
+		stakes[address] = stake
+	}
+
 	return stake, err
 }
 
-func GetVotingPowerOfPublicKey(pkBytes [96]byte) (contracts.UnchainedStakingStake, error) {
+func GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
+
+	if votingPower, ok := votingPowers[address]; ok {
+		return &votingPower, nil
+	}
+
+	stake, err := GetStake(address, block)
+
+	if err != nil {
+		return nil, err
+	}
+
+	base := big.NewInt(0)
+	base.SetString(config.Config.GetString("pos.base"), 10)
+
+	nft := big.NewInt(0)
+	nft.SetString(config.Config.GetString("pos.nft"), 10)
+
+	nftPower := new(big.Int).Mul(nft, big.NewInt(int64(len(stake.NftIds))))
+	votingPower := new(big.Int).Add(stake.Amount, nftPower)
+
+	if votingPower.Cmp(base) < 0 {
+		votingPower = base
+	}
+
+	votingPowers[address] = *votingPower
+	return votingPower, nil
+}
+
+func GetVotingPowerOfPublicKey(
+	pkBytes [96]byte,
+	block *big.Int,
+) (*big.Int, error) {
 	_, addrHex := address.CalculateHex(pkBytes[:])
-	stake, err := posContract.StakeOf0(nil, addrHex)
-	return stake, err
+	return GetVotingPower(addrHex, block)
+}
+
+func VotingPowerToFloat(power *big.Int) *big.Float {
+	decimalPlaces := big.NewInt(1e18)
+	powerFloat := new(big.Float).SetInt(power)
+	powerFloat.Quo(powerFloat, new(big.Float).SetInt(decimalPlaces))
+	return powerFloat
 }
 
 func Start() {
@@ -35,8 +92,8 @@ func Start() {
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 
 	log.Logger.
-		With("Link", addrHexStr).
-		Info("Unchained EVM")
+		With("Hex", addrHexStr).
+		Info("Unchained")
 
 	var err error
 
@@ -54,27 +111,16 @@ func Start() {
 		os.Exit(1)
 	}
 
-	stake, _ := GetVotingPower(addrHex)
+	power, _ := GetVotingPower(addrHex, big.NewInt(0))
 	total, _ := GetTotalVotingPower()
 
-	var votingPower *big.Int
-
-	base := big.NewInt(0)
-	base.SetString(config.Config.GetString("pos.base"), 10)
-
-	nft := big.NewInt(0)
-	nft.SetString(config.Config.GetString("pos.nft"), 10)
-
-	if err != nil {
-		votingPower = base
-	} else {
-		tokenPower := new(big.Int).Add(stake.Amount, base)
-		nftPower := new(big.Int).Mul(nft, big.NewInt(int64(len(stake.NftIds))))
-		votingPower = new(big.Int).Add(tokenPower, nftPower)
-	}
-
 	log.Logger.
-		With("Power", votingPower.String()).
-		With("Network", total.String()).
-		Info("Voting power")
+		With("Power", VotingPowerToFloat(power)).
+		With("Network", VotingPowerToFloat(total)).
+		Info("PoS")
+}
+
+func init() {
+	votingPowers = make(map[[20]byte]big.Int)
+	stakes = make(map[[20]byte]contracts.UnchainedStakingStake)
 }

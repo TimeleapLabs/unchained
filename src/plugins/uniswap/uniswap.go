@@ -88,19 +88,20 @@ func RecordSignature(
 		return
 	}
 
+	// TODO: Standalone mode shouldn't call this or check consensus
+	blockNumber, err := GetBlockNumber(info.Asset.Token.Chain)
+
+	if err != nil {
+		log.Logger.
+			With("Network", info.Asset.Token.Chain).
+			With("Error", err).
+			Error("Failed to get the latest block number")
+		ethereum.RefreshRPC(info.Asset.Token.Chain)
+		// TODO: we should retry
+		return
+	}
+
 	if !historical {
-		blockNumber, err := GetBlockNumber(info.Asset.Token.Chain)
-
-		if err != nil {
-			log.Logger.
-				With("Network", info.Asset.Token.Chain).
-				With("Error", err).
-				Error("Failed to get the latest block number")
-			ethereum.RefreshRPC(info.Asset.Token.Chain)
-			// TODO: we should retry
-			return
-		}
-
 		// TODO: this won't work for Arbitrum
 		if *blockNumber-info.Asset.Block > 96 {
 			log.Logger.
@@ -126,27 +127,20 @@ func RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	// TODO: This will lead to too many PoS requests
-	userStake, err := pos.GetVotingPowerOfPublicKey(signer.PublicKey)
-
-	var votingPower *big.Int
-	var totalVoted *big.Int
-
-	base := big.NewInt(0)
-	base.SetString(config.Config.GetString("pos.base"), 10)
-
-	nft := big.NewInt(0)
-	nft.SetString(config.Config.GetString("pos.nft"), 10)
+	votingPower, err := pos.GetVotingPowerOfPublicKey(
+		signer.PublicKey,
+		big.NewInt(int64(*blockNumber)),
+	)
 
 	if err != nil {
-		votingPower = base
-	} else {
-		tokenPower := new(big.Int).Add(userStake.Amount, base)
-		nftPower := new(big.Int).Mul(nft, big.NewInt(int64(len(userStake.NftIds))))
-		votingPower = new(big.Int).Add(tokenPower, nftPower)
+		log.Logger.
+			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Error", err).
+			Error("Failed to get voting power")
+		return
 	}
 
-	totalVoted = new(big.Int).Add(votingPower, &voted)
+	totalVoted := new(big.Int).Add(votingPower, &voted)
 
 	reportedValues.Range(func(_ bls12381.G1Affine, value big.Int) bool {
 		if value.Cmp(totalVoted) == 1 {

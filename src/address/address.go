@@ -6,7 +6,7 @@ import (
 	"github.com/KenshiTech/unchained/crypto/shake"
 )
 
-var chars = "0123456789ABCDEFGHJKMNPQTSTUVXYZ"
+var chars = "0123456789ABCDEFGHJKMNPQRSTUVXYZ"
 
 func ToBase32(input []byte) string {
 	var output []byte
