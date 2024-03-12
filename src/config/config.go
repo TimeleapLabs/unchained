@@ -11,11 +11,12 @@ func defaults() {
 	Config.SetDefault("name", petname.Generate(3, "-"))
 	Config.SetDefault("log", "info")
 	Config.SetDefault("rpc.ethereum", "https://ethereum.publicnode.com")
+	Config.SetDefault("rpc.arbitrum_sepolia", "https://sepolia-rollup.arbitrum.io/rpc")
 	Config.SetDefault("broker.bind", "0.0.0.0:9123")
 	Config.SetDefault("pos.chain", "arbitrum_sepolia")
-	Config.SetDefault("pos.address", "0x08cE842914b7313E16DBA708ccF0418bE3dE05c6")
+	Config.SetDefault("pos.address", "0xdA36f22C0Dab89CA0884489Bf3a00c0C27cEDbec")
 	Config.SetDefault("pos.base", "1")
-	Config.SetDefault("pos.nft", "25000000000000000000000")
+	Config.SetDefault("pos.nft", "40000000000000000000000")
 }
 
 var Config *viper.Viper
