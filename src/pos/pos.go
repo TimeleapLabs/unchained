@@ -111,8 +111,25 @@ func Start() {
 		os.Exit(1)
 	}
 
-	power, _ := GetVotingPower(addrHex, big.NewInt(0))
-	total, _ := GetTotalVotingPower()
+	power, err := GetVotingPower(addrHex, big.NewInt(0))
+
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Failed to get voting power")
+
+		return
+	}
+
+	total, err := GetTotalVotingPower()
+
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Failed to get total voting power")
+
+		return
+	}
 
 	log.Logger.
 		With("Power", VotingPowerToFloat(power)).
