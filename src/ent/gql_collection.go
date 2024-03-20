@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -140,6 +141,132 @@ func newAssetPricePaginateArgs(rv map[string]any) *assetpricePaginateArgs {
 	}
 	if v, ok := rv[whereField].(*AssetPriceWhereInput); ok {
 		args.opts = append(args.opts, WithAssetPriceFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (cr *CorrectnessReportQuery) CollectFields(ctx context.Context, satisfies ...string) (*CorrectnessReportQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return cr, nil
+	}
+	if err := cr.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return cr, nil
+}
+
+func (cr *CorrectnessReportQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(correctnessreport.Columns))
+		selectedFields = []string{correctnessreport.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "signers":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&SignerClient{config: cr.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, mayAddCondition(satisfies, signerImplementors)...); err != nil {
+				return err
+			}
+			cr.WithNamedSigners(alias, func(wq *SignerQuery) {
+				*wq = *query
+			})
+		case "signerscount":
+			if _, ok := fieldSeen[correctnessreport.FieldSignersCount]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldSignersCount)
+				fieldSeen[correctnessreport.FieldSignersCount] = struct{}{}
+			}
+		case "timestamp":
+			if _, ok := fieldSeen[correctnessreport.FieldTimestamp]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldTimestamp)
+				fieldSeen[correctnessreport.FieldTimestamp] = struct{}{}
+			}
+		case "signature":
+			if _, ok := fieldSeen[correctnessreport.FieldSignature]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldSignature)
+				fieldSeen[correctnessreport.FieldSignature] = struct{}{}
+			}
+		case "hash":
+			if _, ok := fieldSeen[correctnessreport.FieldHash]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldHash)
+				fieldSeen[correctnessreport.FieldHash] = struct{}{}
+			}
+		case "topic":
+			if _, ok := fieldSeen[correctnessreport.FieldTopic]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldTopic)
+				fieldSeen[correctnessreport.FieldTopic] = struct{}{}
+			}
+		case "correct":
+			if _, ok := fieldSeen[correctnessreport.FieldCorrect]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldCorrect)
+				fieldSeen[correctnessreport.FieldCorrect] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		cr.Select(selectedFields...)
+	}
+	return nil
+}
+
+type correctnessreportPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []CorrectnessReportPaginateOption
+}
+
+func newCorrectnessReportPaginateArgs(rv map[string]any) *correctnessreportPaginateArgs {
+	args := &correctnessreportPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &CorrectnessReportOrder{Field: &CorrectnessReportOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithCorrectnessReportOrder(order))
+			}
+		case *CorrectnessReportOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithCorrectnessReportOrder(v))
+			}
+		}
+	}
+	if v, ok := rv[whereField].(*CorrectnessReportWhereInput); ok {
+		args.opts = append(args.opts, WithCorrectnessReportFilter(v.Filter))
 	}
 	return args
 }

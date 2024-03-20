@@ -21,6 +21,18 @@ func (f AssetPriceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AssetPriceMutation", m)
 }
 
+// The CorrectnessReportFunc type is an adapter to allow the use of ordinary
+// function as CorrectnessReport mutator.
+type CorrectnessReportFunc func(context.Context, *ent.CorrectnessReportMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CorrectnessReportFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CorrectnessReportMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CorrectnessReportMutation", m)
+}
+
 // The EventLogFunc type is an adapter to allow the use of ordinary
 // function as EventLog mutator.
 type EventLogFunc func(context.Context, *ent.EventLogMutation) (ent.Value, error)
