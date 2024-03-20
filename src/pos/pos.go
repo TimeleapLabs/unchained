@@ -17,7 +17,7 @@ var votingPowers map[[20]byte]big.Int
 var stakes map[[20]byte]contracts.UnchainedStakingStake
 
 func GetTotalVotingPower() (*big.Int, error) {
-	return posContract.TotalVotingPower(nil)
+	return posContract.GetTotalVotingPower(nil)
 }
 
 func GetStake(address [20]byte, block *big.Int) (contracts.UnchainedStakingStake, error) {

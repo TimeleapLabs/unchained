@@ -26,6 +26,7 @@ type SignerQuery struct {
 	predicates          []predicate.Signer
 	withAssetPrice      *AssetPriceQuery
 	withEventLogs       *EventLogQuery
+	withFKs             bool
 	modifiers           []func(*sql.Selector)
 	loadTotal           []func(context.Context, []*Signer) error
 	withNamedAssetPrice map[string]*AssetPriceQuery
@@ -409,12 +410,16 @@ func (sq *SignerQuery) prepareQuery(ctx context.Context) error {
 func (sq *SignerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Signer, error) {
 	var (
 		nodes       = []*Signer{}
+		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [2]bool{
 			sq.withAssetPrice != nil,
 			sq.withEventLogs != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, signer.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Signer).scanValues(nil, columns)
 	}

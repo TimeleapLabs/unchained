@@ -6,6 +6,7 @@ package gql
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 
 	"entgo.io/contrib/entgql"
@@ -23,6 +24,21 @@ func (r *assetPriceResolver) Price(ctx context.Context, obj *ent.AssetPrice) (ui
 // Signature is the resolver for the signature field.
 func (r *assetPriceResolver) Signature(ctx context.Context, obj *ent.AssetPrice) (types.Bytes, error) {
 	return obj.Signature, nil
+}
+
+// Signature is the resolver for the signature field.
+func (r *correctnessReportResolver) Signature(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error) {
+	panic(fmt.Errorf("not implemented: Signature - signature"))
+}
+
+// Hash is the resolver for the hash field.
+func (r *correctnessReportResolver) Hash(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error) {
+	panic(fmt.Errorf("not implemented: Hash - hash"))
+}
+
+// Topic is the resolver for the topic field.
+func (r *correctnessReportResolver) Topic(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error) {
+	panic(fmt.Errorf("not implemented: Topic - topic"))
 }
 
 // Signature is the resolver for the signature field.
@@ -52,6 +68,11 @@ func (r *queryResolver) AssetPrices(ctx context.Context, after *entgql.Cursor[in
 			ent.WithAssetPriceOrder(orderBy),
 			ent.WithAssetPriceFilter(where.Filter),
 		)
+}
+
+// CorrectnessReports is the resolver for the correctnessReports field.
+func (r *queryResolver) CorrectnessReports(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.CorrectnessReportOrder, where *ent.CorrectnessReportWhereInput) (*ent.CorrectnessReportConnection, error) {
+	panic(fmt.Errorf("not implemented: CorrectnessReports - correctnessReports"))
 }
 
 // EventLogs is the resolver for the eventLogs field.
@@ -128,6 +149,11 @@ func (r *assetPriceWhereInputResolver) PriceLte(ctx context.Context, obj *ent.As
 // AssetPrice returns generated.AssetPriceResolver implementation.
 func (r *Resolver) AssetPrice() generated.AssetPriceResolver { return &assetPriceResolver{r} }
 
+// CorrectnessReport returns generated.CorrectnessReportResolver implementation.
+func (r *Resolver) CorrectnessReport() generated.CorrectnessReportResolver {
+	return &correctnessReportResolver{r}
+}
+
 // EventLog returns generated.EventLogResolver implementation.
 func (r *Resolver) EventLog() generated.EventLogResolver { return &eventLogResolver{r} }
 
@@ -143,6 +169,7 @@ func (r *Resolver) AssetPriceWhereInput() generated.AssetPriceWhereInputResolver
 }
 
 type assetPriceResolver struct{ *Resolver }
+type correctnessReportResolver struct{ *Resolver }
 type eventLogResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type signerResolver struct{ *Resolver }

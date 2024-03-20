@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/helpers"
 	"github.com/KenshiTech/unchained/ent/predicate"
@@ -27,9 +28,10 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAssetPrice = "AssetPrice"
-	TypeEventLog   = "EventLog"
-	TypeSigner     = "Signer"
+	TypeAssetPrice        = "AssetPrice"
+	TypeCorrectnessReport = "CorrectnessReport"
+	TypeEventLog          = "EventLog"
+	TypeSigner            = "Signer"
 )
 
 // AssetPriceMutation represents an operation that mutates the AssetPrice nodes in the graph.
@@ -922,6 +924,764 @@ func (m *AssetPriceMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown AssetPrice edge %s", name)
+}
+
+// CorrectnessReportMutation represents an operation that mutates the CorrectnessReport nodes in the graph.
+type CorrectnessReportMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	signersCount    *uint64
+	addsignersCount *int64
+	timestamp       *uint64
+	addtimestamp    *int64
+	signature       *[]byte
+	hash            *[]byte
+	topic           *[]byte
+	correct         *bool
+	clearedFields   map[string]struct{}
+	signers         map[int]struct{}
+	removedsigners  map[int]struct{}
+	clearedsigners  bool
+	done            bool
+	oldValue        func(context.Context) (*CorrectnessReport, error)
+	predicates      []predicate.CorrectnessReport
+}
+
+var _ ent.Mutation = (*CorrectnessReportMutation)(nil)
+
+// correctnessreportOption allows management of the mutation configuration using functional options.
+type correctnessreportOption func(*CorrectnessReportMutation)
+
+// newCorrectnessReportMutation creates new mutation for the CorrectnessReport entity.
+func newCorrectnessReportMutation(c config, op Op, opts ...correctnessreportOption) *CorrectnessReportMutation {
+	m := &CorrectnessReportMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCorrectnessReport,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCorrectnessReportID sets the ID field of the mutation.
+func withCorrectnessReportID(id int) correctnessreportOption {
+	return func(m *CorrectnessReportMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CorrectnessReport
+		)
+		m.oldValue = func(ctx context.Context) (*CorrectnessReport, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CorrectnessReport.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCorrectnessReport sets the old CorrectnessReport of the mutation.
+func withCorrectnessReport(node *CorrectnessReport) correctnessreportOption {
+	return func(m *CorrectnessReportMutation) {
+		m.oldValue = func(context.Context) (*CorrectnessReport, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CorrectnessReportMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CorrectnessReportMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CorrectnessReportMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CorrectnessReportMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CorrectnessReport.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetSignersCount sets the "signersCount" field.
+func (m *CorrectnessReportMutation) SetSignersCount(u uint64) {
+	m.signersCount = &u
+	m.addsignersCount = nil
+}
+
+// SignersCount returns the value of the "signersCount" field in the mutation.
+func (m *CorrectnessReportMutation) SignersCount() (r uint64, exists bool) {
+	v := m.signersCount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSignersCount returns the old "signersCount" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldSignersCount(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSignersCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSignersCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSignersCount: %w", err)
+	}
+	return oldValue.SignersCount, nil
+}
+
+// AddSignersCount adds u to the "signersCount" field.
+func (m *CorrectnessReportMutation) AddSignersCount(u int64) {
+	if m.addsignersCount != nil {
+		*m.addsignersCount += u
+	} else {
+		m.addsignersCount = &u
+	}
+}
+
+// AddedSignersCount returns the value that was added to the "signersCount" field in this mutation.
+func (m *CorrectnessReportMutation) AddedSignersCount() (r int64, exists bool) {
+	v := m.addsignersCount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSignersCount resets all changes to the "signersCount" field.
+func (m *CorrectnessReportMutation) ResetSignersCount() {
+	m.signersCount = nil
+	m.addsignersCount = nil
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (m *CorrectnessReportMutation) SetTimestamp(u uint64) {
+	m.timestamp = &u
+	m.addtimestamp = nil
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *CorrectnessReportMutation) Timestamp() (r uint64, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldTimestamp(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// AddTimestamp adds u to the "timestamp" field.
+func (m *CorrectnessReportMutation) AddTimestamp(u int64) {
+	if m.addtimestamp != nil {
+		*m.addtimestamp += u
+	} else {
+		m.addtimestamp = &u
+	}
+}
+
+// AddedTimestamp returns the value that was added to the "timestamp" field in this mutation.
+func (m *CorrectnessReportMutation) AddedTimestamp() (r int64, exists bool) {
+	v := m.addtimestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *CorrectnessReportMutation) ResetTimestamp() {
+	m.timestamp = nil
+	m.addtimestamp = nil
+}
+
+// SetSignature sets the "signature" field.
+func (m *CorrectnessReportMutation) SetSignature(b []byte) {
+	m.signature = &b
+}
+
+// Signature returns the value of the "signature" field in the mutation.
+func (m *CorrectnessReportMutation) Signature() (r []byte, exists bool) {
+	v := m.signature
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSignature returns the old "signature" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldSignature(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSignature is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSignature requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSignature: %w", err)
+	}
+	return oldValue.Signature, nil
+}
+
+// ResetSignature resets all changes to the "signature" field.
+func (m *CorrectnessReportMutation) ResetSignature() {
+	m.signature = nil
+}
+
+// SetHash sets the "hash" field.
+func (m *CorrectnessReportMutation) SetHash(b []byte) {
+	m.hash = &b
+}
+
+// Hash returns the value of the "hash" field in the mutation.
+func (m *CorrectnessReportMutation) Hash() (r []byte, exists bool) {
+	v := m.hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHash returns the old "hash" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldHash(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHash: %w", err)
+	}
+	return oldValue.Hash, nil
+}
+
+// ResetHash resets all changes to the "hash" field.
+func (m *CorrectnessReportMutation) ResetHash() {
+	m.hash = nil
+}
+
+// SetTopic sets the "topic" field.
+func (m *CorrectnessReportMutation) SetTopic(b []byte) {
+	m.topic = &b
+}
+
+// Topic returns the value of the "topic" field in the mutation.
+func (m *CorrectnessReportMutation) Topic() (r []byte, exists bool) {
+	v := m.topic
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTopic returns the old "topic" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldTopic(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTopic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTopic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTopic: %w", err)
+	}
+	return oldValue.Topic, nil
+}
+
+// ResetTopic resets all changes to the "topic" field.
+func (m *CorrectnessReportMutation) ResetTopic() {
+	m.topic = nil
+}
+
+// SetCorrect sets the "correct" field.
+func (m *CorrectnessReportMutation) SetCorrect(b bool) {
+	m.correct = &b
+}
+
+// Correct returns the value of the "correct" field in the mutation.
+func (m *CorrectnessReportMutation) Correct() (r bool, exists bool) {
+	v := m.correct
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCorrect returns the old "correct" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldCorrect(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCorrect is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCorrect requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCorrect: %w", err)
+	}
+	return oldValue.Correct, nil
+}
+
+// ResetCorrect resets all changes to the "correct" field.
+func (m *CorrectnessReportMutation) ResetCorrect() {
+	m.correct = nil
+}
+
+// AddSignerIDs adds the "signers" edge to the Signer entity by ids.
+func (m *CorrectnessReportMutation) AddSignerIDs(ids ...int) {
+	if m.signers == nil {
+		m.signers = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.signers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSigners clears the "signers" edge to the Signer entity.
+func (m *CorrectnessReportMutation) ClearSigners() {
+	m.clearedsigners = true
+}
+
+// SignersCleared reports if the "signers" edge to the Signer entity was cleared.
+func (m *CorrectnessReportMutation) SignersCleared() bool {
+	return m.clearedsigners
+}
+
+// RemoveSignerIDs removes the "signers" edge to the Signer entity by IDs.
+func (m *CorrectnessReportMutation) RemoveSignerIDs(ids ...int) {
+	if m.removedsigners == nil {
+		m.removedsigners = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.signers, ids[i])
+		m.removedsigners[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSigners returns the removed IDs of the "signers" edge to the Signer entity.
+func (m *CorrectnessReportMutation) RemovedSignersIDs() (ids []int) {
+	for id := range m.removedsigners {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SignersIDs returns the "signers" edge IDs in the mutation.
+func (m *CorrectnessReportMutation) SignersIDs() (ids []int) {
+	for id := range m.signers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSigners resets all changes to the "signers" edge.
+func (m *CorrectnessReportMutation) ResetSigners() {
+	m.signers = nil
+	m.clearedsigners = false
+	m.removedsigners = nil
+}
+
+// Where appends a list predicates to the CorrectnessReportMutation builder.
+func (m *CorrectnessReportMutation) Where(ps ...predicate.CorrectnessReport) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CorrectnessReportMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CorrectnessReportMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CorrectnessReport, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CorrectnessReportMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CorrectnessReportMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CorrectnessReport).
+func (m *CorrectnessReportMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CorrectnessReportMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.signersCount != nil {
+		fields = append(fields, correctnessreport.FieldSignersCount)
+	}
+	if m.timestamp != nil {
+		fields = append(fields, correctnessreport.FieldTimestamp)
+	}
+	if m.signature != nil {
+		fields = append(fields, correctnessreport.FieldSignature)
+	}
+	if m.hash != nil {
+		fields = append(fields, correctnessreport.FieldHash)
+	}
+	if m.topic != nil {
+		fields = append(fields, correctnessreport.FieldTopic)
+	}
+	if m.correct != nil {
+		fields = append(fields, correctnessreport.FieldCorrect)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CorrectnessReportMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case correctnessreport.FieldSignersCount:
+		return m.SignersCount()
+	case correctnessreport.FieldTimestamp:
+		return m.Timestamp()
+	case correctnessreport.FieldSignature:
+		return m.Signature()
+	case correctnessreport.FieldHash:
+		return m.Hash()
+	case correctnessreport.FieldTopic:
+		return m.Topic()
+	case correctnessreport.FieldCorrect:
+		return m.Correct()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CorrectnessReportMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case correctnessreport.FieldSignersCount:
+		return m.OldSignersCount(ctx)
+	case correctnessreport.FieldTimestamp:
+		return m.OldTimestamp(ctx)
+	case correctnessreport.FieldSignature:
+		return m.OldSignature(ctx)
+	case correctnessreport.FieldHash:
+		return m.OldHash(ctx)
+	case correctnessreport.FieldTopic:
+		return m.OldTopic(ctx)
+	case correctnessreport.FieldCorrect:
+		return m.OldCorrect(ctx)
+	}
+	return nil, fmt.Errorf("unknown CorrectnessReport field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CorrectnessReportMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case correctnessreport.FieldSignersCount:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSignersCount(v)
+		return nil
+	case correctnessreport.FieldTimestamp:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
+	case correctnessreport.FieldSignature:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSignature(v)
+		return nil
+	case correctnessreport.FieldHash:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHash(v)
+		return nil
+	case correctnessreport.FieldTopic:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTopic(v)
+		return nil
+	case correctnessreport.FieldCorrect:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCorrect(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CorrectnessReport field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CorrectnessReportMutation) AddedFields() []string {
+	var fields []string
+	if m.addsignersCount != nil {
+		fields = append(fields, correctnessreport.FieldSignersCount)
+	}
+	if m.addtimestamp != nil {
+		fields = append(fields, correctnessreport.FieldTimestamp)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CorrectnessReportMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case correctnessreport.FieldSignersCount:
+		return m.AddedSignersCount()
+	case correctnessreport.FieldTimestamp:
+		return m.AddedTimestamp()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CorrectnessReportMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case correctnessreport.FieldSignersCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSignersCount(v)
+		return nil
+	case correctnessreport.FieldTimestamp:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTimestamp(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CorrectnessReport numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CorrectnessReportMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CorrectnessReportMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CorrectnessReportMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown CorrectnessReport nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CorrectnessReportMutation) ResetField(name string) error {
+	switch name {
+	case correctnessreport.FieldSignersCount:
+		m.ResetSignersCount()
+		return nil
+	case correctnessreport.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
+	case correctnessreport.FieldSignature:
+		m.ResetSignature()
+		return nil
+	case correctnessreport.FieldHash:
+		m.ResetHash()
+		return nil
+	case correctnessreport.FieldTopic:
+		m.ResetTopic()
+		return nil
+	case correctnessreport.FieldCorrect:
+		m.ResetCorrect()
+		return nil
+	}
+	return fmt.Errorf("unknown CorrectnessReport field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CorrectnessReportMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.signers != nil {
+		edges = append(edges, correctnessreport.EdgeSigners)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CorrectnessReportMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case correctnessreport.EdgeSigners:
+		ids := make([]ent.Value, 0, len(m.signers))
+		for id := range m.signers {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CorrectnessReportMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedsigners != nil {
+		edges = append(edges, correctnessreport.EdgeSigners)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CorrectnessReportMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case correctnessreport.EdgeSigners:
+		ids := make([]ent.Value, 0, len(m.removedsigners))
+		for id := range m.removedsigners {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CorrectnessReportMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedsigners {
+		edges = append(edges, correctnessreport.EdgeSigners)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CorrectnessReportMutation) EdgeCleared(name string) bool {
+	switch name {
+	case correctnessreport.EdgeSigners:
+		return m.clearedsigners
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CorrectnessReportMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CorrectnessReport unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CorrectnessReportMutation) ResetEdge(name string) error {
+	switch name {
+	case correctnessreport.EdgeSigners:
+		m.ResetSigners()
+		return nil
+	}
+	return fmt.Errorf("unknown CorrectnessReport edge %s", name)
 }
 
 // EventLogMutation represents an operation that mutates the EventLog nodes in the graph.

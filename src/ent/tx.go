@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AssetPrice is the client for interacting with the AssetPrice builders.
 	AssetPrice *AssetPriceClient
+	// CorrectnessReport is the client for interacting with the CorrectnessReport builders.
+	CorrectnessReport *CorrectnessReportClient
 	// EventLog is the client for interacting with the EventLog builders.
 	EventLog *EventLogClient
 	// Signer is the client for interacting with the Signer builders.
@@ -150,6 +152,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AssetPrice = NewAssetPriceClient(tx.config)
+	tx.CorrectnessReport = NewCorrectnessReportClient(tx.config)
 	tx.EventLog = NewEventLogClient(tx.config)
 	tx.Signer = NewSignerClient(tx.config)
 }
