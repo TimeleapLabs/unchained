@@ -244,7 +244,7 @@ func Setup() {
 	}
 
 	var configs []string
-	if err := config.Config.UnmarshalKey("plugins.logs.events", &configs); err != nil {
+	if err := config.Config.UnmarshalKey("plugins.correctness", &configs); err != nil {
 		panic(err)
 	}
 
