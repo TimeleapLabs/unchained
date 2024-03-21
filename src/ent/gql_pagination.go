@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -392,6 +393,301 @@ func (ap *AssetPrice) ToEdge(order *AssetPriceOrder) *AssetPriceEdge {
 	return &AssetPriceEdge{
 		Node:   ap,
 		Cursor: order.Field.toCursor(ap),
+	}
+}
+
+// CorrectnessReportEdge is the edge representation of CorrectnessReport.
+type CorrectnessReportEdge struct {
+	Node   *CorrectnessReport `json:"node"`
+	Cursor Cursor             `json:"cursor"`
+}
+
+// CorrectnessReportConnection is the connection containing edges to CorrectnessReport.
+type CorrectnessReportConnection struct {
+	Edges      []*CorrectnessReportEdge `json:"edges"`
+	PageInfo   PageInfo                 `json:"pageInfo"`
+	TotalCount int                      `json:"totalCount"`
+}
+
+func (c *CorrectnessReportConnection) build(nodes []*CorrectnessReport, pager *correctnessreportPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *CorrectnessReport
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *CorrectnessReport {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *CorrectnessReport {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*CorrectnessReportEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &CorrectnessReportEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// CorrectnessReportPaginateOption enables pagination customization.
+type CorrectnessReportPaginateOption func(*correctnessreportPager) error
+
+// WithCorrectnessReportOrder configures pagination ordering.
+func WithCorrectnessReportOrder(order *CorrectnessReportOrder) CorrectnessReportPaginateOption {
+	if order == nil {
+		order = DefaultCorrectnessReportOrder
+	}
+	o := *order
+	return func(pager *correctnessreportPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultCorrectnessReportOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithCorrectnessReportFilter configures pagination filter.
+func WithCorrectnessReportFilter(filter func(*CorrectnessReportQuery) (*CorrectnessReportQuery, error)) CorrectnessReportPaginateOption {
+	return func(pager *correctnessreportPager) error {
+		if filter == nil {
+			return errors.New("CorrectnessReportQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type correctnessreportPager struct {
+	reverse bool
+	order   *CorrectnessReportOrder
+	filter  func(*CorrectnessReportQuery) (*CorrectnessReportQuery, error)
+}
+
+func newCorrectnessReportPager(opts []CorrectnessReportPaginateOption, reverse bool) (*correctnessreportPager, error) {
+	pager := &correctnessreportPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultCorrectnessReportOrder
+	}
+	return pager, nil
+}
+
+func (p *correctnessreportPager) applyFilter(query *CorrectnessReportQuery) (*CorrectnessReportQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *correctnessreportPager) toCursor(cr *CorrectnessReport) Cursor {
+	return p.order.Field.toCursor(cr)
+}
+
+func (p *correctnessreportPager) applyCursors(query *CorrectnessReportQuery, after, before *Cursor) (*CorrectnessReportQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultCorrectnessReportOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *correctnessreportPager) applyOrder(query *CorrectnessReportQuery) *CorrectnessReportQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultCorrectnessReportOrder.Field {
+		query = query.Order(DefaultCorrectnessReportOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *correctnessreportPager) orderExpr(query *CorrectnessReportQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultCorrectnessReportOrder.Field {
+			b.Comma().Ident(DefaultCorrectnessReportOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to CorrectnessReport.
+func (cr *CorrectnessReportQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...CorrectnessReportPaginateOption,
+) (*CorrectnessReportConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newCorrectnessReportPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if cr, err = pager.applyFilter(cr); err != nil {
+		return nil, err
+	}
+	conn := &CorrectnessReportConnection{Edges: []*CorrectnessReportEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := cr.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if cr, err = pager.applyCursors(cr, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		cr.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := cr.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	cr = pager.applyOrder(cr)
+	nodes, err := cr.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+var (
+	// CorrectnessReportOrderFieldTimestamp orders CorrectnessReport by timestamp.
+	CorrectnessReportOrderFieldTimestamp = &CorrectnessReportOrderField{
+		Value: func(cr *CorrectnessReport) (ent.Value, error) {
+			return cr.Timestamp, nil
+		},
+		column: correctnessreport.FieldTimestamp,
+		toTerm: correctnessreport.ByTimestamp,
+		toCursor: func(cr *CorrectnessReport) Cursor {
+			return Cursor{
+				ID:    cr.ID,
+				Value: cr.Timestamp,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f CorrectnessReportOrderField) String() string {
+	var str string
+	switch f.column {
+	case CorrectnessReportOrderFieldTimestamp.column:
+		str = "TIMESTAMP"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f CorrectnessReportOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *CorrectnessReportOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("CorrectnessReportOrderField %T must be a string", v)
+	}
+	switch str {
+	case "TIMESTAMP":
+		*f = *CorrectnessReportOrderFieldTimestamp
+	default:
+		return fmt.Errorf("%s is not a valid CorrectnessReportOrderField", str)
+	}
+	return nil
+}
+
+// CorrectnessReportOrderField defines the ordering field of CorrectnessReport.
+type CorrectnessReportOrderField struct {
+	// Value extracts the ordering value from the given CorrectnessReport.
+	Value    func(*CorrectnessReport) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) correctnessreport.OrderOption
+	toCursor func(*CorrectnessReport) Cursor
+}
+
+// CorrectnessReportOrder defines the ordering of CorrectnessReport.
+type CorrectnessReportOrder struct {
+	Direction OrderDirection               `json:"direction"`
+	Field     *CorrectnessReportOrderField `json:"field"`
+}
+
+// DefaultCorrectnessReportOrder is the default ordering of CorrectnessReport.
+var DefaultCorrectnessReportOrder = &CorrectnessReportOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &CorrectnessReportOrderField{
+		Value: func(cr *CorrectnessReport) (ent.Value, error) {
+			return cr.ID, nil
+		},
+		column: correctnessreport.FieldID,
+		toTerm: correctnessreport.ByID,
+		toCursor: func(cr *CorrectnessReport) Cursor {
+			return Cursor{ID: cr.ID}
+		},
+	},
+}
+
+// ToEdge converts CorrectnessReport into CorrectnessReportEdge.
+func (cr *CorrectnessReport) ToEdge(order *CorrectnessReportOrder) *CorrectnessReportEdge {
+	if order == nil {
+		order = DefaultCorrectnessReportOrder
+	}
+	return &CorrectnessReportEdge{
+		Node:   cr,
+		Cursor: order.Field.toCursor(cr),
 	}
 }
 

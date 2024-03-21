@@ -9,6 +9,9 @@ import (
 // AssetPrice is the predicate function for assetprice builders.
 type AssetPrice func(*sql.Selector)
 
+// CorrectnessReport is the predicate function for correctnessreport builders.
+type CorrectnessReport func(*sql.Selector)
+
 // EventLog is the predicate function for eventlog builders.
 type EventLog func(*sql.Selector)
 

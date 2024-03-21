@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -27,6 +28,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// AssetPrice is the client for interacting with the AssetPrice builders.
 	AssetPrice *AssetPriceClient
+	// CorrectnessReport is the client for interacting with the CorrectnessReport builders.
+	CorrectnessReport *CorrectnessReportClient
 	// EventLog is the client for interacting with the EventLog builders.
 	EventLog *EventLogClient
 	// Signer is the client for interacting with the Signer builders.
@@ -45,6 +48,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AssetPrice = NewAssetPriceClient(c.config)
+	c.CorrectnessReport = NewCorrectnessReportClient(c.config)
 	c.EventLog = NewEventLogClient(c.config)
 	c.Signer = NewSignerClient(c.config)
 }
@@ -137,11 +141,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		AssetPrice: NewAssetPriceClient(cfg),
-		EventLog:   NewEventLogClient(cfg),
-		Signer:     NewSignerClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		AssetPrice:        NewAssetPriceClient(cfg),
+		CorrectnessReport: NewCorrectnessReportClient(cfg),
+		EventLog:          NewEventLogClient(cfg),
+		Signer:            NewSignerClient(cfg),
 	}, nil
 }
 
@@ -159,11 +164,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		AssetPrice: NewAssetPriceClient(cfg),
-		EventLog:   NewEventLogClient(cfg),
-		Signer:     NewSignerClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		AssetPrice:        NewAssetPriceClient(cfg),
+		CorrectnessReport: NewCorrectnessReportClient(cfg),
+		EventLog:          NewEventLogClient(cfg),
+		Signer:            NewSignerClient(cfg),
 	}, nil
 }
 
@@ -193,6 +199,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.AssetPrice.Use(hooks...)
+	c.CorrectnessReport.Use(hooks...)
 	c.EventLog.Use(hooks...)
 	c.Signer.Use(hooks...)
 }
@@ -201,6 +208,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.AssetPrice.Intercept(interceptors...)
+	c.CorrectnessReport.Intercept(interceptors...)
 	c.EventLog.Intercept(interceptors...)
 	c.Signer.Intercept(interceptors...)
 }
@@ -210,6 +218,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AssetPriceMutation:
 		return c.AssetPrice.mutate(ctx, m)
+	case *CorrectnessReportMutation:
+		return c.CorrectnessReport.mutate(ctx, m)
 	case *EventLogMutation:
 		return c.EventLog.mutate(ctx, m)
 	case *SignerMutation:
@@ -365,6 +375,155 @@ func (c *AssetPriceClient) mutate(ctx context.Context, m *AssetPriceMutation) (V
 		return (&AssetPriceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AssetPrice mutation op: %q", m.Op())
+	}
+}
+
+// CorrectnessReportClient is a client for the CorrectnessReport schema.
+type CorrectnessReportClient struct {
+	config
+}
+
+// NewCorrectnessReportClient returns a client for the CorrectnessReport from the given config.
+func NewCorrectnessReportClient(c config) *CorrectnessReportClient {
+	return &CorrectnessReportClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `correctnessreport.Hooks(f(g(h())))`.
+func (c *CorrectnessReportClient) Use(hooks ...Hook) {
+	c.hooks.CorrectnessReport = append(c.hooks.CorrectnessReport, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `correctnessreport.Intercept(f(g(h())))`.
+func (c *CorrectnessReportClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CorrectnessReport = append(c.inters.CorrectnessReport, interceptors...)
+}
+
+// Create returns a builder for creating a CorrectnessReport entity.
+func (c *CorrectnessReportClient) Create() *CorrectnessReportCreate {
+	mutation := newCorrectnessReportMutation(c.config, OpCreate)
+	return &CorrectnessReportCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CorrectnessReport entities.
+func (c *CorrectnessReportClient) CreateBulk(builders ...*CorrectnessReportCreate) *CorrectnessReportCreateBulk {
+	return &CorrectnessReportCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CorrectnessReportClient) MapCreateBulk(slice any, setFunc func(*CorrectnessReportCreate, int)) *CorrectnessReportCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CorrectnessReportCreateBulk{err: fmt.Errorf("calling to CorrectnessReportClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CorrectnessReportCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CorrectnessReportCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CorrectnessReport.
+func (c *CorrectnessReportClient) Update() *CorrectnessReportUpdate {
+	mutation := newCorrectnessReportMutation(c.config, OpUpdate)
+	return &CorrectnessReportUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CorrectnessReportClient) UpdateOne(cr *CorrectnessReport) *CorrectnessReportUpdateOne {
+	mutation := newCorrectnessReportMutation(c.config, OpUpdateOne, withCorrectnessReport(cr))
+	return &CorrectnessReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CorrectnessReportClient) UpdateOneID(id int) *CorrectnessReportUpdateOne {
+	mutation := newCorrectnessReportMutation(c.config, OpUpdateOne, withCorrectnessReportID(id))
+	return &CorrectnessReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CorrectnessReport.
+func (c *CorrectnessReportClient) Delete() *CorrectnessReportDelete {
+	mutation := newCorrectnessReportMutation(c.config, OpDelete)
+	return &CorrectnessReportDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CorrectnessReportClient) DeleteOne(cr *CorrectnessReport) *CorrectnessReportDeleteOne {
+	return c.DeleteOneID(cr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CorrectnessReportClient) DeleteOneID(id int) *CorrectnessReportDeleteOne {
+	builder := c.Delete().Where(correctnessreport.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CorrectnessReportDeleteOne{builder}
+}
+
+// Query returns a query builder for CorrectnessReport.
+func (c *CorrectnessReportClient) Query() *CorrectnessReportQuery {
+	return &CorrectnessReportQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCorrectnessReport},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CorrectnessReport entity by its id.
+func (c *CorrectnessReportClient) Get(ctx context.Context, id int) (*CorrectnessReport, error) {
+	return c.Query().Where(correctnessreport.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CorrectnessReportClient) GetX(ctx context.Context, id int) *CorrectnessReport {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySigners queries the signers edge of a CorrectnessReport.
+func (c *CorrectnessReportClient) QuerySigners(cr *CorrectnessReport) *SignerQuery {
+	query := (&SignerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(correctnessreport.Table, correctnessreport.FieldID, id),
+			sqlgraph.To(signer.Table, signer.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, correctnessreport.SignersTable, correctnessreport.SignersColumn),
+		)
+		fromV = sqlgraph.Neighbors(cr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CorrectnessReportClient) Hooks() []Hook {
+	return c.hooks.CorrectnessReport
+}
+
+// Interceptors returns the client interceptors.
+func (c *CorrectnessReportClient) Interceptors() []Interceptor {
+	return c.inters.CorrectnessReport
+}
+
+func (c *CorrectnessReportClient) mutate(ctx context.Context, m *CorrectnessReportMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CorrectnessReportCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CorrectnessReportUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CorrectnessReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CorrectnessReportDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CorrectnessReport mutation op: %q", m.Op())
 	}
 }
 
@@ -685,9 +844,9 @@ func (c *SignerClient) mutate(ctx context.Context, m *SignerMutation) (Value, er
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AssetPrice, EventLog, Signer []ent.Hook
+		AssetPrice, CorrectnessReport, EventLog, Signer []ent.Hook
 	}
 	inters struct {
-		AssetPrice, EventLog, Signer []ent.Interceptor
+		AssetPrice, CorrectnessReport, EventLog, Signer []ent.Interceptor
 	}
 )

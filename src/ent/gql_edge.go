@@ -20,6 +20,18 @@ func (ap *AssetPrice) Signers(ctx context.Context) (result []*Signer, err error)
 	return result, err
 }
 
+func (cr *CorrectnessReport) Signers(ctx context.Context) (result []*Signer, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = cr.NamedSigners(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = cr.Edges.SignersOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = cr.QuerySigners().All(ctx)
+	}
+	return result, err
+}
+
 func (el *EventLog) Signers(ctx context.Context) (result []*Signer, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = el.NamedSigners(graphql.GetFieldContext(ctx).Field.Alias)

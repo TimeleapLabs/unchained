@@ -16,4 +16,7 @@ const (
 
 	EventLog
 	EventLogBroadcast
+
+	CorrectnessReport
+	CorrectnessReportBroadcast
 )
