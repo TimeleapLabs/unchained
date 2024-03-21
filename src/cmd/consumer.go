@@ -12,6 +12,7 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
+	"github.com/KenshiTech/unchained/plugins/correctness"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 	"github.com/KenshiTech/unchained/pos"
@@ -44,6 +45,7 @@ var consumerCmd = &cobra.Command{
 		pos.Start()
 		db.Start()
 		uniswap.Setup()
+		correctness.Setup()
 		logs.Setup()
 		client.StartClient()
 		consumers.StartConsumer()
