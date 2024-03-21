@@ -4,6 +4,7 @@ package ent
 
 import (
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/schema"
 	"github.com/KenshiTech/unchained/ent/signer"
@@ -19,6 +20,20 @@ func init() {
 	assetpriceDescSignature := assetpriceFields[3].Descriptor()
 	// assetprice.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
 	assetprice.SignatureValidator = assetpriceDescSignature.Validators[0].(func([]byte) error)
+	correctnessreportFields := schema.CorrectnessReport{}.Fields()
+	_ = correctnessreportFields
+	// correctnessreportDescSignature is the schema descriptor for signature field.
+	correctnessreportDescSignature := correctnessreportFields[2].Descriptor()
+	// correctnessreport.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
+	correctnessreport.SignatureValidator = correctnessreportDescSignature.Validators[0].(func([]byte) error)
+	// correctnessreportDescHash is the schema descriptor for hash field.
+	correctnessreportDescHash := correctnessreportFields[3].Descriptor()
+	// correctnessreport.HashValidator is a validator for the "hash" field. It is called by the builders before save.
+	correctnessreport.HashValidator = correctnessreportDescHash.Validators[0].(func([]byte) error)
+	// correctnessreportDescTopic is the schema descriptor for topic field.
+	correctnessreportDescTopic := correctnessreportFields[4].Descriptor()
+	// correctnessreport.TopicValidator is a validator for the "topic" field. It is called by the builders before save.
+	correctnessreport.TopicValidator = correctnessreportDescTopic.Validators[0].(func([]byte) error)
 	eventlogFields := schema.EventLog{}.Fields()
 	_ = eventlogFields
 	// eventlogDescSignature is the schema descriptor for signature field.

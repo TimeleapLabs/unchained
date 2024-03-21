@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/hashicorp/go-multierror"
@@ -29,6 +30,11 @@ var assetpriceImplementors = []string{"AssetPrice", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*AssetPrice) IsNode() {}
+
+var correctnessreportImplementors = []string{"CorrectnessReport", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*CorrectnessReport) IsNode() {}
 
 var eventlogImplementors = []string{"EventLog", "Node"}
 
@@ -102,6 +108,18 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 		query := c.AssetPrice.Query().
 			Where(assetprice.ID(id))
 		query, err := query.CollectFields(ctx, assetpriceImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case correctnessreport.Table:
+		query := c.CorrectnessReport.Query().
+			Where(correctnessreport.ID(id))
+		query, err := query.CollectFields(ctx, correctnessreportImplementors...)
 		if err != nil {
 			return nil, err
 		}
@@ -211,6 +229,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		query := c.AssetPrice.Query().
 			Where(assetprice.IDIn(ids...))
 		query, err := query.CollectFields(ctx, assetpriceImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case correctnessreport.Table:
+		query := c.CorrectnessReport.Query().
+			Where(correctnessreport.IDIn(ids...))
+		query, err := query.CollectFields(ctx, correctnessreportImplementors...)
 		if err != nil {
 			return nil, err
 		}

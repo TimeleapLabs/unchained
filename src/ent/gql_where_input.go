@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/helpers"
 	"github.com/KenshiTech/unchained/ent/predicate"
@@ -452,6 +453,230 @@ func (i *AssetPriceWhereInput) P() (predicate.AssetPrice, error) {
 		return predicates[0], nil
 	default:
 		return assetprice.And(predicates...), nil
+	}
+}
+
+// CorrectnessReportWhereInput represents a where input for filtering CorrectnessReport queries.
+type CorrectnessReportWhereInput struct {
+	Predicates []predicate.CorrectnessReport  `json:"-"`
+	Not        *CorrectnessReportWhereInput   `json:"not,omitempty"`
+	Or         []*CorrectnessReportWhereInput `json:"or,omitempty"`
+	And        []*CorrectnessReportWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *int  `json:"id,omitempty"`
+	IDNEQ   *int  `json:"idNEQ,omitempty"`
+	IDIn    []int `json:"idIn,omitempty"`
+	IDNotIn []int `json:"idNotIn,omitempty"`
+	IDGT    *int  `json:"idGT,omitempty"`
+	IDGTE   *int  `json:"idGTE,omitempty"`
+	IDLT    *int  `json:"idLT,omitempty"`
+	IDLTE   *int  `json:"idLTE,omitempty"`
+
+	// "signersCount" field predicates.
+	SignersCount      *uint64  `json:"signerscount,omitempty"`
+	SignersCountNEQ   *uint64  `json:"signerscountNEQ,omitempty"`
+	SignersCountIn    []uint64 `json:"signerscountIn,omitempty"`
+	SignersCountNotIn []uint64 `json:"signerscountNotIn,omitempty"`
+	SignersCountGT    *uint64  `json:"signerscountGT,omitempty"`
+	SignersCountGTE   *uint64  `json:"signerscountGTE,omitempty"`
+	SignersCountLT    *uint64  `json:"signerscountLT,omitempty"`
+	SignersCountLTE   *uint64  `json:"signerscountLTE,omitempty"`
+
+	// "timestamp" field predicates.
+	Timestamp      *uint64  `json:"timestamp,omitempty"`
+	TimestampNEQ   *uint64  `json:"timestampNEQ,omitempty"`
+	TimestampIn    []uint64 `json:"timestampIn,omitempty"`
+	TimestampNotIn []uint64 `json:"timestampNotIn,omitempty"`
+	TimestampGT    *uint64  `json:"timestampGT,omitempty"`
+	TimestampGTE   *uint64  `json:"timestampGTE,omitempty"`
+	TimestampLT    *uint64  `json:"timestampLT,omitempty"`
+	TimestampLTE   *uint64  `json:"timestampLTE,omitempty"`
+
+	// "correct" field predicates.
+	Correct    *bool `json:"correct,omitempty"`
+	CorrectNEQ *bool `json:"correctNEQ,omitempty"`
+
+	// "signers" edge predicates.
+	HasSigners     *bool               `json:"hasSigners,omitempty"`
+	HasSignersWith []*SignerWhereInput `json:"hasSignersWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *CorrectnessReportWhereInput) AddPredicates(predicates ...predicate.CorrectnessReport) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the CorrectnessReportWhereInput filter on the CorrectnessReportQuery builder.
+func (i *CorrectnessReportWhereInput) Filter(q *CorrectnessReportQuery) (*CorrectnessReportQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyCorrectnessReportWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyCorrectnessReportWhereInput is returned in case the CorrectnessReportWhereInput is empty.
+var ErrEmptyCorrectnessReportWhereInput = errors.New("ent: empty predicate CorrectnessReportWhereInput")
+
+// P returns a predicate for filtering correctnessreports.
+// An error is returned if the input is empty or invalid.
+func (i *CorrectnessReportWhereInput) P() (predicate.CorrectnessReport, error) {
+	var predicates []predicate.CorrectnessReport
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, correctnessreport.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.CorrectnessReport, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, correctnessreport.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.CorrectnessReport, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, correctnessreport.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, correctnessreport.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, correctnessreport.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, correctnessreport.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, correctnessreport.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, correctnessreport.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, correctnessreport.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, correctnessreport.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, correctnessreport.IDLTE(*i.IDLTE))
+	}
+	if i.SignersCount != nil {
+		predicates = append(predicates, correctnessreport.SignersCountEQ(*i.SignersCount))
+	}
+	if i.SignersCountNEQ != nil {
+		predicates = append(predicates, correctnessreport.SignersCountNEQ(*i.SignersCountNEQ))
+	}
+	if len(i.SignersCountIn) > 0 {
+		predicates = append(predicates, correctnessreport.SignersCountIn(i.SignersCountIn...))
+	}
+	if len(i.SignersCountNotIn) > 0 {
+		predicates = append(predicates, correctnessreport.SignersCountNotIn(i.SignersCountNotIn...))
+	}
+	if i.SignersCountGT != nil {
+		predicates = append(predicates, correctnessreport.SignersCountGT(*i.SignersCountGT))
+	}
+	if i.SignersCountGTE != nil {
+		predicates = append(predicates, correctnessreport.SignersCountGTE(*i.SignersCountGTE))
+	}
+	if i.SignersCountLT != nil {
+		predicates = append(predicates, correctnessreport.SignersCountLT(*i.SignersCountLT))
+	}
+	if i.SignersCountLTE != nil {
+		predicates = append(predicates, correctnessreport.SignersCountLTE(*i.SignersCountLTE))
+	}
+	if i.Timestamp != nil {
+		predicates = append(predicates, correctnessreport.TimestampEQ(*i.Timestamp))
+	}
+	if i.TimestampNEQ != nil {
+		predicates = append(predicates, correctnessreport.TimestampNEQ(*i.TimestampNEQ))
+	}
+	if len(i.TimestampIn) > 0 {
+		predicates = append(predicates, correctnessreport.TimestampIn(i.TimestampIn...))
+	}
+	if len(i.TimestampNotIn) > 0 {
+		predicates = append(predicates, correctnessreport.TimestampNotIn(i.TimestampNotIn...))
+	}
+	if i.TimestampGT != nil {
+		predicates = append(predicates, correctnessreport.TimestampGT(*i.TimestampGT))
+	}
+	if i.TimestampGTE != nil {
+		predicates = append(predicates, correctnessreport.TimestampGTE(*i.TimestampGTE))
+	}
+	if i.TimestampLT != nil {
+		predicates = append(predicates, correctnessreport.TimestampLT(*i.TimestampLT))
+	}
+	if i.TimestampLTE != nil {
+		predicates = append(predicates, correctnessreport.TimestampLTE(*i.TimestampLTE))
+	}
+	if i.Correct != nil {
+		predicates = append(predicates, correctnessreport.CorrectEQ(*i.Correct))
+	}
+	if i.CorrectNEQ != nil {
+		predicates = append(predicates, correctnessreport.CorrectNEQ(*i.CorrectNEQ))
+	}
+
+	if i.HasSigners != nil {
+		p := correctnessreport.HasSigners()
+		if !*i.HasSigners {
+			p = correctnessreport.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSignersWith) > 0 {
+		with := make([]predicate.Signer, 0, len(i.HasSignersWith))
+		for _, w := range i.HasSignersWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasSignersWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, correctnessreport.HasSignersWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyCorrectnessReportWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return correctnessreport.And(predicates...), nil
 	}
 }
 

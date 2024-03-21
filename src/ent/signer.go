@@ -28,8 +28,9 @@ type Signer struct {
 	Points int64 `json:"points,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SignerQuery when eager-loading is set.
-	Edges        SignerEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges                      SignerEdges `json:"edges"`
+	correctness_report_signers *int
+	selectValues               sql.SelectValues
 }
 
 // SignerEdges holds the relations/edges for other nodes in the graph.
@@ -77,6 +78,8 @@ func (*Signer) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case signer.FieldName, signer.FieldEvm:
 			values[i] = new(sql.NullString)
+		case signer.ForeignKeys[0]: // correctness_report_signers
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -128,6 +131,13 @@ func (s *Signer) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field points", values[i])
 			} else if value.Valid {
 				s.Points = value.Int64
+			}
+		case signer.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field correctness_report_signers", value)
+			} else if value.Valid {
+				s.correctness_report_signers = new(int)
+				*s.correctness_report_signers = int(value.Int64)
 			}
 		default:
 			s.selectValues.Set(columns[i], values[i])

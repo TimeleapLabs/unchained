@@ -35,6 +35,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	AssetPrice() AssetPriceResolver
+	CorrectnessReport() CorrectnessReportResolver
 	EventLog() EventLogResolver
 	EventLogArg() EventLogArgResolver
 	Query() QueryResolver
@@ -65,6 +66,28 @@ type ComplexityRoot struct {
 	}
 
 	AssetPriceEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	CorrectnessReport struct {
+		Correct      func(childComplexity int) int
+		Hash         func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Signature    func(childComplexity int) int
+		Signers      func(childComplexity int) int
+		SignersCount func(childComplexity int) int
+		Timestamp    func(childComplexity int) int
+		Topic        func(childComplexity int) int
+	}
+
+	CorrectnessReportConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	CorrectnessReportEdge struct {
 		Cursor func(childComplexity int) int
 		Node   func(childComplexity int) int
 	}
@@ -107,10 +130,11 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AssetPrices func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AssetPriceOrder, where *ent.AssetPriceWhereInput) int
-		EventLogs   func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.EventLogOrder, where *ent.EventLogWhereInput) int
-		Node        func(childComplexity int, id int) int
-		Nodes       func(childComplexity int, ids []int) int
+		AssetPrices        func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AssetPriceOrder, where *ent.AssetPriceWhereInput) int
+		CorrectnessReports func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.CorrectnessReportOrder, where *ent.CorrectnessReportWhereInput) int
+		EventLogs          func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.EventLogOrder, where *ent.EventLogWhereInput) int
+		Node               func(childComplexity int, id int) int
+		Nodes              func(childComplexity int, ids []int) int
 	}
 
 	Signer struct {
@@ -241,6 +265,97 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AssetPriceEdge.Node(childComplexity), true
+
+	case "CorrectnessReport.correct":
+		if e.complexity.CorrectnessReport.Correct == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Correct(childComplexity), true
+
+	case "CorrectnessReport.hash":
+		if e.complexity.CorrectnessReport.Hash == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Hash(childComplexity), true
+
+	case "CorrectnessReport.id":
+		if e.complexity.CorrectnessReport.ID == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.ID(childComplexity), true
+
+	case "CorrectnessReport.signature":
+		if e.complexity.CorrectnessReport.Signature == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Signature(childComplexity), true
+
+	case "CorrectnessReport.signers":
+		if e.complexity.CorrectnessReport.Signers == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Signers(childComplexity), true
+
+	case "CorrectnessReport.signerscount":
+		if e.complexity.CorrectnessReport.SignersCount == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.SignersCount(childComplexity), true
+
+	case "CorrectnessReport.timestamp":
+		if e.complexity.CorrectnessReport.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Timestamp(childComplexity), true
+
+	case "CorrectnessReport.topic":
+		if e.complexity.CorrectnessReport.Topic == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Topic(childComplexity), true
+
+	case "CorrectnessReportConnection.edges":
+		if e.complexity.CorrectnessReportConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReportConnection.Edges(childComplexity), true
+
+	case "CorrectnessReportConnection.pageInfo":
+		if e.complexity.CorrectnessReportConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReportConnection.PageInfo(childComplexity), true
+
+	case "CorrectnessReportConnection.totalCount":
+		if e.complexity.CorrectnessReportConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReportConnection.TotalCount(childComplexity), true
+
+	case "CorrectnessReportEdge.cursor":
+		if e.complexity.CorrectnessReportEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReportEdge.Cursor(childComplexity), true
+
+	case "CorrectnessReportEdge.node":
+		if e.complexity.CorrectnessReportEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReportEdge.Node(childComplexity), true
 
 	case "EventLog.address":
 		if e.complexity.EventLog.Address == nil {
@@ -408,6 +523,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.AssetPrices(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.AssetPriceOrder), args["where"].(*ent.AssetPriceWhereInput)), true
 
+	case "Query.correctnessReports":
+		if e.complexity.Query.CorrectnessReports == nil {
+			break
+		}
+
+		args, err := ec.field_Query_correctnessReports_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CorrectnessReports(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.CorrectnessReportOrder), args["where"].(*ent.CorrectnessReportWhereInput)), true
+
 	case "Query.eventLogs":
 		if e.complexity.Query.EventLogs == nil {
 			break
@@ -510,6 +637,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAssetPriceOrder,
 		ec.unmarshalInputAssetPriceWhereInput,
+		ec.unmarshalInputCorrectnessReportOrder,
+		ec.unmarshalInputCorrectnessReportWhereInput,
 		ec.unmarshalInputEventLogOrder,
 		ec.unmarshalInputEventLogWhereInput,
 		ec.unmarshalInputSignerWhereInput,
@@ -773,6 +902,117 @@ input AssetPriceWhereInput {
   pairNotNil: Boolean
   pairEqualFold: String
   pairContainsFold: String
+  """
+  signers edge predicates
+  """
+  hasSigners: Boolean
+  hasSignersWith: [SignerWhereInput!]
+}
+type CorrectnessReport implements Node {
+  id: ID!
+  signerscount: Uint! @goField(name: "SignersCount", forceResolver: false)
+  timestamp: Uint!
+  signature: Bytes!
+  hash: Bytes!
+  topic: Bytes!
+  correct: Boolean!
+  signers: [Signer!]!
+}
+"""
+A connection to a list of items.
+"""
+type CorrectnessReportConnection {
+  """
+  A list of edges.
+  """
+  edges: [CorrectnessReportEdge]
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
+}
+"""
+An edge in a connection.
+"""
+type CorrectnessReportEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: CorrectnessReport
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
+}
+"""
+Ordering options for CorrectnessReport connections
+"""
+input CorrectnessReportOrder {
+  """
+  The ordering direction.
+  """
+  direction: OrderDirection! = ASC
+  """
+  The field by which to order CorrectnessReports.
+  """
+  field: CorrectnessReportOrderField!
+}
+"""
+Properties by which CorrectnessReport connections can be ordered.
+"""
+enum CorrectnessReportOrderField {
+  TIMESTAMP
+}
+"""
+CorrectnessReportWhereInput is used for filtering CorrectnessReport objects.
+Input was generated by ent.
+"""
+input CorrectnessReportWhereInput {
+  not: CorrectnessReportWhereInput
+  and: [CorrectnessReportWhereInput!]
+  or: [CorrectnessReportWhereInput!]
+  """
+  id field predicates
+  """
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  """
+  signersCount field predicates
+  """
+  signerscount: Uint
+  signerscountNEQ: Uint
+  signerscountIn: [Uint!]
+  signerscountNotIn: [Uint!]
+  signerscountGT: Uint
+  signerscountGTE: Uint
+  signerscountLT: Uint
+  signerscountLTE: Uint
+  """
+  timestamp field predicates
+  """
+  timestamp: Uint
+  timestampNEQ: Uint
+  timestampIn: [Uint!]
+  timestampNotIn: [Uint!]
+  timestampGT: Uint
+  timestampGTE: Uint
+  timestampLT: Uint
+  timestampLTE: Uint
+  """
+  correct field predicates
+  """
+  correct: Boolean
+  correctNEQ: Boolean
   """
   signers edge predicates
   """
@@ -1047,6 +1287,37 @@ type Query {
     """
     where: AssetPriceWhereInput
   ): AssetPriceConnection!
+  correctnessReports(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for CorrectnessReports returned from the connection.
+    """
+    orderBy: CorrectnessReportOrder
+
+    """
+    Filtering options for CorrectnessReports returned from the connection.
+    """
+    where: CorrectnessReportWhereInput
+  ): CorrectnessReportConnection!
   eventLogs(
     """
     Returns the elements in the list that come after the specified cursor.

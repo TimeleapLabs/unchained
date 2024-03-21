@@ -108,7 +108,7 @@ func StartClient() {
 
 				koskPayload, _ := msgpack.Marshal(challenge)
 
-				shared.Client.WriteMessage(
+				err := shared.Client.WriteMessage(
 					websocket.BinaryMessage,
 					append([]byte{opcodes.KoskResult}, koskPayload...),
 				)

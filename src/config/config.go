@@ -14,9 +14,8 @@ func defaults() {
 	Config.SetDefault("rpc.arbitrum_sepolia", "https://sepolia-rollup.arbitrum.io/rpc")
 	Config.SetDefault("broker.bind", "0.0.0.0:9123")
 	Config.SetDefault("pos.chain", "arbitrum_sepolia")
-	Config.SetDefault("pos.address", "0xdA36f22C0Dab89CA0884489Bf3a00c0C27cEDbec")
+	Config.SetDefault("pos.address", "0x965e364987356785b7E89e2Fe7B70f5E5107332d")
 	Config.SetDefault("pos.base", "1")
-	Config.SetDefault("pos.nft", "40000000000000000000000")
 }
 
 var Config *viper.Viper
