@@ -6,6 +6,7 @@ import (
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/shared"
+	"github.com/KenshiTech/unchained/plugins/correctness"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 	"github.com/gorilla/websocket"
@@ -108,6 +109,58 @@ func ConsumeEventLog(message []byte) {
 	}
 
 	logs.RecordSignature(
+		signature,
+		packet.Signer,
+		hash,
+		packet.Info,
+		true,
+		false,
+	)
+}
+
+func ConsumeCorrectnessReport(message []byte) {
+	var packet datasets.BroadcastCorrectnessPacket
+	err := msgpack.Unmarshal(message, &packet)
+
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Unmarshal error")
+
+		return
+	}
+
+	toHash, err := msgpack.Marshal(&packet.Info)
+
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Marshal error")
+
+		return
+	}
+
+	hash, err := bls.Hash(toHash)
+
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Hash error")
+
+		return
+	}
+
+	signature, err := bls.RecoverSignature(packet.Signature)
+
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Failed to recover packet signature")
+
+		return
+	}
+
+	correctness.RecordSignature(
 		signature,
 		packet.Signer,
 		hash,
