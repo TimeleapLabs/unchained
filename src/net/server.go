@@ -385,6 +385,89 @@ func processEventLog(conn *websocket.Conn, messageType int, payload []byte) erro
 	return nil
 }
 
+func processCorrectnessRecord(conn *websocket.Conn, messageType int, payload []byte) error {
+
+	signer, err := checkPublicKey(conn, messageType)
+
+	if err != nil {
+		return err
+	}
+
+	var report datasets.CorrectnessReport
+	err = msgpack.Unmarshal(payload, &report)
+
+	if err != nil {
+		return nil
+	}
+
+	toHash, err := msgpack.Marshal(&report.Correctness)
+
+	if err != nil {
+		return nil
+	}
+
+	hash, err := bls.Hash(toHash)
+
+	if err != nil {
+		return nil
+	}
+
+	signature, err := bls.RecoverSignature(report.Signature)
+
+	if err != nil {
+		return nil
+	}
+
+	pk, err := bls.RecoverPublicKey(signer.PublicKey)
+
+	if err != nil {
+		return nil
+	}
+
+	ok, _ := bls.Verify(signature, hash, pk)
+
+	message := []byte("signature.invalid")
+	if ok {
+		message = []byte("signature.accepted")
+		broadcastPacket := datasets.BroadcastCorrectnessPacket{
+			Info:      report.Correctness,
+			Signature: report.Signature,
+			Signer:    *signer,
+		}
+
+		broadcastPayload, err := msgpack.Marshal(&broadcastPacket)
+
+		// TODO: Handle this error properly
+		// TODO: Maybe notify the peer so they can resend
+		if err != nil {
+			log.Logger.
+				With("Error", err).
+				Error("Cannot marshal the broadcast packet")
+		} else {
+			// TODO: Safe to use 'go' here?
+			consumer.Broadcast(
+				append(
+					[]byte{opcodes.EventLogBroadcast},
+					broadcastPayload...,
+				))
+		}
+	}
+
+	err = conn.WriteMessage(
+		messageType,
+		append(
+			[]byte{opcodes.Feedback},
+			message...),
+	)
+
+	if err != nil {
+		fmt.Println("write:", err)
+		return err
+	}
+
+	return nil
+}
+
 func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -449,6 +532,13 @@ func handleAtRoot(w http.ResponseWriter, r *http.Request) {
 						[]byte{opcodes.Feedback},
 						[]byte("Dataset not supported")...),
 				)
+			}
+
+		case opcodes.CorrectnessReport:
+			err := processCorrectnessRecord(conn, messageType, payload[1:])
+
+			if err != nil {
+				fmt.Println("write:", err)
 			}
 
 		case opcodes.KoskResult:
