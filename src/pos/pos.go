@@ -13,21 +13,25 @@ import (
 )
 
 var posContract *contracts.UnchainedStaking
-var votingPowers map[[20]byte]big.Int
+var votingPowers map[[20]byte]*big.Int
 var stakes map[[20]byte]contracts.UnchainedStakingStake
 
 func GetTotalVotingPower() (*big.Int, error) {
 	return posContract.GetTotalVotingPower(nil)
 }
 
-func GetStake(address [20]byte, block *big.Int) (contracts.UnchainedStakingStake, error) {
-	cached, ok := stakes[address]
+func GetStake(address [20]byte, block *big.Int) (*big.Int, error) {
+	cachedStake, ok := stakes[address]
 
-	if ok && cached.Unlock.Cmp(block) >= 0 {
-		return cached, nil
+	if ok && cachedStake.Unlock.Cmp(block) >= 0 {
+		cachedPower, ok := votingPowers[address]
+
+		if ok {
+			return cachedPower, nil
+		}
 	}
 
-	stake, err := posContract.StakeOf0(nil, address)
+	stake, err := posContract.GetStake0(nil, address)
 
 	if err == nil {
 		if stake.Amount.Cmp(big.NewInt(0)) == 0 {
@@ -39,36 +43,39 @@ func GetStake(address [20]byte, block *big.Int) (contracts.UnchainedStakingStake
 		stakes[address] = stake
 	}
 
-	return stake, err
+	votingPower, err := posContract.GetVotingPower0(nil, address)
+
+	if err != nil {
+		votingPowers[address] = votingPower
+	}
+
+	return votingPower, err
+}
+
+func maxBase(power *big.Int) *big.Int {
+	base := config.Config.GetUint64("pos.base")
+	baseBig := big.NewInt(int64(base))
+
+	if power.Cmp(baseBig) < 0 {
+		return baseBig
+	}
+
+	return power
 }
 
 func GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
 
 	if votingPower, ok := votingPowers[address]; ok {
-		return &votingPower, nil
+		return maxBase(votingPower), nil
 	}
 
-	stake, err := GetStake(address, block)
+	votingPower, err := GetStake(address, block)
 
 	if err != nil {
 		return nil, err
 	}
 
-	base := big.NewInt(0)
-	base.SetString(config.Config.GetString("pos.base"), 10)
-
-	nft := big.NewInt(0)
-	nft.SetString(config.Config.GetString("pos.nft"), 10)
-
-	nftPower := new(big.Int).Mul(nft, big.NewInt(int64(len(stake.NftIds))))
-	votingPower := new(big.Int).Add(stake.Amount, nftPower)
-
-	if votingPower.Cmp(base) < 0 {
-		votingPower = base
-	}
-
-	votingPowers[address] = *votingPower
-	return votingPower, nil
+	return maxBase(votingPower), nil
 }
 
 func GetVotingPowerOfPublicKey(
@@ -138,6 +145,6 @@ func Start() {
 }
 
 func init() {
-	votingPowers = make(map[[20]byte]big.Int)
+	votingPowers = make(map[[20]byte]*big.Int)
 	stakes = make(map[[20]byte]contracts.UnchainedStakingStake)
 }
