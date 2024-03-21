@@ -10,6 +10,7 @@ import (
 	"github.com/KenshiTech/unchained/gql"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net"
+	"github.com/KenshiTech/unchained/plugins/correctness"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
@@ -25,6 +26,7 @@ var brokerCmd = &cobra.Command{
 		config.LoadConfig(configPath, secretsPath)
 		log.Start()
 		db.Start()
+		correctness.Setup()
 		ethereum.Start()
 		uniswap.Setup()
 		logs.Setup()
