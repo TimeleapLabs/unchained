@@ -6,7 +6,6 @@ package gql
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"entgo.io/contrib/entgql"
@@ -28,17 +27,17 @@ func (r *assetPriceResolver) Signature(ctx context.Context, obj *ent.AssetPrice)
 
 // Signature is the resolver for the signature field.
 func (r *correctnessReportResolver) Signature(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error) {
-	panic(fmt.Errorf("not implemented: Signature - signature"))
+	return obj.Signature, nil
 }
 
 // Hash is the resolver for the hash field.
 func (r *correctnessReportResolver) Hash(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error) {
-	panic(fmt.Errorf("not implemented: Hash - hash"))
+	return obj.Hash, nil
 }
 
 // Topic is the resolver for the topic field.
 func (r *correctnessReportResolver) Topic(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error) {
-	panic(fmt.Errorf("not implemented: Topic - topic"))
+	return obj.Topic, nil
 }
 
 // Signature is the resolver for the signature field.
@@ -72,7 +71,11 @@ func (r *queryResolver) AssetPrices(ctx context.Context, after *entgql.Cursor[in
 
 // CorrectnessReports is the resolver for the correctnessReports field.
 func (r *queryResolver) CorrectnessReports(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.CorrectnessReportOrder, where *ent.CorrectnessReportWhereInput) (*ent.CorrectnessReportConnection, error) {
-	panic(fmt.Errorf("not implemented: CorrectnessReports - correctnessReports"))
+	return r.client.CorrectnessReport.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithCorrectnessReportOrder(orderBy),
+			ent.WithCorrectnessReportFilter(where.Filter),
+		)
 }
 
 // EventLogs is the resolver for the eventLogs field.
