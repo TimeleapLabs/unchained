@@ -125,6 +125,9 @@ func StartClient() {
 			case opcodes.EventLogBroadcast:
 				go consumers.ConsumeEventLog(payload[1:])
 
+			case opcodes.CorrectnessReportBroadcast:
+				go consumers.ConsumeCorrectnessReport(payload[1:])
+
 			default:
 				log.Logger.
 					With("Code", payload[0]).
