@@ -34,6 +34,7 @@ type UnchainedStakingEIP712SetParams struct {
 	Requester  common.Address
 	Token      common.Address
 	Nft        common.Address
+	NftTracker common.Address
 	Threshold  *big.Int
 	Expiration *big.Int
 	Nonce      *big.Int
@@ -43,6 +44,7 @@ type UnchainedStakingEIP712SetParams struct {
 type UnchainedStakingEIP712SetParamsKey struct {
 	Token      common.Address
 	Nft        common.Address
+	NftTracker common.Address
 	Threshold  *big.Int
 	Expiration *big.Int
 	Nonce      *big.Int
@@ -56,25 +58,30 @@ type UnchainedStakingEIP712SetSigner struct {
 
 // UnchainedStakingEIP712Transfer is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingEIP712Transfer struct {
-	Signer common.Address
-	From   common.Address
-	To     common.Address
-	Amount *big.Int
-	Nonces []*big.Int
+	Signer    common.Address
+	From      common.Address
+	To        common.Address
+	Amount    *big.Int
+	NftIds    []*big.Int
+	Nonces    []*big.Int
+	FromStake bool
 }
 
 // UnchainedStakingEIP712TransferKey is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingEIP712TransferKey struct {
-	From   common.Address
-	To     common.Address
-	Amount *big.Int
-	Nonces []*big.Int
+	From      common.Address
+	To        common.Address
+	Amount    *big.Int
+	NftIds    []*big.Int
+	Nonces    []*big.Int
+	FromStake bool
 }
 
 // UnchainedStakingParamsInfo is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingParamsInfo struct {
 	Token      common.Address
 	Nft        common.Address
+	NftTracker common.Address
 	Threshold  *big.Int
 	Expiration *big.Int
 	Voted      *big.Int
@@ -98,17 +105,19 @@ type UnchainedStakingStake struct {
 
 // UnchainedStakingTransferInfo is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingTransferInfo struct {
-	From     common.Address
-	To       common.Address
-	Amount   *big.Int
-	Voted    *big.Int
-	Accepted bool
-	Nonces   []*big.Int
+	From      common.Address
+	To        common.Address
+	Amount    *big.Int
+	NftIds    []*big.Int
+	Voted     *big.Int
+	FromStake bool
+	Accepted  bool
+	Nonces    []*big.Int
 }
 
 // UnchainedStakingMetaData contains all meta data concerning the UnchainedStaking contract.
 var UnchainedStakingMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"consensusLock\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AddressInUse\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AddressZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"AlreadyAccused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AlreadyStaked\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"AlreadyVoted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BlsNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DurationZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Forbidden\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"InvalidSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LengthMismatch\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"NonceUsed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"NotConsumer\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotUnlocked\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"SafeERC20FailedOperation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"StakeExpiresBeforeVote\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"TopicExpired\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"VotingPowerZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WrongEIP712Signature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WrongNFT\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"accused\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"accuser\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"incident\",\"type\":\"bytes32\"}],\"name\":\"Accused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"from\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"to\",\"type\":\"bytes32\"}],\"name\":\"BlsAddressChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"}],\"name\":\"Extended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"ParamsChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"StakeIncreased\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"Staked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TransferIn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"name\":\"TransferOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"UnStaked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"VotedForParams\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"blsAddressOf\",\"outputs\":[{\"internalType\":\"bytes20\",\"name\":\"\",\"type\":\"bytes20\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"evmAddressOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"extend\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getChainId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getConsensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getParams\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"}],\"name\":\"getRequestedSetParams\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"transferer\",\"type\":\"address\"}],\"name\":\"getRequestedTransferOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getSetParamsData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getTransferOutData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.TransferInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTransferredIn\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"increaseStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"recoverERC20\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"blsAddress\",\"type\":\"bytes20\"}],\"name\":\"setBlsAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams[]\",\"name\":\"eip712SetParams\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"setParams\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"signerToStaker\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"stake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"stakeOf\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"stakeOf\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"}],\"name\":\"stakerToSigner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer[]\",\"name\":\"eip712Transferes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"transferOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unstake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams\",\"name\":\"eip712SetParam\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer\",\"name\":\"eip712Transfer\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTrackerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"consensusLock\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AddressInUse\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AddressZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"AlreadyAccused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AlreadyStaked\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"AlreadyVoted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BlsNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DurationZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Forbidden\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"InvalidSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LengthMismatch\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"NonceUsed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"NotConsumer\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotUnlocked\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"SafeERC20FailedOperation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"StakeExpiresBeforeVote\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"TopicExpired\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"VotingPowerZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WrongEIP712Signature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WrongNFT\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"accused\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"accuser\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"incident\",\"type\":\"bytes32\"}],\"name\":\"Accused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"from\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"to\",\"type\":\"bytes32\"}],\"name\":\"BlsAddressChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"}],\"name\":\"Extended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"ParamsChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"StakeIncreased\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"Staked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TransferIn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"name\":\"TransferOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"UnStaked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"VotedForParams\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"blsAddressOf\",\"outputs\":[{\"internalType\":\"bytes20\",\"name\":\"\",\"type\":\"bytes20\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"evmAddressOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"extend\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getChainId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getConsensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getParams\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"}],\"name\":\"getRequestedSetParams\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"transferer\",\"type\":\"address\"}],\"name\":\"getRequestedTransferOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getSetParamsData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getTransferOutData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.TransferInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"getVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"getVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"increaseStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"recoverERC20\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"blsAddress\",\"type\":\"bytes20\"}],\"name\":\"setBlsAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams[]\",\"name\":\"eip712SetParams\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"setParams\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"signerToStaker\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"stake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"}],\"name\":\"stakerToSigner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer[]\",\"name\":\"eip712Transferes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"transferOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unstake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams\",\"name\":\"eip712SetParam\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer\",\"name\":\"eip712Transfer\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // UnchainedStakingABI is the input ABI used to generate the binding from.
@@ -383,7 +392,7 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) GetConsensusThreshold() 
 
 // GetParams is a free data retrieval call binding the contract method 0x5e615a6b.
 //
-// Solidity: function getParams() view returns((address,address,uint256,uint256,uint256,uint256,bool))
+// Solidity: function getParams() view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
 func (_UnchainedStaking *UnchainedStakingCaller) GetParams(opts *bind.CallOpts) (UnchainedStakingParamsInfo, error) {
 	var out []interface{}
 	err := _UnchainedStaking.contract.Call(opts, &out, "getParams")
@@ -400,21 +409,21 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetParams(opts *bind.CallOpts) 
 
 // GetParams is a free data retrieval call binding the contract method 0x5e615a6b.
 //
-// Solidity: function getParams() view returns((address,address,uint256,uint256,uint256,uint256,bool))
+// Solidity: function getParams() view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
 func (_UnchainedStaking *UnchainedStakingSession) GetParams() (UnchainedStakingParamsInfo, error) {
 	return _UnchainedStaking.Contract.GetParams(&_UnchainedStaking.CallOpts)
 }
 
 // GetParams is a free data retrieval call binding the contract method 0x5e615a6b.
 //
-// Solidity: function getParams() view returns((address,address,uint256,uint256,uint256,uint256,bool))
+// Solidity: function getParams() view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
 func (_UnchainedStaking *UnchainedStakingCallerSession) GetParams() (UnchainedStakingParamsInfo, error) {
 	return _UnchainedStaking.Contract.GetParams(&_UnchainedStaking.CallOpts)
 }
 
-// GetRequestedSetParams is a free data retrieval call binding the contract method 0x628beb07.
+// GetRequestedSetParams is a free data retrieval call binding the contract method 0x984d92e8.
 //
-// Solidity: function getRequestedSetParams((address,address,uint256,uint256,uint256) key, address requester) view returns(bool)
+// Solidity: function getRequestedSetParams((address,address,address,uint256,uint256,uint256) key, address requester) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedSetParams(opts *bind.CallOpts, key UnchainedStakingEIP712SetParamsKey, requester common.Address) (bool, error) {
 	var out []interface{}
 	err := _UnchainedStaking.contract.Call(opts, &out, "getRequestedSetParams", key, requester)
@@ -429,23 +438,23 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedSetParams(opts *bin
 
 }
 
-// GetRequestedSetParams is a free data retrieval call binding the contract method 0x628beb07.
+// GetRequestedSetParams is a free data retrieval call binding the contract method 0x984d92e8.
 //
-// Solidity: function getRequestedSetParams((address,address,uint256,uint256,uint256) key, address requester) view returns(bool)
+// Solidity: function getRequestedSetParams((address,address,address,uint256,uint256,uint256) key, address requester) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingSession) GetRequestedSetParams(key UnchainedStakingEIP712SetParamsKey, requester common.Address) (bool, error) {
 	return _UnchainedStaking.Contract.GetRequestedSetParams(&_UnchainedStaking.CallOpts, key, requester)
 }
 
-// GetRequestedSetParams is a free data retrieval call binding the contract method 0x628beb07.
+// GetRequestedSetParams is a free data retrieval call binding the contract method 0x984d92e8.
 //
-// Solidity: function getRequestedSetParams((address,address,uint256,uint256,uint256) key, address requester) view returns(bool)
+// Solidity: function getRequestedSetParams((address,address,address,uint256,uint256,uint256) key, address requester) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCallerSession) GetRequestedSetParams(key UnchainedStakingEIP712SetParamsKey, requester common.Address) (bool, error) {
 	return _UnchainedStaking.Contract.GetRequestedSetParams(&_UnchainedStaking.CallOpts, key, requester)
 }
 
-// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x7a04820e.
+// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x27bf8afd.
 //
-// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[]) key, address transferer) view returns(bool)
+// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[],uint256[],bool) key, address transferer) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedTransferOut(opts *bind.CallOpts, key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
 	var out []interface{}
 	err := _UnchainedStaking.contract.Call(opts, &out, "getRequestedTransferOut", key, transferer)
@@ -460,23 +469,23 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedTransferOut(opts *b
 
 }
 
-// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x7a04820e.
+// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x27bf8afd.
 //
-// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[]) key, address transferer) view returns(bool)
+// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[],uint256[],bool) key, address transferer) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingSession) GetRequestedTransferOut(key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
 	return _UnchainedStaking.Contract.GetRequestedTransferOut(&_UnchainedStaking.CallOpts, key, transferer)
 }
 
-// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x7a04820e.
+// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x27bf8afd.
 //
-// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[]) key, address transferer) view returns(bool)
+// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[],uint256[],bool) key, address transferer) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCallerSession) GetRequestedTransferOut(key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
 	return _UnchainedStaking.Contract.GetRequestedTransferOut(&_UnchainedStaking.CallOpts, key, transferer)
 }
 
-// GetSetParamsData is a free data retrieval call binding the contract method 0x5ad235f6.
+// GetSetParamsData is a free data retrieval call binding the contract method 0x300fab4f.
 //
-// Solidity: function getSetParamsData((address,address,uint256,uint256,uint256) key) view returns((address,address,uint256,uint256,uint256,uint256,bool))
+// Solidity: function getSetParamsData((address,address,address,uint256,uint256,uint256) key) view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
 func (_UnchainedStaking *UnchainedStakingCaller) GetSetParamsData(opts *bind.CallOpts, key UnchainedStakingEIP712SetParamsKey) (UnchainedStakingParamsInfo, error) {
 	var out []interface{}
 	err := _UnchainedStaking.contract.Call(opts, &out, "getSetParamsData", key)
@@ -491,18 +500,80 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetSetParamsData(opts *bind.Cal
 
 }
 
-// GetSetParamsData is a free data retrieval call binding the contract method 0x5ad235f6.
+// GetSetParamsData is a free data retrieval call binding the contract method 0x300fab4f.
 //
-// Solidity: function getSetParamsData((address,address,uint256,uint256,uint256) key) view returns((address,address,uint256,uint256,uint256,uint256,bool))
+// Solidity: function getSetParamsData((address,address,address,uint256,uint256,uint256) key) view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
 func (_UnchainedStaking *UnchainedStakingSession) GetSetParamsData(key UnchainedStakingEIP712SetParamsKey) (UnchainedStakingParamsInfo, error) {
 	return _UnchainedStaking.Contract.GetSetParamsData(&_UnchainedStaking.CallOpts, key)
 }
 
-// GetSetParamsData is a free data retrieval call binding the contract method 0x5ad235f6.
+// GetSetParamsData is a free data retrieval call binding the contract method 0x300fab4f.
 //
-// Solidity: function getSetParamsData((address,address,uint256,uint256,uint256) key) view returns((address,address,uint256,uint256,uint256,uint256,bool))
+// Solidity: function getSetParamsData((address,address,address,uint256,uint256,uint256) key) view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
 func (_UnchainedStaking *UnchainedStakingCallerSession) GetSetParamsData(key UnchainedStakingEIP712SetParamsKey) (UnchainedStakingParamsInfo, error) {
 	return _UnchainedStaking.Contract.GetSetParamsData(&_UnchainedStaking.CallOpts, key)
+}
+
+// GetStake is a free data retrieval call binding the contract method 0x7a766460.
+//
+// Solidity: function getStake(address evm) view returns((uint256,uint256,uint256[]))
+func (_UnchainedStaking *UnchainedStakingCaller) GetStake(opts *bind.CallOpts, evm common.Address) (UnchainedStakingStake, error) {
+	var out []interface{}
+	err := _UnchainedStaking.contract.Call(opts, &out, "getStake", evm)
+
+	if err != nil {
+		return *new(UnchainedStakingStake), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(UnchainedStakingStake)).(*UnchainedStakingStake)
+
+	return out0, err
+
+}
+
+// GetStake is a free data retrieval call binding the contract method 0x7a766460.
+//
+// Solidity: function getStake(address evm) view returns((uint256,uint256,uint256[]))
+func (_UnchainedStaking *UnchainedStakingSession) GetStake(evm common.Address) (UnchainedStakingStake, error) {
+	return _UnchainedStaking.Contract.GetStake(&_UnchainedStaking.CallOpts, evm)
+}
+
+// GetStake is a free data retrieval call binding the contract method 0x7a766460.
+//
+// Solidity: function getStake(address evm) view returns((uint256,uint256,uint256[]))
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetStake(evm common.Address) (UnchainedStakingStake, error) {
+	return _UnchainedStaking.Contract.GetStake(&_UnchainedStaking.CallOpts, evm)
+}
+
+// GetStake0 is a free data retrieval call binding the contract method 0xf86fec69.
+//
+// Solidity: function getStake(bytes20 bls) view returns((uint256,uint256,uint256[]))
+func (_UnchainedStaking *UnchainedStakingCaller) GetStake0(opts *bind.CallOpts, bls [20]byte) (UnchainedStakingStake, error) {
+	var out []interface{}
+	err := _UnchainedStaking.contract.Call(opts, &out, "getStake0", bls)
+
+	if err != nil {
+		return *new(UnchainedStakingStake), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(UnchainedStakingStake)).(*UnchainedStakingStake)
+
+	return out0, err
+
+}
+
+// GetStake0 is a free data retrieval call binding the contract method 0xf86fec69.
+//
+// Solidity: function getStake(bytes20 bls) view returns((uint256,uint256,uint256[]))
+func (_UnchainedStaking *UnchainedStakingSession) GetStake0(bls [20]byte) (UnchainedStakingStake, error) {
+	return _UnchainedStaking.Contract.GetStake0(&_UnchainedStaking.CallOpts, bls)
+}
+
+// GetStake0 is a free data retrieval call binding the contract method 0xf86fec69.
+//
+// Solidity: function getStake(bytes20 bls) view returns((uint256,uint256,uint256[]))
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetStake0(bls [20]byte) (UnchainedStakingStake, error) {
+	return _UnchainedStaking.Contract.GetStake0(&_UnchainedStaking.CallOpts, bls)
 }
 
 // GetTotalVotingPower is a free data retrieval call binding the contract method 0x11acc1a7.
@@ -536,9 +607,9 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) GetTotalVotingPower() (*
 	return _UnchainedStaking.Contract.GetTotalVotingPower(&_UnchainedStaking.CallOpts)
 }
 
-// GetTransferOutData is a free data retrieval call binding the contract method 0x2efc5265.
+// GetTransferOutData is a free data retrieval call binding the contract method 0xee4344ea.
 //
-// Solidity: function getTransferOutData((address,address,uint256,uint256[]) key) view returns((address,address,uint256,uint256,bool,uint256[]))
+// Solidity: function getTransferOutData((address,address,uint256,uint256[],uint256[],bool) key) view returns((address,address,uint256,uint256[],uint256,bool,bool,uint256[]))
 func (_UnchainedStaking *UnchainedStakingCaller) GetTransferOutData(opts *bind.CallOpts, key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
 	var out []interface{}
 	err := _UnchainedStaking.contract.Call(opts, &out, "getTransferOutData", key)
@@ -553,26 +624,26 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetTransferOutData(opts *bind.C
 
 }
 
-// GetTransferOutData is a free data retrieval call binding the contract method 0x2efc5265.
+// GetTransferOutData is a free data retrieval call binding the contract method 0xee4344ea.
 //
-// Solidity: function getTransferOutData((address,address,uint256,uint256[]) key) view returns((address,address,uint256,uint256,bool,uint256[]))
+// Solidity: function getTransferOutData((address,address,uint256,uint256[],uint256[],bool) key) view returns((address,address,uint256,uint256[],uint256,bool,bool,uint256[]))
 func (_UnchainedStaking *UnchainedStakingSession) GetTransferOutData(key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
 	return _UnchainedStaking.Contract.GetTransferOutData(&_UnchainedStaking.CallOpts, key)
 }
 
-// GetTransferOutData is a free data retrieval call binding the contract method 0x2efc5265.
+// GetTransferOutData is a free data retrieval call binding the contract method 0xee4344ea.
 //
-// Solidity: function getTransferOutData((address,address,uint256,uint256[]) key) view returns((address,address,uint256,uint256,bool,uint256[]))
+// Solidity: function getTransferOutData((address,address,uint256,uint256[],uint256[],bool) key) view returns((address,address,uint256,uint256[],uint256,bool,bool,uint256[]))
 func (_UnchainedStaking *UnchainedStakingCallerSession) GetTransferOutData(key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
 	return _UnchainedStaking.Contract.GetTransferOutData(&_UnchainedStaking.CallOpts, key)
 }
 
-// GetTransferredIn is a free data retrieval call binding the contract method 0x5be979b6.
+// GetVotingPower is a free data retrieval call binding the contract method 0x68eacf93.
 //
-// Solidity: function getTransferredIn() view returns(uint256)
-func (_UnchainedStaking *UnchainedStakingCaller) GetTransferredIn(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getVotingPower(bytes20 bls) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingCaller) GetVotingPower(opts *bind.CallOpts, bls [20]byte) (*big.Int, error) {
 	var out []interface{}
-	err := _UnchainedStaking.contract.Call(opts, &out, "getTransferredIn")
+	err := _UnchainedStaking.contract.Call(opts, &out, "getVotingPower", bls)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -584,18 +655,49 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetTransferredIn(opts *bind.Cal
 
 }
 
-// GetTransferredIn is a free data retrieval call binding the contract method 0x5be979b6.
+// GetVotingPower is a free data retrieval call binding the contract method 0x68eacf93.
 //
-// Solidity: function getTransferredIn() view returns(uint256)
-func (_UnchainedStaking *UnchainedStakingSession) GetTransferredIn() (*big.Int, error) {
-	return _UnchainedStaking.Contract.GetTransferredIn(&_UnchainedStaking.CallOpts)
+// Solidity: function getVotingPower(bytes20 bls) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingSession) GetVotingPower(bls [20]byte) (*big.Int, error) {
+	return _UnchainedStaking.Contract.GetVotingPower(&_UnchainedStaking.CallOpts, bls)
 }
 
-// GetTransferredIn is a free data retrieval call binding the contract method 0x5be979b6.
+// GetVotingPower is a free data retrieval call binding the contract method 0x68eacf93.
 //
-// Solidity: function getTransferredIn() view returns(uint256)
-func (_UnchainedStaking *UnchainedStakingCallerSession) GetTransferredIn() (*big.Int, error) {
-	return _UnchainedStaking.Contract.GetTransferredIn(&_UnchainedStaking.CallOpts)
+// Solidity: function getVotingPower(bytes20 bls) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetVotingPower(bls [20]byte) (*big.Int, error) {
+	return _UnchainedStaking.Contract.GetVotingPower(&_UnchainedStaking.CallOpts, bls)
+}
+
+// GetVotingPower0 is a free data retrieval call binding the contract method 0xbb4d4436.
+//
+// Solidity: function getVotingPower(address evm) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingCaller) GetVotingPower0(opts *bind.CallOpts, evm common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _UnchainedStaking.contract.Call(opts, &out, "getVotingPower0", evm)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetVotingPower0 is a free data retrieval call binding the contract method 0xbb4d4436.
+//
+// Solidity: function getVotingPower(address evm) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingSession) GetVotingPower0(evm common.Address) (*big.Int, error) {
+	return _UnchainedStaking.Contract.GetVotingPower0(&_UnchainedStaking.CallOpts, evm)
+}
+
+// GetVotingPower0 is a free data retrieval call binding the contract method 0xbb4d4436.
+//
+// Solidity: function getVotingPower(address evm) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetVotingPower0(evm common.Address) (*big.Int, error) {
+	return _UnchainedStaking.Contract.GetVotingPower0(&_UnchainedStaking.CallOpts, evm)
 }
 
 // OnERC721Received is a free data retrieval call binding the contract method 0x150b7a02.
@@ -691,68 +793,6 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) SignerToStaker(signer co
 	return _UnchainedStaking.Contract.SignerToStaker(&_UnchainedStaking.CallOpts, signer)
 }
 
-// StakeOf is a free data retrieval call binding the contract method 0x42623360.
-//
-// Solidity: function stakeOf(address evm) view returns((uint256,uint256,uint256[]))
-func (_UnchainedStaking *UnchainedStakingCaller) StakeOf(opts *bind.CallOpts, evm common.Address) (UnchainedStakingStake, error) {
-	var out []interface{}
-	err := _UnchainedStaking.contract.Call(opts, &out, "stakeOf", evm)
-
-	if err != nil {
-		return *new(UnchainedStakingStake), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(UnchainedStakingStake)).(*UnchainedStakingStake)
-
-	return out0, err
-
-}
-
-// StakeOf is a free data retrieval call binding the contract method 0x42623360.
-//
-// Solidity: function stakeOf(address evm) view returns((uint256,uint256,uint256[]))
-func (_UnchainedStaking *UnchainedStakingSession) StakeOf(evm common.Address) (UnchainedStakingStake, error) {
-	return _UnchainedStaking.Contract.StakeOf(&_UnchainedStaking.CallOpts, evm)
-}
-
-// StakeOf is a free data retrieval call binding the contract method 0x42623360.
-//
-// Solidity: function stakeOf(address evm) view returns((uint256,uint256,uint256[]))
-func (_UnchainedStaking *UnchainedStakingCallerSession) StakeOf(evm common.Address) (UnchainedStakingStake, error) {
-	return _UnchainedStaking.Contract.StakeOf(&_UnchainedStaking.CallOpts, evm)
-}
-
-// StakeOf0 is a free data retrieval call binding the contract method 0xf5056014.
-//
-// Solidity: function stakeOf(bytes20 bls) view returns((uint256,uint256,uint256[]))
-func (_UnchainedStaking *UnchainedStakingCaller) StakeOf0(opts *bind.CallOpts, bls [20]byte) (UnchainedStakingStake, error) {
-	var out []interface{}
-	err := _UnchainedStaking.contract.Call(opts, &out, "stakeOf0", bls)
-
-	if err != nil {
-		return *new(UnchainedStakingStake), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(UnchainedStakingStake)).(*UnchainedStakingStake)
-
-	return out0, err
-
-}
-
-// StakeOf0 is a free data retrieval call binding the contract method 0xf5056014.
-//
-// Solidity: function stakeOf(bytes20 bls) view returns((uint256,uint256,uint256[]))
-func (_UnchainedStaking *UnchainedStakingSession) StakeOf0(bls [20]byte) (UnchainedStakingStake, error) {
-	return _UnchainedStaking.Contract.StakeOf0(&_UnchainedStaking.CallOpts, bls)
-}
-
-// StakeOf0 is a free data retrieval call binding the contract method 0xf5056014.
-//
-// Solidity: function stakeOf(bytes20 bls) view returns((uint256,uint256,uint256[]))
-func (_UnchainedStaking *UnchainedStakingCallerSession) StakeOf0(bls [20]byte) (UnchainedStakingStake, error) {
-	return _UnchainedStaking.Contract.StakeOf0(&_UnchainedStaking.CallOpts, bls)
-}
-
 // StakerToSigner is a free data retrieval call binding the contract method 0xc7bcae78.
 //
 // Solidity: function stakerToSigner(address staker) view returns(address)
@@ -784,9 +824,9 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) StakerToSigner(staker co
 	return _UnchainedStaking.Contract.StakerToSigner(&_UnchainedStaking.CallOpts, staker)
 }
 
-// Verify is a free data retrieval call binding the contract method 0x34c9667c.
+// Verify is a free data retrieval call binding the contract method 0x6e0b9e40.
 //
-// Solidity: function verify((address,address,address,uint256,uint256,uint256) eip712SetParam, (uint8,bytes32,bytes32) signature) view returns(bool)
+// Solidity: function verify((address,address,address,address,uint256,uint256,uint256) eip712SetParam, (uint8,bytes32,bytes32) signature) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCaller) Verify(opts *bind.CallOpts, eip712SetParam UnchainedStakingEIP712SetParams, signature UnchainedStakingSignature) (bool, error) {
 	var out []interface{}
 	err := _UnchainedStaking.contract.Call(opts, &out, "verify", eip712SetParam, signature)
@@ -801,16 +841,16 @@ func (_UnchainedStaking *UnchainedStakingCaller) Verify(opts *bind.CallOpts, eip
 
 }
 
-// Verify is a free data retrieval call binding the contract method 0x34c9667c.
+// Verify is a free data retrieval call binding the contract method 0x6e0b9e40.
 //
-// Solidity: function verify((address,address,address,uint256,uint256,uint256) eip712SetParam, (uint8,bytes32,bytes32) signature) view returns(bool)
+// Solidity: function verify((address,address,address,address,uint256,uint256,uint256) eip712SetParam, (uint8,bytes32,bytes32) signature) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingSession) Verify(eip712SetParam UnchainedStakingEIP712SetParams, signature UnchainedStakingSignature) (bool, error) {
 	return _UnchainedStaking.Contract.Verify(&_UnchainedStaking.CallOpts, eip712SetParam, signature)
 }
 
-// Verify is a free data retrieval call binding the contract method 0x34c9667c.
+// Verify is a free data retrieval call binding the contract method 0x6e0b9e40.
 //
-// Solidity: function verify((address,address,address,uint256,uint256,uint256) eip712SetParam, (uint8,bytes32,bytes32) signature) view returns(bool)
+// Solidity: function verify((address,address,address,address,uint256,uint256,uint256) eip712SetParam, (uint8,bytes32,bytes32) signature) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCallerSession) Verify(eip712SetParam UnchainedStakingEIP712SetParams, signature UnchainedStakingSignature) (bool, error) {
 	return _UnchainedStaking.Contract.Verify(&_UnchainedStaking.CallOpts, eip712SetParam, signature)
 }
@@ -846,9 +886,9 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) Verify0(eip712SetSigner 
 	return _UnchainedStaking.Contract.Verify0(&_UnchainedStaking.CallOpts, eip712SetSigner, stakerSignature, signerSignature)
 }
 
-// Verify1 is a free data retrieval call binding the contract method 0xf48d0be7.
+// Verify1 is a free data retrieval call binding the contract method 0xa451de1a.
 //
-// Solidity: function verify((address,address,address,uint256,uint256[]) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
+// Solidity: function verify((address,address,address,uint256,uint256[],uint256[],bool) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCaller) Verify1(opts *bind.CallOpts, eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
 	var out []interface{}
 	err := _UnchainedStaking.contract.Call(opts, &out, "verify1", eip712Transfer, signature)
@@ -863,16 +903,16 @@ func (_UnchainedStaking *UnchainedStakingCaller) Verify1(opts *bind.CallOpts, ei
 
 }
 
-// Verify1 is a free data retrieval call binding the contract method 0xf48d0be7.
+// Verify1 is a free data retrieval call binding the contract method 0xa451de1a.
 //
-// Solidity: function verify((address,address,address,uint256,uint256[]) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
+// Solidity: function verify((address,address,address,uint256,uint256[],uint256[],bool) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingSession) Verify1(eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
 	return _UnchainedStaking.Contract.Verify1(&_UnchainedStaking.CallOpts, eip712Transfer, signature)
 }
 
-// Verify1 is a free data retrieval call binding the contract method 0xf48d0be7.
+// Verify1 is a free data retrieval call binding the contract method 0xa451de1a.
 //
-// Solidity: function verify((address,address,address,uint256,uint256[]) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
+// Solidity: function verify((address,address,address,uint256,uint256[],uint256[],bool) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
 func (_UnchainedStaking *UnchainedStakingCallerSession) Verify1(eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
 	return _UnchainedStaking.Contract.Verify1(&_UnchainedStaking.CallOpts, eip712Transfer, signature)
 }
@@ -982,23 +1022,23 @@ func (_UnchainedStaking *UnchainedStakingTransactorSession) SetBlsAddress(blsAdd
 	return _UnchainedStaking.Contract.SetBlsAddress(&_UnchainedStaking.TransactOpts, blsAddress)
 }
 
-// SetParams is a paid mutator transaction binding the contract method 0xca023b5b.
+// SetParams is a paid mutator transaction binding the contract method 0x642ca50f.
 //
-// Solidity: function setParams((address,address,address,uint256,uint256,uint256)[] eip712SetParams, (uint8,bytes32,bytes32)[] signatures) returns()
+// Solidity: function setParams((address,address,address,address,uint256,uint256,uint256)[] eip712SetParams, (uint8,bytes32,bytes32)[] signatures) returns()
 func (_UnchainedStaking *UnchainedStakingTransactor) SetParams(opts *bind.TransactOpts, eip712SetParams []UnchainedStakingEIP712SetParams, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
 	return _UnchainedStaking.contract.Transact(opts, "setParams", eip712SetParams, signatures)
 }
 
-// SetParams is a paid mutator transaction binding the contract method 0xca023b5b.
+// SetParams is a paid mutator transaction binding the contract method 0x642ca50f.
 //
-// Solidity: function setParams((address,address,address,uint256,uint256,uint256)[] eip712SetParams, (uint8,bytes32,bytes32)[] signatures) returns()
+// Solidity: function setParams((address,address,address,address,uint256,uint256,uint256)[] eip712SetParams, (uint8,bytes32,bytes32)[] signatures) returns()
 func (_UnchainedStaking *UnchainedStakingSession) SetParams(eip712SetParams []UnchainedStakingEIP712SetParams, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
 	return _UnchainedStaking.Contract.SetParams(&_UnchainedStaking.TransactOpts, eip712SetParams, signatures)
 }
 
-// SetParams is a paid mutator transaction binding the contract method 0xca023b5b.
+// SetParams is a paid mutator transaction binding the contract method 0x642ca50f.
 //
-// Solidity: function setParams((address,address,address,uint256,uint256,uint256)[] eip712SetParams, (uint8,bytes32,bytes32)[] signatures) returns()
+// Solidity: function setParams((address,address,address,address,uint256,uint256,uint256)[] eip712SetParams, (uint8,bytes32,bytes32)[] signatures) returns()
 func (_UnchainedStaking *UnchainedStakingTransactorSession) SetParams(eip712SetParams []UnchainedStakingEIP712SetParams, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
 	return _UnchainedStaking.Contract.SetParams(&_UnchainedStaking.TransactOpts, eip712SetParams, signatures)
 }
@@ -1066,23 +1106,23 @@ func (_UnchainedStaking *UnchainedStakingTransactorSession) TransferIn(amount *b
 	return _UnchainedStaking.Contract.TransferIn(&_UnchainedStaking.TransactOpts, amount)
 }
 
-// TransferOut is a paid mutator transaction binding the contract method 0x6a340cc5.
+// TransferOut is a paid mutator transaction binding the contract method 0xa4722ded.
 //
-// Solidity: function transferOut((address,address,address,uint256,uint256[])[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
+// Solidity: function transferOut((address,address,address,uint256,uint256[],uint256[],bool)[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
 func (_UnchainedStaking *UnchainedStakingTransactor) TransferOut(opts *bind.TransactOpts, eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
 	return _UnchainedStaking.contract.Transact(opts, "transferOut", eip712Transferes, signatures)
 }
 
-// TransferOut is a paid mutator transaction binding the contract method 0x6a340cc5.
+// TransferOut is a paid mutator transaction binding the contract method 0xa4722ded.
 //
-// Solidity: function transferOut((address,address,address,uint256,uint256[])[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
+// Solidity: function transferOut((address,address,address,uint256,uint256[],uint256[],bool)[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
 func (_UnchainedStaking *UnchainedStakingSession) TransferOut(eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
 	return _UnchainedStaking.Contract.TransferOut(&_UnchainedStaking.TransactOpts, eip712Transferes, signatures)
 }
 
-// TransferOut is a paid mutator transaction binding the contract method 0x6a340cc5.
+// TransferOut is a paid mutator transaction binding the contract method 0xa4722ded.
 //
-// Solidity: function transferOut((address,address,address,uint256,uint256[])[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
+// Solidity: function transferOut((address,address,address,uint256,uint256[],uint256[],bool)[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
 func (_UnchainedStaking *UnchainedStakingTransactorSession) TransferOut(eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
 	return _UnchainedStaking.Contract.TransferOut(&_UnchainedStaking.TransactOpts, eip712Transferes, signatures)
 }
@@ -1762,6 +1802,7 @@ func (it *UnchainedStakingParamsChangedIterator) Close() error {
 type UnchainedStakingParamsChanged struct {
 	Token      common.Address
 	Nft        common.Address
+	NftTracker common.Address
 	Threshold  *big.Int
 	Expiration *big.Int
 	Voted      *big.Int
@@ -1769,9 +1810,9 @@ type UnchainedStakingParamsChanged struct {
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterParamsChanged is a free log retrieval operation binding the contract event 0xcbe90a96ab941d4bcb02f4a5eda44c0ac9b4cbb16bb7d84db6ce65e8a574f029.
+// FilterParamsChanged is a free log retrieval operation binding the contract event 0xcccaeb9d161525e3f31950313467c2e9a945a55a1ff09658479fe753054fafe0.
 //
-// Solidity: event ParamsChanged(address token, address nft, uint256 threshold, uint256 expiration, uint256 voted, uint256 nonce)
+// Solidity: event ParamsChanged(address token, address nft, address nftTracker, uint256 threshold, uint256 expiration, uint256 voted, uint256 nonce)
 func (_UnchainedStaking *UnchainedStakingFilterer) FilterParamsChanged(opts *bind.FilterOpts) (*UnchainedStakingParamsChangedIterator, error) {
 
 	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "ParamsChanged")
@@ -1781,9 +1822,9 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterParamsChanged(opts *bin
 	return &UnchainedStakingParamsChangedIterator{contract: _UnchainedStaking.contract, event: "ParamsChanged", logs: logs, sub: sub}, nil
 }
 
-// WatchParamsChanged is a free log subscription operation binding the contract event 0xcbe90a96ab941d4bcb02f4a5eda44c0ac9b4cbb16bb7d84db6ce65e8a574f029.
+// WatchParamsChanged is a free log subscription operation binding the contract event 0xcccaeb9d161525e3f31950313467c2e9a945a55a1ff09658479fe753054fafe0.
 //
-// Solidity: event ParamsChanged(address token, address nft, uint256 threshold, uint256 expiration, uint256 voted, uint256 nonce)
+// Solidity: event ParamsChanged(address token, address nft, address nftTracker, uint256 threshold, uint256 expiration, uint256 voted, uint256 nonce)
 func (_UnchainedStaking *UnchainedStakingFilterer) WatchParamsChanged(opts *bind.WatchOpts, sink chan<- *UnchainedStakingParamsChanged) (event.Subscription, error) {
 
 	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "ParamsChanged")
@@ -1818,9 +1859,9 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchParamsChanged(opts *bind
 	}), nil
 }
 
-// ParseParamsChanged is a log parse operation binding the contract event 0xcbe90a96ab941d4bcb02f4a5eda44c0ac9b4cbb16bb7d84db6ce65e8a574f029.
+// ParseParamsChanged is a log parse operation binding the contract event 0xcccaeb9d161525e3f31950313467c2e9a945a55a1ff09658479fe753054fafe0.
 //
-// Solidity: event ParamsChanged(address token, address nft, uint256 threshold, uint256 expiration, uint256 voted, uint256 nonce)
+// Solidity: event ParamsChanged(address token, address nft, address nftTracker, uint256 threshold, uint256 expiration, uint256 voted, uint256 nonce)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseParamsChanged(log types.Log) (*UnchainedStakingParamsChanged, error) {
 	event := new(UnchainedStakingParamsChanged)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "ParamsChanged", log); err != nil {
@@ -2444,13 +2485,14 @@ func (it *UnchainedStakingTransferOutIterator) Close() error {
 type UnchainedStakingTransferOut struct {
 	To     common.Address
 	Amount *big.Int
+	NftIds []*big.Int
 	Nonces []*big.Int
 	Raw    types.Log // Blockchain specific contextual infos
 }
 
-// FilterTransferOut is a free log retrieval operation binding the contract event 0xa68a27e36f77abe383c0eef9bf2f0a3bd5b45fccf9c149a130d262c47963e74d.
+// FilterTransferOut is a free log retrieval operation binding the contract event 0xf7ee5f873d6767380fe6374fa9caa8f67304dcb08733c1f474c8f8e0332963d8.
 //
-// Solidity: event TransferOut(address to, uint256 amount, uint256[] nonces)
+// Solidity: event TransferOut(address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
 func (_UnchainedStaking *UnchainedStakingFilterer) FilterTransferOut(opts *bind.FilterOpts) (*UnchainedStakingTransferOutIterator, error) {
 
 	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "TransferOut")
@@ -2460,9 +2502,9 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterTransferOut(opts *bind.
 	return &UnchainedStakingTransferOutIterator{contract: _UnchainedStaking.contract, event: "TransferOut", logs: logs, sub: sub}, nil
 }
 
-// WatchTransferOut is a free log subscription operation binding the contract event 0xa68a27e36f77abe383c0eef9bf2f0a3bd5b45fccf9c149a130d262c47963e74d.
+// WatchTransferOut is a free log subscription operation binding the contract event 0xf7ee5f873d6767380fe6374fa9caa8f67304dcb08733c1f474c8f8e0332963d8.
 //
-// Solidity: event TransferOut(address to, uint256 amount, uint256[] nonces)
+// Solidity: event TransferOut(address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
 func (_UnchainedStaking *UnchainedStakingFilterer) WatchTransferOut(opts *bind.WatchOpts, sink chan<- *UnchainedStakingTransferOut) (event.Subscription, error) {
 
 	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "TransferOut")
@@ -2497,9 +2539,9 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchTransferOut(opts *bind.W
 	}), nil
 }
 
-// ParseTransferOut is a log parse operation binding the contract event 0xa68a27e36f77abe383c0eef9bf2f0a3bd5b45fccf9c149a130d262c47963e74d.
+// ParseTransferOut is a log parse operation binding the contract event 0xf7ee5f873d6767380fe6374fa9caa8f67304dcb08733c1f474c8f8e0332963d8.
 //
-// Solidity: event TransferOut(address to, uint256 amount, uint256[] nonces)
+// Solidity: event TransferOut(address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseTransferOut(log types.Log) (*UnchainedStakingTransferOut, error) {
 	event := new(UnchainedStakingTransferOut)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "TransferOut", log); err != nil {

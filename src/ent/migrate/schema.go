@@ -49,9 +49,9 @@ var (
 		PrimaryKey: []*schema.Column{CorrectnessReportsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "correctnessreport_hash",
+				Name:    "correctnessreport_topic_hash",
 				Unique:  true,
-				Columns: []*schema.Column{CorrectnessReportsColumns[4]},
+				Columns: []*schema.Column{CorrectnessReportsColumns[5], CorrectnessReportsColumns[4]},
 			},
 			{
 				Name:    "correctnessreport_topic_timestamp_hash",
