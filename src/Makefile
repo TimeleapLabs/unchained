@@ -20,3 +20,24 @@ strip:
 
 	find bin -type f -exec chmod u+x {} \;
 
+tools:
+	go mod tidy
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+	  sh -s -- -b $(CURDIR)/bin v1.55.2
+	go get golang.org/x/tools/cmd/goimports
+	go install github.com/kisielk/errcheck@latest
+
+check: errors imports fmt lint
+
+errors:
+	errcheck -ignoretests -blank ./...
+
+lint:
+	$(CURDIR)/bin/golangci-lint run
+
+imports:
+	goimports -l -w .
+
+fmt:
+	go fmt ./...
+
