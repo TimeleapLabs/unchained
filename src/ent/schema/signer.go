@@ -40,6 +40,7 @@ func (Signer) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("assetPrice", AssetPrice.Type).Ref("signers"),
 		edge.From("eventLogs", EventLog.Type).Ref("signers"),
+		edge.From("correctnessReport", CorrectnessReport.Type).Ref("signers"),
 	}
 }
 

@@ -196,10 +196,10 @@ func (crc *CorrectnessReportCreate) createSpec() (*CorrectnessReport, *sqlgraph.
 	}
 	if nodes := crc.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   correctnessreport.SignersTable,
-			Columns: []string{correctnessreport.SignersColumn},
+			Columns: correctnessreport.SignersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),

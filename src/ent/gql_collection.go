@@ -457,6 +457,18 @@ func (s *SignerQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			s.WithNamedEventLogs(alias, func(wq *EventLogQuery) {
 				*wq = *query
 			})
+		case "correctnessreport":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CorrectnessReportClient{config: s.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, mayAddCondition(satisfies, correctnessreportImplementors)...); err != nil {
+				return err
+			}
+			s.WithNamedCorrectnessReport(alias, func(wq *CorrectnessReportQuery) {
+				*wq = *query
+			})
 		case "name":
 			if _, ok := fieldSeen[signer.FieldName]; !ok {
 				selectedFields = append(selectedFields, signer.FieldName)

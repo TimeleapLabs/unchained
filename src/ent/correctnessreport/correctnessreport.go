@@ -28,13 +28,11 @@ const (
 	EdgeSigners = "signers"
 	// Table holds the table name of the correctnessreport in the database.
 	Table = "correctness_reports"
-	// SignersTable is the table that holds the signers relation/edge.
-	SignersTable = "signers"
+	// SignersTable is the table that holds the signers relation/edge. The primary key declared below.
+	SignersTable = "correctness_report_signers"
 	// SignersInverseTable is the table name for the Signer entity.
 	// It exists in this package in order to avoid circular dependency with the "signer" package.
 	SignersInverseTable = "signers"
-	// SignersColumn is the table column denoting the signers relation/edge.
-	SignersColumn = "correctness_report_signers"
 )
 
 // Columns holds all SQL columns for correctnessreport fields.
@@ -47,6 +45,12 @@ var Columns = []string{
 	FieldTopic,
 	FieldCorrect,
 }
+
+var (
+	// SignersPrimaryKey and SignersColumn2 are the table columns denoting the
+	// primary key for the signers relation (M2M).
+	SignersPrimaryKey = []string{"correctness_report_id", "signer_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -107,6 +111,6 @@ func newSignersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SignersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, SignersTable, SignersColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, SignersTable, SignersPrimaryKey...),
 	)
 }

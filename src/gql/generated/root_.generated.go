@@ -140,14 +140,15 @@ type ComplexityRoot struct {
 	}
 
 	Signer struct {
-		AssetPrice func(childComplexity int) int
-		EventLogs  func(childComplexity int) int
-		Evm        func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Key        func(childComplexity int) int
-		Name       func(childComplexity int) int
-		Points     func(childComplexity int) int
-		Shortkey   func(childComplexity int) int
+		AssetPrice        func(childComplexity int) int
+		CorrectnessReport func(childComplexity int) int
+		EventLogs         func(childComplexity int) int
+		Evm               func(childComplexity int) int
+		ID                func(childComplexity int) int
+		Key               func(childComplexity int) int
+		Name              func(childComplexity int) int
+		Points            func(childComplexity int) int
+		Shortkey          func(childComplexity int) int
 	}
 }
 
@@ -579,6 +580,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Signer.AssetPrice(childComplexity), true
+
+	case "Signer.correctnessreport":
+		if e.complexity.Signer.CorrectnessReport == nil {
+			break
+		}
+
+		return e.complexity.Signer.CorrectnessReport(childComplexity), true
 
 	case "Signer.eventlogs":
 		if e.complexity.Signer.EventLogs == nil {
@@ -1370,6 +1378,7 @@ type Signer implements Node {
   points: Int!
   assetprice: [AssetPrice!] @goField(name: "AssetPrice", forceResolver: false)
   eventlogs: [EventLog!] @goField(name: "EventLogs", forceResolver: false)
+  correctnessreport: [CorrectnessReport!] @goField(name: "CorrectnessReport", forceResolver: false)
 }
 """
 SignerWhereInput is used for filtering Signer objects.
@@ -1445,6 +1454,11 @@ input SignerWhereInput {
   """
   hasEventLogs: Boolean
   hasEventLogsWith: [EventLogWhereInput!]
+  """
+  correctnessReport edge predicates
+  """
+  hasCorrectnessReport: Boolean
+  hasCorrectnessReportWith: [CorrectnessReportWhereInput!]
 }
 """
 The builtin Uint type

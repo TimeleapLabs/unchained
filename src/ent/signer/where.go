@@ -384,6 +384,29 @@ func HasEventLogsWith(preds ...predicate.EventLog) predicate.Signer {
 	})
 }
 
+// HasCorrectnessReport applies the HasEdge predicate on the "correctnessReport" edge.
+func HasCorrectnessReport() predicate.Signer {
+	return predicate.Signer(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CorrectnessReportTable, CorrectnessReportPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCorrectnessReportWith applies the HasEdge predicate on the "correctnessReport" edge with a given conditions (other predicates).
+func HasCorrectnessReportWith(preds ...predicate.CorrectnessReport) predicate.Signer {
+	return predicate.Signer(func(s *sql.Selector) {
+		step := newCorrectnessReportStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Signer) predicate.Signer {
 	return predicate.Signer(sql.AndPredicates(predicates...))
