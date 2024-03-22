@@ -425,8 +425,8 @@ func processCorrectnessRecord(conn *websocket.Conn, messageType int, payload []b
 	}
 
 	ok, _ := bls.Verify(signature, hash, pk)
-
 	message := []byte("signature.invalid")
+
 	if ok {
 		message = []byte("signature.accepted")
 		broadcastPacket := datasets.BroadcastCorrectnessPacket{
@@ -447,7 +447,7 @@ func processCorrectnessRecord(conn *websocket.Conn, messageType int, payload []b
 			// TODO: Safe to use 'go' here?
 			consumer.Broadcast(
 				append(
-					[]byte{opcodes.EventLogBroadcast},
+					[]byte{opcodes.CorrectnessReportBroadcast},
 					broadcastPayload...,
 				))
 		}
