@@ -36,7 +36,7 @@ jobs:
           files: ./src/bin/*
           name: Unchained ${{ github.ref_name}}
           tag_name: ${{ github.ref_name }}
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
 
   push-store-image:
     needs: build
@@ -69,8 +69,10 @@ jobs:
       - name: Get Docker Tag
         id: docker-tag
         run: |
-          if echo "${{ steps.package-version.outputs.current-version }}" | grep -q rc; then \
-            echo "docker-tag=rc" >> $GITHUB_OUTPUT; \
+          if echo "${{ steps.package-version.outputs.current-version }}" | grep -q alpha; then \
+            echo "docker-tag=alpha" >> $GITHUB_OUTPUT; \
+          elif echo "${{ steps.package-version.outputs.current-version }}" | grep -q beta; then \
+            echo "docker-tag=beta" >> $GITHUB_OUTPUT; \
           else echo "docker-tag=latest" >> $GITHUB_OUTPUT; fi;
 
       - name: Build and push
