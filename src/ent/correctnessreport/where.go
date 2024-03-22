@@ -298,7 +298,7 @@ func HasSigners() predicate.CorrectnessReport {
 	return predicate.CorrectnessReport(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SignersTable, SignersColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, SignersTable, SignersPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

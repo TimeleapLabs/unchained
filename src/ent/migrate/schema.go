@@ -99,21 +99,12 @@ var (
 		{Name: "key", Type: field.TypeBytes, Unique: true, Size: 96},
 		{Name: "shortkey", Type: field.TypeBytes, Unique: true, Size: 96},
 		{Name: "points", Type: field.TypeInt64},
-		{Name: "correctness_report_signers", Type: field.TypeInt, Nullable: true},
 	}
 	// SignersTable holds the schema information for the "signers" table.
 	SignersTable = &schema.Table{
 		Name:       "signers",
 		Columns:    SignersColumns,
 		PrimaryKey: []*schema.Column{SignersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "signers_correctness_reports_signers",
-				Columns:    []*schema.Column{SignersColumns[6]},
-				RefColumns: []*schema.Column{CorrectnessReportsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "signer_key",
@@ -152,6 +143,31 @@ var (
 			},
 		},
 	}
+	// CorrectnessReportSignersColumns holds the columns for the "correctness_report_signers" table.
+	CorrectnessReportSignersColumns = []*schema.Column{
+		{Name: "correctness_report_id", Type: field.TypeInt},
+		{Name: "signer_id", Type: field.TypeInt},
+	}
+	// CorrectnessReportSignersTable holds the schema information for the "correctness_report_signers" table.
+	CorrectnessReportSignersTable = &schema.Table{
+		Name:       "correctness_report_signers",
+		Columns:    CorrectnessReportSignersColumns,
+		PrimaryKey: []*schema.Column{CorrectnessReportSignersColumns[0], CorrectnessReportSignersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "correctness_report_signers_correctness_report_id",
+				Columns:    []*schema.Column{CorrectnessReportSignersColumns[0]},
+				RefColumns: []*schema.Column{CorrectnessReportsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "correctness_report_signers_signer_id",
+				Columns:    []*schema.Column{CorrectnessReportSignersColumns[1]},
+				RefColumns: []*schema.Column{SignersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// EventLogSignersColumns holds the columns for the "event_log_signers" table.
 	EventLogSignersColumns = []*schema.Column{
 		{Name: "event_log_id", Type: field.TypeInt},
@@ -184,14 +200,16 @@ var (
 		EventLogsTable,
 		SignersTable,
 		AssetPriceSignersTable,
+		CorrectnessReportSignersTable,
 		EventLogSignersTable,
 	}
 )
 
 func init() {
-	SignersTable.ForeignKeys[0].RefTable = CorrectnessReportsTable
 	AssetPriceSignersTable.ForeignKeys[0].RefTable = AssetPricesTable
 	AssetPriceSignersTable.ForeignKeys[1].RefTable = SignersTable
+	CorrectnessReportSignersTable.ForeignKeys[0].RefTable = CorrectnessReportsTable
+	CorrectnessReportSignersTable.ForeignKeys[1].RefTable = SignersTable
 	EventLogSignersTable.ForeignKeys[0].RefTable = EventLogsTable
 	EventLogSignersTable.ForeignKeys[1].RefTable = SignersTable
 }

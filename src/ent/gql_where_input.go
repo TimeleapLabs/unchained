@@ -1156,6 +1156,10 @@ type SignerWhereInput struct {
 	// "eventLogs" edge predicates.
 	HasEventLogs     *bool                 `json:"hasEventLogs,omitempty"`
 	HasEventLogsWith []*EventLogWhereInput `json:"hasEventLogsWith,omitempty"`
+
+	// "correctnessReport" edge predicates.
+	HasCorrectnessReport     *bool                          `json:"hasCorrectnessReport,omitempty"`
+	HasCorrectnessReportWith []*CorrectnessReportWhereInput `json:"hasCorrectnessReportWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1397,6 +1401,24 @@ func (i *SignerWhereInput) P() (predicate.Signer, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, signer.HasEventLogsWith(with...))
+	}
+	if i.HasCorrectnessReport != nil {
+		p := signer.HasCorrectnessReport()
+		if !*i.HasCorrectnessReport {
+			p = signer.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasCorrectnessReportWith) > 0 {
+		with := make([]predicate.CorrectnessReport, 0, len(i.HasCorrectnessReportWith))
+		for _, w := range i.HasCorrectnessReportWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasCorrectnessReportWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, signer.HasCorrectnessReportWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

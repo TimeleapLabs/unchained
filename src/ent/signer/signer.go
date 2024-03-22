@@ -26,6 +26,8 @@ const (
 	EdgeAssetPrice = "assetPrice"
 	// EdgeEventLogs holds the string denoting the eventlogs edge name in mutations.
 	EdgeEventLogs = "eventLogs"
+	// EdgeCorrectnessReport holds the string denoting the correctnessreport edge name in mutations.
+	EdgeCorrectnessReport = "correctnessReport"
 	// Table holds the table name of the signer in the database.
 	Table = "signers"
 	// AssetPriceTable is the table that holds the assetPrice relation/edge. The primary key declared below.
@@ -38,6 +40,11 @@ const (
 	// EventLogsInverseTable is the table name for the EventLog entity.
 	// It exists in this package in order to avoid circular dependency with the "eventlog" package.
 	EventLogsInverseTable = "event_logs"
+	// CorrectnessReportTable is the table that holds the correctnessReport relation/edge. The primary key declared below.
+	CorrectnessReportTable = "correctness_report_signers"
+	// CorrectnessReportInverseTable is the table name for the CorrectnessReport entity.
+	// It exists in this package in order to avoid circular dependency with the "correctnessreport" package.
+	CorrectnessReportInverseTable = "correctness_reports"
 )
 
 // Columns holds all SQL columns for signer fields.
@@ -50,12 +57,6 @@ var Columns = []string{
 	FieldPoints,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "signers"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"correctness_report_signers",
-}
-
 var (
 	// AssetPricePrimaryKey and AssetPriceColumn2 are the table columns denoting the
 	// primary key for the assetPrice relation (M2M).
@@ -63,17 +64,15 @@ var (
 	// EventLogsPrimaryKey and EventLogsColumn2 are the table columns denoting the
 	// primary key for the eventLogs relation (M2M).
 	EventLogsPrimaryKey = []string{"event_log_id", "signer_id"}
+	// CorrectnessReportPrimaryKey and CorrectnessReportColumn2 are the table columns denoting the
+	// primary key for the correctnessReport relation (M2M).
+	CorrectnessReportPrimaryKey = []string{"correctness_report_id", "signer_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -139,6 +138,20 @@ func ByEventLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newEventLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCorrectnessReportCount orders the results by correctnessReport count.
+func ByCorrectnessReportCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCorrectnessReportStep(), opts...)
+	}
+}
+
+// ByCorrectnessReport orders the results by correctnessReport terms.
+func ByCorrectnessReport(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCorrectnessReportStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAssetPriceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -151,5 +164,12 @@ func newEventLogsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventLogsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, EventLogsTable, EventLogsPrimaryKey...),
+	)
+}
+func newCorrectnessReportStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CorrectnessReportInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, CorrectnessReportTable, CorrectnessReportPrimaryKey...),
 	)
 }

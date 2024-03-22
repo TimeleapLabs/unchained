@@ -494,7 +494,7 @@ func (c *CorrectnessReportClient) QuerySigners(cr *CorrectnessReport) *SignerQue
 		step := sqlgraph.NewStep(
 			sqlgraph.From(correctnessreport.Table, correctnessreport.FieldID, id),
 			sqlgraph.To(signer.Table, signer.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, correctnessreport.SignersTable, correctnessreport.SignersColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, correctnessreport.SignersTable, correctnessreport.SignersPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(cr.driver.Dialect(), step)
 		return fromV, nil
@@ -809,6 +809,22 @@ func (c *SignerClient) QueryEventLogs(s *Signer) *EventLogQuery {
 			sqlgraph.From(signer.Table, signer.FieldID, id),
 			sqlgraph.To(eventlog.Table, eventlog.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, signer.EventLogsTable, signer.EventLogsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCorrectnessReport queries the correctnessReport edge of a Signer.
+func (c *SignerClient) QueryCorrectnessReport(s *Signer) *CorrectnessReportQuery {
+	query := (&CorrectnessReportClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(signer.Table, signer.FieldID, id),
+			sqlgraph.To(correctnessreport.Table, correctnessreport.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, signer.CorrectnessReportTable, signer.CorrectnessReportPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil

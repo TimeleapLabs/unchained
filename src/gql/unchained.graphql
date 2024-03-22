@@ -625,6 +625,7 @@ type Signer implements Node {
   points: Int!
   assetprice: [AssetPrice!] @goField(name: "AssetPrice", forceResolver: false)
   eventlogs: [EventLog!] @goField(name: "EventLogs", forceResolver: false)
+  correctnessreport: [CorrectnessReport!] @goField(name: "CorrectnessReport", forceResolver: false)
 }
 """
 SignerWhereInput is used for filtering Signer objects.
@@ -700,6 +701,11 @@ input SignerWhereInput {
   """
   hasEventLogs: Boolean
   hasEventLogsWith: [EventLogWhereInput!]
+  """
+  correctnessReport edge predicates
+  """
+  hasCorrectnessReport: Boolean
+  hasCorrectnessReportWith: [CorrectnessReportWhereInput!]
 }
 """
 The builtin Uint type

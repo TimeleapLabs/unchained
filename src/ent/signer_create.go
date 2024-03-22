@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/signer"
 )
@@ -89,6 +90,21 @@ func (sc *SignerCreate) AddEventLogs(e ...*EventLog) *SignerCreate {
 		ids[i] = e[i].ID
 	}
 	return sc.AddEventLogIDs(ids...)
+}
+
+// AddCorrectnessReportIDs adds the "correctnessReport" edge to the CorrectnessReport entity by IDs.
+func (sc *SignerCreate) AddCorrectnessReportIDs(ids ...int) *SignerCreate {
+	sc.mutation.AddCorrectnessReportIDs(ids...)
+	return sc
+}
+
+// AddCorrectnessReport adds the "correctnessReport" edges to the CorrectnessReport entity.
+func (sc *SignerCreate) AddCorrectnessReport(c ...*CorrectnessReport) *SignerCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return sc.AddCorrectnessReportIDs(ids...)
 }
 
 // Mutation returns the SignerMutation object of the builder.
@@ -224,6 +240,22 @@ func (sc *SignerCreate) createSpec() (*Signer, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.CorrectnessReportIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.CorrectnessReportTable,
+			Columns: signer.CorrectnessReportPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(correctnessreport.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -228,10 +228,10 @@ func (cru *CorrectnessReportUpdate) sqlSave(ctx context.Context) (n int, err err
 	}
 	if cru.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   correctnessreport.SignersTable,
-			Columns: []string{correctnessreport.SignersColumn},
+			Columns: correctnessreport.SignersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
@@ -241,10 +241,10 @@ func (cru *CorrectnessReportUpdate) sqlSave(ctx context.Context) (n int, err err
 	}
 	if nodes := cru.mutation.RemovedSignersIDs(); len(nodes) > 0 && !cru.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   correctnessreport.SignersTable,
-			Columns: []string{correctnessreport.SignersColumn},
+			Columns: correctnessreport.SignersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
@@ -257,10 +257,10 @@ func (cru *CorrectnessReportUpdate) sqlSave(ctx context.Context) (n int, err err
 	}
 	if nodes := cru.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   correctnessreport.SignersTable,
-			Columns: []string{correctnessreport.SignersColumn},
+			Columns: correctnessreport.SignersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
@@ -521,10 +521,10 @@ func (cruo *CorrectnessReportUpdateOne) sqlSave(ctx context.Context) (_node *Cor
 	}
 	if cruo.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   correctnessreport.SignersTable,
-			Columns: []string{correctnessreport.SignersColumn},
+			Columns: correctnessreport.SignersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
@@ -534,10 +534,10 @@ func (cruo *CorrectnessReportUpdateOne) sqlSave(ctx context.Context) (_node *Cor
 	}
 	if nodes := cruo.mutation.RemovedSignersIDs(); len(nodes) > 0 && !cruo.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   correctnessreport.SignersTable,
-			Columns: []string{correctnessreport.SignersColumn},
+			Columns: correctnessreport.SignersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
@@ -550,10 +550,10 @@ func (cruo *CorrectnessReportUpdateOne) sqlSave(ctx context.Context) (_node *Cor
 	}
 	if nodes := cruo.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   correctnessreport.SignersTable,
-			Columns: []string{correctnessreport.SignersColumn},
+			Columns: correctnessreport.SignersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(signer.FieldID, field.TypeInt),
