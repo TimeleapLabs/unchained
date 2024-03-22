@@ -33,10 +33,11 @@ errors:
 	errcheck -ignoretests -blank ./...
 
 lint:
-	$(CURDIR)/bin/golangci-lint run --fix
+	$(CURDIR)/bin/golangci-lint run
 
 imports:
 	goimports -l -w .
 
 fmt:
 	go fmt ./...
+
