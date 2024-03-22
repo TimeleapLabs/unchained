@@ -57,6 +57,13 @@ type AssetPriceWhereInputResolver interface {
 	PriceLt(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 	PriceLte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 }
+type CorrectnessReportWhereInputResolver interface {
+	Topic(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
+	Hash(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
+}
+type SignerWhereInputResolver interface {
+	Key(ctx context.Context, obj *ent.SignerWhereInput, data *string) error
+}
 
 // endregion ************************** generated!.gotpl **************************
 
@@ -4020,7 +4027,7 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "timestamp", "timestampNEQ", "timestampIn", "timestampNotIn", "timestampGT", "timestampGTE", "timestampLT", "timestampLTE", "correct", "correctNEQ", "hasSigners", "hasSignersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "timestamp", "timestampNEQ", "timestampIn", "timestampNotIn", "timestampGT", "timestampGTE", "timestampLT", "timestampLTE", "correct", "correctNEQ", "hasSigners", "hasSignersWith", "topic", "hash"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4244,6 +4251,24 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 				return it, err
 			}
 			it.HasSignersWith = data
+		case "topic":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().Topic(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "hash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().Hash(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -4847,7 +4872,7 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "evm", "evmNEQ", "evmIn", "evmNotIn", "evmGT", "evmGTE", "evmLT", "evmLTE", "evmContains", "evmHasPrefix", "evmHasSuffix", "evmIsNil", "evmNotNil", "evmEqualFold", "evmContainsFold", "points", "pointsNEQ", "pointsIn", "pointsNotIn", "pointsGT", "pointsGTE", "pointsLT", "pointsLTE", "hasAssetPrice", "hasAssetPriceWith", "hasEventLogs", "hasEventLogsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "evm", "evmNEQ", "evmIn", "evmNotIn", "evmGT", "evmGTE", "evmLT", "evmLTE", "evmContains", "evmHasPrefix", "evmHasSuffix", "evmIsNil", "evmNotNil", "evmEqualFold", "evmContainsFold", "points", "pointsNEQ", "pointsIn", "pointsNotIn", "pointsGT", "pointsGTE", "pointsLT", "pointsLTE", "hasAssetPrice", "hasAssetPriceWith", "hasEventLogs", "hasEventLogsWith", "key"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5211,6 +5236,15 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.HasEventLogsWith = data
+		case "key":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.SignerWhereInput().Key(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 

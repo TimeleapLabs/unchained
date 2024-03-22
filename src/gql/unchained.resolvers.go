@@ -171,9 +171,21 @@ func (r *Resolver) AssetPriceWhereInput() generated.AssetPriceWhereInputResolver
 	return &assetPriceWhereInputResolver{r}
 }
 
+// CorrectnessReportWhereInput returns generated.CorrectnessReportWhereInputResolver implementation.
+func (r *Resolver) CorrectnessReportWhereInput() generated.CorrectnessReportWhereInputResolver {
+	return &correctnessReportWhereInputResolver{r}
+}
+
+// SignerWhereInput returns generated.SignerWhereInputResolver implementation.
+func (r *Resolver) SignerWhereInput() generated.SignerWhereInputResolver {
+	return &signerWhereInputResolver{r}
+}
+
 type assetPriceResolver struct{ *Resolver }
 type correctnessReportResolver struct{ *Resolver }
 type eventLogResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type signerResolver struct{ *Resolver }
 type assetPriceWhereInputResolver struct{ *Resolver }
+type correctnessReportWhereInputResolver struct{ *Resolver }
+type signerWhereInputResolver struct{ *Resolver }
