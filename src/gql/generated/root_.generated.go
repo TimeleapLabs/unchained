@@ -41,6 +41,8 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Signer() SignerResolver
 	AssetPriceWhereInput() AssetPriceWhereInputResolver
+	CorrectnessReportWhereInput() CorrectnessReportWhereInputResolver
+	SignerWhereInput() SignerWhereInputResolver
 }
 
 type DirectiveRoot struct {
@@ -730,6 +732,15 @@ scalar Bytes
 type EventLogArg {
   name: String!
   value: String!
+}
+`, BuiltIn: false},
+	{Name: "../extensions.graphql", Input: `extend input SignerWhereInput {
+  key: String
+}
+
+extend input CorrectnessReportWhereInput {
+  topic: String
+  hash: String
 }
 `, BuiltIn: false},
 	{Name: "../unchained.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
