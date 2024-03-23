@@ -19,24 +19,22 @@ func newDebounceContext[KeyType comparable, ArgType any]() *debounceContext[KeyT
 func Debounce[KeyType comparable, ArgType any](
 	wait time.Duration, function func(ArgType)) func(key KeyType, arg ArgType) {
 
-	context := newDebounceContext[KeyType, ArgType]()
+	debounce := newDebounceContext[KeyType, ArgType]()
 
 	return func(key KeyType, arg ArgType) {
-		context.Lock()
-		defer context.Unlock()
+		debounce.Lock()
+		defer debounce.Unlock()
 
-		if timer, found := context.timers[key]; found {
+		if timer, found := debounce.timers[key]; found {
 			timer.Stop()
 		}
 
-		context.timers[key] = time.AfterFunc(wait, func() {
-			context.Lock()
-			delete(context.timers, key)
+		debounce.timers[key] = time.AfterFunc(wait, func() {
+			debounce.Lock()
+			defer debounce.Unlock()
 
-			go func() {
-				defer context.Unlock()
-				function(arg)
-			}()
+			delete(debounce.timers, key)
+			function(arg)
 		})
 	}
 }

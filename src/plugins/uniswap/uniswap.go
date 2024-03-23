@@ -112,9 +112,6 @@ func RecordSignature(
 		}
 	}
 
-	signatureMutex.Lock()
-	defer signatureMutex.Unlock()
-
 	if !consensus.Contains(info.Asset) {
 		consensus.Add(info.Asset, *xsync.NewMapOf[bls12381.G1Affine, big.Int]())
 	}
@@ -149,6 +146,7 @@ func RecordSignature(
 		return isMajority
 	})
 
+	signatureMutex.Lock()
 	cached, _ := signatureCache.Get(hash)
 
 	packed := bls.Signature{
@@ -169,26 +167,27 @@ func RecordSignature(
 	reportedValues.Store(hash, *totalVoted)
 	cached = append(cached, packed)
 	signatureCache.Add(hash, cached)
+	signatureMutex.Unlock()
 
 	if isMajority {
+		reportLog := log.Logger.
+			With("Block", info.Asset.Block).
+			With("Price", info.Price.String()).
+			With("Token", info.Asset.Token.Name)
+
+		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+			reportLog = reportLog.With(
+				fmt.Sprintf("%x", hash.Bytes())[:8],
+				value.String(),
+			)
+			return true
+		})
+
+		reportLog.
+			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+			Debug("Values")
+
 		if debounce {
-			reportLog := log.Logger.
-				With("Block", info.Asset.Block).
-				With("Price", info.Price.String()).
-				With("Token", info.Asset.Token.Name)
-
-			reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
-				reportLog = reportLog.With(
-					fmt.Sprintf("%x", hash.Bytes())[:8],
-					value.String(),
-				)
-				return true
-			})
-
-			reportLog.
-				With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
-				Debug("Values")
-
 			DebouncedSaveSignatures(
 				info.Asset,
 				SaveSignatureArgs{Hash: hash, Info: info},
@@ -258,6 +257,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	if err != nil {
 		log.Logger.
+			With("Error", err).
 			With("Block", args.Info.Asset.Block).
 			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
 			Debug("Failed to upsert token signers.")
