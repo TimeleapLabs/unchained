@@ -10,21 +10,22 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/ethereum/contracts"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/puzpuzpuz/xsync/v3"
 )
 
 var posContract *contracts.UnchainedStaking
-var votingPowers map[[20]byte]*big.Int
-var stakes map[[20]byte]contracts.UnchainedStakingStake
+var votingPowers *xsync.MapOf[[20]byte, *big.Int]
+var stakes *xsync.MapOf[[20]byte, contracts.UnchainedStakingStake]
 
 func GetTotalVotingPower() (*big.Int, error) {
 	return posContract.GetTotalVotingPower(nil)
 }
 
 func GetStake(address [20]byte, block *big.Int) (*big.Int, error) {
-	cachedStake, ok := stakes[address]
+	cachedStake, ok := stakes.Load(address)
 
 	if ok && cachedStake.Unlock.Cmp(block) >= 0 {
-		cachedPower, ok := votingPowers[address]
+		cachedPower, ok := votingPowers.Load(address)
 
 		if ok {
 			return cachedPower, nil
@@ -40,13 +41,13 @@ func GetStake(address [20]byte, block *big.Int) (*big.Int, error) {
 			stake.Unlock = new(big.Int).Add(block, big.NewInt(25000))
 		}
 
-		stakes[address] = stake
+		stakes.Store(address, stake)
 	}
 
 	votingPower, err := posContract.GetVotingPower0(nil, address)
 
 	if err != nil {
-		votingPowers[address] = votingPower
+		votingPowers.Store(address, votingPower)
 	}
 
 	return votingPower, err
@@ -65,7 +66,7 @@ func maxBase(power *big.Int) *big.Int {
 
 func GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
 
-	if votingPower, ok := votingPowers[address]; ok {
+	if votingPower, ok := votingPowers.Load(address); ok {
 		return maxBase(votingPower), nil
 	}
 
@@ -145,6 +146,6 @@ func Start() {
 }
 
 func init() {
-	votingPowers = make(map[[20]byte]*big.Int)
-	stakes = make(map[[20]byte]contracts.UnchainedStakingStake)
+	votingPowers = xsync.NewMapOf[[20]byte, *big.Int]()
+	stakes = xsync.NewMapOf[[20]byte, contracts.UnchainedStakingStake]()
 }
