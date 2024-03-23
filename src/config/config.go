@@ -16,7 +16,7 @@ func defaults() {
 	Config.SetDefault("broker.uri", "wss://shinobi.brokers.kenshi.io")
 	Config.SetDefault("pos.chain", "arbitrum_sepolia")
 	Config.SetDefault("pos.address", "0x965e364987356785b7E89e2Fe7B70f5E5107332d")
-	Config.SetDefault("pos.base", "1")
+	Config.SetDefault("pos.base", int64(1))
 }
 
 var Config *viper.Viper

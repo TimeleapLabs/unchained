@@ -10,79 +10,58 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/ethereum/contracts"
 	"github.com/KenshiTech/unchained/log"
-	"github.com/puzpuzpuz/xsync/v3"
 )
 
 var posContract *contracts.UnchainedStaking
-var votingPowers *xsync.MapOf[[20]byte, *big.Int]
-var stakes *xsync.MapOf[[20]byte, contracts.UnchainedStakingStake]
+var votingPowers map[[20]byte]*big.Int
+var lastUpdated map[[20]byte]*big.Int
+var base *big.Int
 
 func GetTotalVotingPower() (*big.Int, error) {
 	return posContract.GetTotalVotingPower(nil)
 }
 
-func GetStake(address [20]byte, block *big.Int) (*big.Int, error) {
-	cachedStake, ok := stakes.Load(address)
-
-	if ok && cachedStake.Unlock.Cmp(block) >= 0 {
-		cachedPower, ok := votingPowers.Load(address)
-
-		if ok {
-			return cachedPower, nil
-		}
-	}
-
-	stake, err := posContract.GetStake0(nil, address)
+func GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error) {
+	votingPower, err := posContract.GetVotingPower(nil, address)
 
 	if err == nil {
-		if stake.Amount.Cmp(big.NewInt(0)) == 0 {
-			// TODO: we should listen to stake changed events
-			// TODO: and update stakes accordingly
-			stake.Unlock = new(big.Int).Add(block, big.NewInt(25000))
-		}
-
-		stakes.Store(address, stake)
-	}
-
-	votingPower, err := posContract.GetVotingPower0(nil, address)
-
-	if err != nil {
-		votingPowers.Store(address, votingPower)
+		votingPowers[address] = votingPower
+		lastUpdated[address] = block
 	}
 
 	return votingPower, err
 }
 
-func maxBase(power *big.Int) *big.Int {
-	base := config.Config.GetUint64("pos.base")
-	baseBig := big.NewInt(int64(base))
-
-	if power.Cmp(baseBig) < 0 {
-		return baseBig
+func minBase(power *big.Int) *big.Int {
+	if power == nil || power.Cmp(base) < 0 {
+		return base
 	}
 
 	return power
 }
 
 func GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
+	powerLastUpdated, ok := lastUpdated[address]
 
-	if votingPower, ok := votingPowers.Load(address); ok {
-		return maxBase(votingPower), nil
+	if !ok {
+		powerLastUpdated = big.NewInt(0)
 	}
 
-	votingPower, err := GetStake(address, block)
+	updateAt := new(big.Int).Add(powerLastUpdated, big.NewInt(25000))
 
-	if err != nil {
-		return nil, err
+	if block.Cmp(updateAt) > 0 {
+		votingPower, err := GetVotingPowerFromContract(address, block)
+		return minBase(votingPower), err
 	}
 
-	return maxBase(votingPower), nil
+	if votingPower, ok := votingPowers[address]; ok {
+		return minBase(votingPower), nil
+	}
+
+	return base, nil
 }
 
-func GetVotingPowerOfPublicKey(
-	pkBytes [96]byte,
-	block *big.Int,
-) (*big.Int, error) {
+func GetVotingPowerOfPublicKey(pkBytes [96]byte, block *big.Int) (*big.Int, error) {
 	_, addrHex := address.CalculateHex(pkBytes[:])
 	return GetVotingPower(addrHex, block)
 }
@@ -95,6 +74,8 @@ func VotingPowerToFloat(power *big.Int) *big.Float {
 }
 
 func Start() {
+
+	base = big.NewInt(config.Config.GetInt64("pos.base"))
 
 	pkBytes := bls.ClientPublicKey.Bytes()
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
@@ -146,6 +127,6 @@ func Start() {
 }
 
 func init() {
-	votingPowers = xsync.NewMapOf[[20]byte, *big.Int]()
-	stakes = xsync.NewMapOf[[20]byte, contracts.UnchainedStakingStake]()
+	votingPowers = make(map[[20]byte]*big.Int)
+	lastUpdated = make(map[[20]byte]*big.Int)
 }
