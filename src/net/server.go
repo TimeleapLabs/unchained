@@ -278,7 +278,7 @@ func processPriceReport(conn *websocket.Conn, messageType int, payload []byte) e
 				Error("Cannot marshal the broadcast packet")
 		} else {
 			// TODO: Safe to use 'go' here?
-			consumer.Broadcast(
+			go consumer.Broadcast(
 				append(
 					[]byte{opcodes.PriceReportBroadcast},
 					broadcastPayload...,
@@ -362,7 +362,7 @@ func processEventLog(conn *websocket.Conn, messageType int, payload []byte) erro
 				Error("Cannot marshal the broadcast packet")
 		} else {
 			// TODO: Safe to use 'go' here?
-			consumer.Broadcast(
+			go consumer.Broadcast(
 				append(
 					[]byte{opcodes.EventLogBroadcast},
 					broadcastPayload...,
@@ -445,7 +445,7 @@ func processCorrectnessRecord(conn *websocket.Conn, messageType int, payload []b
 				Error("Cannot marshal the broadcast packet")
 		} else {
 			// TODO: Safe to use 'go' here?
-			consumer.Broadcast(
+			go consumer.Broadcast(
 				append(
 					[]byte{opcodes.CorrectnessReportBroadcast},
 					broadcastPayload...,
