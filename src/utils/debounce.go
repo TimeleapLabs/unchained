@@ -33,9 +33,9 @@ func Debounce[KeyType comparable, ArgType any](
 			debounce.Lock()
 
 			go func() {
+				defer debounce.Unlock()
 				delete(debounce.timers, key)
 				function(arg)
-				debounce.Unlock()
 			}()
 		})
 	}
