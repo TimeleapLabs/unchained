@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -31,7 +32,8 @@ func (Signer) Fields() []ent.Field {
 			Unique().
 			NotEmpty().
 			Annotations(entgql.Type("Bytes")),
-		field.Int64("points"),
+		field.Int64("points").
+			Annotations(entgql.OrderField("POINTS")),
 	}
 }
 
@@ -51,5 +53,12 @@ func (Signer) Indexes() []ent.Index {
 			Unique(),
 		index.Fields("shortkey").
 			Unique(),
+	}
+}
+
+func (Signer) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField(),
 	}
 }

@@ -67,6 +67,39 @@ var crossPrices map[string]big.Int
 var crossTokens map[string]datasets.TokenKey
 var lastPrice big.Int
 
+func CheckAndCacheSignature(
+	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int],
+	signature bls12381.G1Affine, signer bls.Signer,
+	hash bls12381.G1Affine,
+	totalVoted *big.Int) error {
+
+	signatureMutex.Lock()
+	defer signatureMutex.Unlock()
+
+	cached, _ := signatureCache.Get(hash)
+
+	packed := bls.Signature{
+		Signature: signature,
+		Signer:    signer,
+		Processed: false,
+	}
+
+	for _, item := range cached {
+		if item.Signer.PublicKey == signer.PublicKey {
+			log.Logger.
+				With("Address", address.Calculate(signer.PublicKey[:])).
+				Debug("Duplicated signature")
+			return fmt.Errorf("duplicated signature")
+		}
+	}
+
+	reportedValues.Store(hash, *totalVoted)
+	cached = append(cached, packed)
+	signatureCache.Add(hash, cached)
+
+	return nil
+}
+
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func RecordSignature(
@@ -112,9 +145,6 @@ func RecordSignature(
 		}
 	}
 
-	signatureMutex.Lock()
-	defer signatureMutex.Unlock()
-
 	if !consensus.Contains(info.Asset) {
 		consensus.Add(info.Asset, *xsync.NewMapOf[bls12381.G1Affine, big.Int]())
 	}
@@ -149,46 +179,31 @@ func RecordSignature(
 		return isMajority
 	})
 
-	cached, _ := signatureCache.Get(hash)
+	err = CheckAndCacheSignature(&reportedValues, signature, signer, hash, totalVoted)
 
-	packed := bls.Signature{
-		Signature: signature,
-		Signer:    signer,
-		Processed: false,
+	if err != nil {
+		return
 	}
-
-	for _, item := range cached {
-		if item.Signer.PublicKey == signer.PublicKey {
-			log.Logger.
-				With("Address", address.Calculate(signer.PublicKey[:])).
-				Debug("Duplicated signature")
-			return
-		}
-	}
-
-	reportedValues.Store(hash, *totalVoted)
-	cached = append(cached, packed)
-	signatureCache.Add(hash, cached)
 
 	if isMajority {
+		reportLog := log.Logger.
+			With("Block", info.Asset.Block).
+			With("Price", info.Price.String()).
+			With("Token", info.Asset.Token.Name)
+
+		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+			reportLog = reportLog.With(
+				fmt.Sprintf("%x", hash.Bytes())[:8],
+				value.String(),
+			)
+			return true
+		})
+
+		reportLog.
+			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+			Debug("Values")
+
 		if debounce {
-			reportLog := log.Logger.
-				With("Block", info.Asset.Block).
-				With("Price", info.Price.String()).
-				With("Token", info.Asset.Token.Name)
-
-			reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
-				reportLog = reportLog.With(
-					fmt.Sprintf("%x", hash.Bytes())[:8],
-					value.String(),
-				)
-				return true
-			})
-
-			reportLog.
-				With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
-				Debug("Values")
-
 			DebouncedSaveSignatures(
 				info.Asset,
 				SaveSignatureArgs{Hash: hash, Info: info},
@@ -258,6 +273,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	if err != nil {
 		log.Logger.
+			With("Error", err).
 			With("Block", args.Info.Asset.Block).
 			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
 			Debug("Failed to upsert token signers.")
