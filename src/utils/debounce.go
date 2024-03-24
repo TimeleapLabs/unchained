@@ -31,10 +31,12 @@ func Debounce[KeyType comparable, ArgType any](
 
 		debounce.timers[key] = time.AfterFunc(wait, func() {
 			debounce.Lock()
-			defer debounce.Unlock()
 
-			delete(debounce.timers, key)
-			function(arg)
+			go func() {
+				delete(debounce.timers, key)
+				function(arg)
+				debounce.Unlock()
+			}()
 		})
 	}
 }
