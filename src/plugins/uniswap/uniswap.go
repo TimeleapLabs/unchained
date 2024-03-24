@@ -67,6 +67,39 @@ var crossPrices map[string]big.Int
 var crossTokens map[string]datasets.TokenKey
 var lastPrice big.Int
 
+func CheckAndCacheSignature(
+	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int],
+	signature bls12381.G1Affine, signer bls.Signer,
+	hash bls12381.G1Affine,
+	totalVoted *big.Int) error {
+
+	signatureMutex.Lock()
+	defer signatureMutex.Unlock()
+
+	cached, _ := signatureCache.Get(hash)
+
+	packed := bls.Signature{
+		Signature: signature,
+		Signer:    signer,
+		Processed: false,
+	}
+
+	for _, item := range cached {
+		if item.Signer.PublicKey == signer.PublicKey {
+			log.Logger.
+				With("Address", address.Calculate(signer.PublicKey[:])).
+				Debug("Duplicated signature")
+			return fmt.Errorf("duplicated signature")
+		}
+	}
+
+	reportedValues.Store(hash, *totalVoted)
+	cached = append(cached, packed)
+	signatureCache.Add(hash, cached)
+
+	return nil
+}
+
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func RecordSignature(
@@ -146,28 +179,11 @@ func RecordSignature(
 		return isMajority
 	})
 
-	signatureMutex.Lock()
-	cached, _ := signatureCache.Get(hash)
+	err = CheckAndCacheSignature(&reportedValues, signature, signer, hash, totalVoted)
 
-	packed := bls.Signature{
-		Signature: signature,
-		Signer:    signer,
-		Processed: false,
+	if err != nil {
+		return
 	}
-
-	for _, item := range cached {
-		if item.Signer.PublicKey == signer.PublicKey {
-			log.Logger.
-				With("Address", address.Calculate(signer.PublicKey[:])).
-				Debug("Duplicated signature")
-			return
-		}
-	}
-
-	reportedValues.Store(hash, *totalVoted)
-	cached = append(cached, packed)
-	signatureCache.Add(hash, cached)
-	signatureMutex.Unlock()
 
 	if isMajority {
 		reportLog := log.Logger.
