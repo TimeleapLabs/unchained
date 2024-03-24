@@ -18,7 +18,6 @@ func newDebounceContext[KeyType comparable, ArgType any]() *debounceContext[KeyT
 
 func Debounce[KeyType comparable, ArgType any](
 	wait time.Duration, function func(ArgType)) func(key KeyType, arg ArgType) {
-
 	context := newDebounceContext[KeyType, ArgType]()
 
 	return func(key KeyType, arg ArgType) {

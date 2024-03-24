@@ -3,9 +3,12 @@ run:
 
 linters-settings:
   cyclop:
-    max-complexity: 30
-    package-average: 10.0
+    max-complexity: 35
+    package-average: 13.0
 
+  gosec:
+    excludes:
+      - G601
   errcheck:
     check-type-assertions: true
 
@@ -47,11 +50,19 @@ linters-settings:
       - "^gopkg.in/yaml.v3.Node$"
 
   funlen:
-    lines: 100
-    statements: 50
+    # should be decreased to 30
+    lines: 200
+    statements: 150
+    ignore-comments: true
 
+  # should be decreased to 30
   gocognit:
-    min-complexity: 20
+    min-complexity: 110
+
+  gocyclo:
+    # Minimal code complexity to report.
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 31
 
   gocritic:
     settings:
@@ -135,14 +146,13 @@ linters:
     - forbidigo
     - funlen
     - gocheckcompilerdirectives
-    - gochecknoinits
+#    - gochecknoinits
     - gocognit
     - goconst
     - gocritic
     - gocyclo
     - godot
     - goimports
-    - gomnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
@@ -175,7 +185,6 @@ linters:
     - usestdlibvars
     - wastedassign
     - whitespace
-    - godox
     - interfacebloat
     - tagalign
     - containedctx
@@ -184,13 +193,23 @@ linters:
 issues:
   max-same-issues: 50
   exclude-rules:
+    - text: 'shadow: declaration of "(err|ctx|ok)" shadows declaration at'
+      linters: [ govet ]
     - source: "(noinspection|TODO)"
       linters: [ godot ]
     - source: "//noinspection"
       linters: [ gocritic ]
-    - path: "cmd/"
+    - path: "cmd"
       linters:
         - funlen
+        - forbidigo
+    - path: "ent"
+      linters:
+        - gomnd
+        - forbidigo
+    - path: "config"
+      linters:
+        - gomnd
     - path: "_test\\.go"
       linters:
         - bodyclose

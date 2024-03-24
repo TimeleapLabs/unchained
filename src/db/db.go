@@ -6,22 +6,19 @@ import (
 
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ent"
-
-	_ "github.com/lib/pq"
 )
 
 var dbClient *ent.Client
 
 func Start() {
-
 	if !config.Config.IsSet("database.url") {
 		return
 	}
 
 	var err error
 
-	dbUrl := config.Config.GetString("database.url")
-	dbClient, err = ent.Open("postgres", dbUrl)
+	dbURL := config.Config.GetString("database.url")
+	dbClient, err = ent.Open("postgres", dbURL)
 
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
@@ -32,7 +29,6 @@ func Start() {
 	}
 
 	// TODO: Properly close the conn
-
 }
 
 func GetClient() *ent.Client {

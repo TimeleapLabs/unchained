@@ -7,7 +7,6 @@ import (
 	"github.com/puzpuzpuz/xsync/v3"
 )
 
-// TODO: Do consumers need KOSK?
 var Consumers *xsync.MapOf[*websocket.Conn, bool]
 var BroadcastMutex *xsync.MapOf[*websocket.Conn, *sync.Mutex]
 
