@@ -37,7 +37,8 @@ func GetStake(address [20]byte, block *big.Int) (*big.Int, error) {
 		if stake.Amount.Cmp(big.NewInt(0)) == 0 {
 			// TODO: we should listen to stake changed events
 			// TODO: and update stakes accordingly
-			stake.Unlock = new(big.Int).Add(block, big.NewInt(25000))
+			const numOfBlocks int64 = 25000
+			stake.Unlock = new(big.Int).Add(block, big.NewInt(numOfBlocks))
 		}
 
 		stakes[address] = stake
@@ -64,7 +65,6 @@ func maxBase(power *big.Int) *big.Int {
 }
 
 func GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
-
 	if votingPower, ok := votingPowers[address]; ok {
 		return maxBase(votingPower), nil
 	}
@@ -94,7 +94,6 @@ func VotingPowerToFloat(power *big.Int) *big.Float {
 }
 
 func Start() {
-
 	pkBytes := bls.ClientPublicKey.Bytes()
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 

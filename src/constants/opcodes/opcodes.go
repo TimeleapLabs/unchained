@@ -1,22 +1,25 @@
 package opcodes
 
 // TODO: Should we have a Data opcode instead of PriceReport & EventLog?
+
+type OpCode byte
+
 const (
-	Hello = iota
-	KoskChallenge
-	KoskResult
+	Hello         OpCode = iota
+	KoskChallenge OpCode = 1
+	KoskResult    OpCode = 2
 
-	RegisterConsumer
+	RegisterConsumer OpCode = 3
 
-	Feedback
-	Error
+	Feedback OpCode = 4
+	Error    OpCode = 5
 
-	PriceReport
-	PriceReportBroadcast
+	PriceReport          OpCode = 6
+	PriceReportBroadcast OpCode = 7
 
-	EventLog
-	EventLogBroadcast
+	EventLog          OpCode = 8
+	EventLogBroadcast OpCode = 9
 
-	CorrectnessReport
-	CorrectnessReportBroadcast
+	CorrectnessReport          OpCode = 10
+	CorrectnessReportBroadcast OpCode = 11
 )

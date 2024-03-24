@@ -30,7 +30,7 @@ tools:
 check: errors imports fmt lint
 
 errors:
-	errcheck -ignoretests -blank ./...
+	errcheck -ignoretests -ignoregenerated -blank ./...
 
 lint:
 	$(CURDIR)/bin/golangci-lint run
