@@ -95,8 +95,6 @@ func Start() {
 		With("Hex", addr.Hex()).
 		Info("Unchained")
 
-	var err error
-
 	posContract, err = ethereum.GetNewStakingContract(
 		config.Config.GetString("pos.chain"),
 		config.Config.GetString("pos.address"),
