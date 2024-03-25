@@ -26,8 +26,8 @@ func (bytes *Bytes) UnmarshalGQL(v interface{}) error {
 
 // MarshalGQL implements the graphql.Marshaler interface.
 func (bytes Bytes) MarshalGQL(w io.Writer) {
-	_hex := fmt.Sprintf(`"%x"`, bytes)
-	_, err := w.Write([]byte(_hex))
+	hexValue := fmt.Sprintf(`"%x"`, bytes)
+	_, err := w.Write([]byte(hexValue))
 	if err != nil {
 		log.Logger.Error(err.Error())
 	}
