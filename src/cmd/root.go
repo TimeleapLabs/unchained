@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/spf13/cobra"
 )
@@ -54,10 +56,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&contextPath, "context", "x", "./context", "Context DB")
 	err := rootCmd.MarkFlagFilename("config", "yaml")
 	if err != nil {
-		panic(err)
+		log.Warn("no config flag")
 	}
+
 	err = rootCmd.MarkFlagRequired("config")
 	if err != nil {
-		panic(err)
+		log.Warn("no config flag")
 	}
 }

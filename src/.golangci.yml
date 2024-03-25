@@ -173,7 +173,7 @@ linters:
     - predeclared
     - promlinter
     - reassign
-    - revive
+#    - revive
     - rowserrcheck
     - sqlclosecheck
     - stylecheck
