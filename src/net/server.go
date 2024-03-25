@@ -334,34 +334,25 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 			SendMessage(conn, messageType, opcodes.Feedback, "conf.ok")
 			Send(conn, messageType, opcodes.KoskChallenge, result)
-		case opcodes.PriceReport:
-			// TODO: Maybe this is unnecessary
-			if payload[1] != 0 {
-				SendError(conn, messageType, opcodes.Feedback, constants.ErrNotSupportedDataset)
-				continue
-			}
 
-			result, err := processPriceReport(conn, payload[2:])
+		case opcodes.PriceReport:
+			result, err := processPriceReport(conn, payload[1:])
 			if err != nil {
 				SendError(conn, messageType, opcodes.Error, err)
 			}
 
 			BroadcastPayload(opcodes.PriceReportBroadcast, result)
 			SendMessage(conn, messageType, opcodes.Feedback, "signature.accepted")
-		case opcodes.EventLog:
-			// TODO: Maybe this is unnecessary
-			if payload[1] != 0 {
-				SendError(conn, messageType, opcodes.Feedback, constants.ErrNotSupportedDataset)
-				continue
-			}
 
-			result, err := processEventLog(conn, payload[2:])
+		case opcodes.EventLog:
+			result, err := processEventLog(conn, payload[1:])
 			if err != nil {
 				SendError(conn, messageType, opcodes.Error, err)
 			}
 
 			BroadcastPayload(opcodes.EventLogBroadcast, result)
 			SendMessage(conn, messageType, opcodes.Feedback, "signature.accepted")
+
 		case opcodes.CorrectnessReport:
 			result, err := processCorrectnessRecord(conn, payload[1:])
 			if err != nil {
@@ -370,16 +361,19 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 			BroadcastPayload(opcodes.CorrectnessReportBroadcast, result)
 			SendMessage(conn, messageType, opcodes.Feedback, "signature.accepted")
+
 		case opcodes.KoskResult:
 			err := processKosk(conn, payload[1:])
 			if err != nil {
 				SendError(conn, messageType, opcodes.Error, err)
 			}
 			SendMessage(conn, messageType, opcodes.Feedback, "kosk.ok")
+
 		case opcodes.RegisterConsumer:
 			// TODO: Consumers must specify what they're subscribing to
 			repository.Consumers.Store(conn, true)
 			repository.BroadcastMutex.Store(conn, new(sync.Mutex))
+
 		default:
 			SendError(conn, messageType, opcodes.Error, constants.ErrNotSupportedInstruction)
 		}

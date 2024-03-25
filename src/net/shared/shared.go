@@ -23,7 +23,7 @@ func SendRaw(data []byte) error {
 
 func Send(opCode opcodes.OpCode, payload []byte) {
 	err := SendRaw(
-		append([]byte{byte(opCode), 0}, payload...),
+		append([]byte{byte(opCode)}, payload...),
 	)
 	if err != nil {
 		log.Logger.Error("Can't send packet: %v", err)
