@@ -1,0 +1,27 @@
+syntax="proto3";
+option go_package = "./packet";
+
+package main;
+
+import "signer.proto";
+
+message Correctness {
+  uint64  Timestamp = 1;
+  bytes   Hash = 2;
+  bytes   Topic = 3;
+  bool    Correct = 4;
+}
+
+message CorrectnessReport {
+  uint64  Timestamp = 1;
+  bytes   Hash = 2;
+  bytes   Topic = 3;
+  bool    Correct = 4;
+  bytes   Signature = 5;
+}
+
+message BroadcastCorrectnessPacket {
+  Correctness Info = 1;
+  bytes       Signature = 2;
+  Signer      Signer = 3;
+}

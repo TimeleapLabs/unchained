@@ -1,0 +1,37 @@
+syntax="proto3";
+option go_package = "./packet";
+
+package main;
+
+import "signer.proto";
+import "bigint.proto";
+
+message TokenKey {
+  string Name = 1;
+  string Pair = 2;
+  string Chain = 3;
+  int64 Delta = 4;
+  bool Invert = 5;
+  string Cross = 6;
+}
+
+message AssetKey {
+  TokenKey Token = 1;
+  uint64 Block = 2;
+}
+
+message PriceInfo {
+  AssetKey Asset = 1;
+  BigInt Price = 2;
+}
+
+message PriceReport {
+  PriceInfo PriceInfo = 1;
+  bytes  Signature = 2;
+}
+
+message BroadcastPricePacket {
+  PriceInfo Info = 1;
+  bytes Signature = 2;
+  Signer Signer = 3;
+}

@@ -1,0 +1,36 @@
+syntax="proto3";
+option go_package = "./packet";
+
+package main;
+
+import "signer.proto";
+import "google/protobuf/any.proto";
+
+message EventLogArg {
+  string Name = 1;
+  string Type = 2;
+  google.protobuf.Any  Value = 3;
+}
+
+message EventLog {
+  uint64 LogIndex = 1;
+  uint64 Block = 2;
+  string  Address = 3;
+  string Event = 4;
+  string Chain = 5;
+  bytes TxHash = 6;
+  repeated EventLogArg Args = 7;
+}
+
+message EventLogReport {
+  string Name = 1;
+  string Type = 2;
+  google.protobuf.Any  Value = 3;
+  bytes Signature = 4;
+}
+
+message BroadcastEventPacket {
+  EventLog Info = 1;
+  bytes Signature = 2;
+  Signer Signer = 3;
+}
