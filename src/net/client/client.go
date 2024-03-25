@@ -8,11 +8,12 @@ import (
 
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/consumers"
 	"github.com/KenshiTech/unchained/crypto/bls"
+	clientidentity "github.com/KenshiTech/unchained/crypto/client_identity"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/opcodes"
 	"github.com/KenshiTech/unchained/net/shared"
 
 	"github.com/gorilla/websocket"
@@ -40,7 +41,9 @@ func StartClient() {
 
 	Done = make(chan struct{})
 
-	hello := bls.ClientSigner
+	// TODO IMPORTANT: shall we use a an empty ClientSigner or the one which is initialized in clientIdentity?
+	// ! Since it contains the PRIVATEKEY and we are Marshaling it.
+	hello := clientidentity.GetSigner()
 	helloPayload, err := msgpack.Marshal(&hello)
 	if err != nil {
 		panic(err)
@@ -88,8 +91,7 @@ func StartClient() {
 						Error("Can't unmarshal challenge")
 					continue
 				}
-
-				signature, _ := bls.Sign(*bls.ClientSecretKey, challenge.Random[:])
+				signature, _ := bls.Sign(*clientidentity.GetSecretKey(), challenge.Random[:])
 				challenge.Signature = signature.Bytes()
 
 				koskPayload, err := msgpack.Marshal(challenge)

@@ -1,10 +1,10 @@
 package consumers
 
 import (
-	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/opcodes"
 	"github.com/KenshiTech/unchained/net/shared"
 	"github.com/KenshiTech/unchained/plugins/correctness"
 	"github.com/KenshiTech/unchained/plugins/logs"

@@ -1,9 +1,9 @@
 package net
 
 import (
-	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/consumer"
+	"github.com/KenshiTech/unchained/net/opcodes"
 	"github.com/gorilla/websocket"
 )
 

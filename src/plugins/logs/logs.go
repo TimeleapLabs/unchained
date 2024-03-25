@@ -13,14 +13,15 @@ import (
 
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
+	clientidentity "github.com/KenshiTech/unchained/crypto/client_identity"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/opcodes"
 	"github.com/KenshiTech/unchained/net/shared"
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/pos"
@@ -451,7 +452,7 @@ func createTask(configs []LogConf, chain string) func() {
 					panic(err)
 				}
 
-				signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
+				signature, hash := bls.Sign(*clientidentity.GetSecretKey(), toHash)
 				compressedSignature := signature.Bytes()
 
 				priceReport := datasets.EventLogReport{
@@ -471,7 +472,7 @@ func createTask(configs []LogConf, chain string) func() {
 				if conf.Store {
 					RecordSignature(
 						signature,
-						bls.ClientSigner,
+						*clientidentity.GetSigner(),
 						hash,
 						event,
 						false,

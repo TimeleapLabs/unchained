@@ -11,8 +11,8 @@ import (
 
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
+	clientidentity "github.com/KenshiTech/unchained/crypto/client_identity"
 	"github.com/KenshiTech/unchained/crypto/shake"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
@@ -21,6 +21,7 @@ import (
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/opcodes"
 	"github.com/KenshiTech/unchained/net/shared"
 	"github.com/KenshiTech/unchained/pos"
 	"github.com/KenshiTech/unchained/utils"
@@ -572,7 +573,7 @@ func syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx 
 		os.Exit(1)
 	}
 
-	signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
+	signature, hash := bls.Sign(*clientidentity.GetSecretKey(), toHash)
 	compressedSignature := signature.Bytes()
 
 	priceReport := datasets.PriceReport{
@@ -593,7 +594,7 @@ func syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx 
 	if token.Store {
 		RecordSignature(
 			signature,
-			bls.ClientSigner,
+			*clientidentity.GetSigner(),
 			hash,
 			priceInfo,
 			false,

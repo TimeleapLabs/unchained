@@ -22,7 +22,8 @@ var brokerCmd = &cobra.Command{
 	Use:   "broker",
 	Short: "Run the Unchained client in broker mode",
 	Long:  `Run the Unchained client in broker mode`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// var err error
 		config.LoadConfig(configPath, secretsPath)
 		log.Start()
 		db.Start()
@@ -32,6 +33,7 @@ var brokerCmd = &cobra.Command{
 		logs.Setup()
 		gql.InstallHandlers()
 		net.StartServer()
+		return nil
 	},
 }
 

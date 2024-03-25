@@ -1,15 +1,17 @@
 package pos
 
 import (
+	"errors"
+	"fmt"
 	"math/big"
-	"os"
 
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/crypto/bls"
+	clientidentity "github.com/KenshiTech/unchained/crypto/client_identity"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/ethereum/contracts"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/xerrors"
 
 	"github.com/puzpuzpuz/xsync/v3"
 )
@@ -78,17 +80,14 @@ func VotingPowerToFloat(power *big.Int) *big.Float {
 	return powerFloat
 }
 
-func Start() {
+func Start() error {
 	base = big.NewInt(config.Config.GetInt64("pos.base"))
 
-	pkBytes := bls.ClientPublicKey.Bytes()
+	// todo remove the singleton pattern latter.
+	pkBytes := clientidentity.GetPublicKey().Bytes()
 	addr, err := address.NewAddress(pkBytes[:])
 	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Failed to connect to the staking contract")
-
-		os.Exit(1)
+		return err
 	}
 
 	log.Logger.
@@ -102,21 +101,17 @@ func Start() {
 	)
 
 	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Failed to connect to the staking contract")
-
-		os.Exit(1)
+		return errors.Join(err, xerrors.ErrConnectionFailed("Failed to connect to the staking contract"))
 	}
 
 	power, err := GetVotingPower(addr.Raw(), big.NewInt(0))
 
 	if err != nil {
+		// todo log.Error
 		log.Logger.
 			With("Error", err).
 			Error("Failed to get voting power")
-
-		return
+		return errors.Join(err, fmt.Errorf("Failed to get voting power"))
 	}
 
 	total, err := GetTotalVotingPower()
@@ -125,14 +120,15 @@ func Start() {
 		log.Logger.
 			With("Error", err).
 			Error("Failed to get total voting power")
-
-		return
+		return err
 	}
 
 	log.Logger.
 		With("Power", VotingPowerToFloat(power)).
 		With("Network", VotingPowerToFloat(total)).
 		Info("PoS")
+
+	return nil
 }
 
 func init() {

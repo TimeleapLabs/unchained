@@ -9,12 +9,13 @@ import (
 
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/net/opcodes"
 	"github.com/KenshiTech/unchained/net/repository"
+	"github.com/KenshiTech/unchained/xerrors"
 
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"
@@ -30,21 +31,21 @@ func processKosk(conn *websocket.Conn, payload []byte) error {
 	err := msgpack.Unmarshal(payload, &challenge)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return constants.ErrInvalidPacket
+		return xerrors.ErrInvalidPacket
 	}
 
 	signer, ok := signers.Load(conn)
 	if !ok {
-		return constants.ErrMissingHello
+		return xerrors.ErrMissingHello
 	}
 
 	challenge.Passed, err = kosk.VerifyChallenge(challenge.Random, signer.PublicKey, challenge.Signature)
 	if err != nil {
-		return constants.ErrInvalidKosk
+		return xerrors.ErrInvalidKosk
 	}
 	if !challenge.Passed {
 		log.Logger.Error("challenge is Passed")
-		return constants.ErrInvalidKosk
+		return xerrors.ErrInvalidKosk
 	}
 
 	challenges.Store(conn, challenge)
@@ -57,12 +58,12 @@ func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := msgpack.Unmarshal(payload, &signer)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal packet: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
+		return []byte{}, xerrors.ErrInvalidPacket
 	}
 
 	if signer.Name == "" {
 		log.Logger.Error("Signer name is empty Or public key is invalid")
-		return []byte{}, constants.ErrInvalidConfig
+		return []byte{}, xerrors.ErrInvalidConfig
 	}
 
 	signers.Range(func(conn *websocket.Conn, signerInMap bls.Signer) bool {
@@ -81,7 +82,7 @@ func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	koskPayload, err := msgpack.Marshal(challenge)
 	if err != nil {
 		log.Logger.Error("Can't marshal challenge: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	return koskPayload, nil
@@ -90,12 +91,12 @@ func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 func checkPublicKey(conn *websocket.Conn) (*bls.Signer, error) {
 	challenge, ok := challenges.Load(conn)
 	if !ok || !challenge.Passed {
-		return nil, constants.ErrMissingKosk
+		return nil, xerrors.ErrMissingKosk
 	}
 
 	signer, ok := signers.Load(conn)
 	if !ok {
-		return nil, constants.ErrMissingHello
+		return nil, xerrors.ErrMissingHello
 	}
 
 	return &signer, nil
@@ -112,40 +113,40 @@ func processPriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err = msgpack.Unmarshal(payload, &report)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
+		return []byte{}, xerrors.ErrInvalidPacket
 	}
 
 	toHash, err := msgpack.Marshal(&report.PriceInfo)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
+		return []byte{}, xerrors.ErrInvalidPacket
 	}
 
 	hash, err := bls.Hash(toHash)
 	if err != nil {
 		log.Logger.Error("Can't hash bls: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	signature, err := bls.RecoverSignature(report.Signature)
 	if err != nil {
 		log.Logger.Error("Can't recover bls signature: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
 		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	ok, err := bls.Verify(signature, hash, pk)
 	if err != nil {
 		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrCantVerifyBls
+		return []byte{}, xerrors.ErrCantVerifyBls
 	}
 	if !ok {
-		return []byte{}, constants.ErrInvalidSignature
+		return []byte{}, xerrors.ErrInvalidSignature
 	}
 
 	priceInfo := datasets.BroadcastPricePacket{
@@ -161,7 +162,7 @@ func processPriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		log.Logger.
 			With("Error", err).
 			Error("Cannot marshal the broadcast packet")
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	return priceInfoByte, nil
@@ -177,40 +178,40 @@ func processEventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err = msgpack.Unmarshal(payload, &report)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
+		return []byte{}, xerrors.ErrInvalidPacket
 	}
 
 	toHash, err := msgpack.Marshal(&report.EventLog)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
+		return []byte{}, xerrors.ErrInvalidPacket
 	}
 
 	hash, err := bls.Hash(toHash)
 	if err != nil {
 		log.Logger.Error("Can't hash bls: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	signature, err := bls.RecoverSignature(report.Signature)
 	if err != nil {
 		log.Logger.Error("Can't recover bls signature: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
 		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrCantVerifyBls
+		return []byte{}, xerrors.ErrCantVerifyBls
 	}
 
 	ok, err := bls.Verify(signature, hash, pk)
 	if err != nil {
 		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrCantVerifyBls
+		return []byte{}, xerrors.ErrCantVerifyBls
 	}
 	if !ok {
-		return []byte{}, constants.ErrInvalidSignature
+		return []byte{}, xerrors.ErrInvalidSignature
 	}
 
 	broadcastPacket := datasets.BroadcastEventPacket{
@@ -227,7 +228,7 @@ func processEventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 			With("Error", err).
 			Error("Cannot marshal the broadcast packet")
 
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	return broadcastPayload, nil
@@ -243,40 +244,40 @@ func processCorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, err
 	err = msgpack.Unmarshal(payload, &report)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
+		return []byte{}, xerrors.ErrInvalidPacket
 	}
 
 	toHash, err := msgpack.Marshal(&report.Correctness)
 	if err != nil {
 		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
+		return []byte{}, xerrors.ErrInvalidPacket
 	}
 
 	hash, err := bls.Hash(toHash)
 	if err != nil {
 		log.Logger.Error("Can't hash bls: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	signature, err := bls.RecoverSignature(report.Signature)
 	if err != nil {
 		log.Logger.Error("Can't recover bls signature: %v", err)
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
 		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrCantVerifyBls
+		return []byte{}, xerrors.ErrCantVerifyBls
 	}
 
 	ok, err := bls.Verify(signature, hash, pk)
 	if err != nil {
 		log.Logger.With("Error", err).Error("Can't verify bls")
-		return []byte{}, constants.ErrCantVerifyBls
+		return []byte{}, xerrors.ErrCantVerifyBls
 	}
 	if !ok {
-		return []byte{}, constants.ErrInvalidSignature
+		return []byte{}, xerrors.ErrInvalidSignature
 	}
 
 	broadcastPacket := datasets.BroadcastCorrectnessPacket{
@@ -292,7 +293,7 @@ func processCorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, err
 		log.Logger.
 			With("Error", err).
 			Error("Cannot marshal the broadcast packet")
-		return []byte{}, constants.ErrInternalError
+		return []byte{}, xerrors.ErrInternalError
 	}
 
 	return broadcastPayload, nil
@@ -375,7 +376,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 			repository.BroadcastMutex.Store(conn, new(sync.Mutex))
 
 		default:
-			SendError(conn, messageType, opcodes.Error, constants.ErrNotSupportedInstruction)
+			SendError(conn, messageType, opcodes.Error, xerrors.ErrNotSupportedInstruction)
 		}
 	}
 }

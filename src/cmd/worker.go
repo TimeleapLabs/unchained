@@ -6,7 +6,7 @@ package cmd
 import (
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/crypto/bls"
+	clientIdentity "github.com/KenshiTech/unchained/crypto/client_identity"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
@@ -25,15 +25,16 @@ var workerCmd = &cobra.Command{
 	Short: "Run the Unchained client in worker mode",
 	Long:  `Run the Unchained client in worker mode`,
 
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
 		if err != nil {
-			panic(err)
+			return err
 		}
+		return nil
 	},
 
-	Run: func(cmd *cobra.Command, args []string) {
-
+	RunE: func(cmd *cobra.Command, args []string) error {
+		var err error
 		config.LoadConfig(configPath, secretsPath)
 		log.Start()
 
@@ -43,7 +44,33 @@ var workerCmd = &cobra.Command{
 			Info("Running Unchained")
 
 		ethereum.Start()
-		bls.InitClientIdentity()
+		// initializes client identity
+		{
+			var ops []clientIdentity.Option
+			// read configuration
+			{
+				// SecretKey
+				if v := config.Secrets.GetString(constants.SecretKey); v != "" {
+					ops = append(ops, clientIdentity.OptionWithSecretKey(v))
+				}
+
+				// Name
+				if v := config.Config.GetString(constants.Name); v != "" {
+					ops = append(ops, clientIdentity.OptionWithName(v))
+				}
+
+				// EVMWallet
+				if v := config.Secrets.GetString(constants.EVMWallet); v != "" {
+					ops = append(ops, clientIdentity.OptionWithEvmWallet(v))
+				}
+			}
+
+			err = clientIdentity.Init(ops...)
+			if err != nil {
+				return err
+			}
+
+		}
 		pos.Start()
 		db.Start()
 		client.StartClient()
@@ -53,6 +80,7 @@ var workerCmd = &cobra.Command{
 		logs.Start()
 		persistence.Start(contextPath)
 		client.Listen()
+		return nil
 	},
 }
 
