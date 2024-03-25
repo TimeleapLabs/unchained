@@ -1,5 +1,5 @@
 syntax="proto3";
-option go_package = "./packet";
+option go_package = "./datasets";
 
 package main;
 
