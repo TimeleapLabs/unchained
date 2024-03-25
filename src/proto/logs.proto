@@ -1,5 +1,5 @@
 syntax="proto3";
-option go_package = "./packet";
+option go_package = "./datasets";
 
 package main;
 
@@ -23,10 +23,8 @@ message EventLog {
 }
 
 message EventLogReport {
-  string Name = 1;
-  string Type = 2;
-  google.protobuf.Any  Value = 3;
-  bytes Signature = 4;
+  EventLogArg EventLogArg = 1;
+  bytes Signature = 2;
 }
 
 message BroadcastEventPacket {
