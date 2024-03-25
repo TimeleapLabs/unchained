@@ -62,7 +62,7 @@ func StartClient() {
 						Error("Broker error")
 				}
 
-				ReConnecting(err, brokerURL, helloPayload)
+				ReConnect(err, brokerURL, helloPayload)
 				if shared.IsClientSocketClosed {
 					return
 				}
@@ -85,7 +85,7 @@ func StartClient() {
 				if err != nil {
 					log.Logger.
 						With("Error", err).
-						Error("Cant unmarshal challenge")
+						Error("Can't unmarshal challenge")
 					continue
 				}
 
@@ -96,7 +96,7 @@ func StartClient() {
 				if err != nil {
 					log.Logger.
 						With("Error", err).
-						Error("Cant marshal challenge")
+						Error("Can't marshal challenge")
 					continue
 				}
 
@@ -121,7 +121,7 @@ func StartClient() {
 	shared.Send(opcodes.Hello, helloPayload)
 }
 
-func ReConnecting(err error, brokerURL string, helloMessageByte []byte) {
+func ReConnect(err error, brokerURL string, helloMessageByte []byte) {
 	shared.IsClientSocketClosed = true
 
 	if websocket.IsUnexpectedCloseError(err) {
@@ -142,7 +142,7 @@ func closeConnection() {
 		if err != nil {
 			log.Logger.
 				With("Error", err).
-				Error("Cant sent close packet")
+				Error("Can't sent close packet")
 		}
 
 		err = shared.Client.Close()

@@ -29,7 +29,7 @@ func processKosk(conn *websocket.Conn, payload []byte) error {
 	var challenge kosk.Challenge
 	err := msgpack.Unmarshal(payload, &challenge)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal Msgpack: %v", err)
+		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
 		return constants.ErrInvalidPacket
 	}
 
@@ -56,7 +56,7 @@ func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	var signer bls.Signer
 	err := msgpack.Unmarshal(payload, &signer)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal packet: %v", err)
+		log.Logger.Error("Can't unmarshal packet: %v", err)
 		return []byte{}, constants.ErrInvalidPacket
 	}
 
@@ -80,7 +80,7 @@ func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	challenges.Store(conn, challenge)
 	koskPayload, err := msgpack.Marshal(challenge)
 	if err != nil {
-		log.Logger.Error("Cant marshal challenge: %v", err)
+		log.Logger.Error("Can't marshal challenge: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
@@ -111,37 +111,37 @@ func processPriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	var report datasets.PriceReport
 	err = msgpack.Unmarshal(payload, &report)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal Msgpack: %v", err)
+		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
 		return []byte{}, constants.ErrInvalidPacket
 	}
 
 	toHash, err := msgpack.Marshal(&report.PriceInfo)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal Msgpack: %v", err)
+		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
 		return []byte{}, constants.ErrInvalidPacket
 	}
 
 	hash, err := bls.Hash(toHash)
 	if err != nil {
-		log.Logger.Error("Cant hash bls: %v", err)
+		log.Logger.Error("Can't hash bls: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
 	signature, err := bls.RecoverSignature(report.Signature)
 	if err != nil {
-		log.Logger.Error("Cant recover bls signature: %v", err)
+		log.Logger.Error("Can't recover bls signature: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
-		log.Logger.Error("Cant recover bls pub-key: %v", err)
+		log.Logger.Error("Can't recover bls pub-key: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
 	ok, err := bls.Verify(signature, hash, pk)
 	if err != nil {
-		log.Logger.Error("Cant recover bls pub-key: %v", err)
+		log.Logger.Error("Can't recover bls pub-key: %v", err)
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 	if !ok {
@@ -176,37 +176,37 @@ func processEventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	var report datasets.EventLogReport
 	err = msgpack.Unmarshal(payload, &report)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal Msgpack: %v", err)
+		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
 		return []byte{}, constants.ErrInvalidPacket
 	}
 
 	toHash, err := msgpack.Marshal(&report.EventLog)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal Msgpack: %v", err)
+		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
 		return []byte{}, constants.ErrInvalidPacket
 	}
 
 	hash, err := bls.Hash(toHash)
 	if err != nil {
-		log.Logger.Error("Cant hash bls: %v", err)
+		log.Logger.Error("Can't hash bls: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
 	signature, err := bls.RecoverSignature(report.Signature)
 	if err != nil {
-		log.Logger.Error("Cant recover bls signature: %v", err)
+		log.Logger.Error("Can't recover bls signature: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
-		log.Logger.Error("Cant recover bls pub-key: %v", err)
+		log.Logger.Error("Can't recover bls pub-key: %v", err)
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 
 	ok, err := bls.Verify(signature, hash, pk)
 	if err != nil {
-		log.Logger.Error("Cant recover bls pub-key: %v", err)
+		log.Logger.Error("Can't recover bls pub-key: %v", err)
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 	if !ok {
@@ -242,37 +242,37 @@ func processCorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, err
 	var report datasets.CorrectnessReport
 	err = msgpack.Unmarshal(payload, &report)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal Msgpack: %v", err)
+		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
 		return []byte{}, constants.ErrInvalidPacket
 	}
 
 	toHash, err := msgpack.Marshal(&report.Correctness)
 	if err != nil {
-		log.Logger.Error("Cant unmarshal Msgpack: %v", err)
+		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
 		return []byte{}, constants.ErrInvalidPacket
 	}
 
 	hash, err := bls.Hash(toHash)
 	if err != nil {
-		log.Logger.Error("Cant hash bls: %v", err)
+		log.Logger.Error("Can't hash bls: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
 	signature, err := bls.RecoverSignature(report.Signature)
 	if err != nil {
-		log.Logger.Error("Cant recover bls signature: %v", err)
+		log.Logger.Error("Can't recover bls signature: %v", err)
 		return []byte{}, constants.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
-		log.Logger.Error("Cant recover bls pub-key: %v", err)
+		log.Logger.Error("Can't recover bls pub-key: %v", err)
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 
 	ok, err := bls.Verify(signature, hash, pk)
 	if err != nil {
-		log.Logger.With("Error", err).Error("Cant verify bls")
+		log.Logger.With("Error", err).Error("Can't verify bls")
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 	if !ok {
@@ -303,14 +303,14 @@ func processCorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, err
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Logger.Error("cant upgrade connection: %v", err)
+		log.Logger.Error("Can't upgrade connection: %v", err)
 		return
 	}
 
 	defer func(conn *websocket.Conn) {
 		err := conn.Close()
 		if err != nil {
-			log.Logger.Error("cant close connection: %v", err)
+			log.Logger.Error("Can't close connection: %v", err)
 		}
 	}(conn)
 
@@ -322,7 +322,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, payload, err := conn.ReadMessage()
 		if err != nil {
-			log.Logger.Error("cant read message: %v", err)
+			log.Logger.Error("Can't read message: %v", err)
 			break
 		}
 

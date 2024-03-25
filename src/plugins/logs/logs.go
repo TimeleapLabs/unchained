@@ -58,8 +58,8 @@ var signatureMutex *sync.Mutex
 var supportedEvents map[SupportKey]bool
 
 const (
-	TooOldBlockNumber = 96
-	LruSize           = 128
+	BlockOutOfRange = 96
+	LruSize         = 128
 )
 
 type LogConf struct {
@@ -127,7 +127,7 @@ func RecordSignature(
 	if !historical {
 		// TODO: this won't work for Arbitrum
 		// TODO: we disallow syncing historical events here
-		if *blockNumber-info.Block > TooOldBlockNumber {
+		if *blockNumber-info.Block > BlockOutOfRange {
 			log.Logger.
 				With("Packet", info.Block).
 				With("Current", *blockNumber).

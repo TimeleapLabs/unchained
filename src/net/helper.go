@@ -15,7 +15,7 @@ func Send(conn *websocket.Conn, messageType int, opCode opcodes.OpCode, payload 
 			payload...),
 	)
 	if err != nil {
-		log.Logger.With("Error", err).Error("Cant send packet")
+		log.Logger.With("Error", err).Error("Can't send packet")
 	}
 }
 
@@ -46,6 +46,6 @@ func Close(conn *websocket.Conn) {
 
 	err = conn.Close()
 	if err != nil {
-		log.Logger.With("Error", err).Error("Cant close connection")
+		log.Logger.With("Error", err).Error("Can't close connection")
 	}
 }
