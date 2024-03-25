@@ -20,14 +20,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// consumerCmd represents the consumer command
+// consumerCmd represents the consumer command.
 var consumerCmd = &cobra.Command{
 	Use:   "consumer",
 	Short: "Run the Unchained client in consumer mode",
 	Long:  `Run the Unchained client in consumer mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+		err := config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+		if err != nil {
+			panic(err)
+		}
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -49,7 +52,7 @@ var consumerCmd = &cobra.Command{
 		logs.Setup()
 		client.StartClient()
 		consumers.StartConsumer()
-		client.ClientBlock()
+		client.Listen()
 	},
 }
 

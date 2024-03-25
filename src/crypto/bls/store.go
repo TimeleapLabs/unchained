@@ -22,7 +22,6 @@ func InitClientIdentity() {
 	var pkBytes [96]byte
 
 	if config.Secrets.IsSet("secretKey") {
-
 		decoded := base58.Decode(config.Secrets.GetString("secretKey"))
 
 		ClientSecretKey = new(big.Int)
@@ -30,7 +29,6 @@ func InitClientIdentity() {
 
 		ClientPublicKey = GetPublicKey(ClientSecretKey)
 		pkBytes = ClientPublicKey.Bytes()
-
 	} else {
 		ClientSecretKey, ClientPublicKey, err = GenerateKeyPair()
 

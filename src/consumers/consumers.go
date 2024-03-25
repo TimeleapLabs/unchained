@@ -17,7 +17,6 @@ import (
 func ConsumePriceReport(message []byte) {
 	var packet datasets.BroadcastPricePacket
 	err := msgpack.Unmarshal(message, &packet)
-
 	if err != nil {
 		log.Logger.
 			With("Error", err).
@@ -166,10 +165,12 @@ func ConsumeCorrectnessReport(message []byte) {
 		hash,
 		packet.Info,
 		true,
-		false,
 	)
 }
 
 func StartConsumer() {
-	shared.Client.WriteMessage(websocket.BinaryMessage, []byte{opcodes.RegisterConsumer})
+	err := shared.Client.WriteMessage(websocket.BinaryMessage, []byte{byte(opcodes.RegisterConsumer)})
+	if err != nil {
+		panic(err)
+	}
 }
