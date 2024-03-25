@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// brokerCmd represents the broker command
+// brokerCmd represents the broker command.
 var brokerCmd = &cobra.Command{
 	Use:   "broker",
 	Short: "Run the Unchained client in broker mode",
@@ -47,5 +47,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// brokerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

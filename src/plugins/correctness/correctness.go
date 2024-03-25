@@ -23,20 +23,24 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
-type CorrectnessKey struct {
+type Key struct {
 	Topic   [64]byte
 	Hash    [64]byte
 	Correct bool
 }
 
-var consensus *lru.Cache[CorrectnessKey, map[bls12381.G1Affine]big.Int]
+var consensus *lru.Cache[Key, map[bls12381.G1Affine]big.Int]
 var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 var supportedTopics map[[64]byte]bool
 
-type CorrectnessConf struct {
+const (
+	LruSize = 128
+)
+
+type Conf struct {
 	Topic string `mapstructure:"name"`
 }
 
@@ -62,9 +66,7 @@ func RecordSignature(
 	signer bls.Signer,
 	hash bls12381.G1Affine,
 	info datasets.Correctness,
-	debounce bool,
-	historical bool) {
-
+	debounce bool) {
 	if supported := supportedTopics[info.Topic]; !supported {
 		return
 	}
@@ -72,7 +74,7 @@ func RecordSignature(
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
-	key := CorrectnessKey{
+	key := Key{
 		Topic:   info.Topic,
 		Hash:    info.Hash,
 		Correct: info.Correct,
@@ -145,7 +147,6 @@ func RecordSignature(
 }
 
 func SaveSignatures(args SaveSignatureArgs) {
-
 	dbClient := db.GetClient()
 	signatures, ok := signatureCache.Get(args.Hash)
 
@@ -231,8 +232,8 @@ func SaveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	for _, signature := range signatures {
-		signature.Processed = true
+	for inx := range signatures {
+		signatures[inx].Processed = true
 	}
 
 	aggregateCache.Add(args.Hash, aggregate)
@@ -254,26 +255,23 @@ func Setup() {
 }
 
 func init() {
-
 	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
 	signatureMutex = new(sync.Mutex)
 	supportedTopics = make(map[[64]byte]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](LruSize)
 
 	if err != nil {
 		panic(err)
 	}
 
-	consensus, err = lru.New[CorrectnessKey, map[bls12381.G1Affine]big.Int](128)
-
+	consensus, err = lru.New[Key, map[bls12381.G1Affine]big.Int](LruSize)
 	if err != nil {
 		panic(err)
 	}
 
-	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](128)
-
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](LruSize)
 	if err != nil {
 		panic(err)
 	}

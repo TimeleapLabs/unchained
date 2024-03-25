@@ -76,7 +76,6 @@ func VotingPowerToFloat(power *big.Int) *big.Float {
 }
 
 func Start() {
-
 	base = big.NewInt(config.Config.GetInt64("pos.base"))
 
 	pkBytes := bls.ClientPublicKey.Bytes()

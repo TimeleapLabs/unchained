@@ -8,9 +8,9 @@ import (
 )
 
 type EventLogArg struct {
-	Name  string
-	Type  string
-	Value any
+	Name  string `json:"Name"`
+	Type  string `json:"Type"`
+	Value any    `json:"Value"`
 }
 
 var _ msgpack.CustomEncoder = (*EventLogArg)(nil)

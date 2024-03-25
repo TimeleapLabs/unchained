@@ -8,24 +8,33 @@ import (
 	"github.com/KenshiTech/unchained/crypto/bls"
 )
 
+const (
+	LenOfChallenge = 128
+	LenOfSignature = 48
+	LenOfPublicKey = 96
+)
+
 type Challenge struct {
 	Passed    bool
-	Random    [128]byte
-	Signature [48]byte
+	Random    [LenOfChallenge]byte
+	Signature [LenOfSignature]byte
 }
 
-func NewChallenge() [128]byte {
-	challenge := make([]byte, 128)
-	rand.Read(challenge)
-	return [128]byte(challenge)
+func NewChallenge() [LenOfChallenge]byte {
+	challenge := make([]byte, LenOfChallenge)
+	_, err := rand.Read(challenge)
+	if err != nil {
+		panic(err)
+	}
+
+	return [LenOfChallenge]byte(challenge)
 }
 
 // TODO: We should use small signatures
 
-func VerifyChallenge(challenge [128]byte,
-	publicKeyBytes [96]byte,
-	signatureBytes [48]byte) (bool, error) {
-
+func VerifyChallenge(challenge [LenOfChallenge]byte,
+	publicKeyBytes [LenOfPublicKey]byte,
+	signatureBytes [LenOfSignature]byte) (bool, error) {
 	signature, err := bls.RecoverSignature(signatureBytes)
 	if err != nil {
 		return false, err

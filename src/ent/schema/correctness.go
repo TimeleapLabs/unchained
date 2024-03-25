@@ -14,6 +14,11 @@ type CorrectnessReport struct {
 	ent.Schema
 }
 
+const (
+	SignatureMaxLen = 48
+	HashMaxLen      = 64
+)
+
 // Fields of the DataSet.
 func (CorrectnessReport) Fields() []ent.Field {
 	return []ent.Field{
@@ -23,13 +28,13 @@ func (CorrectnessReport) Fields() []ent.Field {
 			Annotations(entgql.OrderField("TIMESTAMP")).
 			Annotations(entgql.Type("Uint")),
 		field.Bytes("signature").
-			MaxLen(48).
+			MaxLen(SignatureMaxLen).
 			Annotations(entgql.Type("Bytes")),
 		field.Bytes("hash").
-			MaxLen(64).
+			MaxLen(HashMaxLen).
 			Annotations(entgql.Type("Bytes")),
 		field.Bytes("topic").
-			MaxLen(64).
+			MaxLen(HashMaxLen).
 			Annotations(entgql.Type("Bytes")),
 		field.Bool("correct"),
 	}

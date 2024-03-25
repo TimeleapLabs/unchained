@@ -215,7 +215,7 @@ rpc:
 plugins:
   uniswap:
     schedule:
-      ethereum: 5000
+      ethereum: 5s
 
     tokens:
       - name: ethereum

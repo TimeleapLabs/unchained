@@ -1,8 +1,6 @@
 module github.com/KenshiTech/unchained
 
-go 1.22
-
-toolchain go1.22.0
+go 1.22.1
 
 require (
 	entgo.io/contrib v0.4.6-0.20240215171353-eff33e4dca0b
