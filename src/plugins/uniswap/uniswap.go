@@ -91,8 +91,15 @@ func CheckAndCacheSignature(
 
 	for _, item := range cached {
 		if item.Signer.PublicKey == signer.PublicKey {
+			var addrStr string
+			if addr, ierr := address.NewAddress(signer.PublicKey[:]); ierr != nil {
+				addrStr = ierr.Error()
+			} else {
+				addrStr = addr.String()
+			}
+
 			log.Logger.
-				With("Address", address.Calculate(signer.PublicKey[:])).
+				With("Address", addrStr).
 				Debug("Duplicated signature")
 			return fmt.Errorf("duplicated signature")
 		}
@@ -162,8 +169,15 @@ func RecordSignature(
 		big.NewInt(int64(*blockNumber)),
 	)
 	if err != nil {
+		var addrStr string
+		if addr, err := address.NewAddress(signer.PublicKey[:]); err != nil {
+			addrStr = err.Error()
+		} else {
+			addrStr = addr.String()
+		}
+
 		log.Logger.
-			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Address", addrStr).
 			With("Error", err).
 			Error("Failed to get voting power")
 		return

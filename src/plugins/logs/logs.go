@@ -155,8 +155,14 @@ func RecordSignature(
 	)
 
 	if err != nil {
+		var addrStr string
+		if addr, terr := address.NewAddress(signer.PublicKey[:]); terr != nil {
+			addrStr = terr.Error()
+		} else {
+			addrStr = addr.String()
+		}
 		log.Logger.
-			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Address", addrStr).
 			With("Error", err).
 			Error("Failed to get voting power")
 		return

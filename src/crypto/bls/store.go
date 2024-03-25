@@ -49,7 +49,11 @@ func InitClientIdentity() {
 	}
 
 	ClientShortPublicKey = GetShortPublicKey(ClientSecretKey)
-	addrStr := address.Calculate(pkBytes[:])
+	addr, err := address.NewAddress(pkBytes[:])
+	if err != nil {
+		//todo error handling
+		panic(err)
+	}
 
 	ClientSigner = Signer{
 		Name:           config.Config.GetString("name"),
@@ -59,14 +63,14 @@ func InitClientIdentity() {
 	}
 
 	log.Logger.
-		With("Address", addrStr).
+		With("Address", addr.String()).
 		Info("Unchained")
 
 	// TODO: Avoid recalculating this
 	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
 
 	if !config.Secrets.IsSet("address") {
-		config.Secrets.Set("address", addrStr)
+		config.Secrets.Set("address", addr.String())
 		err := config.Secrets.WriteConfig()
 
 		if err != nil {

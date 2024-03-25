@@ -64,8 +64,11 @@ func GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
 }
 
 func GetVotingPowerOfPublicKey(pkBytes [96]byte, block *big.Int) (*big.Int, error) {
-	_, addrHex := address.CalculateHex(pkBytes[:])
-	return GetVotingPower(addrHex, block)
+	addr, err := address.NewAddress(pkBytes[:])
+	if err != nil {
+		return nil, err
+	}
+	return GetVotingPower(addr.Raw(), block)
 }
 
 func VotingPowerToFloat(power *big.Int) *big.Float {
@@ -79,10 +82,17 @@ func Start() {
 	base = big.NewInt(config.Config.GetInt64("pos.base"))
 
 	pkBytes := bls.ClientPublicKey.Bytes()
-	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
+	addr, err := address.NewAddress(pkBytes[:])
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Failed to connect to the staking contract")
+
+		os.Exit(1)
+	}
 
 	log.Logger.
-		With("Hex", addrHexStr).
+		With("Hex", addr.Hex()).
 		Info("Unchained")
 
 	var err error
@@ -101,7 +111,7 @@ func Start() {
 		os.Exit(1)
 	}
 
-	power, err := GetVotingPower(addrHex, big.NewInt(0))
+	power, err := GetVotingPower(addr.Raw(), big.NewInt(0))
 
 	if err != nil {
 		log.Logger.

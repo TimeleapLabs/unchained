@@ -99,9 +99,17 @@ func RecordSignature(
 		big.NewInt(int64(*blockNumber)),
 	)
 
+	addr, err := address.NewAddress(signer.PublicKey[:])
 	if err != nil {
 		log.Logger.
-			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Error", err).
+			Error("Failed to get the latest block number")
+		return
+	}
+
+	if err != nil {
+		log.Logger.
+			With("Address", addr.String()).
 			With("Error", err).
 			Error("Failed to get voting power")
 		return
