@@ -217,14 +217,12 @@ func RecordSignature(
 		reportLog.
 			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
 			Debug("Values")
-		reportLog.
-			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
-			Debug("Values")
 
 		DebouncedSaveSignatures(
 			info.Asset,
 			SaveSignatureArgs{Hash: hash, Info: info},
 		)
+
 		if debounce {
 			DebouncedSaveSignatures(
 				info.Asset,
