@@ -286,14 +286,12 @@ func processCorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, err
 	}
 
 	broadcastPayload, err := msgpack.Marshal(&broadcastPacket)
-
 	// TODO: Handle this error properly
 	// TODO: Maybe notify the peer so they can resend
 	if err != nil {
 		log.Logger.
 			With("Error", err).
 			Error("Cannot marshal the broadcast packet")
-
 		return []byte{}, constants.ErrInternalError
 	}
 

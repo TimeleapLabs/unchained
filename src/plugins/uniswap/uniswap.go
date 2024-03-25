@@ -73,6 +73,38 @@ var crossPrices map[string]big.Int
 var crossTokens map[string]datasets.TokenKey
 var lastPrice big.Int
 
+func CheckAndCacheSignature(
+	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int],
+	signature bls12381.G1Affine, signer bls.Signer,
+	hash bls12381.G1Affine,
+	totalVoted *big.Int) error {
+	signatureMutex.Lock()
+	defer signatureMutex.Unlock()
+
+	cached, _ := signatureCache.Get(hash)
+
+	packed := bls.Signature{
+		Signature: signature,
+		Signer:    signer,
+		Processed: false,
+	}
+
+	for _, item := range cached {
+		if item.Signer.PublicKey == signer.PublicKey {
+			log.Logger.
+				With("Address", address.Calculate(signer.PublicKey[:])).
+				Debug("Duplicated signature")
+			return fmt.Errorf("duplicated signature")
+		}
+	}
+
+	reportedValues.Store(hash, *totalVoted)
+	cached = append(cached, packed)
+	signatureCache.Add(hash, cached)
+
+	return nil
+}
+
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func RecordSignature(
@@ -114,9 +146,6 @@ func RecordSignature(
 		}
 	}
 
-	signatureMutex.Lock()
-	defer signatureMutex.Unlock()
-
 	if !consensus.Contains(info.Asset) {
 		consensus.Add(info.Asset, *xsync.NewMapOf[bls12381.G1Affine, big.Int]())
 	}
@@ -149,26 +178,10 @@ func RecordSignature(
 		return isMajority
 	})
 
-	cached, _ := signatureCache.Get(hash)
-
-	packed := bls.Signature{
-		Signature: signature,
-		Signer:    signer,
-		Processed: false,
+	err = CheckAndCacheSignature(&reportedValues, signature, signer, hash, totalVoted)
+	if err != nil {
+		return
 	}
-
-	for _, item := range cached {
-		if item.Signer.PublicKey == signer.PublicKey {
-			log.Logger.
-				With("Address", address.Calculate(signer.PublicKey[:])).
-				Debug("Duplicated signature")
-			return
-		}
-	}
-
-	reportedValues.Store(hash, *totalVoted)
-	cached = append(cached, packed)
-	signatureCache.Add(hash, cached)
 
 	if !isMajority {
 		log.Logger.Debug("Not a majority")
@@ -180,27 +193,49 @@ func RecordSignature(
 		return
 	}
 
-	reportLog := log.Logger.
-		With("Block", info.Asset.Block).
-		With("Price", info.Price.String()).
-		With("Token", info.Asset.Token.Name)
+	if isMajority {
+		reportLog := log.Logger.
+			With("Block", info.Asset.Block).
+			With("Price", info.Price.String()).
+			With("Token", info.Asset.Token.Name)
 
-	reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
-		reportLog = reportLog.With(
-			fmt.Sprintf("%x", hash.Bytes())[:8],
-			value.String(),
+		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+			reportLog = reportLog.With(
+				fmt.Sprintf("%x", hash.Bytes())[:8],
+				value.String(),
+			)
+			return true
+		})
+		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+			reportLog = reportLog.With(
+				fmt.Sprintf("%x", hash.Bytes())[:8],
+				value.String(),
+			)
+			return true
+		})
+
+		reportLog.
+			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+			Debug("Values")
+		reportLog.
+			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+			Debug("Values")
+
+		DebouncedSaveSignatures(
+			info.Asset,
+			SaveSignatureArgs{Hash: hash, Info: info},
 		)
-		return true
-	})
-
-	reportLog.
-		With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
-		Debug("Values")
-
-	DebouncedSaveSignatures(
-		info.Asset,
-		SaveSignatureArgs{Hash: hash, Info: info},
-	)
+		if debounce {
+			DebouncedSaveSignatures(
+				info.Asset,
+				SaveSignatureArgs{Hash: hash, Info: info},
+			)
+		} else {
+			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+		}
+	} else {
+		log.Logger.Debug("Not a majority")
+	}
 }
 
 type SaveSignatureArgs struct {
@@ -240,11 +275,11 @@ func SaveSignatures(args SaveSignatureArgs) {
 	}
 
 	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
-		_signer := newSigners[i]
-		sc.SetName(_signer.Name).
-			SetEvm(_signer.EvmWallet).
-			SetKey(_signer.PublicKey[:]).
-			SetShortkey(_signer.ShortPublicKey[:]).
+		newSigner := newSigners[i]
+		sc.SetName(newSigner.Name).
+			SetEvm(newSigner.EvmWallet).
+			SetKey(newSigner.PublicKey[:]).
+			SetShortkey(newSigner.ShortPublicKey[:]).
 			SetPoints(0)
 	}).
 		OnConflictColumns("shortkey").
