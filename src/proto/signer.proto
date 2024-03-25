@@ -1,0 +1,11 @@
+syntax="proto3";
+option go_package = "./packet";
+
+package main;
+
+message Signer {
+  string  Name = 1;
+  string  EvmWallet = 2;
+  bytes   PublicKey = 3;
+  bytes   ShortPublicKey = 4;
+}
