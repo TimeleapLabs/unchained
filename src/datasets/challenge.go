@@ -6,17 +6,24 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (m *Correctness) Protobuf() ([]byte, error) {
-	protoModel, err := proto.Marshal(m)
+func NewChallengeWithRandom(payload [128]byte) Challenge {
+	return Challenge{
+		Random: payload[:],
+	}
+}
+
+func NewChallenge(payload []byte) (*Challenge, error) {
+	var challenge Challenge
+
+	err := proto.Unmarshal(payload, &challenge)
 	if err != nil {
-		log.Err(err)
 		return nil, constants.ErrInternalError
 	}
 
-	return protoModel, nil
+	return &challenge, nil
 }
 
-func (m *BroadcastCorrectnessPacket) Protobuf() ([]byte, error) {
+func (m *Challenge) Protobuf() ([]byte, error) {
 	protoModel, err := proto.Marshal(m)
 	if err != nil {
 		log.Err(err)

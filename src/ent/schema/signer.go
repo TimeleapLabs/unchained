@@ -14,6 +14,10 @@ type Signer struct {
 	ent.Schema
 }
 
+const (
+	KeyMaxLen = 96
+)
+
 // Fields of the DataSet.
 func (Signer) Fields() []ent.Field {
 	return []ent.Field{
@@ -23,12 +27,12 @@ func (Signer) Fields() []ent.Field {
 			Nillable().
 			Optional(),
 		field.Bytes("key").
-			MaxLen(96).
+			MaxLen(KeyMaxLen).
 			Unique().
 			NotEmpty().
 			Annotations(entgql.Type("Bytes")),
 		field.Bytes("shortkey").
-			MaxLen(96).
+			MaxLen(KeyMaxLen).
 			Unique().
 			NotEmpty().
 			Annotations(entgql.Type("Bytes")),

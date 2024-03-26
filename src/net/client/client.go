@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"github.com/KenshiTech/unchained/datasets"
 	"os"
 	"os/signal"
 	"time"
@@ -11,31 +12,27 @@ import (
 	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/consumers"
 	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/kosk"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/shared"
 
 	"github.com/gorilla/websocket"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 var Done chan struct{}
 
 func StartClient() {
-
 	if !config.Config.IsSet("broker.uri") {
 		return
 	}
 
-	brokerUrl := fmt.Sprintf(
+	brokerURL := fmt.Sprintf(
 		"%s/%s",
 		config.Config.GetString("broker.uri"),
 		constants.ProtocolVersion,
 	)
 
 	var err error
-	shared.Client, _, err = websocket.DefaultDialer.Dial(brokerUrl, nil)
-
+	shared.Client, _, err = websocket.DefaultDialer.Dial(brokerURL, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -43,8 +40,7 @@ func StartClient() {
 	Done = make(chan struct{})
 
 	hello := bls.ClientSigner
-	helloPayload, err := msgpack.Marshal(&hello)
-
+	helloPayload, err := datasets.NewSigner(&hello).Protobuf()
 	if err != nil {
 		panic(err)
 	}
@@ -54,9 +50,7 @@ func StartClient() {
 
 		for {
 			_, payload, err := shared.Client.ReadMessage()
-
-			if err != nil || payload[0] == opcodes.Error {
-
+			if err != nil || payload[0] == byte(opcodes.Error) {
 				if err != nil {
 					log.Logger.
 						With("Error", err).
@@ -67,30 +61,15 @@ func StartClient() {
 						Error("Broker error")
 				}
 
-				shared.IsClientSocketClosed = true
-
-				if websocket.IsUnexpectedCloseError(err) {
-					for i := 1; i < 6; i++ {
-						time.Sleep(time.Duration(i) * 3 * time.Second)
-						shared.Client, _, err = websocket.DefaultDialer.Dial(brokerUrl, nil)
-						if err == nil {
-							shared.IsClientSocketClosed = false
-							shared.Client.WriteMessage(
-								websocket.BinaryMessage,
-								append([]byte{opcodes.Hello}, helloPayload...),
-							)
-						}
-					}
-				}
-
+				ReConnect(err, brokerURL, helloPayload)
 				if shared.IsClientSocketClosed {
 					return
-				} else {
-					continue
 				}
+
+				continue
 			}
 
-			switch payload[0] {
+			switch opcodes.OpCode(payload[0]) {
 			// TODO: Make a table of call codes
 			case opcodes.Feedback:
 				log.Logger.
@@ -100,25 +79,27 @@ func StartClient() {
 			case opcodes.KoskChallenge:
 				// TODO: Refactor into a function
 				// TODO: Check for errors!
-				var challenge kosk.Challenge
-				msgpack.Unmarshal(payload[1:], &challenge)
-
-				signature, _ := bls.Sign(*bls.ClientSecretKey, challenge.Random[:])
-				challenge.Signature = signature.Bytes()
-
-				koskPayload, _ := msgpack.Marshal(challenge)
-
-				err := shared.Client.WriteMessage(
-					websocket.BinaryMessage,
-					append([]byte{opcodes.KoskResult}, koskPayload...),
-				)
-
+				challenge, err := datasets.NewChallenge(payload[1:])
 				if err != nil {
 					log.Logger.
 						With("Error", err).
-						Error("Write error")
+						Error("Can't unmarshal challenge")
+					continue
 				}
 
+				signature, _ := bls.Sign(*bls.ClientSecretKey, challenge.Random[:])
+				signatureByte := signature.Bytes()
+				challenge.Signature = signatureByte[:]
+
+				koskPayload, err := challenge.Protobuf()
+				if err != nil {
+					log.Logger.
+						With("Error", err).
+						Error("Can't marshal challenge")
+					continue
+				}
+
+				shared.Send(opcodes.KoskResult, koskPayload)
 			case opcodes.PriceReportBroadcast:
 				go consumers.ConsumePriceReport(payload[1:])
 
@@ -133,31 +114,46 @@ func StartClient() {
 					With("Code", payload[0]).
 					Info("Unknown call code")
 			}
-
 		}
 	}()
 
-	shared.Client.WriteMessage(
-		websocket.BinaryMessage,
-		append([]byte{opcodes.Hello}, helloPayload...))
+	shared.Send(opcodes.Hello, helloPayload)
 }
 
-func closeConnection() {
+func ReConnect(err error, brokerURL string, helloMessageByte []byte) {
+	shared.IsClientSocketClosed = true
 
-	if shared.Client != nil && config.Config.IsSet("broker.uri") {
-		err := shared.Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-		shared.Client.Close()
-
-		if err != nil {
-			log.Logger.
-				With("Error", err).
-				Error("Connection closed")
-			return
+	if websocket.IsUnexpectedCloseError(err) {
+		for i := 1; i < 6; i++ {
+			time.Sleep(time.Duration(i) * 3 * time.Second)
+			shared.Client, _, err = websocket.DefaultDialer.Dial(brokerURL, nil)
+			if err == nil {
+				shared.IsClientSocketClosed = false
+				shared.Send(opcodes.Hello, helloMessageByte)
+			}
 		}
 	}
 }
 
-func ClientBlock() {
+func closeConnection() {
+	if shared.Client != nil && config.Config.IsSet("broker.uri") {
+		err := shared.Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+		if err != nil {
+			log.Logger.
+				With("Error", err).
+				Error("Can't sent close packet")
+		}
+
+		err = shared.Client.Close()
+		if err != nil {
+			log.Logger.
+				With("Error", err).
+				Error("Connection closed")
+		}
+	}
+}
+
+func Listen() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 

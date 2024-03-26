@@ -16,9 +16,9 @@ import (
 
 var dbClient *ent.Client
 
-// Open new connection
-func Open(databaseUrl string) (*ent.Client, error) {
-	db, err := sql.Open("pgx", databaseUrl)
+// Open new connection.
+func Open(databaseURL string) (*ent.Client, error) {
+	db, err := sql.Open("pgx", databaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -28,15 +28,14 @@ func Open(databaseUrl string) (*ent.Client, error) {
 }
 
 func Start() {
-
 	if !config.Config.IsSet("database.url") {
 		return
 	}
 
 	var err error
 
-	dbUrl := config.Config.GetString("database.url")
-	dbClient, err = Open(dbUrl)
+	dbURL := config.Config.GetString("database.url")
+	dbClient, err = ent.Open("postgres", dbURL)
 
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
@@ -47,7 +46,6 @@ func Start() {
 	}
 
 	// TODO: Properly close the conn
-
 }
 
 func GetClient() *ent.Client {

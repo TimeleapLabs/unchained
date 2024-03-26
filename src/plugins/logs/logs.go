@@ -2,6 +2,7 @@ package logs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -32,7 +33,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-co-op/gocron/v2"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -56,6 +56,11 @@ var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 var supportedEvents map[SupportKey]bool
 
+const (
+	BlockOutOfRange = 96
+	LruSize         = 128
+)
+
 type LogConf struct {
 	Name          string  `mapstructure:"name"`
 	Chain         string  `mapstructure:"chain"`
@@ -69,7 +74,7 @@ type LogConf struct {
 	Confrimations uint64  `mapstructure:"confirmations"`
 }
 
-// var lastSynced map[string]uint64
+// var lastSynced map[string]uint64.
 var abiMap map[string]abi.ABI
 var lastSyncedBlock map[LogConf]uint64
 
@@ -101,7 +106,6 @@ func RecordSignature(
 	info datasets.EventLog,
 	debounce bool,
 	historical bool) {
-
 	supportKey := SupportKey{
 		Chain:   info.Chain,
 		Address: info.Address,
@@ -120,10 +124,9 @@ func RecordSignature(
 	}
 
 	if !historical {
-
 		// TODO: this won't work for Arbitrum
 		// TODO: we disallow syncing historical events here
-		if *blockNumber-info.Block > 96 {
+		if *blockNumber-info.Block > BlockOutOfRange {
 			log.Logger.
 				With("Packet", info.Block).
 				With("Current", *blockNumber).
@@ -198,7 +201,6 @@ func RecordSignature(
 }
 
 func SaveSignatures(args SaveSignatureArgs) {
-
 	dbClient := db.GetClient()
 	signatures, ok := signatureCache.Get(args.Hash)
 
@@ -287,8 +289,8 @@ func SaveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	for _, signature := range signatures {
-		signature.Processed = true
+	for inx := range signatures {
+		signatures[inx].Processed = true
 	}
 
 	aggregateCache.Add(args.Hash, aggregate)
@@ -296,13 +298,11 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 func createTask(configs []LogConf, chain string) func() {
 	return func() {
-
 		if shared.IsClientSocketClosed {
 			return
 		}
 
 		for _, conf := range configs {
-
 			if conf.Chain != chain {
 				continue
 			}
@@ -325,16 +325,15 @@ func createTask(configs []LogConf, chain string) func() {
 			if lastSyncedBlock[conf] == 0 {
 				contextBlock, err := persistence.ReadUInt64(contextKey)
 
-				if err != nil && err != badger.ErrKeyNotFound {
+				if err != nil && !errors.Is(err, badger.ErrKeyNotFound) {
 					panic(err)
 				}
 
-				if err != badger.ErrKeyNotFound {
+				fromBlock = allowedBlock - conf.Step
+				if !errors.Is(err, badger.ErrKeyNotFound) {
 					fromBlock = contextBlock
 				} else if conf.From != nil {
 					fromBlock = *conf.From
-				} else {
-					fromBlock = allowedBlock - conf.Step
 				}
 			}
 
@@ -414,7 +413,6 @@ func createTask(configs []LogConf, chain string) func() {
 
 				args := []datasets.EventLogArg{}
 				for _, key := range keys {
-
 					value := eventData[key]
 
 					if strings.HasPrefix(argTypes[key], "uint") || strings.HasPrefix(argTypes[key], "int") {
@@ -441,8 +439,7 @@ func createTask(configs []LogConf, chain string) func() {
 					Args:     args,
 				}
 
-				toHash, err := msgpack.Marshal(&event)
-
+				toHash, err := event.Protobuf()
 				if err != nil {
 					panic(err)
 				}
@@ -455,16 +452,13 @@ func createTask(configs []LogConf, chain string) func() {
 					Signature: compressedSignature,
 				}
 
-				payload, err := msgpack.Marshal(&priceReport)
-
+				payload, err := priceReport.Protobuf()
 				if err != nil {
 					panic(err)
 				}
 
 				if conf.Send {
-					shared.Send(
-						append([]byte{opcodes.EventLog, 0}, payload...),
-					)
+					shared.Send(opcodes.EventLog, payload)
 				}
 
 				if conf.Store {
@@ -480,9 +474,11 @@ func createTask(configs []LogConf, chain string) func() {
 			}
 
 			lastSyncedBlock[conf] = toBlock
-			persistence.WriteUint64(contextKey, toBlock)
+			err = persistence.WriteUint64(contextKey, toBlock)
+			if err != nil {
+				panic(err)
+			}
 		}
-
 	}
 }
 
@@ -504,11 +500,9 @@ func Setup() {
 		}
 		supportedEvents[key] = true
 	}
-
 }
 
 func Start() {
-
 	if !config.Config.IsSet("plugins.logs") {
 		return
 	}
@@ -525,7 +519,6 @@ func Start() {
 	}
 
 	for _, conf := range configs {
-
 		if _, exists := abiMap[conf.Abi]; exists {
 			continue
 		}
@@ -541,7 +534,10 @@ func Start() {
 		}
 
 		abiMap[conf.Abi] = contractAbi
-		file.Close()
+		err = file.Close()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	scheduleConfs := config.Config.Sub("plugins.logs.schedule")
@@ -549,7 +545,7 @@ func Start() {
 
 	for index := range scheduleNames {
 		name := scheduleNames[index]
-		duration := scheduleConfs.GetDuration(name) * time.Millisecond
+		duration := scheduleConfs.GetDuration(name)
 		task := createTask(configs, name)
 
 		_, err = scheduler.NewJob(
@@ -567,7 +563,6 @@ func Start() {
 }
 
 func init() {
-
 	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
 	signatureMutex = new(sync.Mutex)
 
@@ -576,19 +571,19 @@ func init() {
 	supportedEvents = make(map[SupportKey]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
+	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](LruSize)
 
 	if err != nil {
 		panic(err)
 	}
 
-	consensus, err = lru.New[EventKey, map[bls12381.G1Affine]big.Int](128)
+	consensus, err = lru.New[EventKey, map[bls12381.G1Affine]big.Int](LruSize)
 
 	if err != nil {
 		panic(err)
 	}
 
-	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](128)
+	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](LruSize)
 
 	if err != nil {
 		panic(err)

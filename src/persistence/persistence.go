@@ -8,12 +8,16 @@ import (
 
 var DB *badger.DB
 
+const (
+	SizeOfLogFile = 64 * 1024 * 1024
+)
+
 func Start(contextPath string) {
 	var err error
 	options := badger.
 		DefaultOptions(contextPath).
 		WithLogger(nil).
-		WithValueLogFileSize(64 * 1024 * 1024)
+		WithValueLogFileSize(SizeOfLogFile)
 	DB, err = badger.Open(options)
 	if err != nil {
 		panic(err)

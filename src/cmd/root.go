@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/spf13/cobra"
 )
@@ -13,7 +15,7 @@ var secretsPath string
 var contextPath string
 var printVersion bool
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "unchained",
 	Short: "Unchained is the universal data validation and processing protocol",
@@ -52,6 +54,13 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./conf.yaml", "Config file")
 	rootCmd.PersistentFlags().StringVarP(&secretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
 	rootCmd.PersistentFlags().StringVarP(&contextPath, "context", "x", "./context", "Context DB")
-	rootCmd.MarkFlagFilename("config", "yaml")
-	rootCmd.MarkFlagRequired("config")
+	err := rootCmd.MarkFlagFilename("config", "yaml")
+	if err != nil {
+		log.Warn("no config flag")
+	}
+
+	err = rootCmd.MarkFlagRequired("config")
+	if err != nil {
+		log.Warn("no config flag")
+	}
 }

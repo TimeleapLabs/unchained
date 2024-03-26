@@ -1,0 +1,10 @@
+syntax="proto3";
+option go_package = "./datasets";
+
+package main;
+
+message Challenge {
+  bool Passed = 1;
+  bytes Random = 2;
+  bytes  Signature = 3;
+}

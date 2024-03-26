@@ -15,7 +15,7 @@ message EventLogArg {
 message EventLog {
   uint64 LogIndex = 1;
   uint64 Block = 2;
-  string  Address = 3;
+  string Address = 3;
   string Event = 4;
   string Chain = 5;
   bytes TxHash = 6;
@@ -23,12 +23,12 @@ message EventLog {
 }
 
 message EventLogReport {
-  EventLogArg EventLogArg = 1;
+  EventLogArg EventLog = 1;
   bytes Signature = 2;
 }
 
 message BroadcastEventPacket {
-  EventLog Info = 1;
+  EventLogArg Info = 1;
   bytes Signature = 2;
   Signer Signer = 3;
 }

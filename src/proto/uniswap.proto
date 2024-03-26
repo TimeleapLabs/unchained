@@ -4,7 +4,6 @@ option go_package = "./datasets";
 package main;
 
 import "signer.proto";
-import "bigint.proto";
 
 message TokenKey {
   string Name = 1;
@@ -22,7 +21,7 @@ message AssetKey {
 
 message PriceInfo {
   AssetKey Asset = 1;
-  BigInt Price = 2;
+  bytes Price = 2;
 }
 
 message PriceReport {
