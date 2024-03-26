@@ -20,9 +20,11 @@ func init() {
 	Levels["error"] = slog.LevelError
 }
 
-func Start() {
+func Start() error {
+	// TODO fix the log package to not be singleton.
 	Logger = slog.New(tint.NewHandler(colorable.NewColorableStdout(), &tint.Options{
 		Level:      Levels[config.Config.GetString("log")],
 		TimeFormat: time.RFC3339,
 	}))
+	return nil
 }

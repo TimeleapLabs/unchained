@@ -4,17 +4,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"github.com/KenshiTech/unchained/app/worker"
 	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants"
-	clientIdentity "github.com/KenshiTech/unchained/crypto/client_identity"
-	"github.com/KenshiTech/unchained/db"
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net/client"
-	"github.com/KenshiTech/unchained/persistence"
-	"github.com/KenshiTech/unchained/plugins/logs"
-	"github.com/KenshiTech/unchained/plugins/uniswap"
-	"github.com/KenshiTech/unchained/pos"
 
 	"github.com/spf13/cobra"
 )
@@ -34,53 +25,11 @@ var workerCmd = &cobra.Command{
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
-		config.LoadConfig(configPath, secretsPath)
-		log.Start()
-
-		log.Logger.
-			With("Version", constants.Version).
-			With("Protocol", constants.ProtocolVersion).
-			Info("Running Unchained")
-
-		ethereum.Start()
-		// initializes client identity
-		{
-			var ops []clientIdentity.Option
-			// read configuration
-			{
-				// SecretKey
-				if v := config.Secrets.GetString(constants.SecretKey); v != "" {
-					ops = append(ops, clientIdentity.OptionWithSecretKey(v))
-				}
-
-				// Name
-				if v := config.Config.GetString(constants.Name); v != "" {
-					ops = append(ops, clientIdentity.OptionWithName(v))
-				}
-
-				// EVMWallet
-				if v := config.Secrets.GetString(constants.EVMWallet); v != "" {
-					ops = append(ops, clientIdentity.OptionWithEvmWallet(v))
-				}
-			}
-
-			err = clientIdentity.Init(ops...)
-			if err != nil {
-				return err
-			}
-
+		app, err := worker.NewWorkerApp(configPath, secretsPath, contextPath)
+		if err != nil {
+			return err
 		}
-		pos.Start()
-		db.Start()
-		client.StartClient()
-		uniswap.Setup()
-		uniswap.Start()
-		logs.Setup()
-		logs.Start()
-		persistence.Start(contextPath)
-		client.Listen()
-		return nil
+		return app.Run(cmd.Context())
 	},
 }
 

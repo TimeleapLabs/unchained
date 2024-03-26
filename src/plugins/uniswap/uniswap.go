@@ -13,7 +13,6 @@ import (
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/crypto/bls"
 	clientidentity "github.com/KenshiTech/unchained/crypto/client_identity"
-	"github.com/KenshiTech/unchained/crypto/shake"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
@@ -30,6 +29,7 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"github.com/puzpuzpuz/xsync/v3"
 	"github.com/vmihailenco/msgpack/v5"
+	"golang.org/x/crypto/sha3"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
@@ -632,7 +632,11 @@ func tokenKey(token Token) (*datasets.TokenKey, error) {
 		return nil, err
 	}
 
-	hash := shake.Shake(toHash)
+	hash := sha3.NewShake256()
+	_, err = hash.Write(toHash)
+	if err != nil {
+		return nil, err
+	}
 
 	key := datasets.TokenKey{
 		Name:   strings.ToLower(token.Name),
@@ -640,7 +644,7 @@ func tokenKey(token Token) (*datasets.TokenKey, error) {
 		Chain:  strings.ToLower(token.Chain),
 		Delta:  token.Delta,
 		Invert: token.Invert,
-		Cross:  string(hash),
+		Cross:  string(hash.Sum(nil)),
 	}
 
 	return &key, nil

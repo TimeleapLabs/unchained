@@ -381,7 +381,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func StartServer() {
+func StartServer() error {
 	flag.Parse()
 	versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
 	http.HandleFunc(versionedRoot, rootHandler)
@@ -392,11 +392,8 @@ func StartServer() {
 		Addr:              addr,
 		ReadHeaderTimeout: time.Duration(readHeaderTimeoutInSecond) * time.Second,
 	}
-
-	err := server.ListenAndServe()
-	if err != nil {
-		panic(err)
-	}
+	// todo add graceful shutdown based on the context.Cancel
+	return server.ListenAndServe()
 }
 
 func init() {

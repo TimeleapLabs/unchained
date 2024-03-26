@@ -4,15 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/db"
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/gql"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net"
-	"github.com/KenshiTech/unchained/plugins/correctness"
-	"github.com/KenshiTech/unchained/plugins/logs"
-	"github.com/KenshiTech/unchained/plugins/uniswap"
+	"github.com/KenshiTech/unchained/app/broker"
 
 	"github.com/spf13/cobra"
 )
@@ -23,17 +15,11 @@ var brokerCmd = &cobra.Command{
 	Short: "Run the Unchained client in broker mode",
 	Long:  `Run the Unchained client in broker mode`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// var err error
-		config.LoadConfig(configPath, secretsPath)
-		log.Start()
-		db.Start()
-		correctness.Setup()
-		ethereum.Start()
-		uniswap.Setup()
-		logs.Setup()
-		gql.InstallHandlers()
-		net.StartServer()
-		return nil
+		app, err := broker.NewBrokerApp(configPath, secretsPath)
+		if err != nil {
+			return err
+		}
+		return app.Run(cmd.Context())
 	},
 }
 

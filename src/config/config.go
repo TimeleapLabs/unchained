@@ -25,9 +25,10 @@ var Secrets *viper.Viper
 func init() {
 	Config = viper.New()
 	Secrets = viper.New()
+
 }
 
-func LoadConfig(configFileName string, secretsFileName string) {
+func LoadConfig(configFileName string, secretsFileName string) error {
 	defaults()
 
 	Config.SetConfigFile(configFileName)
@@ -36,12 +37,12 @@ func LoadConfig(configFileName string, secretsFileName string) {
 	if err != nil {
 		isNotExist := os.IsNotExist(err)
 		if !isNotExist {
-			panic(err)
+			return err
 		}
 
 		err = Config.WriteConfig()
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
 
@@ -49,6 +50,7 @@ func LoadConfig(configFileName string, secretsFileName string) {
 	err = Secrets.MergeInConfig()
 
 	if err != nil && os.IsExist(err) {
-		panic(err)
+		return err
 	}
+	return nil
 }
