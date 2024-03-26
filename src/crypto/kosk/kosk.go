@@ -1,7 +1,5 @@
 package kosk
 
-// TODO: Move to "crypto"
-
 import (
 	"crypto/rand"
 
@@ -31,7 +29,6 @@ func NewChallenge() [LenOfChallenge]byte {
 }
 
 // TODO: We should use small signatures
-
 func VerifyChallenge(challenge [LenOfChallenge]byte,
 	publicKeyBytes [LenOfPublicKey]byte,
 	signatureBytes [LenOfSignature]byte) (bool, error) {

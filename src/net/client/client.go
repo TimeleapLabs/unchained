@@ -11,7 +11,7 @@ import (
 	"github.com/KenshiTech/unchained/consumers"
 	"github.com/KenshiTech/unchained/crypto/bls"
 	clientidentity "github.com/KenshiTech/unchained/crypto/client_identity"
-	"github.com/KenshiTech/unchained/kosk"
+	"github.com/KenshiTech/unchained/crypto/kosk"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/opcodes"
 	"github.com/KenshiTech/unchained/net/shared"
