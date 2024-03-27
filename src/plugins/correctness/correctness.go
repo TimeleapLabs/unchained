@@ -30,7 +30,7 @@ type Key struct {
 }
 
 var consensus *lru.Cache[Key, map[bls12381.G1Affine]big.Int]
-var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
+var signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
@@ -63,7 +63,7 @@ func GetBlockNumber(network string) (*uint64, error) {
 
 func RecordSignature(
 	signature bls12381.G1Affine,
-	signer bls.Signer,
+	signer datasets.Signer,
 	hash bls12381.G1Affine,
 	info datasets.Correctness,
 	debounce bool) {
@@ -121,7 +121,7 @@ func RecordSignature(
 
 	cached, _ := signatureCache.Get(hash)
 
-	packed := bls.Signature{
+	packed := datasets.Signature{
 		Signature: signature,
 		Signer:    signer,
 		Processed: false,
@@ -156,7 +156,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	ctx := context.Background()
 
-	var newSigners []bls.Signer
+	var newSigners []datasets.Signer
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
@@ -260,7 +260,7 @@ func init() {
 	supportedTopics = make(map[[64]byte]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](LruSize)
+	signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
 
 	if err != nil {
 		panic(err)

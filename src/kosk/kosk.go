@@ -6,6 +6,8 @@ import (
 	"crypto/rand"
 
 	"github.com/KenshiTech/unchained/crypto/bls"
+
+	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 const (
@@ -18,6 +20,21 @@ type Challenge struct {
 	Passed    bool
 	Random    [LenOfChallenge]byte
 	Signature [LenOfSignature]byte
+}
+
+func (c *Challenge) Sia() *sia.Sia {
+	return new(sia.Sia).
+		AddBool(c.Passed).
+		AddByteArray8(c.Random[:]).
+		AddByteArray8(c.Signature[:])
+}
+
+func (c *Challenge) DeSia(sia *sia.Sia) *Challenge {
+	c.Passed = sia.ReadBool()
+	copy(c.Random[:], sia.ReadByteArray8())
+	copy(c.Signature[:], sia.ReadByteArray8())
+
+	return c
 }
 
 func NewChallenge() [LenOfChallenge]byte {
