@@ -2,12 +2,11 @@ package datasets
 
 import (
 	"encoding/json"
-
 	"github.com/KenshiTech/unchained/constants"
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func (m *EventLog) Protobuf() ([]byte, error) {
@@ -49,10 +48,7 @@ func ConvertInterfaceToAny(v interface{}) (*anypb.Any, error) {
 		log.Err(err)
 		return nil, constants.ErrInternalError
 	}
-
-	bytesValue := &wrappers.BytesValue{
-		Value: bytes,
-	}
+	bytesValue := wrapperspb.Bytes(bytes)
 
 	err = anypb.MarshalFrom(anyValue, bytesValue, proto.MarshalOptions{})
 	if err != nil {
