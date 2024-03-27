@@ -16,7 +16,8 @@ import (
 	"github.com/KenshiTech/unchained/net/shared"
 
 	"github.com/gorilla/websocket"
-	"github.com/vmihailenco/msgpack/v5"
+
+	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 var Done chan struct{}
@@ -41,10 +42,7 @@ func StartClient() {
 	Done = make(chan struct{})
 
 	hello := bls.ClientSigner
-	helloPayload, err := msgpack.Marshal(&hello)
-	if err != nil {
-		panic(err)
-	}
+	helloPayload := hello.Sia().Content
 
 	go func() {
 		defer close(Done)
@@ -79,28 +77,13 @@ func StartClient() {
 
 			case opcodes.KoskChallenge:
 				// TODO: Refactor into a function
-				// TODO: Check for errors!
-				var challenge kosk.Challenge
-				err = msgpack.Unmarshal(payload[1:], &challenge)
-				if err != nil {
-					log.Logger.
-						With("Error", err).
-						Error("Can't unmarshal challenge")
-					continue
-				}
-
+				challenge := new(kosk.Challenge).DeSia(&sia.Sia{Content: payload[1:]})
 				signature, _ := bls.Sign(*bls.ClientSecretKey, challenge.Random[:])
 				challenge.Signature = signature.Bytes()
 
-				koskPayload, err := msgpack.Marshal(challenge)
-				if err != nil {
-					log.Logger.
-						With("Error", err).
-						Error("Can't marshal challenge")
-					continue
-				}
-
+				koskPayload := challenge.Sia().Content
 				shared.Send(opcodes.KoskResult, koskPayload)
+
 			case opcodes.PriceReportBroadcast:
 				go consumers.ConsumePriceReport(payload[1:])
 
