@@ -76,7 +76,6 @@ func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	signers.Store(conn, signer)
 
 	// Start KOSK verification
-	//challenge := kosk.Challenge{Random: }
 	challenge := datasets.NewChallengeWithRandom(kosk.NewChallenge())
 	challenges.Store(conn, challenge)
 	koskPayload, err := challenge.Protobuf()

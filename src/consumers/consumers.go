@@ -45,7 +45,7 @@ func ConsumePriceReport(message []byte) {
 		return
 	}
 
-	signature, err := bls.RecoverSignature(packet.Signature)
+	signature, err := bls.RecoverSignature([48]byte(packet.Signature))
 
 	if err != nil {
 		log.Logger.
@@ -57,7 +57,7 @@ func ConsumePriceReport(message []byte) {
 
 	uniswap.RecordSignature(
 		signature,
-		packet.Signer,
+		packet.Signer.Bls(),
 		hash,
 		packet.Info,
 		true,
@@ -97,7 +97,7 @@ func ConsumeEventLog(message []byte) {
 		return
 	}
 
-	signature, err := bls.RecoverSignature(packet.Signature)
+	signature, err := bls.RecoverSignature([48]byte(packet.Signature))
 
 	if err != nil {
 		log.Logger.
@@ -109,7 +109,7 @@ func ConsumeEventLog(message []byte) {
 
 	logs.RecordSignature(
 		signature,
-		packet.Signer,
+		packet.Signer.Bls(),
 		hash,
 		packet.Info,
 		true,
@@ -149,7 +149,7 @@ func ConsumeCorrectnessReport(message []byte) {
 		return
 	}
 
-	signature, err := bls.RecoverSignature(packet.Signature)
+	signature, err := bls.RecoverSignature([48]byte(packet.Signature))
 
 	if err != nil {
 		log.Logger.
@@ -161,9 +161,9 @@ func ConsumeCorrectnessReport(message []byte) {
 
 	correctness.RecordSignature(
 		signature,
-		packet.Signer,
+		packet.Signer.Bls(),
 		hash,
-		packet.Info,
+		*packet.Info,
 		true,
 	)
 }

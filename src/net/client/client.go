@@ -2,10 +2,11 @@ package client
 
 import (
 	"fmt"
-	"github.com/KenshiTech/unchained/datasets"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/KenshiTech/unchained/datasets"
 
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
@@ -87,7 +88,7 @@ func StartClient() {
 					continue
 				}
 
-				signature, _ := bls.Sign(*bls.ClientSecretKey, challenge.Random[:])
+				signature, _ := bls.Sign(*bls.ClientSecretKey, challenge.Random)
 				signatureByte := signature.Bytes()
 				challenge.Signature = signatureByte[:]
 

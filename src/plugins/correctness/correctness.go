@@ -67,7 +67,7 @@ func RecordSignature(
 	hash bls12381.G1Affine,
 	info datasets.Correctness,
 	debounce bool) {
-	if supported := supportedTopics[info.Topic]; !supported {
+	if supported := supportedTopics[[64]byte(info.Topic)]; !supported {
 		return
 	}
 
@@ -75,8 +75,8 @@ func RecordSignature(
 	defer signatureMutex.Unlock()
 
 	key := Key{
-		Topic:   info.Topic,
-		Hash:    info.Hash,
+		Topic:   [64]byte(info.Topic),
+		Hash:    [64]byte(info.Hash),
 		Correct: info.Correct,
 	}
 
@@ -220,9 +220,9 @@ func SaveSignatures(args SaveSignatureArgs) {
 		SetCorrect(args.Info.Correct).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
-		SetHash(args.Info.Hash[:]).
+		SetHash(args.Info.Hash).
 		SetTimestamp(args.Info.Timestamp).
-		SetTopic(args.Info.Topic[:]).
+		SetTopic(args.Info.Topic).
 		AddSignerIDs(signerIds...).
 		OnConflictColumns("topic", "hash").
 		UpdateNewValues().

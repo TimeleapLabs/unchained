@@ -17,16 +17,16 @@ import (
 func (r *eventLogArgResolver) Value(ctx context.Context, obj *datasets.EventLogArg) (string, error) {
 	switch {
 	case strings.HasPrefix(obj.Type, "uint"), strings.HasPrefix(obj.Type, "int"):
-		return obj.Value.(string), nil
+		return obj.Value.String(), nil
 
 	case obj.Type == "bool":
 		return fmt.Sprintf("%t", obj.Value), nil
 
 	case obj.Type == "string":
-		return obj.Value.(string), nil
+		return obj.Value.String(), nil
 
 	case obj.Type == "address":
-		return obj.Value.(string), nil
+		return obj.Value.String(), nil
 
 	default:
 		return "", fmt.Errorf("unsupported type: %s", obj.Type)

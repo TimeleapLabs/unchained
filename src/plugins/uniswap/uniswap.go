@@ -111,7 +111,7 @@ func RecordSignature(
 	signature bls12381.G1Affine,
 	signer bls.Signer,
 	hash bls12381.G1Affine,
-	info datasets.PriceInfo,
+	info *datasets.PriceInfo,
 	debounce bool,
 	historical bool) {
 	if supported := supportedTokens[info.Asset.Token.String()]; !supported {
@@ -237,7 +237,7 @@ func RecordSignature(
 }
 
 type SaveSignatureArgs struct {
-	Info datasets.PriceInfo
+	Info *datasets.PriceInfo
 	Hash bls12381.G1Affine
 }
 
@@ -469,7 +469,7 @@ func Setup() {
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)
 
 		if err != nil {
-			log.Logger.Error("Failed to initalize token map.")
+			log.Logger.Error("Failed to initialize token map.")
 			os.Exit(1)
 		}
 
@@ -544,7 +544,7 @@ func syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx 
 		return
 	}
 
-	priceInfo := datasets.PriceInfo{
+	priceInfo := &datasets.PriceInfo{
 		Price: price.Bytes(),
 		Asset: &datasets.AssetKey{
 			Block: blockInx,
@@ -562,7 +562,7 @@ func syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx 
 	compressedSignature := signature.Bytes()
 
 	priceReport := datasets.PriceReport{
-		PriceInfo: &priceInfo,
+		PriceInfo: priceInfo,
 		Signature: compressedSignature[:],
 	}
 
@@ -590,7 +590,7 @@ func syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx 
 	lastBlock.Store(key.String(), blockInx)
 }
 
-func syncBlocks(token Token, key datasets.TokenKey, latest uint64) {
+func syncBlocks(token Token, key *datasets.TokenKey, latest uint64) {
 	block, ok := lastBlock.Load(key.String())
 	if !ok {
 		return
@@ -599,7 +599,7 @@ func syncBlocks(token Token, key datasets.TokenKey, latest uint64) {
 	caser := cases.Title(language.English, cases.NoLower)
 
 	for blockInx := block + 1; blockInx < latest; blockInx++ {
-		syncBlock(token, caser, &key, blockInx)
+		syncBlock(token, caser, key, blockInx)
 	}
 }
 
@@ -662,7 +662,7 @@ func createTask(tokens []Token, chain string) func() {
 				return
 			}
 
-			syncBlocks(token, *key, *currBlockNumber)
+			syncBlocks(token, key, *currBlockNumber)
 		}
 	}
 }

@@ -27,6 +27,15 @@ func (m *PriceInfo) Protobuf() ([]byte, error) {
 	return protoModel, nil
 }
 
+func (m *Signer) Bls() bls.Signer {
+	return bls.Signer{
+		Name:           m.Name,
+		EvmWallet:      m.EvmWallet,
+		PublicKey:      [96]byte(m.PublicKey),
+		ShortPublicKey: [48]byte(m.ShortPublicKey),
+	}
+}
+
 func NewSigner(input *bls.Signer) *Signer {
 	return &Signer{
 		Name:           input.Name,

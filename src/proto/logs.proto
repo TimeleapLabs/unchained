@@ -23,12 +23,12 @@ message EventLog {
 }
 
 message EventLogReport {
-  EventLogArg EventLog = 1;
+  EventLog EventLog = 1;
   bytes Signature = 2;
 }
 
 message BroadcastEventPacket {
-  EventLogArg Info = 1;
+  EventLog Info = 1;
   bytes Signature = 2;
   Signer Signer = 3;
 }

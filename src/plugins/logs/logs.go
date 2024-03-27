@@ -103,7 +103,7 @@ func RecordSignature(
 	signature bls12381.G1Affine,
 	signer bls.Signer,
 	hash bls12381.G1Affine,
-	info datasets.EventLog,
+	info *datasets.EventLog,
 	debounce bool,
 	historical bool) {
 	supportKey := SupportKey{
@@ -140,7 +140,7 @@ func RecordSignature(
 
 	key := EventKey{
 		Chain:    info.Chain,
-		TxHash:   info.TxHash,
+		TxHash:   [32]byte(info.TxHash),
 		LogIndex: info.LogIndex,
 	}
 
@@ -193,9 +193,9 @@ func RecordSignature(
 
 	if isMajority {
 		if debounce {
-			DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+			DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: *info})
 		} else {
-			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: *info})
 		}
 	}
 }
@@ -276,10 +276,10 @@ func SaveSignatures(args SaveSignatureArgs) {
 		SetAddress(args.Info.Address).
 		SetEvent(args.Info.Event).
 		SetIndex(args.Info.LogIndex).
-		SetTransaction(args.Info.TxHash[:]).
+		SetTransaction(args.Info.TxHash).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
-		SetArgs(args.Info.Args).
+		SetArgs(datasets.EventLogArgs(args.Info.Args).Array()).
 		AddSignerIDs(signerIds...).
 		OnConflictColumns("block", "transaction", "index").
 		UpdateNewValues().
@@ -411,7 +411,7 @@ func createTask(configs []LogConf, chain string) func() {
 					argTypes[input.Name] = input.Type.String()
 				}
 
-				args := []datasets.EventLogArg{}
+				args := []*datasets.EventLogArg{}
 				for _, key := range keys {
 					value := eventData[key]
 
@@ -419,23 +419,28 @@ func createTask(configs []LogConf, chain string) func() {
 						value = value.(*big.Int).String()
 					}
 
+					valueAnyType, err := datasets.ConvertInterfaceToAny(value)
+					if err != nil {
+						panic(err)
+					}
+
 					args = append(
 						args,
-						datasets.EventLogArg{
+						&datasets.EventLogArg{
 							Name:  key,
-							Value: value,
+							Value: valueAnyType,
 							Type:  argTypes[key],
 						},
 					)
 				}
 
-				event := datasets.EventLog{
+				event := &datasets.EventLog{
 					LogIndex: uint64(vLog.Index),
 					Block:    vLog.BlockNumber,
 					Address:  vLog.Address.Hex(),
 					Event:    conf.Event,
 					Chain:    conf.Chain,
-					TxHash:   vLog.TxHash,
+					TxHash:   vLog.TxHash.Bytes(),
 					Args:     args,
 				}
 
@@ -449,7 +454,7 @@ func createTask(configs []LogConf, chain string) func() {
 
 				priceReport := datasets.EventLogReport{
 					EventLog:  event,
-					Signature: compressedSignature,
+					Signature: compressedSignature[:],
 				}
 
 				payload, err := priceReport.Protobuf()

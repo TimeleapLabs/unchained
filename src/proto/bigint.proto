@@ -1,0 +1,9 @@
+syntax="proto3";
+option go_package = "./datasets";
+
+package main;
+
+message BigInt {
+  bool neg = 1;
+  repeated uint32 abs = 2;
+}
