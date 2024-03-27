@@ -111,8 +111,6 @@ func SaveSignatures(args SaveSignatureArgs) {
 		keys = append(keys, signature.Signer.PublicKey[:])
 	}
 
-	// TODO: If the user is voting for the opposite, we should remove the signature
-
 	currentRecord, err := dbClient.CorrectnessReport.
 		Query().
 		Where(correctnessreport.And(
