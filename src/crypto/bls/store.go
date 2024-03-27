@@ -6,6 +6,7 @@ import (
 
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/log"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -16,7 +17,7 @@ import (
 var ClientSecretKey *big.Int
 var ClientPublicKey *bls12381.G2Affine
 var ClientShortPublicKey *bls12381.G1Affine
-var ClientSigner Signer
+var ClientSigner datasets.Signer
 
 func saveConfig() {
 	pkBytes := ClientPublicKey.Bytes()
@@ -66,7 +67,7 @@ func InitClientIdentity() {
 	pkBytes := ClientPublicKey.Bytes()
 	addrStr := address.Calculate(pkBytes[:])
 
-	ClientSigner = Signer{
+	ClientSigner = datasets.Signer{
 		Name:           config.Config.GetString("name"),
 		EvmWallet:      config.Secrets.GetString("evmwallet"),
 		PublicKey:      ClientPublicKey.Bytes(),

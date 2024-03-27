@@ -3,7 +3,6 @@ package constants
 import "errors"
 
 var (
-	ErrInvalidPacket           = errors.New("packet.invalid")
 	ErrCantSendPacket          = errors.New("socket.unreachable")
 	ErrInvalidKosk             = errors.New("kosk.invalid")
 	ErrInvalidConfig           = errors.New("conf.invalid")
