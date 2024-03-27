@@ -10,31 +10,14 @@ import (
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 	"github.com/gorilla/websocket"
-	"github.com/vmihailenco/msgpack/v5"
+
+	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 // TODO: These functions share a huge chunk of code
 func ConsumePriceReport(message []byte) {
-	var packet datasets.BroadcastPricePacket
-	err := msgpack.Unmarshal(message, &packet)
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Unmarshal error")
-
-		return
-	}
-
-	toHash, err := msgpack.Marshal(&packet.Info)
-
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Marshal error")
-
-		return
-	}
-
+	packet := new(datasets.BroadcastPricePacket).DeSia(&sia.Sia{Content: message})
+	toHash := packet.Info.Sia().Content
 	hash, err := bls.Hash(toHash)
 
 	if err != nil {
@@ -66,27 +49,8 @@ func ConsumePriceReport(message []byte) {
 }
 
 func ConsumeEventLog(message []byte) {
-	var packet datasets.BroadcastEventPacket
-	err := msgpack.Unmarshal(message, &packet)
-
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Unmarshal error")
-
-		return
-	}
-
-	toHash, err := msgpack.Marshal(&packet.Info)
-
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Marshal error")
-
-		return
-	}
-
+	packet := new(datasets.BroadcastEventPacket).DeSia(&sia.Sia{Content: message})
+	toHash := packet.Info.Sia().Content
 	hash, err := bls.Hash(toHash)
 
 	if err != nil {
@@ -118,27 +82,8 @@ func ConsumeEventLog(message []byte) {
 }
 
 func ConsumeCorrectnessReport(message []byte) {
-	var packet datasets.BroadcastCorrectnessPacket
-	err := msgpack.Unmarshal(message, &packet)
-
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Unmarshal error")
-
-		return
-	}
-
-	toHash, err := msgpack.Marshal(&packet.Info)
-
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Marshal error")
-
-		return
-	}
-
+	packet := new(datasets.BroadcastCorrectnessPacket).DeSia(&sia.Sia{Content: message})
+	toHash := packet.Info.Sia().Content
 	hash, err := bls.Hash(toHash)
 
 	if err != nil {

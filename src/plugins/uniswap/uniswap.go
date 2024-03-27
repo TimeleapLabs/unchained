@@ -28,12 +28,12 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/puzpuzpuz/xsync/v3"
-	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
+	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 var DebouncedSaveSignatures func(key datasets.AssetKey, arg SaveSignatureArgs)
@@ -61,7 +61,7 @@ type Token struct {
 
 var priceCache map[string]*lru.Cache[uint64, big.Int]
 var consensus *lru.Cache[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
-var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
+var signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 var supportedTokens map[datasets.TokenKey]bool
 
@@ -75,7 +75,7 @@ var lastPrice big.Int
 
 func CheckAndCacheSignature(
 	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int],
-	signature bls12381.G1Affine, signer bls.Signer,
+	signature bls12381.G1Affine, signer datasets.Signer,
 	hash bls12381.G1Affine,
 	totalVoted *big.Int) error {
 	signatureMutex.Lock()
@@ -83,7 +83,7 @@ func CheckAndCacheSignature(
 
 	cached, _ := signatureCache.Get(hash)
 
-	packed := bls.Signature{
+	packed := datasets.Signature{
 		Signature: signature,
 		Signer:    signer,
 		Processed: false,
@@ -109,7 +109,7 @@ func CheckAndCacheSignature(
 // TODO: Can we turn this into a library func?
 func RecordSignature(
 	signature bls12381.G1Affine,
-	signer bls.Signer,
+	signer datasets.Signer,
 	hash bls12381.G1Affine,
 	info datasets.PriceInfo,
 	debounce bool,
@@ -259,7 +259,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	ctx := context.Background()
 
-	var newSigners []bls.Signer
+	var newSigners []datasets.Signer
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
@@ -473,13 +473,7 @@ func Setup() {
 			os.Exit(1)
 		}
 
-		key, err := tokenKey(token)
-
-		if err != nil {
-			log.Logger.Error("Failed to compute token key.")
-			os.Exit(1)
-		}
-
+		key := tokenKey(token)
 		supportedTokens[*key] = true
 	}
 }
@@ -539,10 +533,7 @@ func syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx 
 		With("Price", priceStr).
 		Info(caser.String(token.Name))
 
-	key, err = tokenKey(token)
-	if err != nil {
-		return
-	}
+	key = tokenKey(token)
 
 	priceInfo := datasets.PriceInfo{
 		Price: *price,
@@ -552,27 +543,18 @@ func syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx 
 		},
 	}
 
-	toHash, err := msgpack.Marshal(&priceInfo)
-	if err != nil {
-		log.Logger.Error("Couldn't marshal price info.")
-		os.Exit(1)
-	}
-
+	toHash := priceInfo.Sia().Content
 	signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
-	compressedSignature := signature.Bytes()
-
-	priceReport := datasets.PriceReport{
-		PriceInfo: priceInfo,
-		Signature: compressedSignature,
-	}
-
-	payload, err := msgpack.Marshal(&priceReport)
-	if err != nil {
-		log.Logger.Error("Couldn't marshal price report.")
-		panic(err)
-	}
 
 	if token.Send && !shared.IsClientSocketClosed {
+		compressedSignature := signature.Bytes()
+
+		priceReport := datasets.PriceReport{
+			PriceInfo: priceInfo,
+			Signature: compressedSignature,
+		}
+
+		payload := priceReport.Sia().Content
 		shared.Send(opcodes.PriceReport, payload)
 	}
 
@@ -603,19 +585,17 @@ func syncBlocks(token Token, key datasets.TokenKey, latest uint64) {
 	}
 }
 
-func tokenKey(token Token) (*datasets.TokenKey, error) {
+func tokenKey(token Token) *datasets.TokenKey {
 	var cross []datasets.TokenKey
 
 	for _, id := range token.Cross {
 		cross = append(cross, crossTokens[id])
 	}
 
-	toHash, err := msgpack.Marshal(cross)
-
-	if err != nil {
-		log.Logger.Error("Couldn't hash token key")
-		return nil, err
-	}
+	toHash := new(sia.ArraySia[datasets.TokenKey]).
+		AddArray8(cross, func(s *sia.ArraySia[datasets.TokenKey], item datasets.TokenKey) {
+			s.EmbedSia(item.Sia())
+		}).Content
 
 	hash := shake.Shake(toHash)
 
@@ -628,7 +608,7 @@ func tokenKey(token Token) (*datasets.TokenKey, error) {
 		Cross:  string(hash),
 	}
 
-	return &key, nil
+	return &key
 }
 
 func createTask(tokens []Token, chain string) func() {
@@ -648,12 +628,7 @@ func createTask(tokens []Token, chain string) func() {
 			}
 
 			// TODO: this can be cached
-			key, err := tokenKey(token)
-
-			if err != nil {
-				continue
-			}
-
+			key := tokenKey(token)
 			tokenLastBlock, exists := lastBlock.Load(*key)
 
 			if !exists {
@@ -725,7 +700,7 @@ func init() {
 	supportedTokens = make(map[datasets.TokenKey]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](LruSize)
+	signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
 
 	if err != nil {
 		log.Logger.Error("Failed to create token price signature cache.")

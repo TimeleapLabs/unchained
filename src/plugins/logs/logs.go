@@ -33,7 +33,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-co-op/gocron/v2"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -51,7 +50,7 @@ type SupportKey struct {
 }
 
 var consensus *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
-var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
+var signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
 var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
@@ -102,7 +101,7 @@ type SaveSignatureArgs struct {
 
 func RecordSignature(
 	signature bls12381.G1Affine,
-	signer bls.Signer,
+	signer datasets.Signer,
 	hash bls12381.G1Affine,
 	info datasets.EventLog,
 	debounce bool,
@@ -176,7 +175,7 @@ func RecordSignature(
 
 	cached, _ := signatureCache.Get(hash)
 
-	packed := bls.Signature{
+	packed := datasets.Signature{
 		Signature: signature,
 		Signer:    signer,
 		Processed: false,
@@ -211,7 +210,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	ctx := context.Background()
 
-	var newSigners []bls.Signer
+	var newSigners []datasets.Signer
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
@@ -440,25 +439,18 @@ func createTask(configs []LogConf, chain string) func() {
 					Args:     args,
 				}
 
-				toHash, err := msgpack.Marshal(&event)
-				if err != nil {
-					panic(err)
-				}
-
+				toHash := event.Sia().Content
 				signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
-				compressedSignature := signature.Bytes()
-
-				priceReport := datasets.EventLogReport{
-					EventLog:  event,
-					Signature: compressedSignature,
-				}
-
-				payload, err := msgpack.Marshal(&priceReport)
-				if err != nil {
-					panic(err)
-				}
 
 				if conf.Send {
+					compressedSignature := signature.Bytes()
+
+					priceReport := datasets.EventLogReport{
+						EventLog:  event,
+						Signature: compressedSignature,
+					}
+
+					payload := priceReport.Sia().Content
 					shared.Send(opcodes.EventLog, payload)
 				}
 
@@ -572,7 +564,7 @@ func init() {
 	supportedEvents = make(map[SupportKey]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](LruSize)
+	signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
 
 	if err != nil {
 		panic(err)

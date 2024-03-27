@@ -18,54 +18,47 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"
-	"github.com/vmihailenco/msgpack/v5"
+
+	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 var challenges *xsync.MapOf[*websocket.Conn, kosk.Challenge]
-var signers *xsync.MapOf[*websocket.Conn, bls.Signer]
+var signers *xsync.MapOf[*websocket.Conn, datasets.Signer]
 var upgrader = websocket.Upgrader{} // use default options
 
 func processKosk(conn *websocket.Conn, payload []byte) error {
-	var challenge kosk.Challenge
-	err := msgpack.Unmarshal(payload, &challenge)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return constants.ErrInvalidPacket
-	}
+	challenge := new(kosk.Challenge).DeSia(&sia.Sia{Content: payload})
 
 	signer, ok := signers.Load(conn)
 	if !ok {
 		return constants.ErrMissingHello
 	}
 
+	var err error
 	challenge.Passed, err = kosk.VerifyChallenge(challenge.Random, signer.PublicKey, challenge.Signature)
+
 	if err != nil {
 		return constants.ErrInvalidKosk
 	}
+
 	if !challenge.Passed {
 		log.Logger.Error("challenge is Passed")
 		return constants.ErrInvalidKosk
 	}
 
-	challenges.Store(conn, challenge)
-
+	challenges.Store(conn, *challenge)
 	return nil
 }
 
 func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
-	var signer bls.Signer
-	err := msgpack.Unmarshal(payload, &signer)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal packet: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
-	}
+	signer := new(datasets.Signer).DeSia(&sia.Sia{Content: payload})
 
 	if signer.Name == "" {
 		log.Logger.Error("Signer name is empty Or public key is invalid")
 		return []byte{}, constants.ErrInvalidConfig
 	}
 
-	signers.Range(func(conn *websocket.Conn, signerInMap bls.Signer) bool {
+	signers.Range(func(conn *websocket.Conn, signerInMap datasets.Signer) bool {
 		publicKeyInUse := signerInMap.PublicKey == signer.PublicKey
 		if publicKeyInUse {
 			Close(conn)
@@ -73,21 +66,17 @@ func processHello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return !publicKeyInUse
 	})
 
-	signers.Store(conn, signer)
+	signers.Store(conn, *signer)
 
 	// Start KOSK verification
 	challenge := kosk.Challenge{Random: kosk.NewChallenge()}
 	challenges.Store(conn, challenge)
-	koskPayload, err := msgpack.Marshal(challenge)
-	if err != nil {
-		log.Logger.Error("Can't marshal challenge: %v", err)
-		return []byte{}, constants.ErrInternalError
-	}
+	koskPayload := challenge.Sia().Content
 
 	return koskPayload, nil
 }
 
-func checkPublicKey(conn *websocket.Conn) (*bls.Signer, error) {
+func checkPublicKey(conn *websocket.Conn) (*datasets.Signer, error) {
 	challenge, ok := challenges.Load(conn)
 	if !ok || !challenge.Passed {
 		return nil, constants.ErrMissingKosk
@@ -108,20 +97,10 @@ func processPriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	var report datasets.PriceReport
-	err = msgpack.Unmarshal(payload, &report)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
-	}
-
-	toHash, err := msgpack.Marshal(&report.PriceInfo)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
-	}
-
+	report := new(datasets.PriceReport).DeSia(&sia.Sia{Content: payload})
+	toHash := report.PriceInfo.Sia().Content
 	hash, err := bls.Hash(toHash)
+
 	if err != nil {
 		log.Logger.Error("Can't hash bls: %v", err)
 		return []byte{}, constants.ErrInternalError
@@ -154,16 +133,7 @@ func processPriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		Signer:    *signer,
 	}
 
-	priceInfoByte, err := msgpack.Marshal(&priceInfo)
-	// TODO: Handle this error properly
-	// TODO: Maybe notify the peer so they can resend
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Cannot marshal the broadcast packet")
-		return []byte{}, constants.ErrInternalError
-	}
-
+	priceInfoByte := priceInfo.Sia().Content
 	return priceInfoByte, nil
 }
 
@@ -173,20 +143,10 @@ func processEventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	var report datasets.EventLogReport
-	err = msgpack.Unmarshal(payload, &report)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
-	}
-
-	toHash, err := msgpack.Marshal(&report.EventLog)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
-	}
-
+	report := new(datasets.EventLogReport).DeSia(&sia.Sia{Content: payload})
+	toHash := report.EventLog.Sia().Content
 	hash, err := bls.Hash(toHash)
+
 	if err != nil {
 		log.Logger.Error("Can't hash bls: %v", err)
 		return []byte{}, constants.ErrInternalError
@@ -219,17 +179,7 @@ func processEventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		Signer:    *signer,
 	}
 
-	broadcastPayload, err := msgpack.Marshal(&broadcastPacket)
-	// TODO: Handle this error properly
-	// TODO: Maybe notify the peer so they can resend
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Cannot marshal the broadcast packet")
-
-		return []byte{}, constants.ErrInternalError
-	}
-
+	broadcastPayload := broadcastPacket.Sia().Content
 	return broadcastPayload, nil
 }
 
@@ -239,20 +189,10 @@ func processCorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, err
 		return []byte{}, err
 	}
 
-	var report datasets.CorrectnessReport
-	err = msgpack.Unmarshal(payload, &report)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
-	}
-
-	toHash, err := msgpack.Marshal(&report.Correctness)
-	if err != nil {
-		log.Logger.Error("Can't unmarshal Msgpack: %v", err)
-		return []byte{}, constants.ErrInvalidPacket
-	}
-
+	report := new(datasets.CorrectnessReport).DeSia(&sia.Sia{Content: payload})
+	toHash := report.Correctness.Sia().Content
 	hash, err := bls.Hash(toHash)
+
 	if err != nil {
 		log.Logger.Error("Can't hash bls: %v", err)
 		return []byte{}, constants.ErrInternalError
@@ -285,16 +225,7 @@ func processCorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, err
 		Signer:    *signer,
 	}
 
-	broadcastPayload, err := msgpack.Marshal(&broadcastPacket)
-	// TODO: Handle this error properly
-	// TODO: Maybe notify the peer so they can resend
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Cannot marshal the broadcast packet")
-		return []byte{}, constants.ErrInternalError
-	}
-
+	broadcastPayload := broadcastPacket.Sia().Content
 	return broadcastPayload, nil
 }
 
@@ -399,6 +330,6 @@ func StartServer() {
 }
 
 func init() {
-	signers = xsync.NewMapOf[*websocket.Conn, bls.Signer]()
+	signers = xsync.NewMapOf[*websocket.Conn, datasets.Signer]()
 	challenges = xsync.NewMapOf[*websocket.Conn, kosk.Challenge]()
 }
