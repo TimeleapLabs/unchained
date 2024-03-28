@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/KenshiTech/unchained/log"
 	"os"
 	"path"
 	"runtime"
+
+	"github.com/KenshiTech/unchained/log"
 
 	"github.com/KenshiTech/unchained/constants"
 	"gopkg.in/yaml.v3"

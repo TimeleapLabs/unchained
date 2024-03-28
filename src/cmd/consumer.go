@@ -37,7 +37,7 @@ var consumerCmd = &cobra.Command{
 			panic(err)
 		}
 
-		log.Start()
+		log.Start(config.App.System.Log)
 
 		log.Logger.
 			With("Version", constants.Version).
