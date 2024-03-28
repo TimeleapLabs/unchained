@@ -76,7 +76,7 @@ func VotingPowerToFloat(power *big.Int) *big.Float {
 }
 
 func Start() {
-	base = big.NewInt(config.Config.GetInt64("pos.base"))
+	base = big.NewInt(config.App.ProofOfStack.Base)
 
 	pkBytes := bls.ClientPublicKey.Bytes()
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
@@ -88,8 +88,8 @@ func Start() {
 	var err error
 
 	posContract, err = ethereum.GetNewStakingContract(
-		config.Config.GetString("pos.chain"),
-		config.Config.GetString("pos.address"),
+		config.App.ProofOfStack.Chain,
+		config.App.ProofOfStack.Address,
 		false,
 	)
 

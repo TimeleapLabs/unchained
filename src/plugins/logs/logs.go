@@ -61,22 +61,9 @@ const (
 	LruSize         = 128
 )
 
-type LogConf struct {
-	Name          string  `mapstructure:"name"`
-	Chain         string  `mapstructure:"chain"`
-	Abi           string  `mapstructure:"abi"`
-	Event         string  `mapstructure:"event"`
-	Address       string  `mapstructure:"address"`
-	From          *uint64 `mapstructure:"from"`
-	Step          uint64  `mapstructure:"step"`
-	Store         bool    `mapstructure:"store"`
-	Send          bool    `mapstructure:"send"`
-	Confrimations uint64  `mapstructure:"confirmations"`
-}
-
 // var lastSynced map[string]uint64.
 var abiMap map[string]abi.ABI
-var lastSyncedBlock map[LogConf]uint64
+var lastSyncedBlock map[config.Event]uint64
 
 func GetBlockNumber(network string) (*uint64, error) {
 	blockNumber, err := ethereum.GetBlockNumber(network)
@@ -296,7 +283,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 	aggregateCache.Add(args.Hash, aggregate)
 }
 
-func createTask(configs []LogConf, chain string) func() {
+func createTask(configs []config.Event, chain string) func() {
 	return func() {
 		if shared.IsClientSocketClosed {
 			return
@@ -308,7 +295,7 @@ func createTask(configs []LogConf, chain string) func() {
 			}
 
 			blockNumber, err := GetBlockNumber(chain)
-			allowedBlock := *blockNumber - conf.Confrimations
+			allowedBlock := *blockNumber - conf.Confirmations
 
 			if err != nil {
 				return
@@ -475,17 +462,12 @@ func createTask(configs []LogConf, chain string) func() {
 	}
 }
 
-func Setup() {
-	if !config.Config.IsSet("plugins.logs") {
+func New() {
+	if config.App.Plugins.EthLog != nil {
 		return
 	}
 
-	var configs []LogConf
-	if err := config.Config.UnmarshalKey("plugins.logs.events", &configs); err != nil {
-		panic(err)
-	}
-
-	for _, conf := range configs {
+	for _, conf := range config.App.Plugins.EthLog.Events {
 		key := SupportKey{
 			Chain:   conf.Chain,
 			Address: conf.Address,
@@ -495,23 +477,17 @@ func Setup() {
 	}
 }
 
-func Start() {
-	if !config.Config.IsSet("plugins.logs") {
+func Listen() {
+	if config.App.Plugins.EthLog != nil {
 		return
 	}
 
 	scheduler, err := gocron.NewScheduler()
-
 	if err != nil {
 		panic(err)
 	}
 
-	var configs []LogConf
-	if err := config.Config.UnmarshalKey("plugins.logs.events", &configs); err != nil {
-		panic(err)
-	}
-
-	for _, conf := range configs {
+	for _, conf := range config.App.Plugins.EthLog.Events {
 		if _, exists := abiMap[conf.Abi]; exists {
 			continue
 		}
@@ -533,13 +509,8 @@ func Start() {
 		}
 	}
 
-	scheduleConfs := config.Config.Sub("plugins.logs.schedule")
-	scheduleNames := scheduleConfs.AllKeys()
-
-	for index := range scheduleNames {
-		name := scheduleNames[index]
-		duration := scheduleConfs.GetDuration(name)
-		task := createTask(configs, name)
+	for name, duration := range config.App.Plugins.EthLog.Schedule {
+		task := createTask(config.App.Plugins.EthLog.Events, name)
 
 		_, err = scheduler.NewJob(
 			gocron.DurationJob(duration),
@@ -560,7 +531,7 @@ func init() {
 	signatureMutex = new(sync.Mutex)
 
 	abiMap = make(map[string]abi.ABI)
-	lastSyncedBlock = make(map[LogConf]uint64)
+	lastSyncedBlock = make(map[config.Event]uint64)
 	supportedEvents = make(map[SupportKey]bool)
 
 	var err error

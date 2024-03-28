@@ -22,7 +22,7 @@ func init() {
 
 func Start() {
 	Logger = slog.New(tint.NewHandler(colorable.NewColorableStdout(), &tint.Options{
-		Level:      Levels[config.Config.GetString("log")],
+		Level:      Levels[config.App.System.Log],
 		TimeFormat: time.RFC3339,
 	}))
 }
