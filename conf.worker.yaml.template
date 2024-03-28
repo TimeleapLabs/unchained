@@ -1,17 +1,20 @@
-log: info
-name: <name>
+system:
+  log: info
+  name: <name>
 
 broker:
   uri: wss://shinobi.brokers.kenshi.io
 
 rpc:
-  ethereum:
+  - name: ethereum
+    nodes:
     - https://ethereum.publicnode.com
     - https://eth.llamarpc.com
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
 
-  arbitrum_sepolia:
+  - name: arbitrum_sepolia:
+    nodes:
     - https://sepolia-rollup.arbitrum.io/rpc
 
 plugins:
