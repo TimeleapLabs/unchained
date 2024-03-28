@@ -26,17 +26,16 @@ var workerCmd = &cobra.Command{
 	Long:  `Run the Unchained client in worker mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		err := config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
-		if err != nil {
-			panic(err)
-		}
+		config.App.Broker.URI = cmd.Flags().Lookup("broker").Value.String()
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
+		err := config.Load(configPath, secretsPath)
+		if err != nil {
+			panic(err)
+		}
 
-		config.LoadConfig(configPath, secretsPath)
 		log.Start()
-
 		log.Logger.
 			With("Version", constants.Version).
 			With("Protocol", constants.ProtocolVersion).
@@ -47,10 +46,11 @@ var workerCmd = &cobra.Command{
 		pos.Start()
 		db.Start()
 		client.StartClient()
-		uniswap.Setup()
-		uniswap.Start()
-		logs.Setup()
-		logs.Start()
+
+		uniswap.Listen()
+		logs.New()
+		logs.Listen()
+
 		persistence.Start(contextPath)
 		client.Listen()
 	},

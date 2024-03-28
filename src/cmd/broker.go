@@ -23,13 +23,17 @@ var brokerCmd = &cobra.Command{
 	Short: "Run the Unchained client in broker mode",
 	Long:  `Run the Unchained client in broker mode`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config.LoadConfig(configPath, secretsPath)
+		err := config.Load(configPath, secretsPath)
+		if err != nil {
+			panic(err)
+		}
+
 		log.Start()
 		db.Start()
-		correctness.Setup()
+		correctness.New()
 		ethereum.Start()
-		uniswap.Setup()
-		logs.Setup()
+		uniswap.New()
+		logs.New()
 		gql.InstallHandlers()
 		net.StartServer()
 	},

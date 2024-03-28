@@ -28,13 +28,13 @@ func Open(databaseURL string) (*ent.Client, error) {
 }
 
 func Start() {
-	if !config.Config.IsSet("database.url") {
+	if config.App.Postgres.URL == "" {
 		return
 	}
 
 	var err error
 
-	dbURL := config.Config.GetString("database.url")
+	dbURL := config.App.Postgres.URL
 	dbClient, err = ent.Open("postgres", dbURL)
 
 	if err != nil {

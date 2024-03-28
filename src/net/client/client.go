@@ -23,13 +23,13 @@ import (
 var Done chan struct{}
 
 func StartClient() {
-	if !config.Config.IsSet("broker.uri") {
+	if config.App.Broker.URI == "" {
 		return
 	}
 
 	brokerURL := fmt.Sprintf(
 		"%s/%s",
-		config.Config.GetString("broker.uri"),
+		config.App.Broker.URI,
 		constants.ProtocolVersion,
 	)
 
@@ -120,7 +120,7 @@ func ReConnect(err error, brokerURL string, helloMessageByte []byte) {
 }
 
 func closeConnection() {
-	if shared.Client != nil && config.Config.IsSet("broker.uri") {
+	if shared.Client != nil && config.App.Broker.URI != "" {
 		err := shared.Client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		if err != nil {
 			log.Logger.

@@ -27,15 +27,16 @@ var consumerCmd = &cobra.Command{
 	Long:  `Run the Unchained client in consumer mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		err := config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
-		if err != nil {
-			panic(err)
-		}
+		config.App.Broker.URI = cmd.Flags().Lookup("broker").Value.String()
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		config.LoadConfig(configPath, secretsPath)
+		err := config.Load(configPath, secretsPath)
+		if err != nil {
+			panic(err)
+		}
+
 		log.Start()
 
 		log.Logger.
@@ -47,9 +48,9 @@ var consumerCmd = &cobra.Command{
 		bls.InitClientIdentity()
 		pos.Start()
 		db.Start()
-		uniswap.Setup()
-		correctness.Setup()
-		logs.Setup()
+		uniswap.New()
+		correctness.New()
+		logs.New()
 		client.StartClient()
 		consumers.StartConsumer()
 		client.Listen()

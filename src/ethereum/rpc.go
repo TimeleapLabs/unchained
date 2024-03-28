@@ -3,10 +3,10 @@ package ethereum
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"sync"
 
 	"github.com/KenshiTech/unchained/config"
+
 	"github.com/KenshiTech/unchained/ethereum/contracts"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,26 +20,10 @@ var Clients map[string]*ethclient.Client
 var rpcMutex *sync.Mutex
 
 func Start() {
-	rpcConf := config.Config.Sub("rpc")
-	networkNames := rpcConf.AllKeys()
-
-	for _, name := range networkNames {
-		conf := rpcConf.Get(name)
-		rpcIndex[name] = 0
-
-		switch reflect.TypeOf(conf).Kind() {
-		case reflect.String:
-			rpcList[name] = append(rpcList[name], conf.(string))
-
-		case reflect.Slice:
-			for _, rpc := range conf.([]interface{}) {
-				rpcList[name] = append(rpcList[name], rpc.(string))
-			}
-		default:
-			panic("RPC List Is Invalid")
-		}
-
-		RefreshRPC(name)
+	for _, rpc := range config.App.RPC {
+		rpcIndex[rpc.Name] = 0
+		rpcList[rpc.Name] = append(rpcList[rpc.Name], rpc.Nodes...)
+		RefreshRPC(rpc.Name)
 	}
 }
 
