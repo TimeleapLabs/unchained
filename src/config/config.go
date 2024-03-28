@@ -1,12 +1,12 @@
 package config
 
 import (
+	"github.com/KenshiTech/unchained/log"
 	"os"
 	"path"
 	"runtime"
 
 	"github.com/KenshiTech/unchained/constants"
-	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -25,14 +25,14 @@ func Load(configPath, secretPath string) error {
 		SecretFilePath = secretPath
 		err := cleanenv.ReadConfig(secretPath, App.Secret)
 		if err != nil {
-			log.Err(err).Msg("Can't read secret file")
+			log.Logger.With("Error", err).Error("Can't read secret file")
 			return constants.ErrCantLoadSecret
 		}
 	}
 
 	err := cleanenv.ReadConfig(configPath, App)
 	if err != nil {
-		log.Err(err).Msg("Can't read config file")
+		log.Logger.With("Error", err).Error("Can't read config file")
 		return constants.ErrCantLoadConfig
 	}
 
@@ -47,18 +47,18 @@ func Load(configPath, secretPath string) error {
 func (s *Secret) Save() error {
 	yamlData, err := yaml.Marshal(&s)
 	if err != nil {
-		log.Err(err).Msg("Can't marshal to yaml")
+		log.Logger.With("Error", err).Error("Can't marshal secrets to yaml")
 		return constants.ErrCantWriteSecret
 	}
 
 	if SecretFilePath == "" {
-		log.Err(err).Msg("SecretFilePath is not defined")
+		log.Logger.With("Error", err).Error("SecretFilePath is not defined")
 		return constants.ErrCantWriteSecret
 	}
 
 	err = os.WriteFile(SecretFilePath, yamlData, 0600)
 	if err != nil {
-		log.Err(err).Msg("Can't write secret file")
+		log.Logger.With("Error", err).Error("Can't write secret file")
 		return constants.ErrCantWriteSecret
 	}
 
