@@ -13,7 +13,7 @@ rpc:
     - wss://ethereum.publicnode.com
     - https://eth.rpc.blxrbdn.com
 
-  - name: arbitrum_sepolia:
+  - name: arbitrum_sepolia
     nodes:
     - https://sepolia-rollup.arbitrum.io/rpc
 

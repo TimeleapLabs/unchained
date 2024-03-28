@@ -20,7 +20,7 @@ rpc:
     - wss://arbitrum-one.publicnode.com
     - https://arbitrum-one.public.blastapi.io
 
-  - name: arbitrum_sepolia:
+  - name: arbitrum_sepolia
     nodes:
     - https://sepolia-rollup.arbitrum.io/rpc
 

@@ -196,21 +196,24 @@ You need a configuration file to get started. You can start with the following
 config:
 
 ```yaml
-log: info
-name: <name>
+system:
+  log: info
+  name: <name>
 
 broker:
   uri: wss://shinobi.brokers.kenshi.io
 
 rpc:
-  ethereum:
-    - https://ethereum.publicnode.com
-    - https://eth.llamarpc.com
-    - wss://ethereum.publicnode.com
-    - https://eth.rpc.blxrbdn.com
+  - name: ethereum
+    nodes:
+      - https://ethereum.publicnode.com
+      - https://eth.llamarpc.com
+      - wss://ethereum.publicnode.com
+      - https://eth.rpc.blxrbdn.com
 
-  arbitrum_sepolia:
-    - https://sepolia-rollup.arbitrum.io/rpc
+  - name: arbitrum_sepolia
+    nodes:
+      - https://sepolia-rollup.arbitrum.io/rpc
 
 plugins:
   uniswap:
