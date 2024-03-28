@@ -28,7 +28,7 @@ var brokerCmd = &cobra.Command{
 			panic(err)
 		}
 
-		log.Start()
+		log.Start(config.App.System.Log)
 		db.Start()
 		correctness.New()
 		ethereum.Start()
