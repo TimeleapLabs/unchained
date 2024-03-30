@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   #unchained_broker:
   #  image: ghcr.io/kenshitech/unchained:latest
