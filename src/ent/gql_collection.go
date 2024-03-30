@@ -457,6 +457,18 @@ func (s *SignerQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			s.WithNamedEventLogs(alias, func(wq *EventLogQuery) {
 				*wq = *query
 			})
+		case "correctnessreport":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CorrectnessReportClient{config: s.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, mayAddCondition(satisfies, correctnessreportImplementors)...); err != nil {
+				return err
+			}
+			s.WithNamedCorrectnessReport(alias, func(wq *CorrectnessReportQuery) {
+				*wq = *query
+			})
 		case "name":
 			if _, ok := fieldSeen[signer.FieldName]; !ok {
 				selectedFields = append(selectedFields, signer.FieldName)
@@ -516,6 +528,28 @@ func newSignerPaginateArgs(rv map[string]any) *signerPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &SignerOrder{Field: &SignerOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithSignerOrder(order))
+			}
+		case *SignerOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithSignerOrder(v))
+			}
+		}
 	}
 	if v, ok := rv[whereField].(*SignerWhereInput); ok {
 		args.opts = append(args.opts, WithSignerFilter(v.Filter))

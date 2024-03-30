@@ -1193,6 +1193,53 @@ func (s *SignerQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// SignerOrderFieldPoints orders Signer by points.
+	SignerOrderFieldPoints = &SignerOrderField{
+		Value: func(s *Signer) (ent.Value, error) {
+			return s.Points, nil
+		},
+		column: signer.FieldPoints,
+		toTerm: signer.ByPoints,
+		toCursor: func(s *Signer) Cursor {
+			return Cursor{
+				ID:    s.ID,
+				Value: s.Points,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f SignerOrderField) String() string {
+	var str string
+	switch f.column {
+	case SignerOrderFieldPoints.column:
+		str = "POINTS"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f SignerOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *SignerOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("SignerOrderField %T must be a string", v)
+	}
+	switch str {
+	case "POINTS":
+		*f = *SignerOrderFieldPoints
+	default:
+		return fmt.Errorf("%s is not a valid SignerOrderField", str)
+	}
+	return nil
+}
+
 // SignerOrderField defines the ordering field of Signer.
 type SignerOrderField struct {
 	// Value extracts the ordering value from the given Signer.

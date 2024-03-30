@@ -19,14 +19,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// workerCmd represents the worker command
+// workerCmd represents the worker command.
 var workerCmd = &cobra.Command{
 	Use:   "worker",
 	Short: "Run the Unchained client in worker mode",
 	Long:  `Run the Unchained client in worker mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+		err := config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+		if err != nil {
+			panic(err)
+		}
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -49,7 +52,7 @@ var workerCmd = &cobra.Command{
 		logs.Setup()
 		logs.Start()
 		persistence.Start(contextPath)
-		client.ClientBlock()
+		client.Listen()
 	},
 }
 

@@ -10,13 +10,14 @@ import (
 	"github.com/KenshiTech/unchained/gql"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net"
+	"github.com/KenshiTech/unchained/plugins/correctness"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 
 	"github.com/spf13/cobra"
 )
 
-// brokerCmd represents the broker command
+// brokerCmd represents the broker command.
 var brokerCmd = &cobra.Command{
 	Use:   "broker",
 	Short: "Run the Unchained client in broker mode",
@@ -25,6 +26,7 @@ var brokerCmd = &cobra.Command{
 		config.LoadConfig(configPath, secretsPath)
 		log.Start()
 		db.Start()
+		correctness.Setup()
 		ethereum.Start()
 		uniswap.Setup()
 		logs.Setup()
@@ -45,5 +47,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// brokerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

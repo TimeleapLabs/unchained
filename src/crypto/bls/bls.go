@@ -8,19 +8,6 @@ import (
 	bls12381_fr "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
 )
 
-type Signer struct {
-	Name           string
-	EvmWallet      string
-	PublicKey      [96]byte
-	ShortPublicKey [48]byte
-}
-
-type Signature struct {
-	Signature bls12381.G1Affine
-	Signer    Signer
-	Processed bool
-}
-
 var (
 	g2Aff bls12381.G2Affine
 	g1Aff bls12381.G1Affine
@@ -38,7 +25,7 @@ func GetShortPublicKey(sk *big.Int) *bls12381.G1Affine {
 	return new(bls12381.G1Affine).ScalarMultiplication(&g1Aff, sk)
 }
 
-// generate BLS private and public key pair
+// generate BLS private and public key pair.
 func GenerateKeyPair() (*big.Int, *bls12381.G2Affine, error) {
 	// generate a random point in G2
 	g2Order := bls12381_fr.Modulus()
@@ -57,10 +44,12 @@ func Verify(
 	signature bls12381.G1Affine,
 	hashedMessage bls12381.G1Affine,
 	publicKey bls12381.G2Affine) (bool, error) {
-
-	pairingSigG2, _ := bls12381.Pair(
+	pairingSigG2, err := bls12381.Pair(
 		[]bls12381.G1Affine{signature},
 		[]bls12381.G2Affine{g2Aff})
+	if err != nil {
+		return false, err
+	}
 
 	pairingHmPk, pairingError := bls12381.Pair(
 		[]bls12381.G1Affine{hashedMessage},
@@ -76,7 +65,6 @@ func FastVerify(
 	g2Gen bls12381.G2Affine,
 	invertedHashedMessage bls12381.G1Affine,
 	publicKey bls12381.G2Affine) (bool, error) {
-
 	ok, pairingError := bls12381.PairingCheck(
 		[]bls12381.G1Affine{signature, invertedHashedMessage},
 		[]bls12381.G2Affine{g2Gen, publicKey})
@@ -90,7 +78,10 @@ func Hash(message []byte) (bls12381.G1Affine, error) {
 }
 
 func Sign(secretKey big.Int, message []byte) (bls12381.G1Affine, bls12381.G1Affine) {
-	hashedMessage, _ := Hash(message)
+	hashedMessage, err := Hash(message)
+	if err != nil {
+		panic(err)
+	}
 	signature := new(bls12381.G1Affine).ScalarMultiplication(&hashedMessage, &secretKey)
 
 	return *signature, hashedMessage
@@ -109,7 +100,6 @@ func RecoverPublicKey(bytes [96]byte) (bls12381.G2Affine, error) {
 }
 
 func AggregateSignatures(signatures []bls12381.G1Affine) (bls12381.G1Affine, error) {
-
 	aggregated := new(bls12381.G1Jac).FromAffine(&signatures[0])
 
 	for _, sig := range signatures[1:] {

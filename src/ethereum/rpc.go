@@ -24,7 +24,6 @@ func Start() {
 	networkNames := rpcConf.AllKeys()
 
 	for _, name := range networkNames {
-
 		conf := rpcConf.Get(name)
 		rpcIndex[name] = 0
 
@@ -77,7 +76,6 @@ func GetNewStakingContract(
 	network string,
 	address string,
 	refresh bool) (*contracts.UnchainedStaking, error) {
-
 	if refresh {
 		RefreshRPC(network)
 	}

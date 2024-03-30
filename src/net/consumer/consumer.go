@@ -1,6 +1,7 @@
 package consumer
 
 import (
+	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/repository"
 	"github.com/gorilla/websocket"
 )
@@ -11,7 +12,10 @@ func Broadcast(message []byte) {
 		if ok {
 			mu.Lock()
 			defer mu.Unlock()
-			consumer.WriteMessage(websocket.BinaryMessage, message)
+			err := consumer.WriteMessage(websocket.BinaryMessage, message)
+			if err != nil {
+				log.Logger.Error(err.Error())
+			}
 		}
 		return true
 	})

@@ -12,6 +12,7 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
+	"github.com/KenshiTech/unchained/plugins/correctness"
 	"github.com/KenshiTech/unchained/plugins/logs"
 	"github.com/KenshiTech/unchained/plugins/uniswap"
 	"github.com/KenshiTech/unchained/pos"
@@ -19,14 +20,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// consumerCmd represents the consumer command
+// consumerCmd represents the consumer command.
 var consumerCmd = &cobra.Command{
 	Use:   "consumer",
 	Short: "Run the Unchained client in consumer mode",
 	Long:  `Run the Unchained client in consumer mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+		err := config.Config.BindPFlag("broker.uri", cmd.Flags().Lookup("broker"))
+		if err != nil {
+			panic(err)
+		}
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -44,10 +48,11 @@ var consumerCmd = &cobra.Command{
 		pos.Start()
 		db.Start()
 		uniswap.Setup()
+		correctness.Setup()
 		logs.Setup()
 		client.StartClient()
 		consumers.StartConsumer()
-		client.ClientBlock()
+		client.Listen()
 	},
 }
 

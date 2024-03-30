@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
@@ -126,6 +127,21 @@ func (su *SignerUpdate) AddEventLogs(e ...*EventLog) *SignerUpdate {
 	return su.AddEventLogIDs(ids...)
 }
 
+// AddCorrectnessReportIDs adds the "correctnessReport" edge to the CorrectnessReport entity by IDs.
+func (su *SignerUpdate) AddCorrectnessReportIDs(ids ...int) *SignerUpdate {
+	su.mutation.AddCorrectnessReportIDs(ids...)
+	return su
+}
+
+// AddCorrectnessReport adds the "correctnessReport" edges to the CorrectnessReport entity.
+func (su *SignerUpdate) AddCorrectnessReport(c ...*CorrectnessReport) *SignerUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return su.AddCorrectnessReportIDs(ids...)
+}
+
 // Mutation returns the SignerMutation object of the builder.
 func (su *SignerUpdate) Mutation() *SignerMutation {
 	return su.mutation
@@ -171,6 +187,27 @@ func (su *SignerUpdate) RemoveEventLogs(e ...*EventLog) *SignerUpdate {
 		ids[i] = e[i].ID
 	}
 	return su.RemoveEventLogIDs(ids...)
+}
+
+// ClearCorrectnessReport clears all "correctnessReport" edges to the CorrectnessReport entity.
+func (su *SignerUpdate) ClearCorrectnessReport() *SignerUpdate {
+	su.mutation.ClearCorrectnessReport()
+	return su
+}
+
+// RemoveCorrectnessReportIDs removes the "correctnessReport" edge to CorrectnessReport entities by IDs.
+func (su *SignerUpdate) RemoveCorrectnessReportIDs(ids ...int) *SignerUpdate {
+	su.mutation.RemoveCorrectnessReportIDs(ids...)
+	return su
+}
+
+// RemoveCorrectnessReport removes "correctnessReport" edges to CorrectnessReport entities.
+func (su *SignerUpdate) RemoveCorrectnessReport(c ...*CorrectnessReport) *SignerUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return su.RemoveCorrectnessReportIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -343,6 +380,51 @@ func (su *SignerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.CorrectnessReportCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.CorrectnessReportTable,
+			Columns: signer.CorrectnessReportPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(correctnessreport.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.RemovedCorrectnessReportIDs(); len(nodes) > 0 && !su.mutation.CorrectnessReportCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.CorrectnessReportTable,
+			Columns: signer.CorrectnessReportPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(correctnessreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.CorrectnessReportIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.CorrectnessReportTable,
+			Columns: signer.CorrectnessReportPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(correctnessreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{signer.Label}
@@ -460,6 +542,21 @@ func (suo *SignerUpdateOne) AddEventLogs(e ...*EventLog) *SignerUpdateOne {
 	return suo.AddEventLogIDs(ids...)
 }
 
+// AddCorrectnessReportIDs adds the "correctnessReport" edge to the CorrectnessReport entity by IDs.
+func (suo *SignerUpdateOne) AddCorrectnessReportIDs(ids ...int) *SignerUpdateOne {
+	suo.mutation.AddCorrectnessReportIDs(ids...)
+	return suo
+}
+
+// AddCorrectnessReport adds the "correctnessReport" edges to the CorrectnessReport entity.
+func (suo *SignerUpdateOne) AddCorrectnessReport(c ...*CorrectnessReport) *SignerUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return suo.AddCorrectnessReportIDs(ids...)
+}
+
 // Mutation returns the SignerMutation object of the builder.
 func (suo *SignerUpdateOne) Mutation() *SignerMutation {
 	return suo.mutation
@@ -505,6 +602,27 @@ func (suo *SignerUpdateOne) RemoveEventLogs(e ...*EventLog) *SignerUpdateOne {
 		ids[i] = e[i].ID
 	}
 	return suo.RemoveEventLogIDs(ids...)
+}
+
+// ClearCorrectnessReport clears all "correctnessReport" edges to the CorrectnessReport entity.
+func (suo *SignerUpdateOne) ClearCorrectnessReport() *SignerUpdateOne {
+	suo.mutation.ClearCorrectnessReport()
+	return suo
+}
+
+// RemoveCorrectnessReportIDs removes the "correctnessReport" edge to CorrectnessReport entities by IDs.
+func (suo *SignerUpdateOne) RemoveCorrectnessReportIDs(ids ...int) *SignerUpdateOne {
+	suo.mutation.RemoveCorrectnessReportIDs(ids...)
+	return suo
+}
+
+// RemoveCorrectnessReport removes "correctnessReport" edges to CorrectnessReport entities.
+func (suo *SignerUpdateOne) RemoveCorrectnessReport(c ...*CorrectnessReport) *SignerUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return suo.RemoveCorrectnessReportIDs(ids...)
 }
 
 // Where appends a list predicates to the SignerUpdate builder.
@@ -700,6 +818,51 @@ func (suo *SignerUpdateOne) sqlSave(ctx context.Context) (_node *Signer, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(eventlog.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.CorrectnessReportCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.CorrectnessReportTable,
+			Columns: signer.CorrectnessReportPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(correctnessreport.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.RemovedCorrectnessReportIDs(); len(nodes) > 0 && !suo.mutation.CorrectnessReportCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.CorrectnessReportTable,
+			Columns: signer.CorrectnessReportPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(correctnessreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.CorrectnessReportIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   signer.CorrectnessReportTable,
+			Columns: signer.CorrectnessReportPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(correctnessreport.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

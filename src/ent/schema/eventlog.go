@@ -15,6 +15,10 @@ type EventLog struct {
 	ent.Schema
 }
 
+const (
+	TransactionMaxLen = 32
+)
+
 // Fields of the DataSet.
 func (EventLog) Fields() []ent.Field {
 	return []ent.Field{
@@ -26,7 +30,7 @@ func (EventLog) Fields() []ent.Field {
 		field.Uint64("signersCount").
 			Annotations(entgql.Type("Uint")),
 		field.Bytes("signature").
-			MaxLen(96).
+			MaxLen(SignatureMaxLen).
 			Annotations(entgql.Type("Bytes")),
 		field.String("address"),
 		field.String("chain"),
@@ -34,7 +38,7 @@ func (EventLog) Fields() []ent.Field {
 			Annotations(entgql.Type("Uint")),
 		field.String("event"),
 		field.Bytes("transaction").
-			MaxLen(32).
+			MaxLen(TransactionMaxLen).
 			Annotations(entgql.Type("Bytes")),
 		field.JSON("args", []datasets.EventLogArg{}),
 	}

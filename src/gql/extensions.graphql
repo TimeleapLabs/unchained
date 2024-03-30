@@ -1,0 +1,8 @@
+extend input SignerWhereInput {
+  key: String
+}
+
+extend input CorrectnessReportWhereInput {
+  topic: String
+  hash: String
+}

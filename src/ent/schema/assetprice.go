@@ -35,7 +35,7 @@ func (AssetPrice) Fields() []ent.Field {
 			}).
 			Annotations(entgql.Type("Uint")),
 		field.Bytes("signature").
-			MaxLen(96).
+			MaxLen(SignatureMaxLen).
 			Annotations(entgql.Type("Bytes")),
 		field.String("asset").Optional(),
 		field.String("chain").Optional(),

@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -13,6 +14,10 @@ type Signer struct {
 	ent.Schema
 }
 
+const (
+	KeyMaxLen = 96
+)
+
 // Fields of the DataSet.
 func (Signer) Fields() []ent.Field {
 	return []ent.Field{
@@ -22,16 +27,17 @@ func (Signer) Fields() []ent.Field {
 			Nillable().
 			Optional(),
 		field.Bytes("key").
-			MaxLen(96).
+			MaxLen(KeyMaxLen).
 			Unique().
 			NotEmpty().
 			Annotations(entgql.Type("Bytes")),
 		field.Bytes("shortkey").
-			MaxLen(96).
+			MaxLen(KeyMaxLen).
 			Unique().
 			NotEmpty().
 			Annotations(entgql.Type("Bytes")),
-		field.Int64("points"),
+		field.Int64("points").
+			Annotations(entgql.OrderField("POINTS")),
 	}
 }
 
@@ -40,6 +46,7 @@ func (Signer) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("assetPrice", AssetPrice.Type).Ref("signers"),
 		edge.From("eventLogs", EventLog.Type).Ref("signers"),
+		edge.From("correctnessReport", CorrectnessReport.Type).Ref("signers"),
 	}
 }
 
@@ -50,5 +57,12 @@ func (Signer) Indexes() []ent.Index {
 			Unique(),
 		index.Fields("shortkey").
 			Unique(),
+	}
+}
+
+func (Signer) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField(),
 	}
 }

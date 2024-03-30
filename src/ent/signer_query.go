@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/ent/assetprice"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/eventlog"
 	"github.com/KenshiTech/unchained/ent/predicate"
 	"github.com/KenshiTech/unchained/ent/signer"
@@ -20,17 +21,18 @@ import (
 // SignerQuery is the builder for querying Signer entities.
 type SignerQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []signer.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.Signer
-	withAssetPrice      *AssetPriceQuery
-	withEventLogs       *EventLogQuery
-	withFKs             bool
-	modifiers           []func(*sql.Selector)
-	loadTotal           []func(context.Context, []*Signer) error
-	withNamedAssetPrice map[string]*AssetPriceQuery
-	withNamedEventLogs  map[string]*EventLogQuery
+	ctx                        *QueryContext
+	order                      []signer.OrderOption
+	inters                     []Interceptor
+	predicates                 []predicate.Signer
+	withAssetPrice             *AssetPriceQuery
+	withEventLogs              *EventLogQuery
+	withCorrectnessReport      *CorrectnessReportQuery
+	modifiers                  []func(*sql.Selector)
+	loadTotal                  []func(context.Context, []*Signer) error
+	withNamedAssetPrice        map[string]*AssetPriceQuery
+	withNamedEventLogs         map[string]*EventLogQuery
+	withNamedCorrectnessReport map[string]*CorrectnessReportQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -104,6 +106,28 @@ func (sq *SignerQuery) QueryEventLogs() *EventLogQuery {
 			sqlgraph.From(signer.Table, signer.FieldID, selector),
 			sqlgraph.To(eventlog.Table, eventlog.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, signer.EventLogsTable, signer.EventLogsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCorrectnessReport chains the current query on the "correctnessReport" edge.
+func (sq *SignerQuery) QueryCorrectnessReport() *CorrectnessReportQuery {
+	query := (&CorrectnessReportClient{config: sq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(signer.Table, signer.FieldID, selector),
+			sqlgraph.To(correctnessreport.Table, correctnessreport.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, signer.CorrectnessReportTable, signer.CorrectnessReportPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -298,13 +322,14 @@ func (sq *SignerQuery) Clone() *SignerQuery {
 		return nil
 	}
 	return &SignerQuery{
-		config:         sq.config,
-		ctx:            sq.ctx.Clone(),
-		order:          append([]signer.OrderOption{}, sq.order...),
-		inters:         append([]Interceptor{}, sq.inters...),
-		predicates:     append([]predicate.Signer{}, sq.predicates...),
-		withAssetPrice: sq.withAssetPrice.Clone(),
-		withEventLogs:  sq.withEventLogs.Clone(),
+		config:                sq.config,
+		ctx:                   sq.ctx.Clone(),
+		order:                 append([]signer.OrderOption{}, sq.order...),
+		inters:                append([]Interceptor{}, sq.inters...),
+		predicates:            append([]predicate.Signer{}, sq.predicates...),
+		withAssetPrice:        sq.withAssetPrice.Clone(),
+		withEventLogs:         sq.withEventLogs.Clone(),
+		withCorrectnessReport: sq.withCorrectnessReport.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -330,6 +355,17 @@ func (sq *SignerQuery) WithEventLogs(opts ...func(*EventLogQuery)) *SignerQuery 
 		opt(query)
 	}
 	sq.withEventLogs = query
+	return sq
+}
+
+// WithCorrectnessReport tells the query-builder to eager-load the nodes that are connected to
+// the "correctnessReport" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *SignerQuery) WithCorrectnessReport(opts ...func(*CorrectnessReportQuery)) *SignerQuery {
+	query := (&CorrectnessReportClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withCorrectnessReport = query
 	return sq
 }
 
@@ -410,16 +446,13 @@ func (sq *SignerQuery) prepareQuery(ctx context.Context) error {
 func (sq *SignerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Signer, error) {
 	var (
 		nodes       = []*Signer{}
-		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			sq.withAssetPrice != nil,
 			sq.withEventLogs != nil,
+			sq.withCorrectnessReport != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, signer.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Signer).scanValues(nil, columns)
 	}
@@ -455,6 +488,15 @@ func (sq *SignerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Signe
 			return nil, err
 		}
 	}
+	if query := sq.withCorrectnessReport; query != nil {
+		if err := sq.loadCorrectnessReport(ctx, query, nodes,
+			func(n *Signer) { n.Edges.CorrectnessReport = []*CorrectnessReport{} },
+			func(n *Signer, e *CorrectnessReport) {
+				n.Edges.CorrectnessReport = append(n.Edges.CorrectnessReport, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range sq.withNamedAssetPrice {
 		if err := sq.loadAssetPrice(ctx, query, nodes,
 			func(n *Signer) { n.appendNamedAssetPrice(name) },
@@ -466,6 +508,13 @@ func (sq *SignerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Signe
 		if err := sq.loadEventLogs(ctx, query, nodes,
 			func(n *Signer) { n.appendNamedEventLogs(name) },
 			func(n *Signer, e *EventLog) { n.appendNamedEventLogs(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range sq.withNamedCorrectnessReport {
+		if err := sq.loadCorrectnessReport(ctx, query, nodes,
+			func(n *Signer) { n.appendNamedCorrectnessReport(name) },
+			func(n *Signer, e *CorrectnessReport) { n.appendNamedCorrectnessReport(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -599,6 +648,67 @@ func (sq *SignerQuery) loadEventLogs(ctx context.Context, query *EventLogQuery, 
 	}
 	return nil
 }
+func (sq *SignerQuery) loadCorrectnessReport(ctx context.Context, query *CorrectnessReportQuery, nodes []*Signer, init func(*Signer), assign func(*Signer, *CorrectnessReport)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Signer)
+	nids := make(map[int]map[*Signer]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(signer.CorrectnessReportTable)
+		s.Join(joinT).On(s.C(correctnessreport.FieldID), joinT.C(signer.CorrectnessReportPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(signer.CorrectnessReportPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(signer.CorrectnessReportPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Signer]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*CorrectnessReport](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "correctnessReport" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 
 func (sq *SignerQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
@@ -709,6 +819,20 @@ func (sq *SignerQuery) WithNamedEventLogs(name string, opts ...func(*EventLogQue
 		sq.withNamedEventLogs = make(map[string]*EventLogQuery)
 	}
 	sq.withNamedEventLogs[name] = query
+	return sq
+}
+
+// WithNamedCorrectnessReport tells the query-builder to eager-load the nodes that are connected to the "correctnessReport"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (sq *SignerQuery) WithNamedCorrectnessReport(name string, opts ...func(*CorrectnessReportQuery)) *SignerQuery {
+	query := (&CorrectnessReportClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if sq.withNamedCorrectnessReport == nil {
+		sq.withNamedCorrectnessReport = make(map[string]*CorrectnessReportQuery)
+	}
+	sq.withNamedCorrectnessReport[name] = query
 	return sq
 }
 

@@ -41,6 +41,8 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Signer() SignerResolver
 	AssetPriceWhereInput() AssetPriceWhereInputResolver
+	CorrectnessReportWhereInput() CorrectnessReportWhereInputResolver
+	SignerWhereInput() SignerWhereInputResolver
 }
 
 type DirectiveRoot struct {
@@ -135,17 +137,30 @@ type ComplexityRoot struct {
 		EventLogs          func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.EventLogOrder, where *ent.EventLogWhereInput) int
 		Node               func(childComplexity int, id int) int
 		Nodes              func(childComplexity int, ids []int) int
+		Signers            func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.SignerOrder, where *ent.SignerWhereInput) int
 	}
 
 	Signer struct {
-		AssetPrice func(childComplexity int) int
-		EventLogs  func(childComplexity int) int
-		Evm        func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Key        func(childComplexity int) int
-		Name       func(childComplexity int) int
-		Points     func(childComplexity int) int
-		Shortkey   func(childComplexity int) int
+		AssetPrice        func(childComplexity int) int
+		CorrectnessReport func(childComplexity int) int
+		EventLogs         func(childComplexity int) int
+		Evm               func(childComplexity int) int
+		ID                func(childComplexity int) int
+		Key               func(childComplexity int) int
+		Name              func(childComplexity int) int
+		Points            func(childComplexity int) int
+		Shortkey          func(childComplexity int) int
+	}
+
+	SignerConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	SignerEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 }
 
@@ -571,12 +586,31 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]int)), true
 
+	case "Query.signers":
+		if e.complexity.Query.Signers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_signers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Signers(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.SignerOrder), args["where"].(*ent.SignerWhereInput)), true
+
 	case "Signer.assetprice":
 		if e.complexity.Signer.AssetPrice == nil {
 			break
 		}
 
 		return e.complexity.Signer.AssetPrice(childComplexity), true
+
+	case "Signer.correctnessreport":
+		if e.complexity.Signer.CorrectnessReport == nil {
+			break
+		}
+
+		return e.complexity.Signer.CorrectnessReport(childComplexity), true
 
 	case "Signer.eventlogs":
 		if e.complexity.Signer.EventLogs == nil {
@@ -627,6 +661,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Signer.Shortkey(childComplexity), true
 
+	case "SignerConnection.edges":
+		if e.complexity.SignerConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.SignerConnection.Edges(childComplexity), true
+
+	case "SignerConnection.pageInfo":
+		if e.complexity.SignerConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.SignerConnection.PageInfo(childComplexity), true
+
+	case "SignerConnection.totalCount":
+		if e.complexity.SignerConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.SignerConnection.TotalCount(childComplexity), true
+
+	case "SignerEdge.cursor":
+		if e.complexity.SignerEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.SignerEdge.Cursor(childComplexity), true
+
+	case "SignerEdge.node":
+		if e.complexity.SignerEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.SignerEdge.Node(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -641,6 +710,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCorrectnessReportWhereInput,
 		ec.unmarshalInputEventLogOrder,
 		ec.unmarshalInputEventLogWhereInput,
+		ec.unmarshalInputSignerOrder,
 		ec.unmarshalInputSignerWhereInput,
 	)
 	first := true
@@ -730,6 +800,15 @@ scalar Bytes
 type EventLogArg {
   name: String!
   value: String!
+}
+`, BuiltIn: false},
+	{Name: "../extensions.graphql", Input: `extend input SignerWhereInput {
+  key: String
+}
+
+extend input CorrectnessReportWhereInput {
+  topic: String
+  hash: String
 }
 `, BuiltIn: false},
 	{Name: "../unchained.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
@@ -1349,6 +1428,37 @@ type Query {
     """
     where: EventLogWhereInput
   ): EventLogConnection!
+  signers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for Signers returned from the connection.
+    """
+    orderBy: SignerOrder
+
+    """
+    Filtering options for Signers returned from the connection.
+    """
+    where: SignerWhereInput
+  ): SignerConnection!
 }
 type Signer implements Node {
   id: ID!
@@ -1359,6 +1469,56 @@ type Signer implements Node {
   points: Int!
   assetprice: [AssetPrice!] @goField(name: "AssetPrice", forceResolver: false)
   eventlogs: [EventLog!] @goField(name: "EventLogs", forceResolver: false)
+  correctnessreport: [CorrectnessReport!] @goField(name: "CorrectnessReport", forceResolver: false)
+}
+"""
+A connection to a list of items.
+"""
+type SignerConnection {
+  """
+  A list of edges.
+  """
+  edges: [SignerEdge]
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
+}
+"""
+An edge in a connection.
+"""
+type SignerEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: Signer
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
+}
+"""
+Ordering options for Signer connections
+"""
+input SignerOrder {
+  """
+  The ordering direction.
+  """
+  direction: OrderDirection! = ASC
+  """
+  The field by which to order Signers.
+  """
+  field: SignerOrderField!
+}
+"""
+Properties by which Signer connections can be ordered.
+"""
+enum SignerOrderField {
+  POINTS
 }
 """
 SignerWhereInput is used for filtering Signer objects.
@@ -1434,6 +1594,11 @@ input SignerWhereInput {
   """
   hasEventLogs: Boolean
   hasEventLogsWith: [EventLogWhereInput!]
+  """
+  correctnessReport edge predicates
+  """
+  hasCorrectnessReport: Boolean
+  hasCorrectnessReportWith: [CorrectnessReportWhereInput!]
 }
 """
 The builtin Uint type
