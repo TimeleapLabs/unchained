@@ -2,26 +2,40 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"log"
 
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ent"
 
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/lib/pq"
 )
 
 var dbClient *ent.Client
 
-func Start() {
+// Open new connection.
+func Open(databaseURL string) (*ent.Client, error) {
+	db, err := sql.Open("pgx", databaseURL)
+	if err != nil {
+		return nil, err
+	}
 
+	drv := entsql.OpenDB(dialect.Postgres, db)
+	return ent.NewClient(ent.Driver(drv)), nil
+}
+
+func Start() {
 	if !config.Config.IsSet("database.url") {
 		return
 	}
 
 	var err error
 
-	dbUrl := config.Config.GetString("database.url")
-	dbClient, err = ent.Open("postgres", dbUrl)
+	dbURL := config.Config.GetString("database.url")
+	dbClient, err = ent.Open("postgres", dbURL)
 
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
@@ -32,7 +46,6 @@ func Start() {
 	}
 
 	// TODO: Properly close the conn
-
 }
 
 func GetClient() *ent.Client {

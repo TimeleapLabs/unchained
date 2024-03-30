@@ -19,3 +19,4 @@ docker/pgadmin
 node_trace.*
 src/bin
 conf.*.private
+.idea

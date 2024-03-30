@@ -1,10 +1,12 @@
 package bls
 
 import (
+	"encoding/hex"
 	"math/big"
 
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/log"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -15,22 +17,41 @@ import (
 var ClientSecretKey *big.Int
 var ClientPublicKey *bls12381.G2Affine
 var ClientShortPublicKey *bls12381.G1Affine
-var ClientSigner Signer
+var ClientSigner datasets.Signer
+
+func saveConfig() {
+	pkBytes := ClientPublicKey.Bytes()
+
+	config.Secrets.Set("secretKey", hex.EncodeToString(ClientSecretKey.Bytes()))
+	config.Secrets.Set("publicKey", hex.EncodeToString(pkBytes[:]))
+
+	err := config.Secrets.WriteConfig()
+
+	if err != nil {
+		panic(err)
+	}
+}
 
 func InitClientIdentity() {
 	var err error
-	var pkBytes [96]byte
 
 	if config.Secrets.IsSet("secretKey") {
+		secretKeyFromConfig := config.Secrets.GetString("secretKey")
+		decoded, err := hex.DecodeString(secretKeyFromConfig)
 
-		decoded := base58.Decode(config.Secrets.GetString("secretKey"))
+		if err != nil {
+			// TODO: Backwards compatibility with base58 encoded secret keys
+			// Remove this after a few releases
+			decoded = base58.Decode(secretKeyFromConfig)
+		}
 
 		ClientSecretKey = new(big.Int)
 		ClientSecretKey.SetBytes(decoded)
-
 		ClientPublicKey = GetPublicKey(ClientSecretKey)
-		pkBytes = ClientPublicKey.Bytes()
 
+		if err != nil {
+			saveConfig()
+		}
 	} else {
 		ClientSecretKey, ClientPublicKey, err = GenerateKeyPair()
 
@@ -38,22 +59,15 @@ func InitClientIdentity() {
 			panic(err)
 		}
 
-		pkBytes = ClientPublicKey.Bytes()
-
-		config.Secrets.Set("secretKey", base58.Encode(ClientSecretKey.Bytes()))
-		config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
-
-		err = config.Secrets.WriteConfig()
-
-		if err != nil {
-			panic(err)
-		}
+		saveConfig()
 	}
 
 	ClientShortPublicKey = GetShortPublicKey(ClientSecretKey)
+
+	pkBytes := ClientPublicKey.Bytes()
 	addrStr := address.Calculate(pkBytes[:])
 
-	ClientSigner = Signer{
+	ClientSigner = datasets.Signer{
 		Name:           config.Config.GetString("name"),
 		EvmWallet:      config.Secrets.GetString("evmwallet"),
 		PublicKey:      ClientPublicKey.Bytes(),
@@ -65,7 +79,7 @@ func InitClientIdentity() {
 		Info("Unchained")
 
 	// TODO: Avoid recalculating this
-	config.Secrets.Set("publicKey", base58.Encode(pkBytes[:]))
+	config.Secrets.Set("publicKey", hex.EncodeToString(pkBytes[:]))
 
 	if !config.Secrets.IsSet("address") {
 		config.Secrets.Set("address", addrStr)

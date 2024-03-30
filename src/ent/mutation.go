@@ -2656,25 +2656,28 @@ func (m *EventLogMutation) ResetEdge(name string) error {
 // SignerMutation represents an operation that mutates the Signer nodes in the graph.
 type SignerMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	name              *string
-	evm               *string
-	key               *[]byte
-	shortkey          *[]byte
-	points            *int64
-	addpoints         *int64
-	clearedFields     map[string]struct{}
-	assetPrice        map[int]struct{}
-	removedassetPrice map[int]struct{}
-	clearedassetPrice bool
-	eventLogs         map[int]struct{}
-	removedeventLogs  map[int]struct{}
-	clearedeventLogs  bool
-	done              bool
-	oldValue          func(context.Context) (*Signer, error)
-	predicates        []predicate.Signer
+	op                       Op
+	typ                      string
+	id                       *int
+	name                     *string
+	evm                      *string
+	key                      *[]byte
+	shortkey                 *[]byte
+	points                   *int64
+	addpoints                *int64
+	clearedFields            map[string]struct{}
+	assetPrice               map[int]struct{}
+	removedassetPrice        map[int]struct{}
+	clearedassetPrice        bool
+	eventLogs                map[int]struct{}
+	removedeventLogs         map[int]struct{}
+	clearedeventLogs         bool
+	correctnessReport        map[int]struct{}
+	removedcorrectnessReport map[int]struct{}
+	clearedcorrectnessReport bool
+	done                     bool
+	oldValue                 func(context.Context) (*Signer, error)
+	predicates               []predicate.Signer
 }
 
 var _ ent.Mutation = (*SignerMutation)(nil)
@@ -3096,6 +3099,60 @@ func (m *SignerMutation) ResetEventLogs() {
 	m.removedeventLogs = nil
 }
 
+// AddCorrectnessReportIDs adds the "correctnessReport" edge to the CorrectnessReport entity by ids.
+func (m *SignerMutation) AddCorrectnessReportIDs(ids ...int) {
+	if m.correctnessReport == nil {
+		m.correctnessReport = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.correctnessReport[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCorrectnessReport clears the "correctnessReport" edge to the CorrectnessReport entity.
+func (m *SignerMutation) ClearCorrectnessReport() {
+	m.clearedcorrectnessReport = true
+}
+
+// CorrectnessReportCleared reports if the "correctnessReport" edge to the CorrectnessReport entity was cleared.
+func (m *SignerMutation) CorrectnessReportCleared() bool {
+	return m.clearedcorrectnessReport
+}
+
+// RemoveCorrectnessReportIDs removes the "correctnessReport" edge to the CorrectnessReport entity by IDs.
+func (m *SignerMutation) RemoveCorrectnessReportIDs(ids ...int) {
+	if m.removedcorrectnessReport == nil {
+		m.removedcorrectnessReport = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.correctnessReport, ids[i])
+		m.removedcorrectnessReport[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCorrectnessReport returns the removed IDs of the "correctnessReport" edge to the CorrectnessReport entity.
+func (m *SignerMutation) RemovedCorrectnessReportIDs() (ids []int) {
+	for id := range m.removedcorrectnessReport {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CorrectnessReportIDs returns the "correctnessReport" edge IDs in the mutation.
+func (m *SignerMutation) CorrectnessReportIDs() (ids []int) {
+	for id := range m.correctnessReport {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCorrectnessReport resets all changes to the "correctnessReport" edge.
+func (m *SignerMutation) ResetCorrectnessReport() {
+	m.correctnessReport = nil
+	m.clearedcorrectnessReport = false
+	m.removedcorrectnessReport = nil
+}
+
 // Where appends a list predicates to the SignerMutation builder.
 func (m *SignerMutation) Where(ps ...predicate.Signer) {
 	m.predicates = append(m.predicates, ps...)
@@ -3321,12 +3378,15 @@ func (m *SignerMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SignerMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.assetPrice != nil {
 		edges = append(edges, signer.EdgeAssetPrice)
 	}
 	if m.eventLogs != nil {
 		edges = append(edges, signer.EdgeEventLogs)
+	}
+	if m.correctnessReport != nil {
+		edges = append(edges, signer.EdgeCorrectnessReport)
 	}
 	return edges
 }
@@ -3347,18 +3407,27 @@ func (m *SignerMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case signer.EdgeCorrectnessReport:
+		ids := make([]ent.Value, 0, len(m.correctnessReport))
+		for id := range m.correctnessReport {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SignerMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedassetPrice != nil {
 		edges = append(edges, signer.EdgeAssetPrice)
 	}
 	if m.removedeventLogs != nil {
 		edges = append(edges, signer.EdgeEventLogs)
+	}
+	if m.removedcorrectnessReport != nil {
+		edges = append(edges, signer.EdgeCorrectnessReport)
 	}
 	return edges
 }
@@ -3379,18 +3448,27 @@ func (m *SignerMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case signer.EdgeCorrectnessReport:
+		ids := make([]ent.Value, 0, len(m.removedcorrectnessReport))
+		for id := range m.removedcorrectnessReport {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SignerMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedassetPrice {
 		edges = append(edges, signer.EdgeAssetPrice)
 	}
 	if m.clearedeventLogs {
 		edges = append(edges, signer.EdgeEventLogs)
+	}
+	if m.clearedcorrectnessReport {
+		edges = append(edges, signer.EdgeCorrectnessReport)
 	}
 	return edges
 }
@@ -3403,6 +3481,8 @@ func (m *SignerMutation) EdgeCleared(name string) bool {
 		return m.clearedassetPrice
 	case signer.EdgeEventLogs:
 		return m.clearedeventLogs
+	case signer.EdgeCorrectnessReport:
+		return m.clearedcorrectnessReport
 	}
 	return false
 }
@@ -3424,6 +3504,9 @@ func (m *SignerMutation) ResetEdge(name string) error {
 		return nil
 	case signer.EdgeEventLogs:
 		m.ResetEventLogs()
+		return nil
+	case signer.EdgeCorrectnessReport:
+		m.ResetCorrectnessReport()
 		return nil
 	}
 	return fmt.Errorf("unknown Signer edge %s", name)

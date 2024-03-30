@@ -2,41 +2,34 @@ package correctness
 
 import (
 	"context"
-	"math/big"
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/crypto/shake"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/pos"
 	"github.com/KenshiTech/unchained/utils"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
-type CorrectnessKey struct {
-	Topic   [64]byte
-	Hash    [64]byte
-	Correct bool
-}
-
-var consensus *lru.Cache[CorrectnessKey, map[bls12381.G1Affine]big.Int]
-var signatureCache *lru.Cache[bls12381.G1Affine, []bls.Signature]
-var aggregateCache *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
+var signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
 var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 var signatureMutex *sync.Mutex
 var supportedTopics map[[64]byte]bool
 
-type CorrectnessConf struct {
+const (
+	LruSize = 128
+)
+
+type Conf struct {
 	Topic string `mapstructure:"name"`
 }
 
@@ -59,12 +52,10 @@ func GetBlockNumber(network string) (*uint64, error) {
 
 func RecordSignature(
 	signature bls12381.G1Affine,
-	signer bls.Signer,
+	signer datasets.Signer,
 	hash bls12381.G1Affine,
 	info datasets.Correctness,
-	debounce bool,
-	historical bool) {
-
+	debounce bool) {
 	if supported := supportedTopics[info.Topic]; !supported {
 		return
 	}
@@ -72,80 +63,36 @@ func RecordSignature(
 	signatureMutex.Lock()
 	defer signatureMutex.Unlock()
 
-	key := CorrectnessKey{
-		Topic:   info.Topic,
-		Hash:    info.Hash,
-		Correct: info.Correct,
+	signatures, ok := signatureCache.Get(hash)
+
+	if !ok {
+		signatures = make([]datasets.Signature, 0)
 	}
 
-	if !consensus.Contains(key) {
-		consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
-	}
-
-	consensusChain := config.Config.GetString("pos.chain")
-	blockNumber, err := GetBlockNumber(consensusChain)
-
-	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Failed to get the latest block number")
-		return
-	}
-
-	votingPower, err := pos.GetVotingPowerOfPublicKey(
-		signer.PublicKey,
-		big.NewInt(int64(*blockNumber)),
-	)
-
-	if err != nil {
-		log.Logger.
-			With("Address", address.Calculate(signer.PublicKey[:])).
-			With("Error", err).
-			Error("Failed to get voting power")
-		return
-	}
-
-	reportedValues, _ := consensus.Get(key)
-	voted := reportedValues[hash]
-	totalVoted := new(big.Int).Add(votingPower, &voted)
-	isMajority := true
-
-	for _, reportCount := range reportedValues {
-		if reportCount.Cmp(totalVoted) == 1 {
-			isMajority = false
-			break
+	// Check for duplicates
+	for _, sig := range signatures {
+		if sig.Signer.PublicKey == signer.PublicKey {
+			return
 		}
 	}
 
-	cached, _ := signatureCache.Get(hash)
-
-	packed := bls.Signature{
+	packed := datasets.Signature{
 		Signature: signature,
 		Signer:    signer,
 		Processed: false,
 	}
 
-	for _, item := range cached {
-		if item.Signer.PublicKey == signer.PublicKey {
-			return
-		}
-	}
+	signatures = append(signatures, packed)
+	signatureCache.Add(hash, signatures)
 
-	reportedValues[hash] = *totalVoted
-	cached = append(cached, packed)
-	signatureCache.Add(hash, cached)
-
-	if isMajority {
-		if debounce {
-			DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
-		} else {
-			SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
-		}
+	if debounce {
+		DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+	} else {
+		SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
 	}
 }
 
 func SaveSignatures(args SaveSignatureArgs) {
-
 	dbClient := db.GetClient()
 	signatures, ok := signatureCache.Get(args.Hash)
 
@@ -155,21 +102,47 @@ func SaveSignatures(args SaveSignatureArgs) {
 
 	ctx := context.Background()
 
-	var newSigners []bls.Signer
+	var newSigners []datasets.Signer
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
 	for i := range signatures {
 		signature := signatures[i]
 		keys = append(keys, signature.Signer.PublicKey[:])
-		if !signature.Processed {
-			newSignatures = append(newSignatures, signature.Signature)
-			newSigners = append(newSigners, signature.Signer)
+	}
+
+	currentRecord, err := dbClient.CorrectnessReport.
+		Query().
+		Where(correctnessreport.And(
+			correctnessreport.Hash(args.Info.Hash[:]),
+			correctnessreport.Topic(args.Info.Topic[:]),
+			correctnessreport.Timestamp(args.Info.Timestamp),
+			correctnessreport.Correct(args.Info.Correct),
+		)).
+		Only(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Select the new signers and signatures
+	for i := range signatures {
+		signature := signatures[i]
+
+		if currentRecord != nil {
+			for _, signer := range currentRecord.Edges.Signers {
+				if signature.Signer.PublicKey == [96]byte(signer.Key) {
+					continue
+				}
+			}
 		}
+
+		newSigners = append(newSigners, signature.Signer)
+		newSignatures = append(newSignatures, signature.Signature)
 	}
 
 	// TODO: This part can be a shared library
-	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
+	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
 			SetEvm(signer.EvmWallet).
@@ -200,10 +173,15 @@ func SaveSignatures(args SaveSignatureArgs) {
 	}
 
 	var aggregate bls12381.G1Affine
-	currentAggregate, ok := aggregateCache.Get(args.Hash)
 
-	if ok {
-		newSignatures = append(newSignatures, currentAggregate)
+	if currentRecord != nil {
+		currentSignature, err := bls.RecoverSignature([48]byte(currentRecord.Signature))
+
+		if err != nil {
+			panic(err)
+		}
+
+		newSignatures = append(newSignatures, currentSignature)
 	}
 
 	aggregate, err = bls.AggregateSignatures(newSignatures)
@@ -231,11 +209,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	for _, signature := range signatures {
-		signature.Processed = true
-	}
-
-	aggregateCache.Add(args.Hash, aggregate)
+	signatureCache.Remove(args.Hash)
 }
 
 func Setup() {
@@ -244,7 +218,7 @@ func Setup() {
 	}
 
 	var configs []string
-	if err := config.Config.UnmarshalKey("plugins.logs.events", &configs); err != nil {
+	if err := config.Config.UnmarshalKey("plugins.correctness", &configs); err != nil {
 		panic(err)
 	}
 
@@ -254,25 +228,12 @@ func Setup() {
 }
 
 func init() {
-
 	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
 	signatureMutex = new(sync.Mutex)
 	supportedTopics = make(map[[64]byte]bool)
 
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []bls.Signature](128)
-
-	if err != nil {
-		panic(err)
-	}
-
-	consensus, err = lru.New[CorrectnessKey, map[bls12381.G1Affine]big.Int](128)
-
-	if err != nil {
-		panic(err)
-	}
-
-	aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](128)
+	signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
 
 	if err != nil {
 		panic(err)

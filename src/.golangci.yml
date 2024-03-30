@@ -1,0 +1,221 @@
+run:
+  timeout: 3m
+
+linters-settings:
+  cyclop:
+    max-complexity: 35
+    package-average: 13.0
+
+  gosec:
+    excludes:
+      - G601
+  errcheck:
+    check-type-assertions: true
+
+  interfacebloat:
+    max: 15
+
+  exhaustive:
+    check:
+      - switch
+      - map
+    default-signifies-exhaustive: true
+
+  lll:
+    line-length: 200
+  exhaustruct:
+    exclude:
+      # std libs
+      - "^net/http.Client$"
+      - "^net/http.Cookie$"
+      - "^net/http.Request$"
+      - "^net/http.Response$"
+      - "^net/http.Server$"
+      - "^net/http.Transport$"
+      - "^net/url.URL$"
+      - "^os/exec.Cmd$"
+      - "^reflect.StructField$"
+      # public libs
+      - "^github.com/Shopify/sarama.Config$"
+      - "^github.com/Shopify/sarama.ProducerMessage$"
+      - "^github.com/mitchellh/mapstructure.DecoderConfig$"
+      - "^github.com/prometheus/client_golang/.+Opts$"
+      - "^github.com/spf13/cobra.Command$"
+      - "^github.com/spf13/cobra.CompletionOptions$"
+      - "^github.com/stretchr/testify/mock.Mock$"
+      - "^github.com/testcontainers/testcontainers-go.+Request$"
+      - "^github.com/testcontainers/testcontainers-go.FromDockerfile$"
+      - "^golang.org/x/tools/go/analysis.Analyzer$"
+      - "^google.golang.org/protobuf/.+Options$"
+      - "^gopkg.in/yaml.v3.Node$"
+
+  funlen:
+    # should be decreased to 30
+    lines: 200
+    statements: 150
+    ignore-comments: true
+
+  # should be decreased to 30
+  gocognit:
+    min-complexity: 110
+
+  gocyclo:
+    # Minimal code complexity to report.
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 31
+
+  gocritic:
+    settings:
+      captLocal:
+        paramsOnly: false
+      underef:
+        skipRecvDeref: false
+
+  gomnd:
+    ignored-functions:
+      - os.Chmod
+      - os.Mkdir
+      - os.MkdirAll
+      - os.OpenFile
+      - os.WriteFile
+      - prometheus.ExponentialBuckets
+      - prometheus.ExponentialBucketsRange
+      - prometheus.LinearBuckets
+
+  gomodguard:
+    blocked:
+      modules:
+        - github.com/golang/protobuf:
+            recommendations:
+              - google.golang.org/protobuf
+            reason: "see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules"
+        - github.com/satori/go.uuid:
+            recommendations:
+              - github.com/google/uuid
+            reason: "satori's package is not maintained"
+        - github.com/gofrs/uuid:
+            recommendations:
+              - github.com/google/uuid
+            reason: "gofrs' package is not go module"
+
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+    settings:
+      shadow:
+        strict: true
+
+  nakedret:
+    max-func-lines: 0
+
+  nolintlint:
+    allow-no-explanation: [ funlen, gocognit, lll ]
+    require-explanation: true
+    require-specific: true
+
+  rowserrcheck:
+    packages:
+      - github.com/jmoiron/sqlx
+
+  tenv:
+    all: true
+
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - cyclop
+    - durationcheck
+    - errname
+    - errorlint
+    - execinquery
+    - exhaustive
+    - exportloopref
+    - forbidigo
+    - funlen
+    - gocheckcompilerdirectives
+#    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - goimports
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - lll
+    - loggercheck
+    - makezero
+    - mirror
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - predeclared
+    - promlinter
+    - reassign
+#    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - stylecheck
+    - tenv
+    - testableexamples
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+    - interfacebloat
+    - tagalign
+    - containedctx
+    - gosmopolitan
+
+issues:
+  max-same-issues: 50
+  exclude-rules:
+    - text: 'shadow: declaration of "(err|ctx|ok)" shadows declaration at'
+      linters: [ govet ]
+    - source: "(noinspection|TODO)"
+      linters: [ godot ]
+    - source: "//noinspection"
+      linters: [ gocritic ]
+    - path: "cmd"
+      linters:
+        - funlen
+        - forbidigo
+    - path: "ent"
+      linters:
+        - gomnd
+        - forbidigo
+    - path: "config"
+      linters:
+        - gomnd
+    - path: "_test\\.go"
+      linters:
+        - bodyclose
+        - funlen
+        - goconst
+        - gocognit
+        - gosec
+        - noctx
+        - wrapcheck

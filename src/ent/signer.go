@@ -28,9 +28,8 @@ type Signer struct {
 	Points int64 `json:"points,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SignerQuery when eager-loading is set.
-	Edges                      SignerEdges `json:"edges"`
-	correctness_report_signers *int
-	selectValues               sql.SelectValues
+	Edges        SignerEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // SignerEdges holds the relations/edges for other nodes in the graph.
@@ -39,14 +38,17 @@ type SignerEdges struct {
 	AssetPrice []*AssetPrice `json:"assetPrice,omitempty"`
 	// EventLogs holds the value of the eventLogs edge.
 	EventLogs []*EventLog `json:"eventLogs,omitempty"`
+	// CorrectnessReport holds the value of the correctnessReport edge.
+	CorrectnessReport []*CorrectnessReport `json:"correctnessReport,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [3]map[string]int
 
-	namedAssetPrice map[string][]*AssetPrice
-	namedEventLogs  map[string][]*EventLog
+	namedAssetPrice        map[string][]*AssetPrice
+	namedEventLogs         map[string][]*EventLog
+	namedCorrectnessReport map[string][]*CorrectnessReport
 }
 
 // AssetPriceOrErr returns the AssetPrice value or an error if the edge
@@ -67,6 +69,15 @@ func (e SignerEdges) EventLogsOrErr() ([]*EventLog, error) {
 	return nil, &NotLoadedError{edge: "eventLogs"}
 }
 
+// CorrectnessReportOrErr returns the CorrectnessReport value or an error if the edge
+// was not loaded in eager-loading.
+func (e SignerEdges) CorrectnessReportOrErr() ([]*CorrectnessReport, error) {
+	if e.loadedTypes[2] {
+		return e.CorrectnessReport, nil
+	}
+	return nil, &NotLoadedError{edge: "correctnessReport"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Signer) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -78,8 +89,6 @@ func (*Signer) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case signer.FieldName, signer.FieldEvm:
 			values[i] = new(sql.NullString)
-		case signer.ForeignKeys[0]: // correctness_report_signers
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -132,13 +141,6 @@ func (s *Signer) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.Points = value.Int64
 			}
-		case signer.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field correctness_report_signers", value)
-			} else if value.Valid {
-				s.correctness_report_signers = new(int)
-				*s.correctness_report_signers = int(value.Int64)
-			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
 		}
@@ -160,6 +162,11 @@ func (s *Signer) QueryAssetPrice() *AssetPriceQuery {
 // QueryEventLogs queries the "eventLogs" edge of the Signer entity.
 func (s *Signer) QueryEventLogs() *EventLogQuery {
 	return NewSignerClient(s.config).QueryEventLogs(s)
+}
+
+// QueryCorrectnessReport queries the "correctnessReport" edge of the Signer entity.
+func (s *Signer) QueryCorrectnessReport() *CorrectnessReportQuery {
+	return NewSignerClient(s.config).QueryCorrectnessReport(s)
 }
 
 // Update returns a builder for updating this Signer.
@@ -250,6 +257,30 @@ func (s *Signer) appendNamedEventLogs(name string, edges ...*EventLog) {
 		s.Edges.namedEventLogs[name] = []*EventLog{}
 	} else {
 		s.Edges.namedEventLogs[name] = append(s.Edges.namedEventLogs[name], edges...)
+	}
+}
+
+// NamedCorrectnessReport returns the CorrectnessReport named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (s *Signer) NamedCorrectnessReport(name string) ([]*CorrectnessReport, error) {
+	if s.Edges.namedCorrectnessReport == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := s.Edges.namedCorrectnessReport[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (s *Signer) appendNamedCorrectnessReport(name string, edges ...*CorrectnessReport) {
+	if s.Edges.namedCorrectnessReport == nil {
+		s.Edges.namedCorrectnessReport = make(map[string][]*CorrectnessReport)
+	}
+	if len(edges) == 0 {
+		s.Edges.namedCorrectnessReport[name] = []*CorrectnessReport{}
+	} else {
+		s.Edges.namedCorrectnessReport[name] = append(s.Edges.namedCorrectnessReport[name], edges...)
 	}
 }
 

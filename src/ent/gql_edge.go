@@ -67,3 +67,15 @@ func (s *Signer) EventLogs(ctx context.Context) (result []*EventLog, err error) 
 	}
 	return result, err
 }
+
+func (s *Signer) CorrectnessReport(ctx context.Context) (result []*CorrectnessReport, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = s.NamedCorrectnessReport(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = s.Edges.CorrectnessReportOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = s.QueryCorrectnessReport().All(ctx)
+	}
+	return result, err
+}

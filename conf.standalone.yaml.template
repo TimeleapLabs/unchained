@@ -23,8 +23,8 @@ rpc:
 plugins:
   logs:
     schedule:
-      arbitrum: 100
-      ethereum: 5000
+      arbitrum: 100ms
+      ethereum: 5s
 
     events:
       - name: DAI
@@ -39,8 +39,8 @@ plugins:
 
   uniswap:
     schedule:
-      arbitrum: 100
-      ethereum: 5000
+      arbitrum: 100ms
+      ethereum: 5s
 
     tokens:
       - name: ethereum

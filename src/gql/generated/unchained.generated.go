@@ -41,6 +41,7 @@ type QueryResolver interface {
 	AssetPrices(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AssetPriceOrder, where *ent.AssetPriceWhereInput) (*ent.AssetPriceConnection, error)
 	CorrectnessReports(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.CorrectnessReportOrder, where *ent.CorrectnessReportWhereInput) (*ent.CorrectnessReportConnection, error)
 	EventLogs(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.EventLogOrder, where *ent.EventLogWhereInput) (*ent.EventLogConnection, error)
+	Signers(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.SignerOrder, where *ent.SignerWhereInput) (*ent.SignerConnection, error)
 }
 type SignerResolver interface {
 	Key(ctx context.Context, obj *ent.Signer) (types.Bytes, error)
@@ -56,6 +57,13 @@ type AssetPriceWhereInputResolver interface {
 	PriceGte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 	PriceLt(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 	PriceLte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
+}
+type CorrectnessReportWhereInputResolver interface {
+	Topic(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
+	Hash(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
+}
+type SignerWhereInputResolver interface {
+	Key(ctx context.Context, obj *ent.SignerWhereInput, data *string) error
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -284,6 +292,66 @@ func (ec *executionContext) field_Query_nodes_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["ids"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_signers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.SignerOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOSignerOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *ent.SignerWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
 	return args, nil
 }
 
@@ -690,6 +758,8 @@ func (ec *executionContext) fieldContext_AssetPrice_signers(ctx context.Context,
 				return ec.fieldContext_Signer_assetprice(ctx, field)
 			case "eventlogs":
 				return ec.fieldContext_Signer_eventlogs(ctx, field)
+			case "correctnessreport":
+				return ec.fieldContext_Signer_correctnessreport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Signer", field.Name)
 		},
@@ -1310,6 +1380,8 @@ func (ec *executionContext) fieldContext_CorrectnessReport_signers(ctx context.C
 				return ec.fieldContext_Signer_assetprice(ctx, field)
 			case "eventlogs":
 				return ec.fieldContext_Signer_eventlogs(ctx, field)
+			case "correctnessreport":
+				return ec.fieldContext_Signer_correctnessreport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Signer", field.Name)
 		},
@@ -2066,6 +2138,8 @@ func (ec *executionContext) fieldContext_EventLog_signers(ctx context.Context, f
 				return ec.fieldContext_Signer_assetprice(ctx, field)
 			case "eventlogs":
 				return ec.fieldContext_Signer_eventlogs(ctx, field)
+			case "correctnessreport":
+				return ec.fieldContext_Signer_correctnessreport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Signer", field.Name)
 		},
@@ -2793,6 +2867,69 @@ func (ec *executionContext) fieldContext_Query_eventLogs(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_signers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_signers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Signers(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.SignerOrder), fc.Args["where"].(*ent.SignerWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.SignerConnection)
+	fc.Result = res
+	return ec.marshalNSignerConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_signers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_SignerConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_SignerConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_SignerConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SignerConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_signers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -3304,6 +3441,315 @@ func (ec *executionContext) fieldContext_Signer_eventlogs(ctx context.Context, f
 				return ec.fieldContext_EventLog_signers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EventLog", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Signer_correctnessreport(ctx context.Context, field graphql.CollectedField, obj *ent.Signer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Signer_correctnessreport(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CorrectnessReport(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.CorrectnessReport)
+	fc.Result = res
+	return ec.marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Signer_correctnessreport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Signer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CorrectnessReport_id(ctx, field)
+			case "signerscount":
+				return ec.fieldContext_CorrectnessReport_signerscount(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_CorrectnessReport_timestamp(ctx, field)
+			case "signature":
+				return ec.fieldContext_CorrectnessReport_signature(ctx, field)
+			case "hash":
+				return ec.fieldContext_CorrectnessReport_hash(ctx, field)
+			case "topic":
+				return ec.fieldContext_CorrectnessReport_topic(ctx, field)
+			case "correct":
+				return ec.fieldContext_CorrectnessReport_correct(ctx, field)
+			case "signers":
+				return ec.fieldContext_CorrectnessReport_signers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CorrectnessReport", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SignerConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.SignerConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SignerConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.SignerEdge)
+	fc.Result = res
+	return ec.marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SignerConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SignerConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_SignerEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_SignerEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SignerEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SignerConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.SignerConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SignerConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SignerConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SignerConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SignerConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.SignerConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SignerConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SignerConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SignerConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SignerEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.SignerEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SignerEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Signer)
+	fc.Result = res
+	return ec.marshalOSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSigner(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SignerEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SignerEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Signer_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Signer_name(ctx, field)
+			case "evm":
+				return ec.fieldContext_Signer_evm(ctx, field)
+			case "key":
+				return ec.fieldContext_Signer_key(ctx, field)
+			case "shortkey":
+				return ec.fieldContext_Signer_shortkey(ctx, field)
+			case "points":
+				return ec.fieldContext_Signer_points(ctx, field)
+			case "assetprice":
+				return ec.fieldContext_Signer_assetprice(ctx, field)
+			case "eventlogs":
+				return ec.fieldContext_Signer_eventlogs(ctx, field)
+			case "correctnessreport":
+				return ec.fieldContext_Signer_correctnessreport(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Signer", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SignerEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.SignerEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SignerEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SignerEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SignerEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4020,7 +4466,7 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "timestamp", "timestampNEQ", "timestampIn", "timestampNotIn", "timestampGT", "timestampGTE", "timestampLT", "timestampLTE", "correct", "correctNEQ", "hasSigners", "hasSignersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "timestamp", "timestampNEQ", "timestampIn", "timestampNotIn", "timestampGT", "timestampGTE", "timestampLT", "timestampLTE", "correct", "correctNEQ", "hasSigners", "hasSignersWith", "topic", "hash"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4244,6 +4690,24 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 				return it, err
 			}
 			it.HasSignersWith = data
+		case "topic":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("topic"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().Topic(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "hash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hash"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().Hash(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -4840,6 +5304,44 @@ func (ec *executionContext) unmarshalInputEventLogWhereInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSignerOrder(ctx context.Context, obj interface{}) (ent.SignerOrder, error) {
+	var it ent.SignerOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, obj interface{}) (ent.SignerWhereInput, error) {
 	var it ent.SignerWhereInput
 	asMap := map[string]interface{}{}
@@ -4847,7 +5349,7 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "evm", "evmNEQ", "evmIn", "evmNotIn", "evmGT", "evmGTE", "evmLT", "evmLTE", "evmContains", "evmHasPrefix", "evmHasSuffix", "evmIsNil", "evmNotNil", "evmEqualFold", "evmContainsFold", "points", "pointsNEQ", "pointsIn", "pointsNotIn", "pointsGT", "pointsGTE", "pointsLT", "pointsLTE", "hasAssetPrice", "hasAssetPriceWith", "hasEventLogs", "hasEventLogsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "evm", "evmNEQ", "evmIn", "evmNotIn", "evmGT", "evmGTE", "evmLT", "evmLTE", "evmContains", "evmHasPrefix", "evmHasSuffix", "evmIsNil", "evmNotNil", "evmEqualFold", "evmContainsFold", "points", "pointsNEQ", "pointsIn", "pointsNotIn", "pointsGT", "pointsGTE", "pointsLT", "pointsLTE", "hasAssetPrice", "hasAssetPriceWith", "hasEventLogs", "hasEventLogsWith", "hasCorrectnessReport", "hasCorrectnessReportWith", "key"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5211,6 +5713,29 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.HasEventLogsWith = data
+		case "hasCorrectnessReport":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCorrectnessReport"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCorrectnessReport = data
+		case "hasCorrectnessReportWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCorrectnessReportWith"))
+			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCorrectnessReportWith = data
+		case "key":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.SignerWhereInput().Key(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -6229,6 +6754,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "signers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_signers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -6426,6 +6973,126 @@ func (ec *executionContext) _Signer(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "correctnessreport":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Signer_correctnessreport(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var signerConnectionImplementors = []string{"SignerConnection"}
+
+func (ec *executionContext) _SignerConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.SignerConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, signerConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SignerConnection")
+		case "edges":
+			out.Values[i] = ec._SignerConnection_edges(ctx, field, obj)
+		case "pageInfo":
+			out.Values[i] = ec._SignerConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCount":
+			out.Values[i] = ec._SignerConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var signerEdgeImplementors = []string{"SignerEdge"}
+
+func (ec *executionContext) _SignerEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.SignerEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, signerEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SignerEdge")
+		case "node":
+			out.Values[i] = ec._SignerEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._SignerEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6496,6 +7163,16 @@ func (ec *executionContext) marshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKensh
 func (ec *executionContext) unmarshalNAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInput(ctx context.Context, v interface{}) (*ent.AssetPriceWhereInput, error) {
 	res, err := ec.unmarshalInputAssetPriceWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReport(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReport) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CorrectnessReport(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNCorrectnessReportConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportConnection(ctx context.Context, sel ast.SelectionSet, v ent.CorrectnessReportConnection) graphql.Marshaler {
@@ -6694,6 +7371,36 @@ func (ec *executionContext) marshalNSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchai
 	return ec._Signer(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNSignerConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerConnection(ctx context.Context, sel ast.SelectionSet, v ent.SignerConnection) graphql.Marshaler {
+	return ec._SignerConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSignerConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerConnection(ctx context.Context, sel ast.SelectionSet, v *ent.SignerConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SignerConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrderField(ctx context.Context, v interface{}) (*ent.SignerOrderField, error) {
+	var res = new(ent.SignerOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.SignerOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalNSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInput(ctx context.Context, v interface{}) (*ent.SignerWhereInput, error) {
 	res, err := ec.unmarshalInputSignerWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -6850,6 +7557,53 @@ func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKen
 	}
 	res, err := ec.unmarshalInputAssetPriceWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.CorrectnessReport) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReport(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReport(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReport) graphql.Marshaler {
@@ -7102,6 +7856,69 @@ func (ec *executionContext) marshalONode2githubᚗcomᚋKenshiTechᚋunchained�
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSigner(ctx context.Context, sel ast.SelectionSet, v *ent.Signer) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Signer(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.SignerEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSignerEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOSignerEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx context.Context, sel ast.SelectionSet, v *ent.SignerEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SignerEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOSignerOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrder(ctx context.Context, v interface{}) (*ent.SignerOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSignerOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.SignerWhereInput, error) {
