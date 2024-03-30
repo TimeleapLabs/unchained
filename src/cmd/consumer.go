@@ -10,6 +10,7 @@ import (
 	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ethereum"
+	"github.com/KenshiTech/unchained/gql"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/net/client"
 	"github.com/KenshiTech/unchained/plugins/correctness"
@@ -52,6 +53,7 @@ var consumerCmd = &cobra.Command{
 		logs.Setup()
 		client.StartClient()
 		consumers.StartConsumer()
+		gql.InstallHandlers()
 		client.Listen()
 	},
 }
