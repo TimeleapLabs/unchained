@@ -2,53 +2,66 @@ package config
 
 import (
 	"os"
+	"path"
+	"runtime"
 
-	petname "github.com/dustinkirkland/golang-petname"
-	"github.com/spf13/viper"
+	"github.com/KenshiTech/unchained/log"
+
+	"github.com/KenshiTech/unchained/constants"
+	"gopkg.in/yaml.v3"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
-func defaults() {
-	Config.SetDefault("name", petname.Generate(3, "-"))
-	Config.SetDefault("log", "info")
-	Config.SetDefault("rpc.ethereum", "https://ethereum.publicnode.com")
-	Config.SetDefault("rpc.arbitrum_sepolia", "https://sepolia-rollup.arbitrum.io/rpc")
-	Config.SetDefault("broker.bind", "0.0.0.0:9123")
-	Config.SetDefault("broker.uri", "wss://shinobi.brokers.kenshi.io")
-	Config.SetDefault("pos.chain", "arbitrum_sepolia")
-	Config.SetDefault("pos.address", "0x965e364987356785b7E89e2Fe7B70f5E5107332d")
-	Config.SetDefault("pos.base", int64(1))
-}
+var App Config
+var SecretFilePath string
 
-var Config *viper.Viper
-var Secrets *viper.Viper
+func Load(configPath, secretPath string) error {
+	if configPath == "" {
+		_, b, _, _ := runtime.Caller(0)
+		configPath = path.Join(b, "../..", "./config.yaml")
+	}
 
-func init() {
-	Config = viper.New()
-	Secrets = viper.New()
-}
-
-func LoadConfig(configFileName string, secretsFileName string) {
-	defaults()
-
-	Config.SetConfigFile(configFileName)
-	err := Config.ReadInConfig()
-
-	if err != nil {
-		isNotExist := os.IsNotExist(err)
-		if !isNotExist {
-			panic(err)
-		}
-
-		err = Config.WriteConfig()
+	if secretPath != "" {
+		SecretFilePath = secretPath
+		err := cleanenv.ReadConfig(secretPath, App.Secret)
 		if err != nil {
-			panic(err)
+			log.Logger.With("Error", err).Error("Can't read secret file")
+			return constants.ErrCantLoadSecret
 		}
 	}
 
-	Secrets.SetConfigFile(secretsFileName)
-	err = Secrets.MergeInConfig()
-
-	if err != nil && os.IsExist(err) {
-		panic(err)
+	err := cleanenv.ReadConfig(configPath, App)
+	if err != nil {
+		log.Logger.With("Error", err).Error("Can't read config file")
+		return constants.ErrCantLoadConfig
 	}
+
+	err = cleanenv.ReadEnv(App)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Secret) Save() error {
+	yamlData, err := yaml.Marshal(&s)
+	if err != nil {
+		log.Logger.With("Error", err).Error("Can't marshal secrets to yaml")
+		return constants.ErrCantWriteSecret
+	}
+
+	if SecretFilePath == "" {
+		log.Logger.With("Error", err).Error("SecretFilePath is not defined")
+		return constants.ErrCantWriteSecret
+	}
+
+	err = os.WriteFile(SecretFilePath, yamlData, 0600)
+	if err != nil {
+		log.Logger.With("Error", err).Error("Can't write secret file")
+		return constants.ErrCantWriteSecret
+	}
+
+	return nil
 }

@@ -1,17 +1,21 @@
-log: info
-name: <name>
+system:
+  log: info
+  name: <name>
 
-database:
+postgres:
   url: postgres://<user>:<pass>@<host>:<port>/<db>
 
 rpc:
-  ethereum:
-    - https://ethereum.publicnode.com
-    - https://eth.llamarpc.com
-    - wss://ethereum.publicnode.com
-    - https://eth.rpc.blxrbdn.com
-  arbitrum_sepolia:
-    - https://sepolia-rollup.arbitrum.io/rpc
+  - name: ethereum
+    nodes:
+      - https://ethereum.publicnode.com
+      - https://eth.llamarpc.com
+      - wss://ethereum.publicnode.com
+      - https://eth.rpc.blxrbdn.com
+
+  - name: arbitrum_sepolia
+    nodes:
+      - https://sepolia-rollup.arbitrum.io/rpc
 
 plugins:
   uniswap:

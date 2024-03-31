@@ -59,6 +59,27 @@ type Token struct {
 	Cross  []string `mapstructure:"cross"`
 }
 
+func NewTokensFromCfg(input []config.Token) []Token {
+	result := []Token{}
+	for _, t := range input {
+		result = append(result, NewTokenFromCfg(t))
+	}
+
+	return result
+}
+
+func NewTokenFromCfg(input config.Token) Token {
+	return Token{
+		Chain:  input.Chain,
+		Name:   input.Name,
+		Pair:   input.Pair,
+		Unit:   input.Unit,
+		Delta:  input.Delta,
+		Invert: input.Invert,
+		Send:   input.Send,
+	}
+}
+
 var priceCache map[string]*lru.Cache[uint64, big.Int]
 var consensus *lru.Cache[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
 var signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
@@ -451,25 +472,18 @@ func priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *bi
 	return &price
 }
 
-func Setup() {
-	if !config.Config.IsSet("plugins.uniswap") {
+func New() {
+	if config.App.Plugins.Uniswap != nil {
 		return
 	}
 
-	var tokens []Token
-
-	err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens)
-
-	if err != nil {
-		log.Logger.Error(`Couldn't read "plugins.uniswap.tokens" from config file.`)
-		os.Exit(1)
-	}
-
-	for _, token := range tokens {
+	for _, t := range config.App.Plugins.Uniswap.Tokens {
+		token := NewTokenFromCfg(t)
+		var err error
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)
 
 		if err != nil {
-			log.Logger.Error("Failed to initalize token map.")
+			log.Logger.Error("Failed to initialize token map.")
 			os.Exit(1)
 		}
 
@@ -642,7 +656,7 @@ func createTask(tokens []Token, chain string) func() {
 	}
 }
 
-func Start() {
+func Listen() {
 	scheduler, err := gocron.NewScheduler()
 
 	if err != nil {
@@ -650,13 +664,7 @@ func Start() {
 		os.Exit(1)
 	}
 
-	var tokens []Token
-	if err := config.Config.UnmarshalKey("plugins.uniswap.tokens", &tokens); err != nil {
-		log.Logger.Error(`Failed to read "plugins.uniswap.tokens" from config file.`)
-		os.Exit(1)
-	}
-
-	for _, token := range tokens {
+	for _, token := range config.App.Plugins.Uniswap.Tokens {
 		priceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)
 
 		if err != nil {
@@ -665,13 +673,8 @@ func Start() {
 		}
 	}
 
-	scheduleConfs := config.Config.Sub("plugins.uniswap.schedule")
-	scheduleNames := scheduleConfs.AllKeys()
-
-	for index := range scheduleNames {
-		name := scheduleNames[index]
-		duration := scheduleConfs.GetDuration(name)
-		task := createTask(tokens, name)
+	for name, duration := range config.App.Plugins.Uniswap.Schedule {
+		task := createTask(NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens), name)
 
 		_, err = scheduler.NewJob(
 			gocron.DurationJob(duration),

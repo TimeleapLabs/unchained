@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/KenshiTech/unchained/config"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-colorable"
 )
@@ -20,9 +19,9 @@ func init() {
 	Levels["error"] = slog.LevelError
 }
 
-func Start() {
+func Start(logLevel string) {
 	Logger = slog.New(tint.NewHandler(colorable.NewColorableStdout(), &tint.Options{
-		Level:      Levels[config.Config.GetString("log")],
+		Level:      Levels[logLevel],
 		TimeFormat: time.RFC3339,
 	}))
 }

@@ -1,24 +1,28 @@
-log: info
-name: <name>
+system:
+  log: info
+  name: <name>
 
-database:
+postgres:
   url: postgres://<user>:<pass>@<host>:<port>/<db>?sslmode=disable
 
 rpc:
-  ethereum:
-    - https://ethereum.publicnode.com
-    - https://eth.llamarpc.com
-    - wss://ethereum.publicnode.com
-    - https://eth.rpc.blxrbdn.com
+  - name: ethereum
+    nodes:
+      - https://ethereum.publicnode.com
+      - https://eth.llamarpc.com
+      - wss://ethereum.publicnode.com
+      - https://eth.rpc.blxrbdn.com
 
-  arbitrum:
-    - https://arbitrum-one.publicnode.com
-    - https://arbitrum.llamarpc.com
-    - wss://arbitrum-one.publicnode.com
-    - https://arbitrum-one.public.blastapi.io
+  - name: arbitrum:
+    nodes:
+      - https://arbitrum-one.publicnode.com
+      - https://arbitrum.llamarpc.com
+      - wss://arbitrum-one.publicnode.com
+      - https://arbitrum-one.public.blastapi.io
 
-  arbitrum_sepolia:
-    - https://sepolia-rollup.arbitrum.io/rpc
+  - name: arbitrum_sepolia
+    nodes:
+      - https://sepolia-rollup.arbitrum.io/rpc
 
 plugins:
   logs:

@@ -315,7 +315,7 @@ func StartServer() {
 	flag.Parse()
 	versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
 	http.HandleFunc(versionedRoot, rootHandler)
-	addr := config.Config.GetString("broker.bind")
+	addr := config.App.Broker.Bind
 
 	readHeaderTimeoutInSecond := 3
 	server := &http.Server{
