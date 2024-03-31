@@ -8,14 +8,14 @@ postgres:
 rpc:
   - name: ethereum
     nodes:
-    - https://ethereum.publicnode.com
-    - https://eth.llamarpc.com
-    - wss://ethereum.publicnode.com
-    - https://eth.rpc.blxrbdn.com
+      - https://ethereum.publicnode.com
+      - https://eth.llamarpc.com
+      - wss://ethereum.publicnode.com
+      - https://eth.rpc.blxrbdn.com
 
   - name: arbitrum_sepolia
     nodes:
-    - https://sepolia-rollup.arbitrum.io/rpc
+      - https://sepolia-rollup.arbitrum.io/rpc
 
 plugins:
   uniswap:
