@@ -121,7 +121,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 		)).
 		Only(ctx)
 
-	if err != nil {
+	if err != nil && !ent.IsNotFound(err) {
 		panic(err)
 	}
 
