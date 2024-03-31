@@ -14,4 +14,7 @@ var (
 	ErrInvalidSignature        = errors.New("signature.invalid")
 	ErrNotSupportedDataset     = errors.New("dataset not supported")
 	ErrNotSupportedInstruction = errors.New("instruction not supported")
+	ErrCantLoadSecret          = errors.New("can't load secrets")
+	ErrCantLoadConfig          = errors.New("can't load config")
+	ErrCantWriteSecret         = errors.New("can't write secrets")
 )

@@ -212,17 +212,12 @@ func SaveSignatures(args SaveSignatureArgs) {
 	signatureCache.Remove(args.Hash)
 }
 
-func Setup() {
-	if !config.Config.IsSet("plugins.correctness") {
-		return
+func New() {
+	for _, conf := range config.App.Plugins.EthLog.Correctness {
+		supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
 	}
 
-	var configs []string
-	if err := config.Config.UnmarshalKey("plugins.correctness", &configs); err != nil {
-		panic(err)
-	}
-
-	for _, conf := range configs {
+	for _, conf := range config.App.Plugins.Uniswap.Correctness {
 		supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
 	}
 }
