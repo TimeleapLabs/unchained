@@ -1,3 +1,5 @@
+<img height="128px" src="https://kenshi.io/images/products/unchained.g100.svg" alt="Unchained">
+
 # Kenshi Unchained
 
 [![Release](https://shields.io/github/v/release/kenshitech/unchained)](https://github.com/KenshiTech/unchained/releases)
