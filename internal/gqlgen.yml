@@ -1,0 +1,52 @@
+# schema tells gqlgen where the GraphQL schema is located.
+schema:
+  - gql/*.graphql
+
+# resolver reports where the resolver implementations go.
+resolver:
+  layout: follow-schema
+  dir: gql
+  package: gql
+  filename_template: "{name}.resolvers.go"
+
+exec:
+  layout: follow-schema
+  dir: gql/generated
+  package: generated
+
+# gqlgen will search for any type names in the schema in these go packages
+# if they match it will use them, otherwise it will generate them.
+
+# autobind tells gqngen to search for any type names in the GraphQL schema in the
+# provided package. If they match it will use them, otherwise it will generate new.
+autobind:
+  - github.com/KenshiTech/unchained/ent
+  - github.com/KenshiTech/unchained/ent/assetprice
+  - github.com/KenshiTech/unchained/ent/eventlog
+  - github.com/KenshiTech/unchained/datasets
+  - github.com/KenshiTech/unchained/gql/types
+  - github.com/99designs/gqlgen/graphql
+
+# This section declares type mapping between the GraphQL and Go type systems.
+models:
+  # Defines the ID field as Go 'int'.
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.IntID
+  Node:
+    model:
+      - github.com/KenshiTech/unchained/ent.Noder
+  EventLogArg:
+    model:
+      - github.com/KenshiTech/unchained/datasets.EventLogArg
+  Uint:
+    model:
+      - github.com/99designs/gqlgen/graphql.Uint64
+      - github.com/99designs/gqlgen/graphql.Uint
+      - github.com/99designs/gqlgen/graphql.Uint32
+  Bytes:
+    model:
+      - github.com/KenshiTech/unchained/gql/types.Bytes
+  Any:
+    model:
+      - github.com/99designs/gqlgen/graphql.Any
