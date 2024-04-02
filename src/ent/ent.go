@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/signer"
+	"github.com/KenshiTech/unchained/src/ent/assetprice"
+	"github.com/KenshiTech/unchained/src/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/src/ent/eventlog"
+	"github.com/KenshiTech/unchained/src/ent/signer"
 )
 
 // ent aliases to avoid import conflicts in user's code.

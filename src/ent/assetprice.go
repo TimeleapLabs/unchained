@@ -8,8 +8,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/helpers"
+	"github.com/KenshiTech/unchained/src/ent/assetprice"
+	"github.com/KenshiTech/unchained/src/ent/helpers"
 )
 
 // AssetPrice is the model entity for the AssetPrice schema.

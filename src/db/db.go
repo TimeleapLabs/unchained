@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/src/config"
+	"github.com/KenshiTech/unchained/src/ent"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"

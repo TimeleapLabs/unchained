@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/src/log"
 )
 
 type Bytes []byte

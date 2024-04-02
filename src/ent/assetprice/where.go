@@ -5,8 +5,8 @@ package assetprice
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/KenshiTech/unchained/ent/helpers"
-	"github.com/KenshiTech/unchained/ent/predicate"
+	"github.com/KenshiTech/unchained/src/ent/helpers"
+	"github.com/KenshiTech/unchained/src/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

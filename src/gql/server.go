@@ -3,7 +3,7 @@ package gql
 import (
 	"net/http"
 
-	"github.com/KenshiTech/unchained/db"
+	"github.com/KenshiTech/unchained/src/db"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

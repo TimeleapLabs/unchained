@@ -6,7 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/src/constants"
 	"github.com/spf13/cobra"
 )
 

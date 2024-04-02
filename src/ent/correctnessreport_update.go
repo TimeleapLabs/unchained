@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/ent/predicate"
-	"github.com/KenshiTech/unchained/ent/signer"
+	"github.com/KenshiTech/unchained/src/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/src/ent/predicate"
+	"github.com/KenshiTech/unchained/src/ent/signer"
 )
 
 // CorrectnessReportUpdate is the builder for updating CorrectnessReport entities.

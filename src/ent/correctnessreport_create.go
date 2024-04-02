@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/ent/signer"
+	"github.com/KenshiTech/unchained/src/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/src/ent/signer"
 )
 
 // CorrectnessReportCreate is the builder for creating a CorrectnessReport entity.

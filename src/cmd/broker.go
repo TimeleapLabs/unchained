@@ -4,15 +4,15 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/db"
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/gql"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net"
-	"github.com/KenshiTech/unchained/plugins/correctness"
-	"github.com/KenshiTech/unchained/plugins/logs"
-	"github.com/KenshiTech/unchained/plugins/uniswap"
+	"github.com/KenshiTech/unchained/src/config"
+	"github.com/KenshiTech/unchained/src/db"
+	"github.com/KenshiTech/unchained/src/ethereum"
+	"github.com/KenshiTech/unchained/src/gql"
+	"github.com/KenshiTech/unchained/src/log"
+	"github.com/KenshiTech/unchained/src/net"
+	"github.com/KenshiTech/unchained/src/plugins/correctness"
+	"github.com/KenshiTech/unchained/src/plugins/logs"
+	"github.com/KenshiTech/unchained/src/plugins/uniswap"
 
 	"github.com/spf13/cobra"
 )

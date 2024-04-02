@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/predicate"
+	"github.com/KenshiTech/unchained/src/ent/eventlog"
+	"github.com/KenshiTech/unchained/src/ent/predicate"
 )
 
 // EventLogDelete is the builder for deleting a EventLog entity.

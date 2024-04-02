@@ -1,14 +1,14 @@
 package consumers
 
 import (
-	"github.com/KenshiTech/unchained/constants/opcodes"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/datasets"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net/shared"
-	"github.com/KenshiTech/unchained/plugins/correctness"
-	"github.com/KenshiTech/unchained/plugins/logs"
-	"github.com/KenshiTech/unchained/plugins/uniswap"
+	"github.com/KenshiTech/unchained/src/constants/opcodes"
+	"github.com/KenshiTech/unchained/src/crypto/bls"
+	"github.com/KenshiTech/unchained/src/datasets"
+	"github.com/KenshiTech/unchained/src/log"
+	"github.com/KenshiTech/unchained/src/net/shared"
+	"github.com/KenshiTech/unchained/src/plugins/correctness"
+	"github.com/KenshiTech/unchained/src/plugins/logs"
+	"github.com/KenshiTech/unchained/src/plugins/uniswap"
 	"github.com/gorilla/websocket"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"

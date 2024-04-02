@@ -7,7 +7,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"github.com/KenshiTech/unchained/datasets"
+	"github.com/KenshiTech/unchained/src/datasets"
 )
 
 // DataSet holds the schema definition for the DataSet entity.

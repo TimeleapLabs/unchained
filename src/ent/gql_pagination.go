@@ -14,10 +14,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
-	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/signer"
+	"github.com/KenshiTech/unchained/src/ent/assetprice"
+	"github.com/KenshiTech/unchained/src/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/src/ent/eventlog"
+	"github.com/KenshiTech/unchained/src/ent/signer"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 

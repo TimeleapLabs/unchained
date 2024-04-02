@@ -11,7 +11,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/src/ent"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -1275,7 +1275,7 @@ input EventLogWhereInput {
 An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
-interface Node @goModel(model: "github.com/KenshiTech/unchained/ent.Noder") {
+interface Node @goModel(model: "github.com/KenshiTech/unchained/src/ent.Noder") {
   """
   The id of the object.
   """

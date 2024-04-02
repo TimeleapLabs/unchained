@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/src/config"
+	"github.com/KenshiTech/unchained/src/constants"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/src/config"
 
-	"github.com/KenshiTech/unchained/ethereum/contracts"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/src/ethereum/contracts"
+	"github.com/KenshiTech/unchained/src/log"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"

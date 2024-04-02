@@ -3,11 +3,11 @@
 package ent
 
 import (
-	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/schema"
-	"github.com/KenshiTech/unchained/ent/signer"
+	"github.com/KenshiTech/unchained/src/ent/assetprice"
+	"github.com/KenshiTech/unchained/src/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/src/ent/eventlog"
+	"github.com/KenshiTech/unchained/src/ent/schema"
+	"github.com/KenshiTech/unchained/src/ent/signer"
 )
 
 // The init function reads all schema descriptors with runtime code

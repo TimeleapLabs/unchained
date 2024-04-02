@@ -10,8 +10,8 @@ import (
 	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/KenshiTech/unchained/datasets"
-	"github.com/KenshiTech/unchained/gql/types"
+	"github.com/KenshiTech/unchained/src/datasets"
+	"github.com/KenshiTech/unchained/src/gql/types"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 

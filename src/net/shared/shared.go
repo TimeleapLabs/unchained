@@ -5,8 +5,8 @@ package shared
 import (
 	"sync"
 
-	"github.com/KenshiTech/unchained/constants/opcodes"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/src/constants/opcodes"
+	"github.com/KenshiTech/unchained/src/log"
 
 	"github.com/gorilla/websocket"
 )

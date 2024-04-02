@@ -5,7 +5,7 @@ package kosk
 import (
 	"crypto/rand"
 
-	"github.com/KenshiTech/unchained/crypto/bls"
+	"github.com/KenshiTech/unchained/src/crypto/bls"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )

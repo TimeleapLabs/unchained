@@ -9,10 +9,10 @@ import (
 	"math/big"
 
 	"entgo.io/contrib/entgql"
-	"github.com/KenshiTech/unchained/ent"
-	"github.com/KenshiTech/unchained/ent/helpers"
-	"github.com/KenshiTech/unchained/gql/generated"
-	"github.com/KenshiTech/unchained/gql/types"
+	"github.com/KenshiTech/unchained/src/ent"
+	"github.com/KenshiTech/unchained/src/ent/helpers"
+	"github.com/KenshiTech/unchained/src/gql/generated"
+	"github.com/KenshiTech/unchained/src/gql/types"
 )
 
 // Price is the resolver for the price field.

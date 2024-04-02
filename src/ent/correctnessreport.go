@@ -8,7 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/src/ent/correctnessreport"
 )
 
 // CorrectnessReport is the model entity for the CorrectnessReport schema.

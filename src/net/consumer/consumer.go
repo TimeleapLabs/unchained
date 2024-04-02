@@ -1,8 +1,8 @@
 package consumer
 
 import (
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net/repository"
+	"github.com/KenshiTech/unchained/src/log"
+	"github.com/KenshiTech/unchained/src/net/repository"
 	"github.com/gorilla/websocket"
 )
 

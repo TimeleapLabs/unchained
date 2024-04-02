@@ -4,11 +4,11 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/src/config"
 
-	"github.com/KenshiTech/unchained/address"
-	"github.com/KenshiTech/unchained/datasets"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/src/address"
+	"github.com/KenshiTech/unchained/src/datasets"
+	"github.com/KenshiTech/unchained/src/log"
 
 	"github.com/btcsuite/btcutil/base58"
 

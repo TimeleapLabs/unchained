@@ -5,9 +5,9 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/src/log"
 
-	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/src/constants"
 	"gopkg.in/yaml.v3"
 
 	"github.com/ilyakaznacheev/cleanenv"

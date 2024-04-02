@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/src/ent"
 )
 
 // The AssetPriceFunc type is an adapter to allow the use of ordinary

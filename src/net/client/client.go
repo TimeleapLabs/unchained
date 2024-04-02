@@ -6,14 +6,14 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/constants/opcodes"
-	"github.com/KenshiTech/unchained/consumers"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/kosk"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/net/shared"
+	"github.com/KenshiTech/unchained/src/config"
+	"github.com/KenshiTech/unchained/src/constants"
+	"github.com/KenshiTech/unchained/src/constants/opcodes"
+	"github.com/KenshiTech/unchained/src/consumers"
+	"github.com/KenshiTech/unchained/src/crypto/bls"
+	"github.com/KenshiTech/unchained/src/kosk"
+	"github.com/KenshiTech/unchained/src/log"
+	"github.com/KenshiTech/unchained/src/net/shared"
 
 	"github.com/gorilla/websocket"
 
