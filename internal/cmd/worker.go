@@ -12,6 +12,8 @@ import (
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/pos"
+	"github.com/KenshiTech/unchained/transport/server"
+	"github.com/KenshiTech/unchained/transport/server/websocket"
 	"github.com/spf13/cobra"
 )
 
@@ -44,6 +46,10 @@ var workerCmd = &cobra.Command{
 		db.Start()
 
 		persistence.Start(contextPath)
+
+		server.New(
+			websocket.WithWebsocket(),
+		)
 	},
 }
 
