@@ -383,7 +383,7 @@ func (u *Service) GetPriceAtBlockFromPair(
 //
 // func (u *Service) getPriceFromPair(
 //	network string, pairAddr string, decimalDif int64, inverse bool,
-//) (*uint64, *big.Int, error) {
+// ) (*uint64, *big.Int, error) {
 //	blockNumber, err := ethereum.GetBlockNumber(network)
 //
 //	if err != nil {

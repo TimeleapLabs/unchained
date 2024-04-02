@@ -5,10 +5,11 @@ package generated
 import (
 	"context"
 	"errors"
-	"github.com/KenshiTech/unchained/transport/server/gql/types"
 	"strconv"
 	"sync"
 	"sync/atomic"
+
+	"github.com/KenshiTech/unchained/transport/server/gql/types"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/KenshiTech/unchained/datasets"

@@ -7,8 +7,9 @@ package gql
 import (
 	"context"
 	"fmt"
-	"github.com/KenshiTech/unchained/transport/server/gql/generated"
 	"strings"
+
+	"github.com/KenshiTech/unchained/transport/server/gql/generated"
 
 	"github.com/KenshiTech/unchained/datasets"
 )

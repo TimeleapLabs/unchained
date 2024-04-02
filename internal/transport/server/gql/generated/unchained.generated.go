@@ -6,10 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/KenshiTech/unchained/transport/server/gql/types"
 	"strconv"
 	"sync"
 	"sync/atomic"
+
+	"github.com/KenshiTech/unchained/transport/server/gql/types"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"

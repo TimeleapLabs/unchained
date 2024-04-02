@@ -6,9 +6,10 @@ package gql
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/KenshiTech/unchained/transport/server/gql/generated"
 	"github.com/KenshiTech/unchained/transport/server/gql/types"
-	"math/big"
 
 	"entgo.io/contrib/entgql"
 	"github.com/KenshiTech/unchained/ent"
