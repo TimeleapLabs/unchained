@@ -2,13 +2,14 @@ package conn
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/log"
-	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )

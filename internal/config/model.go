@@ -62,9 +62,9 @@ type ProofOfStack struct {
 }
 
 type Broker struct {
-	Bind              string        `env:"BROKER_BIND" env-default:"0.0.0.0:9123"                    yaml:"bind"`
-	URI               string        `env:"BROKER_URI"  env-default:"wss://shinobi.brokers.kenshi.io" yaml:"uri"`
-	ReadHeaderTimeout time.Duration `env:"BROKER_TIMEOUT" env-default:"3s" yaml:"read_header_timeout"`
+	Bind              string        `env:"BROKER_BIND"    env-default:"0.0.0.0:9123"                    yaml:"bind"`
+	URI               string        `env:"BROKER_URI"     env-default:"wss://shinobi.brokers.kenshi.io" yaml:"uri"`
+	ReadHeaderTimeout time.Duration `env:"BROKER_TIMEOUT" env-default:"3s"                              yaml:"read_header_timeout"`
 }
 
 type Postgres struct {

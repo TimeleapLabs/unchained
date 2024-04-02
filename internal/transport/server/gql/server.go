@@ -1,8 +1,9 @@
 package gql
 
 import (
-	"github.com/KenshiTech/unchained/log"
 	"net/http"
+
+	"github.com/KenshiTech/unchained/log"
 
 	"github.com/KenshiTech/unchained/db"
 

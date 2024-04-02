@@ -2,6 +2,10 @@ package evmlog
 
 import (
 	"context"
+	"math/big"
+	"sync"
+	"time"
+
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants/opcodes"
@@ -18,9 +22,6 @@ import (
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"math/big"
-	"sync"
-	"time"
 )
 
 const (

@@ -2,14 +2,15 @@ package websocket
 
 import (
 	"fmt"
+	"net/http"
+	"sync"
+
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/transport/server/websocket/handler"
 	"github.com/KenshiTech/unchained/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
-	"net/http"
-	"sync"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -49,7 +50,6 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch opcodes.OpCode(payload[0]) {
-
 		case opcodes.Hello:
 			result, err := handler.Hello(conn, payload[1:])
 			if err != nil {

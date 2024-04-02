@@ -1,13 +1,14 @@
 package scheduler
 
 import (
+	"os"
+	"time"
+
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/scheduler/logs"
 	"github.com/KenshiTech/unchained/scheduler/uniswap"
 	"github.com/go-co-op/gocron/v2"
-	"os"
-	"time"
 )
 
 type Scheduler struct {

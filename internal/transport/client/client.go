@@ -11,9 +11,7 @@ func Consume(handler *handler.Handler) {
 	incoming := conn.Read()
 
 	for payload := range incoming {
-
 		switch opcodes.OpCode(payload[0]) {
-
 		case opcodes.Feedback:
 			log.Logger.
 				With("Feedback", string(payload[1:])).
@@ -37,7 +35,6 @@ func Consume(handler *handler.Handler) {
 				With("Code", payload[0]).
 				Info("Unknown call code")
 		}
-
 	}
 
 	log.Logger.Error("Client loop breaks")

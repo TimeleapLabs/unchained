@@ -3,6 +3,11 @@ package uniswap
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"os"
+	"strings"
+	"sync"
+
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
@@ -24,10 +29,6 @@ import (
 	"github.com/puzpuzpuz/xsync/v3"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"math/big"
-	"os"
-	"strings"
-	"sync"
 )
 
 const (
@@ -57,7 +58,6 @@ func (u *Service) CheckAndCacheSignature(
 	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer datasets.Signer,
 	hash bls12381.G1Affine, totalVoted *big.Int,
 ) error {
-
 	u.signatureMutex.Lock()
 	defer u.signatureMutex.Unlock()
 
@@ -336,10 +336,11 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 	u.aggregateCache.Add(args.Hash, aggregate)
 }
 
-func (u *Service) setPriceFromCache(block uint64, pair string) (big.Int, bool) {
-	lruCache := u.PriceCache[strings.ToLower(pair)]
-	return lruCache.Get(block)
-}
+//
+// func (u *Service) setPriceFromCache(block uint64, pair string) (big.Int, bool) {
+//	lruCache := u.PriceCache[strings.ToLower(pair)]
+//	return lruCache.Get(block)
+//}
 
 func (u *Service) GetBlockNumber(network string) (*uint64, error) {
 	blockNumber, err := ethereum.GetBlockNumber(network)
@@ -379,25 +380,26 @@ func (u *Service) GetPriceAtBlockFromPair(
 	return &u.LastPrice, nil
 }
 
-func (u *Service) getPriceFromPair(
-	network string, pairAddr string, decimalDif int64, inverse bool,
-) (*uint64, *big.Int, error) {
-	blockNumber, err := ethereum.GetBlockNumber(network)
-
-	if err != nil {
-		ethereum.RefreshRPC(network)
-		return nil, nil, err
-	}
-
-	lastPrice, err := u.GetPriceAtBlockFromPair(
-		network,
-		blockNumber,
-		pairAddr,
-		decimalDif,
-		inverse)
-
-	return &blockNumber, lastPrice, err
-}
+//
+// func (u *Service) getPriceFromPair(
+//	network string, pairAddr string, decimalDif int64, inverse bool,
+//) (*uint64, *big.Int, error) {
+//	blockNumber, err := ethereum.GetBlockNumber(network)
+//
+//	if err != nil {
+//		ethereum.RefreshRPC(network)
+//		return nil, nil, err
+//	}
+//
+//	lastPrice, err := u.GetPriceAtBlockFromPair(
+//		network,
+//		blockNumber,
+//		pairAddr,
+//		decimalDif,
+//		inverse)
+//
+//	return &blockNumber, lastPrice, err
+//}
 
 func (u *Service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *big.Int {
 	var decimalFix big.Int

@@ -2,9 +2,10 @@ package server
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/log"
-	"net/http"
 )
 
 func New(options ...func()) {

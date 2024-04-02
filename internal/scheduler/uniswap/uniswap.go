@@ -2,14 +2,15 @@ package uniswap
 
 import (
 	"fmt"
+	"math/big"
+	"os"
+	"strings"
+
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/service/uniswap"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"math/big"
-	"os"
-	"strings"
 )
 
 const (

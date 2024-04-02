@@ -27,7 +27,7 @@ func Load(configPath, secretPath string) error {
 		err := cleanenv.ReadConfig(secretPath, &App.Secret)
 		if err != nil {
 			log.Logger.With("Error", err).Warn("Can't read secret file")
-			//return constants.ErrCantLoadSecret
+			// return constants.ErrCantLoadSecret
 		}
 	}
 

@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+
 	"github.com/KenshiTech/unchained/log"
 
 	"github.com/KenshiTech/unchained/config"
@@ -41,7 +42,6 @@ func Start() {
 	if err = dbClient.Schema.Create(context.Background()); err != nil {
 		log.Logger.Error("failed creating schema resources: %v", err)
 	}
-
 }
 
 func GetClient() *ent.Client {

@@ -1,9 +1,10 @@
 package store
 
 import (
+	"sync"
+
 	"github.com/KenshiTech/unchained/crypto/kosk"
 	"github.com/KenshiTech/unchained/datasets"
-	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"

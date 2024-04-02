@@ -4,6 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"os"
+	"sort"
+	"strings"
+
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/datasets"
@@ -17,10 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"math/big"
-	"os"
-	"sort"
-	"strings"
 )
 
 type EvmLog struct {
