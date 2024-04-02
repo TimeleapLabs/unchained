@@ -23,13 +23,10 @@ jobs:
           cache: false
 
       - name: Install Tools
-        working-directory: "src"
         run: make tools
 
       - name: Lint
-        working-directory: "src"
         run: make lint
 
       - name: Error Check
-        working-directory: "src"
         run: make errors

@@ -20,11 +20,11 @@ exec:
 # autobind tells gqngen to search for any type names in the GraphQL schema in the
 # provided package. If they match it will use them, otherwise it will generate new.
 autobind:
-  - github.com/KenshiTech/unchained/ent
-  - github.com/KenshiTech/unchained/ent/assetprice
-  - github.com/KenshiTech/unchained/ent/eventlog
-  - github.com/KenshiTech/unchained/datasets
-  - github.com/KenshiTech/unchained/gql/types
+  - github.com/KenshiTech/unchained/src/ent
+  - github.com/KenshiTech/unchained/src/ent/assetprice
+  - github.com/KenshiTech/unchained/src/ent/eventlog
+  - github.com/KenshiTech/unchained/src/datasets
+  - github.com/KenshiTech/unchained/src/gql/types
   - github.com/99designs/gqlgen/graphql
 
 # This section declares type mapping between the GraphQL and Go type systems.
@@ -35,10 +35,10 @@ models:
       - github.com/99designs/gqlgen/graphql.IntID
   Node:
     model:
-      - github.com/KenshiTech/unchained/ent.Noder
+      - github.com/KenshiTech/unchained/src/ent.Noder
   EventLogArg:
     model:
-      - github.com/KenshiTech/unchained/datasets.EventLogArg
+      - github.com/KenshiTech/unchained/src/datasets.EventLogArg
   Uint:
     model:
       - github.com/99designs/gqlgen/graphql.Uint64
@@ -46,7 +46,7 @@ models:
       - github.com/99designs/gqlgen/graphql.Uint32
   Bytes:
     model:
-      - github.com/KenshiTech/unchained/gql/types.Bytes
+      - github.com/KenshiTech/unchained/src/gql/types.Bytes
   Any:
     model:
       - github.com/99designs/gqlgen/graphql.Any

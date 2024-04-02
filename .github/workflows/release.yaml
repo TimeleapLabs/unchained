@@ -25,7 +25,7 @@ jobs:
             src/go.sum
 
       - name: Build
-        run: cd src && make prod
+        run: make prod
 
       - name: "Run release script"
         run: node scripts/docker-release.mjs ${{ github.ref_name }}
