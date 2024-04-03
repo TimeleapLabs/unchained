@@ -9,8 +9,8 @@ import (
 )
 
 func New(options ...func()) {
-	for _, o := range options {
-		o()
+	for _, option := range options {
+		option()
 	}
 
 	log.Logger.With("Bind", fmt.Sprintf("http://%s", config.App.Broker.Bind)).Info("Server is starting")
