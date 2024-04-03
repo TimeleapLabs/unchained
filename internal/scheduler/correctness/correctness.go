@@ -213,11 +213,7 @@ func SaveSignatures(args SaveSignatureArgs) {
 }
 
 func New() {
-	for _, conf := range config.App.Plugins.EthLog.Correctness {
-		supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
-	}
-
-	for _, conf := range config.App.Plugins.Uniswap.Correctness {
+	for _, conf := range config.App.Plugins.Correctness {
 		supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
 	}
 }

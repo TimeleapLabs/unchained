@@ -15,20 +15,19 @@ type RPC struct {
 }
 
 type Uniswap struct {
-	Schedule    map[string]time.Duration `yaml:"schedule"`
-	Tokens      []Token                  `yaml:"tokens"`
-	Correctness []string                 `yaml:"correctness"`
+	Schedule map[string]time.Duration `yaml:"schedule"`
+	Tokens   []Token                  `yaml:"tokens"`
 }
 
 type EthLog struct {
-	Schedule    map[string]time.Duration `yaml:"schedule"`
-	Events      []Event                  `yaml:"events"`
-	Correctness []string                 `yaml:"correctness"`
+	Schedule map[string]time.Duration `yaml:"schedule"`
+	Events   []Event                  `yaml:"events"`
 }
 
 type Plugins struct {
-	EthLog  *EthLog  `yaml:"logs"`
-	Uniswap *Uniswap `yaml:"uniswap"`
+	EthLog      *EthLog  `yaml:"logs"`
+	Uniswap     *Uniswap `yaml:"uniswap"`
+	Correctness []string `yaml:"correctness"`
 }
 
 type Event struct {
