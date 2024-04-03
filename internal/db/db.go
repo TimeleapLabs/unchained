@@ -29,9 +29,13 @@ func Open(databaseURL string) (*ent.Client, error) {
 }
 
 func Start() {
+	if config.App.Postgres.URL == "" {
+		return
+	}
+
 	var err error
 
-	log.Logger.With("URL", config.App.Postgres.URL).Info("Connecting to DB")
+	log.Logger.Info("Connecting to DB")
 
 	dbClient, err = ent.Open("postgres", config.App.Postgres.URL)
 

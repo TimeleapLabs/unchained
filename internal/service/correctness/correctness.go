@@ -15,15 +15,9 @@ import (
 	"github.com/KenshiTech/unchained/ent/signer"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/utils"
-
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
-
-var signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
-var DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
-var signatureMutex *sync.Mutex
-var supportedTopics map[[64]byte]bool
 
 const (
 	LruSize = 128
@@ -37,9 +31,15 @@ type SaveSignatureArgs struct {
 	Info datasets.Correctness
 	Hash bls12381.G1Affine
 }
+type Service struct {
+	signatureCache          *lru.Cache[bls12381.G1Affine, []datasets.Signature]
+	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
+	signatureMutex          *sync.Mutex
+	supportedTopics         map[[64]byte]bool
+}
 
 // TODO: This code should be moved to a shared library
-func GetBlockNumber(network string) (*uint64, error) {
+func (s *Service) GetBlockNumber(network string) (*uint64, error) {
 	blockNumber, err := ethereum.GetBlockNumber(network)
 
 	if err != nil {
@@ -50,20 +50,20 @@ func GetBlockNumber(network string) (*uint64, error) {
 	return &blockNumber, nil
 }
 
-func RecordSignature(
+func (s *Service) RecordSignature(
 	signature bls12381.G1Affine,
 	signer datasets.Signer,
 	hash bls12381.G1Affine,
 	info datasets.Correctness,
 	debounce bool) {
-	if supported := supportedTopics[info.Topic]; !supported {
+	if supported := s.supportedTopics[info.Topic]; !supported {
 		return
 	}
 
-	signatureMutex.Lock()
-	defer signatureMutex.Unlock()
+	s.signatureMutex.Lock()
+	defer s.signatureMutex.Unlock()
 
-	signatures, ok := signatureCache.Get(hash)
+	signatures, ok := s.signatureCache.Get(hash)
 
 	if !ok {
 		signatures = make([]datasets.Signature, 0)
@@ -83,18 +83,18 @@ func RecordSignature(
 	}
 
 	signatures = append(signatures, packed)
-	signatureCache.Add(hash, signatures)
+	s.signatureCache.Add(hash, signatures)
 
 	if debounce {
-		DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+		s.DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
 	} else {
-		SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+		s.SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
 	}
 }
 
-func SaveSignatures(args SaveSignatureArgs) {
+func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 	dbClient := db.GetClient()
-	signatures, ok := signatureCache.Get(args.Hash)
+	signatures, ok := s.signatureCache.Get(args.Hash)
 
 	if !ok {
 		return
@@ -209,24 +209,28 @@ func SaveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	signatureCache.Remove(args.Hash)
+	s.signatureCache.Remove(args.Hash)
 }
 
-func New() {
-	for _, conf := range config.App.Plugins.Correctness {
-		supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
-	}
-}
-
-func init() {
-	DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, SaveSignatures)
-	signatureMutex = new(sync.Mutex)
-	supportedTopics = make(map[[64]byte]bool)
-
+func (s *Service) init() {
 	var err error
-	signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
+
+	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
+	s.signatureMutex = new(sync.Mutex)
+	s.supportedTopics = make(map[[64]byte]bool)
+	s.signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
 
 	if err != nil {
 		panic(err)
 	}
+}
+
+func New() *Service {
+	c := Service{}
+
+	for _, conf := range config.App.Plugins.Correctness {
+		c.supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
+	}
+
+	return &c
 }

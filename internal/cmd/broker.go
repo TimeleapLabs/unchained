@@ -9,7 +9,6 @@ import (
 	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/scheduler/correctness"
 	"github.com/KenshiTech/unchained/transport/server"
 	"github.com/KenshiTech/unchained/transport/server/gql"
 	"github.com/KenshiTech/unchained/transport/server/websocket"
@@ -34,7 +33,6 @@ var brokerCmd = &cobra.Command{
 		}
 
 		db.Start()
-		correctness.New()
 		ethereum.Start()
 
 		server.New(

@@ -4,7 +4,6 @@ import (
 	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/scheduler/correctness"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
@@ -31,7 +30,7 @@ func (h *Handler) CorrectnessReport(message []byte) {
 		return
 	}
 
-	correctness.RecordSignature(
+	h.correctness.RecordSignature(
 		signature,
 		packet.Signer,
 		hash,

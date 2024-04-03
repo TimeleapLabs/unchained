@@ -11,8 +11,7 @@ import (
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/pos"
-	"github.com/KenshiTech/unchained/scheduler"
-	"github.com/KenshiTech/unchained/scheduler/correctness"
+	correctnessService "github.com/KenshiTech/unchained/service/correctness"
 	evmlogService "github.com/KenshiTech/unchained/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/service/uniswap"
 	"github.com/KenshiTech/unchained/transport/client"
@@ -45,24 +44,18 @@ var consumerCmd = &cobra.Command{
 
 		bls.InitClientIdentity()
 
+		correctnessService := correctnessService.New()
 		evmlogService := evmlogService.New()
 		uniswapService := uniswapService.New()
 
 		conn.Start()
-		handler := handler.New(uniswapService, evmlogService)
-		client.Consume(handler)
 
 		ethereum.Start()
 		pos.Start()
 		db.Start()
-		correctness.New()
 
-		scheduler := scheduler.New(
-			scheduler.WithEthLogs(),
-			scheduler.WithUniswapEvents(),
-		)
-
-		scheduler.Start()
+		handler := handler.New(correctnessService, uniswapService, evmlogService)
+		client.Consume(handler)
 	},
 }
 
