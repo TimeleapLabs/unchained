@@ -12,7 +12,7 @@ import (
 )
 
 func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
-	err := middleware.CheckPublicKey(conn)
+	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
 		return []byte{}, err
 	}
