@@ -6,14 +6,20 @@ import (
 	"github.com/KenshiTech/unchained/datasets"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/transport/server/websocket/middleware"
+	"github.com/KenshiTech/unchained/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
-	signer, err := middleware.CheckPublicKey(conn)
+	err := middleware.CheckPublicKey(conn)
 	if err != nil {
 		return []byte{}, err
+	}
+
+	signer, ok := store.Signers.Load(conn)
+	if !ok {
+		return nil, constants.ErrMissingHello
 	}
 
 	report := new(datasets.CorrectnessReport).DeSia(&sia.Sia{Content: payload})
@@ -37,7 +43,7 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 
-	ok, err := bls.Verify(signature, hash, pk)
+	ok, err = bls.Verify(signature, hash, pk)
 	if err != nil {
 		log.Logger.With("Error", err).Error("Can't verify bls")
 		return []byte{}, constants.ErrCantVerifyBls
@@ -49,7 +55,7 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	broadcastPacket := datasets.BroadcastCorrectnessPacket{
 		Info:      report.Correctness,
 		Signature: report.Signature,
-		Signer:    *signer,
+		Signer:    signer,
 	}
 
 	broadcastPayload := broadcastPacket.Sia().Content
