@@ -53,7 +53,6 @@ func InitClientIdentity() {
 		}
 	} else {
 		ClientSecretKey, ClientPublicKey, err = GenerateKeyPair()
-
 		if err != nil {
 			panic(err)
 		}

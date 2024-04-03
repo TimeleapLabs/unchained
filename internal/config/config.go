@@ -17,21 +17,24 @@ var App Config
 var SecretFilePath string
 
 func Load(configPath, secretPath string) error {
+	_, b, _, _ := runtime.Caller(0)
+
 	if configPath == "" {
-		_, b, _, _ := runtime.Caller(0)
 		configPath = path.Join(b, "../..", "./config.yaml")
 	}
 
-	if secretPath != "" {
-		SecretFilePath = secretPath
-		err := cleanenv.ReadConfig(secretPath, &App.Secret)
-		if err != nil {
-			log.Logger.With("Error", err).Warn("Can't read secret file")
-			// return constants.ErrCantLoadSecret
-		}
+	if secretPath == "" {
+		secretPath = path.Join(b, "../..", "./secrets.yaml")
 	}
 
-	err := cleanenv.ReadConfig(configPath, &App)
+	SecretFilePath = secretPath
+	err := cleanenv.ReadConfig(secretPath, &App.Secret)
+	if err != nil {
+		log.Logger.With("Error", err).Warn("Can't read secret file")
+		// return constants.ErrCantLoadSecret
+	}
+
+	err = cleanenv.ReadConfig(configPath, &App)
 	if err != nil {
 		log.Logger.With("Error", err).Error("Can't read config file")
 		return constants.ErrCantLoadConfig

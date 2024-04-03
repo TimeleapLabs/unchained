@@ -55,7 +55,7 @@ type Token struct {
 	Store  bool   `yaml:"store"`
 }
 
-type ProofOfStack struct {
+type ProofOfStake struct {
 	Chain   string `env:"POS_CHAIN"   env-default:"arbitrum_sepolia"                           yaml:"chain"`
 	Address string `env:"POS_ADDRESS" env-default:"0x965e364987356785b7E89e2Fe7B70f5E5107332d" yaml:"address"`
 	Base    int64  `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
@@ -83,7 +83,7 @@ type Config struct {
 	Broker       Broker       `yaml:"broker"`
 	RPC          []RPC        `yaml:"rpc"`
 	Postgres     Postgres     `yaml:"postgres"`
-	ProofOfStack ProofOfStack `yaml:"pos"`
+	ProofOfStake ProofOfStake `yaml:"pos"`
 	Plugins      Plugins      `yaml:"plugins"`
 	Secret       Secret       `yaml:"secret"`
 }
