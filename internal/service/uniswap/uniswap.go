@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/KenshiTech/unchained/config"
+
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/constants/opcodes"
 	"github.com/KenshiTech/unchained/crypto/bls"
@@ -38,7 +40,9 @@ const (
 var DebouncedSaveSignatures func(key datasets.AssetKey, arg SaveSignatureArgs)
 
 type Service struct {
-	PriceCache      map[string]*lru.Cache[uint64, big.Int]
+	ethRPC *ethereum.Repository
+	pos    *pos.Repository
+
 	consensus       *lru.Cache[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
 	signatureCache  *lru.Cache[bls12381.G1Affine, []datasets.Signature]
 	aggregateCache  *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
@@ -49,6 +53,7 @@ type Service struct {
 	tenEighteen   big.Int
 	tenEighteenF  big.Float
 	LastBlock     xsync.MapOf[datasets.TokenKey, uint64]
+	PriceCache    map[string]*lru.Cache[uint64, big.Int]
 	crossPrices   map[string]big.Int
 	crossTokens   map[string]datasets.TokenKey
 	LastPrice     big.Int
@@ -106,7 +111,7 @@ func (u *Service) RecordSignature(
 			With("Network", info.Asset.Token.Chain).
 			With("Error", err).
 			Error("Failed to get the latest block number")
-		ethereum.RefreshRPC(info.Asset.Token.Chain)
+		u.ethRPC.RefreshRPC(info.Asset.Token.Chain)
 		// TODO: we should retry
 		return
 	}
@@ -133,7 +138,7 @@ func (u *Service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := pos.GetVotingPowerOfPublicKey(
+	votingPower, err := u.pos.GetVotingPowerOfPublicKey(
 		signer.PublicKey,
 		big.NewInt(int64(*blockNumber)),
 	)
@@ -343,10 +348,10 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 //}
 
 func (u *Service) GetBlockNumber(network string) (*uint64, error) {
-	blockNumber, err := ethereum.GetBlockNumber(network)
+	blockNumber, err := u.ethRPC.GetBlockNumber(network)
 
 	if err != nil {
-		ethereum.RefreshRPC(network)
+		u.ethRPC.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -356,10 +361,10 @@ func (u *Service) GetBlockNumber(network string) (*uint64, error) {
 func (u *Service) GetPriceAtBlockFromPair(
 	network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool,
 ) (*big.Int, error) {
-	pair, err := ethereum.GetNewUniV3Contract(network, pairAddr, false)
+	pair, err := u.ethRPC.GetNewUniV3Contract(network, pairAddr, false)
 
 	if err != nil {
-		ethereum.RefreshRPC(network)
+		u.ethRPC.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -369,7 +374,7 @@ func (u *Service) GetPriceAtBlockFromPair(
 		})
 
 	if err != nil {
-		ethereum.RefreshRPC(network)
+		u.ethRPC.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -424,7 +429,7 @@ func (u *Service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inve
 	return &price
 }
 
-func (u *Service) syncBlock(token Token, caser cases.Caser, key *datasets.TokenKey, blockInx uint64) {
+func (u *Service) syncBlock(token datasets.Token, caser cases.Caser, key *datasets.TokenKey, blockInx uint64) {
 	lastSynced, ok := u.LastBlock.Load(*key)
 
 	if ok && blockInx <= lastSynced {
@@ -442,7 +447,7 @@ func (u *Service) syncBlock(token Token, caser cases.Caser, key *datasets.TokenK
 	if err != nil {
 		log.Logger.Error(
 			fmt.Sprintf("Failed to get token price from %s RPC.", token.Chain))
-		ethereum.RefreshRPC(token.Chain)
+		u.ethRPC.RefreshRPC(token.Chain)
 		return
 	}
 
@@ -518,7 +523,7 @@ func (u *Service) syncBlock(token Token, caser cases.Caser, key *datasets.TokenK
 	u.LastBlock.Store(*key, blockInx)
 }
 
-func (u *Service) SyncBlocks(token Token, key datasets.TokenKey, latest uint64) {
+func (u *Service) SyncBlocks(token datasets.Token, key datasets.TokenKey, latest uint64) {
 	block, ok := u.LastBlock.Load(key)
 	if !ok {
 		return
@@ -531,7 +536,7 @@ func (u *Service) SyncBlocks(token Token, key datasets.TokenKey, latest uint64) 
 	}
 }
 
-func (u *Service) TokenKey(token Token) *datasets.TokenKey {
+func (u *Service) TokenKey(token datasets.Token) *datasets.TokenKey {
 	var cross []datasets.TokenKey
 
 	for _, id := range token.Cross {
@@ -557,8 +562,23 @@ func (u *Service) TokenKey(token Token) *datasets.TokenKey {
 	return &key
 }
 
-func New() *Service {
-	u := Service{}
+func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
+	u := Service{
+		ethRPC: ethRPC,
+		pos:    pos,
+
+		crossPrices:     map[string]big.Int{},
+		crossTokens:     map[string]datasets.TokenKey{},
+		SupportedTokens: map[datasets.TokenKey]bool{},
+		PriceCache:      map[string]*lru.Cache[uint64, big.Int]{},
+	}
+
+	for _, t := range config.App.Plugins.Uniswap.Tokens {
+		token := datasets.NewTokenFromCfg(t)
+
+		key := u.TokenKey(token)
+		u.SupportedTokens[*key] = true
+	}
 
 	u.twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
 	u.tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)

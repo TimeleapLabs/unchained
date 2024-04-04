@@ -21,14 +21,14 @@ var mu = new(sync.Mutex)
 func Start() {
 	var err error
 
-	log.Logger.With("URL", fmt.Sprintf("%s/%s", config.App.Broker.URI, constants.ProtocolVersion)).Info("Connecting to broker")
+	log.Logger.With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).Info("Connecting to broker")
 
 	conn, _, err = websocket.DefaultDialer.Dial(
-		fmt.Sprintf("%s/%s", config.App.Broker.URI, constants.ProtocolVersion), nil,
+		fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion), nil,
 	)
 	if err != nil {
 		log.Logger.
-			With("URI", fmt.Sprintf("%s/%s", config.App.Broker.URI, constants.ProtocolVersion)).
+			With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
 			With("Error", err).
 			Error("can't connect to broker")
 		panic(err)
@@ -47,14 +47,14 @@ func Reconnect(err error) {
 			time.Sleep(time.Duration(i) * 3 * time.Second)
 
 			log.Logger.
-				With("URL", fmt.Sprintf("%s/%s", config.App.Broker.URI, constants.ProtocolVersion)).
+				With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
 				With("Retry", i).
 				Info("Reconnecting to broker")
 
-			conn, _, err = websocket.DefaultDialer.Dial(config.App.Broker.URI, nil)
+			conn, _, err = websocket.DefaultDialer.Dial(config.App.Network.BrokerURI, nil)
 			if err != nil {
 				log.Logger.
-					With("URI", fmt.Sprintf("%s/%s", config.App.Broker.URI, constants.ProtocolVersion)).
+					With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
 					With("Error", err).
 					Error("can't connect to broker")
 			} else {
@@ -70,7 +70,7 @@ func Reconnect(err error) {
 }
 
 func Close() {
-	if conn != nil && config.App.Broker.URI != "" {
+	if conn != nil && config.App.Network.BrokerURI != "" {
 		err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		if err != nil {
 			log.Logger.

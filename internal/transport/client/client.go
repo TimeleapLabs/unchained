@@ -8,6 +8,8 @@ import (
 )
 
 func Consume(handler *handler.Handler) {
+	conn.Start()
+
 	incoming := conn.Read()
 
 	for payload := range incoming {

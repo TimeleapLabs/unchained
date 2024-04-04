@@ -1,19 +1,19 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
 	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/db"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/pos"
-	"github.com/KenshiTech/unchained/transport/server"
-	"github.com/KenshiTech/unchained/transport/server/websocket"
+	"github.com/KenshiTech/unchained/scheduler"
+	correctnessService "github.com/KenshiTech/unchained/service/correctness"
+	evmlogService "github.com/KenshiTech/unchained/service/evmlog"
+	uniswapService "github.com/KenshiTech/unchained/service/uniswap"
+	"github.com/KenshiTech/unchained/transport/client"
+	"github.com/KenshiTech/unchained/transport/client/handler"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var workerCmd = &cobra.Command{
 	Long:  `Run the Unchained client in worker mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		config.App.Broker.URI = cmd.Flags().Lookup("broker").Value.String()
+		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -41,15 +41,21 @@ var workerCmd = &cobra.Command{
 
 		bls.InitClientIdentity()
 
-		ethereum.Start()
-		pos.Start()
-		db.Start()
+		ethRPC := ethereum.New()
+		pos := pos.New(ethRPC)
+		badger := persistence.New(contextPath)
 
-		persistence.Start(contextPath)
+		correctnessService := correctnessService.New(ethRPC)
+		evmLogService := evmlogService.New(ethRPC, pos)
+		uniswapService := uniswapService.New(ethRPC, pos)
 
-		server.New(
-			websocket.WithWebsocket(),
+		scheduler.New(
+			scheduler.WithEthLogs(evmLogService, ethRPC, badger),
+			scheduler.WithUniswapEvents(uniswapService, ethRPC),
 		)
+
+		handler := handler.New(correctnessService, uniswapService, evmLogService)
+		client.Consume(handler)
 	},
 }
 

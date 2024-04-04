@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -15,19 +12,19 @@ import (
 	evmlogService "github.com/KenshiTech/unchained/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/service/uniswap"
 	"github.com/KenshiTech/unchained/transport/client"
-	"github.com/KenshiTech/unchained/transport/client/conn"
 	"github.com/KenshiTech/unchained/transport/client/handler"
+	"github.com/KenshiTech/unchained/transport/server"
+	"github.com/KenshiTech/unchained/transport/server/gql"
 	"github.com/spf13/cobra"
 )
 
-// consumerCmd represents the consumer command.
 var consumerCmd = &cobra.Command{
 	Use:   "consumer",
 	Short: "Run the Unchained client in consumer mode",
 	Long:  `Run the Unchained client in consumer mode`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		config.App.Broker.URI = cmd.Flags().Lookup("broker").Value.String()
+		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -44,17 +41,19 @@ var consumerCmd = &cobra.Command{
 
 		bls.InitClientIdentity()
 
-		correctnessService := correctnessService.New()
-		evmlogService := evmlogService.New()
-		uniswapService := uniswapService.New()
-
-		conn.Start()
-
-		ethereum.Start()
-		pos.Start()
+		ethRPC := ethereum.New()
+		pos := pos.New(ethRPC)
 		db.Start()
 
-		handler := handler.New(correctnessService, uniswapService, evmlogService)
+		server.New(
+			gql.WithGraphQL(),
+		)
+
+		correctnessService := correctnessService.New(ethRPC)
+		evmLogService := evmlogService.New(ethRPC, pos)
+		uniswapService := uniswapService.New(ethRPC, pos)
+
+		handler := handler.New(correctnessService, uniswapService, evmLogService)
 		client.Consume(handler)
 	},
 }

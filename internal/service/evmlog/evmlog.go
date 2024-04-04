@@ -35,6 +35,9 @@ type SaveSignatureArgs struct {
 }
 
 type Service struct {
+	ethRPC *ethereum.Repository
+	pos    *pos.Repository
+
 	consensus               *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
 	signatureCache          *lru.Cache[bls12381.G1Affine, []datasets.Signature]
 	aggregateCache          *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
@@ -46,10 +49,10 @@ type Service struct {
 }
 
 func (e *Service) GetBlockNumber(network string) (*uint64, error) {
-	blockNumber, err := ethereum.GetBlockNumber(network)
+	blockNumber, err := e.ethRPC.GetBlockNumber(network)
 
 	if err != nil {
-		ethereum.RefreshRPC(network)
+		e.ethRPC.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -101,7 +104,7 @@ func (e *Service) RecordSignature(
 		e.consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
 	}
 
-	votingPower, err := pos.GetVotingPowerOfPublicKey(
+	votingPower, err := e.pos.GetVotingPowerOfPublicKey(
 		signer.PublicKey,
 		big.NewInt(int64(*blockNumber)),
 	)
@@ -261,8 +264,14 @@ func (e *Service) SendPriceReport(signature bls12381.G1Affine, event datasets.Ev
 	conn.Send(opcodes.EventLog, payload)
 }
 
-func New() *Service {
-	s := Service{}
+func New(
+	ethRPC *ethereum.Repository,
+	pos *pos.Repository,
+) *Service {
+	s := Service{
+		ethRPC: ethRPC,
+		pos:    pos,
+	}
 
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
 	s.signatureMutex = new(sync.Mutex)

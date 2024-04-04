@@ -25,8 +25,11 @@ import (
 )
 
 type EvmLog struct {
-	chain           string
-	evmlogService   evmlog.Service
+	chain         string
+	evmLogService *evmlog.Service
+	ethRPC        *ethereum.Repository
+	persistence   *persistence.BadgerRepository
+
 	supportedEvents map[evmlog.SupportKey]bool
 	abiMap          map[string]abi.ABI
 	lastSyncedBlock map[config.Event]uint64
@@ -40,7 +43,7 @@ func (e *EvmLog) Run() {
 			continue
 		}
 
-		blockNumber, err := e.evmlogService.GetBlockNumber(e.chain)
+		blockNumber, err := e.evmLogService.GetBlockNumber(e.chain)
 		allowedBlock := *blockNumber - conf.Confirmations
 
 		if err != nil {
@@ -56,7 +59,7 @@ func (e *EvmLog) Run() {
 		fromBlock := e.lastSyncedBlock[conf] + 1
 
 		if e.lastSyncedBlock[conf] == 0 {
-			contextBlock, err := persistence.ReadUInt64(contextKey)
+			contextBlock, err := e.persistence.ReadUInt64(contextKey)
 
 			if err != nil && !errors.Is(err, badger.ErrKeyNotFound) {
 				panic(err)
@@ -82,7 +85,7 @@ func (e *EvmLog) Run() {
 			Addresses: []common.Address{contractAddress},
 		}
 
-		rpcClient := ethereum.Clients[conf.Chain]
+		rpcClient := e.ethRPC.Clients[conf.Chain]
 		logs, err := rpcClient.FilterLogs(context.Background(), query)
 
 		if err != nil {
@@ -176,11 +179,11 @@ func (e *EvmLog) Run() {
 			signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
 
 			if conf.Send {
-				e.evmlogService.SendPriceReport(signature, event)
+				e.evmLogService.SendPriceReport(signature, event)
 			}
 
 			if conf.Store {
-				e.evmlogService.RecordSignature(
+				e.evmLogService.RecordSignature(
 					signature,
 					bls.ClientSigner,
 					hash,
@@ -192,16 +195,28 @@ func (e *EvmLog) Run() {
 		}
 
 		e.lastSyncedBlock[conf] = toBlock
-		err = persistence.WriteUint64(contextKey, toBlock)
+		err = e.persistence.WriteUint64(contextKey, toBlock)
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func New(chanName string, events []config.Event) *EvmLog {
+func New(
+	chanName string, events []config.Event,
+	evmLogService *evmlog.Service,
+	ethRPC *ethereum.Repository,
+	persistence *persistence.BadgerRepository,
+) *EvmLog {
 	e := EvmLog{
-		chain: chanName,
+		chain:         chanName,
+		evmLogService: evmLogService,
+		ethRPC:        ethRPC,
+		persistence:   persistence,
+
+		supportedEvents: map[evmlog.SupportKey]bool{},
+		abiMap:          map[string]abi.ABI{},
+		lastSyncedBlock: map[config.Event]uint64{},
 	}
 
 	for _, conf := range events {

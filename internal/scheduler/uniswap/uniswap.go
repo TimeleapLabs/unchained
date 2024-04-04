@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/KenshiTech/unchained/datasets"
+
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
@@ -19,7 +21,8 @@ const (
 
 type Uniswap struct {
 	chain          string
-	uniswapService uniswap.Service
+	uniswapService *uniswap.Service
+	ethRPC         *ethereum.Repository
 }
 
 func (u *Uniswap) Run() {
@@ -29,11 +32,11 @@ func (u *Uniswap) Run() {
 	if err != nil {
 		log.Logger.Error(
 			fmt.Sprintf("Couldn't get latest block from %s RPC.", u.chain))
-		ethereum.RefreshRPC(u.chain)
+		u.ethRPC.RefreshRPC(u.chain)
 		return
 	}
 
-	for _, token := range uniswap.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
+	for _, token := range datasets.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
 		if token.Chain != u.chain {
 			continue
 		}
@@ -52,13 +55,19 @@ func (u *Uniswap) Run() {
 	}
 }
 
-func New(chanName string, tokens []config.Token) *Uniswap {
+func New(
+	chanName string, tokens []config.Token,
+	uniswapService *uniswap.Service,
+	ethRPC *ethereum.Repository,
+) *Uniswap {
 	u := Uniswap{
-		chain: chanName,
+		chain:          chanName,
+		uniswapService: uniswapService,
+		ethRPC:         ethRPC,
 	}
 
 	for _, t := range tokens {
-		token := uniswap.NewTokenFromCfg(t)
+		token := datasets.NewTokenFromCfg(t)
 		var err error
 		u.uniswapService.PriceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)
 
@@ -66,9 +75,6 @@ func New(chanName string, tokens []config.Token) *Uniswap {
 			log.Logger.Error("Failed to initialize token map.")
 			os.Exit(1)
 		}
-
-		key := u.uniswapService.TokenKey(token)
-		u.uniswapService.SupportedTokens[*key] = true
 	}
 
 	return &u

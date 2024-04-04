@@ -60,9 +60,9 @@ type ProofOfStake struct {
 	Base    int64  `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
 }
 
-type Broker struct {
-	Bind              string        `env:"BROKER_BIND"    env-default:"0.0.0.0:9123"                    yaml:"bind"`
-	URI               string        `env:"BROKER_URI"     env-default:"wss://shinobi.brokers.kenshi.io" yaml:"uri"`
+type Network struct {
+	Bind              string        `env:"BIND"    env-default:"0.0.0.0:9123"                    yaml:"bind"`
+	BrokerURI         string        `env:"BROKER_URI"     env-default:"wss://shinobi.brokers.kenshi.io" yaml:"uri"`
 	ReadHeaderTimeout time.Duration `env:"BROKER_TIMEOUT" env-default:"3s"                              yaml:"read_header_timeout"`
 }
 
@@ -79,7 +79,7 @@ type Secret struct {
 
 type Config struct {
 	System       System       `yaml:"system"`
-	Broker       Broker       `yaml:"broker"`
+	Network      Network      `yaml:"network"`
 	RPC          []RPC        `yaml:"rpc"`
 	Postgres     Postgres     `yaml:"postgres"`
 	ProofOfStake ProofOfStake `yaml:"pos"`

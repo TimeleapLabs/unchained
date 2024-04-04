@@ -32,6 +32,8 @@ type SaveSignatureArgs struct {
 	Hash bls12381.G1Affine
 }
 type Service struct {
+	ethRPC *ethereum.Repository
+
 	signatureCache          *lru.Cache[bls12381.G1Affine, []datasets.Signature]
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 	signatureMutex          *sync.Mutex
@@ -40,10 +42,10 @@ type Service struct {
 
 // TODO: This code should be moved to a shared library
 func (s *Service) GetBlockNumber(network string) (*uint64, error) {
-	blockNumber, err := ethereum.GetBlockNumber(network)
+	blockNumber, err := s.ethRPC.GetBlockNumber(network)
 
 	if err != nil {
-		ethereum.RefreshRPC(network)
+		s.ethRPC.RefreshRPC(network)
 		return nil, err
 	}
 
@@ -225,8 +227,11 @@ func (s *Service) init() {
 	}
 }
 
-func New() *Service {
-	c := Service{}
+func New(ethRPC *ethereum.Repository) *Service {
+	c := Service{
+		ethRPC: ethRPC,
+	}
+	c.init()
 
 	for _, conf := range config.App.Plugins.Correctness {
 		c.supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true

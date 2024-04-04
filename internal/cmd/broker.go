@@ -1,16 +1,13 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/db"
+	"github.com/KenshiTech/unchained/crypto/bls"
 	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/pos"
 	"github.com/KenshiTech/unchained/transport/server"
-	"github.com/KenshiTech/unchained/transport/server/gql"
 	"github.com/KenshiTech/unchained/transport/server/websocket"
 
 	"github.com/spf13/cobra"
@@ -32,11 +29,12 @@ var brokerCmd = &cobra.Command{
 			panic(err)
 		}
 
-		db.Start()
-		ethereum.Start()
+		bls.InitClientIdentity()
+
+		ethRPC := ethereum.New()
+		pos.New(ethRPC)
 
 		server.New(
-			gql.WithGraphQL(),
 			websocket.WithWebsocket(),
 		)
 	},
