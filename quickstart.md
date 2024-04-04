@@ -200,8 +200,9 @@ system:
   log: info
   name: <name>
 
-broker:
-  uri: wss://shinobi.brokers.kenshi.io
+network:
+  bind: 127.0.0.1:9123
+  broker-uri: ws://127.0.0.1:9123
 
 rpc:
   - name: ethereum
