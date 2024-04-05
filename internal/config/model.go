@@ -61,7 +61,7 @@ type ProofOfStake struct {
 }
 
 type Network struct {
-	Bind              string        `env:"BIND"    env-default:"0.0.0.0:9123"                    yaml:"bind"`
+	Bind              string        `env:"BIND"           env-default:"0.0.0.0:9123"                    yaml:"bind"`
 	BrokerURI         string        `env:"BROKER_URI"     env-default:"wss://shinobi.brokers.kenshi.io" yaml:"uri"`
 	ReadHeaderTimeout time.Duration `env:"BROKER_TIMEOUT" env-default:"3s"                              yaml:"read_header_timeout"`
 }
