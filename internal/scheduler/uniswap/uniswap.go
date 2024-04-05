@@ -26,6 +26,10 @@ type Uniswap struct {
 }
 
 func (u *Uniswap) Run() {
+	if config.App.Plugins.Uniswap == nil {
+		return
+	}
+
 	log.Logger.With("Chain", u.chain).Info("Run Uniswap task")
 
 	currBlockNumber, err := u.uniswapService.GetBlockNumber(u.chain)

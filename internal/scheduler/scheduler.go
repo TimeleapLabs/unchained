@@ -48,7 +48,6 @@ func WithEthLogs(
 	persistence *persistence.BadgerRepository,
 ) func(s *Scheduler) {
 	return func(s *Scheduler) {
-
 		if config.App.Plugins.EthLog == nil {
 			return
 		}
@@ -67,7 +66,6 @@ func WithUniswapEvents(
 	ethRPC *ethereum.Repository,
 ) func(s *Scheduler) {
 	return func(s *Scheduler) {
-
 		if config.App.Plugins.Uniswap == nil {
 			return
 		}

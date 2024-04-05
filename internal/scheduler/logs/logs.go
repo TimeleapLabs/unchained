@@ -36,6 +36,10 @@ type EvmLog struct {
 }
 
 func (e *EvmLog) Run() {
+	if config.App.Plugins.EthLog == nil {
+		return
+	}
+
 	log.Logger.With("Chain", e.chain).Info("Run evm log task")
 
 	for _, conf := range config.App.Plugins.EthLog.Events {

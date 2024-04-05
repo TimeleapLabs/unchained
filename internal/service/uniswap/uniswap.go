@@ -573,11 +573,13 @@ func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
 		PriceCache:      map[string]*lru.Cache[uint64, big.Int]{},
 	}
 
-	for _, t := range config.App.Plugins.Uniswap.Tokens {
-		token := datasets.NewTokenFromCfg(t)
+	if config.App.Plugins.Uniswap != nil {
+		for _, t := range config.App.Plugins.Uniswap.Tokens {
+			token := datasets.NewTokenFromCfg(t)
 
-		key := u.TokenKey(token)
-		u.SupportedTokens[*key] = true
+			key := u.TokenKey(token)
+			u.SupportedTokens[*key] = true
+		}
 	}
 
 	u.twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
