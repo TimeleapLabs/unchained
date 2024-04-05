@@ -3,9 +3,9 @@ package gql
 import (
 	"net/http"
 
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/log"
 
-	"github.com/KenshiTech/unchained/db"
+	"github.com/KenshiTech/unchained/internal/db"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

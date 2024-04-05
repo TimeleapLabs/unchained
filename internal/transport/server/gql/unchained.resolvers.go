@@ -8,12 +8,12 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/transport/server/gql/generated"
-	"github.com/KenshiTech/unchained/transport/server/gql/types"
+	"github.com/KenshiTech/unchained/internal/transport/server/gql/generated"
+	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
 
 	"entgo.io/contrib/entgql"
-	"github.com/KenshiTech/unchained/ent"
-	"github.com/KenshiTech/unchained/ent/helpers"
+	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 )
 
 // Price is the resolver for the price field.

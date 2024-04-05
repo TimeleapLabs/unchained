@@ -6,12 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/KenshiTech/unchained/datasets"
+	"github.com/KenshiTech/unchained/internal/datasets"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/service/uniswap"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/ethereum"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/service/uniswap"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 

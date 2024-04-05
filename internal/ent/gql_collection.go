@@ -8,10 +8,10 @@ import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/signer"
+	"github.com/KenshiTech/unchained/internal/ent/assetprice"
+	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/internal/ent/eventlog"
+	"github.com/KenshiTech/unchained/internal/ent/signer"
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.

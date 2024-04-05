@@ -3,8 +3,8 @@ package store
 import (
 	"sync"
 
-	"github.com/KenshiTech/unchained/crypto/kosk"
-	"github.com/KenshiTech/unchained/datasets"
+	"github.com/KenshiTech/unchained/internal/crypto/kosk"
+	"github.com/KenshiTech/unchained/internal/datasets"
 
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"

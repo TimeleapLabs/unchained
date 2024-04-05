@@ -1,10 +1,10 @@
 package client
 
 import (
-	"github.com/KenshiTech/unchained/constants/opcodes"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/transport/client/conn"
-	"github.com/KenshiTech/unchained/transport/client/handler"
+	"github.com/KenshiTech/unchained/internal/constants/opcodes"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/transport/client/conn"
+	"github.com/KenshiTech/unchained/internal/transport/client/handler"
 )
 
 func Consume(handler *handler.Handler) {

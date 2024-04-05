@@ -1,6 +1,6 @@
 package datasets
 
-import "github.com/KenshiTech/unchained/config"
+import "github.com/KenshiTech/unchained/internal/config"
 
 type Token struct {
 	ID     *string  `mapstructure:"id"`

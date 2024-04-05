@@ -10,13 +10,13 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/KenshiTech/unchained/transport/server/gql/types"
+	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/KenshiTech/unchained/datasets"
-	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/internal/datasets"
+	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 

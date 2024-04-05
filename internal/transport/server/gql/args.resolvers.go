@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/KenshiTech/unchained/transport/server/gql/generated"
+	"github.com/KenshiTech/unchained/internal/transport/server/gql/generated"
 
-	"github.com/KenshiTech/unchained/datasets"
+	"github.com/KenshiTech/unchained/internal/datasets"
 )
 
 // Value is the resolver for the value field.
