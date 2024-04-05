@@ -48,6 +48,11 @@ func WithEthLogs(
 	persistence *persistence.BadgerRepository,
 ) func(s *Scheduler) {
 	return func(s *Scheduler) {
+
+		if config.App.Plugins.EthLog == nil {
+			return
+		}
+
 		for name, duration := range config.App.Plugins.EthLog.Schedule {
 			s.AddTask(duration, logs.New(
 				name, config.App.Plugins.EthLog.Events,
@@ -62,6 +67,11 @@ func WithUniswapEvents(
 	ethRPC *ethereum.Repository,
 ) func(s *Scheduler) {
 	return func(s *Scheduler) {
+
+		if config.App.Plugins.Uniswap == nil {
+			return
+		}
+
 		for name, duration := range config.App.Plugins.Uniswap.Schedule {
 			s.AddTask(duration, uniswap.New(
 				name, config.App.Plugins.Uniswap.Tokens,
