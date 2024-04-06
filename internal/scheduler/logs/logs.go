@@ -40,8 +40,6 @@ func (e *EvmLog) Run() {
 		return
 	}
 
-	log.Logger.With("Chain", e.chain).Info("Run evm log task")
-
 	for _, conf := range config.App.Plugins.EthLog.Events {
 		if conf.Chain != e.chain {
 			continue

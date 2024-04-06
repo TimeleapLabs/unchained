@@ -95,4 +95,6 @@ func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 
 func (s *Scheduler) Start() {
 	s.scheduler.Start()
+
+	select {}
 }

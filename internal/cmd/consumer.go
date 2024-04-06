@@ -12,6 +12,7 @@ import (
 	evmlogService "github.com/KenshiTech/unchained/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/service/uniswap"
 	"github.com/KenshiTech/unchained/transport/client"
+	"github.com/KenshiTech/unchained/transport/client/conn"
 	"github.com/KenshiTech/unchained/transport/client/handler"
 	"github.com/KenshiTech/unchained/transport/server"
 	"github.com/KenshiTech/unchained/transport/server/gql"
@@ -25,6 +26,7 @@ var consumerCmd = &cobra.Command{
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
+		config.App.Network.Bind = cmd.Flags().Lookup("graphql").Value.String()
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
@@ -45,16 +47,18 @@ var consumerCmd = &cobra.Command{
 		pos := pos.New(ethRPC)
 		db.Start()
 
-		server.New(
-			gql.WithGraphQL(),
-		)
-
 		correctnessService := correctnessService.New(ethRPC)
 		evmLogService := evmlogService.New(ethRPC, pos)
 		uniswapService := uniswapService.New(ethRPC, pos)
 
-		handler := handler.New(correctnessService, uniswapService, evmLogService)
+		conn.Start()
+
+		handler := handler.NewConsumerHandler(correctnessService, uniswapService, evmLogService)
 		client.Consume(handler)
+
+		server.New(
+			gql.WithGraphQL(),
+		)
 	},
 }
 
@@ -66,5 +70,12 @@ func init() {
 		"b",
 		"wss://shinobi.brokers.kenshi.io",
 		"Unchained broker to connect to",
+	)
+
+	consumerCmd.Flags().StringP(
+		"graphql",
+		"g",
+		"127.0.0.1:8080",
+		"The graphql server path to bind",
 	)
 }

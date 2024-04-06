@@ -7,7 +7,7 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-func (h *Handler) PriceReport(message []byte) {
+func (h *consumer) PriceReport(message []byte) {
 	packet := new(datasets.BroadcastPricePacket).DeSia(&sia.Sia{Content: message})
 	toHash := packet.Info.Sia().Content
 	hash, err := bls.Hash(toHash)
@@ -39,3 +39,5 @@ func (h *Handler) PriceReport(message []byte) {
 		false,
 	)
 }
+
+func (w worker) PriceReport(message []byte) {}

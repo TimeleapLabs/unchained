@@ -7,6 +7,9 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/KenshiTech/unchained/utils"
 
 	"github.com/KenshiTech/unchained/config"
 
@@ -567,11 +570,20 @@ func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
 		ethRPC: ethRPC,
 		pos:    pos,
 
-		crossPrices:     map[string]big.Int{},
-		crossTokens:     map[string]datasets.TokenKey{},
+		consensus:       nil,
+		signatureCache:  nil,
+		aggregateCache:  nil,
+		signatureMutex:  sync.Mutex{},
+		LastBlock:       *xsync.NewMapOf[datasets.TokenKey, uint64](),
 		SupportedTokens: map[datasets.TokenKey]bool{},
 		PriceCache:      map[string]*lru.Cache[uint64, big.Int]{},
+		crossPrices:     map[string]big.Int{},
+		crossTokens:     map[string]datasets.TokenKey{},
 	}
+	DebouncedSaveSignatures = utils.Debounce[datasets.AssetKey, SaveSignatureArgs](5*time.Second, u.saveSignatures)
+	u.twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
+	u.tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
+	u.tenEighteenF.SetInt(&u.tenEighteen)
 
 	if config.App.Plugins.Uniswap != nil {
 		for _, t := range config.App.Plugins.Uniswap.Tokens {
@@ -581,10 +593,6 @@ func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
 			u.SupportedTokens[*key] = true
 		}
 	}
-
-	u.twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
-	u.tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
-	u.tenEighteenF.SetInt(&u.tenEighteen)
 
 	var err error
 	u.signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](evmlog.LruSize)

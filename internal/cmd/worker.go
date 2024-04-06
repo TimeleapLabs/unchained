@@ -9,10 +9,10 @@ import (
 	"github.com/KenshiTech/unchained/persistence"
 	"github.com/KenshiTech/unchained/pos"
 	"github.com/KenshiTech/unchained/scheduler"
-	correctnessService "github.com/KenshiTech/unchained/service/correctness"
 	evmlogService "github.com/KenshiTech/unchained/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/service/uniswap"
 	"github.com/KenshiTech/unchained/transport/client"
+	"github.com/KenshiTech/unchained/transport/client/conn"
 	"github.com/KenshiTech/unchained/transport/client/handler"
 	"github.com/spf13/cobra"
 )
@@ -45,17 +45,20 @@ var workerCmd = &cobra.Command{
 		pos := pos.New(ethRPC)
 		badger := persistence.New(contextPath)
 
-		correctnessService := correctnessService.New(ethRPC)
 		evmLogService := evmlogService.New(ethRPC, pos)
 		uniswapService := uniswapService.New(ethRPC, pos)
 
-		scheduler.New(
+		scheduler := scheduler.New(
 			scheduler.WithEthLogs(evmLogService, ethRPC, badger),
 			scheduler.WithUniswapEvents(uniswapService, ethRPC),
 		)
 
-		handler := handler.New(correctnessService, uniswapService, evmLogService)
+		conn.Start()
+
+		handler := handler.NewWorkerHandler()
 		client.Consume(handler)
+
+		scheduler.Start()
 	},
 }
 

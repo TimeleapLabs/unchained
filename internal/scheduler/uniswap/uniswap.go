@@ -30,8 +30,6 @@ func (u *Uniswap) Run() {
 		return
 	}
 
-	log.Logger.With("Chain", u.chain).Info("Run Uniswap task")
-
 	currBlockNumber, err := u.uniswapService.GetBlockNumber(u.chain)
 	if err != nil {
 		log.Logger.Error(

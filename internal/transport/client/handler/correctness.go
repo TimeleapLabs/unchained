@@ -7,7 +7,7 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-func (h *Handler) CorrectnessReport(message []byte) {
+func (h *consumer) CorrectnessReport(message []byte) {
 	packet := new(datasets.BroadcastCorrectnessPacket).DeSia(&sia.Sia{Content: message})
 	toHash := packet.Info.Sia().Content
 	hash, err := bls.Hash(toHash)
@@ -38,3 +38,5 @@ func (h *Handler) CorrectnessReport(message []byte) {
 		true,
 	)
 }
+
+func (w worker) CorrectnessReport(message []byte) {}
