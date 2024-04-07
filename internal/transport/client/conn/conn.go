@@ -35,7 +35,6 @@ func Start() {
 	}
 
 	Send(opcodes.Hello, bls.ClientSigner.Sia().Content)
-	Send(opcodes.RegisterConsumer, nil)
 }
 
 func Reconnect(err error) {
@@ -119,6 +118,8 @@ func Read() <-chan []byte {
 
 				continue
 			}
+
+			out <- payload
 		}
 	}()
 
