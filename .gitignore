@@ -20,5 +20,4 @@ node_trace.*
 internal/bin
 bin
 **/conf.*.private
-**/conf-*.yaml
 .idea
