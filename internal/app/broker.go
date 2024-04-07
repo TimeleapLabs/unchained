@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/constants"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/ethereum"
@@ -17,11 +16,6 @@ func Broker() {
 		With("Version", constants.Version).
 		With("Protocol", constants.ProtocolVersion).
 		Info("Running Unchained | Broker")
-
-	err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
-	if err != nil {
-		panic(err)
-	}
 
 	bls.InitClientIdentity()
 

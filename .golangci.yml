@@ -203,6 +203,7 @@ issues:
       linters:
         - funlen
         - forbidigo
+        - gochecknoinits
     - path: "ent"
       linters:
         - gomnd

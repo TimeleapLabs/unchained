@@ -7,7 +7,7 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-func (h *Handler) EventLog(message []byte) {
+func (h *consumer) EventLog(message []byte) {
 	packet := new(datasets.BroadcastEventPacket).DeSia(&sia.Sia{Content: message})
 	toHash := packet.Info.Sia().Content
 	hash, err := bls.Hash(toHash)
@@ -39,3 +39,5 @@ func (h *Handler) EventLog(message []byte) {
 		false,
 	)
 }
+
+func (w worker) EventLog(message []byte) {}

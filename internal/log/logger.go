@@ -21,4 +21,6 @@ func Start(logLevel string) {
 		Level:      levels[logLevel],
 		TimeFormat: time.RFC3339,
 	}))
+
+	Logger.With("Level", logLevel).Info("Logger started")
 }

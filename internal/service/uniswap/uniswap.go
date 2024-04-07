@@ -7,6 +7,9 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/KenshiTech/unchained/internal/utils"
 
 	"github.com/KenshiTech/unchained/internal/config"
 
@@ -174,46 +177,46 @@ func (u *Service) RecordSignature(
 		return
 	}
 
-	if isMajority {
-		reportLog := log.Logger.
-			With("Block", info.Asset.Block).
-			With("Price", info.Price.String()).
-			With("Token", info.Asset.Token.Name)
+	if !isMajority {
+		log.Logger.Debug("Not a majority")
+	}
 
-		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
-			reportLog = reportLog.With(
-				fmt.Sprintf("%x", hash.Bytes())[:8],
-				value.String(),
-			)
-			return true
-		})
-		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
-			reportLog = reportLog.With(
-				fmt.Sprintf("%x", hash.Bytes())[:8],
-				value.String(),
-			)
-			return true
-		})
+	reportLog := log.Logger.
+		With("Block", info.Asset.Block).
+		With("Price", info.Price.String()).
+		With("Token", info.Asset.Token.Name)
 
-		reportLog.
-			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
-			Debug("Values")
+	reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+		reportLog = reportLog.With(
+			fmt.Sprintf("%x", hash.Bytes())[:8],
+			value.String(),
+		)
+		return true
+	})
+	reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+		reportLog = reportLog.With(
+			fmt.Sprintf("%x", hash.Bytes())[:8],
+			value.String(),
+		)
+		return true
+	})
 
+	reportLog.
+		With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+		Debug("Values")
+
+	DebouncedSaveSignatures(
+		info.Asset,
+		SaveSignatureArgs{Hash: hash, Info: info},
+	)
+
+	if debounce {
 		DebouncedSaveSignatures(
 			info.Asset,
 			SaveSignatureArgs{Hash: hash, Info: info},
 		)
-
-		if debounce {
-			DebouncedSaveSignatures(
-				info.Asset,
-				SaveSignatureArgs{Hash: hash, Info: info},
-			)
-		} else {
-			u.saveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
-		}
 	} else {
-		log.Logger.Debug("Not a majority")
+		u.saveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
 	}
 }
 
@@ -567,22 +570,29 @@ func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
 		ethRPC: ethRPC,
 		pos:    pos,
 
-		crossPrices:     map[string]big.Int{},
-		crossTokens:     map[string]datasets.TokenKey{},
+		consensus:       nil,
+		signatureCache:  nil,
+		aggregateCache:  nil,
+		signatureMutex:  sync.Mutex{},
+		LastBlock:       *xsync.NewMapOf[datasets.TokenKey, uint64](),
 		SupportedTokens: map[datasets.TokenKey]bool{},
 		PriceCache:      map[string]*lru.Cache[uint64, big.Int]{},
+		crossPrices:     map[string]big.Int{},
+		crossTokens:     map[string]datasets.TokenKey{},
 	}
-
-	for _, t := range config.App.Plugins.Uniswap.Tokens {
-		token := datasets.NewTokenFromCfg(t)
-
-		key := u.TokenKey(token)
-		u.SupportedTokens[*key] = true
-	}
-
+	DebouncedSaveSignatures = utils.Debounce[datasets.AssetKey, SaveSignatureArgs](5*time.Second, u.saveSignatures)
 	u.twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
 	u.tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
 	u.tenEighteenF.SetInt(&u.tenEighteen)
+
+	if config.App.Plugins.Uniswap != nil {
+		for _, t := range config.App.Plugins.Uniswap.Tokens {
+			token := datasets.NewTokenFromCfg(t)
+
+			key := u.TokenKey(token)
+			u.SupportedTokens[*key] = true
+		}
+	}
 
 	var err error
 	u.signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](evmlog.LruSize)

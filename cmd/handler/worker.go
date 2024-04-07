@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/KenshiTech/unchained/internal/app"
 	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +18,12 @@ var worker = &cobra.Command{
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
+		err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Start(config.App.System.Log)
 		app.Worker()
 	},
 }
@@ -24,7 +31,9 @@ var worker = &cobra.Command{
 // WithWorkerCmd appends the worker command to the root command.
 func WithWorkerCmd(cmd *cobra.Command) {
 	cmd.AddCommand(worker)
+}
 
+func init() {
 	worker.Flags().StringP(
 		"broker",
 		"b",
