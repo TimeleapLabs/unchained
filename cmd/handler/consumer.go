@@ -1,12 +1,13 @@
-package cmd
+package handler
 
 import (
-	"github.com/KenshiTech/unchained/app"
-	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/internal/app"
+	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/spf13/cobra"
 )
 
-var consumerCmd = &cobra.Command{
+// consumer represents the consumer command.
+var consumer = &cobra.Command{
 	Use:   "consumer",
 	Short: "Run the Unchained client in consumer mode",
 	Long:  `Run the Unchained client in consumer mode`,
@@ -20,10 +21,11 @@ var consumerCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(consumerCmd)
+// WithConsumerCmd append command of consumer to the root command.
+func WithConsumerCmd(cmd *cobra.Command) {
+	cmd.AddCommand(consumer)
 
-	consumerCmd.Flags().StringP(
+	consumer.Flags().StringP(
 		"broker",
 		"b",
 		"wss://shinobi.brokers.kenshi.io",

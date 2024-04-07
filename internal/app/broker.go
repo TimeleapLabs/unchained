@@ -1,24 +1,24 @@
 package app
 
 import (
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/pos"
-	"github.com/KenshiTech/unchained/transport/server"
-	"github.com/KenshiTech/unchained/transport/server/websocket"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/ethereum"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/pos"
+	"github.com/KenshiTech/unchained/internal/transport/server"
+	"github.com/KenshiTech/unchained/internal/transport/server/websocket"
 )
 
+// Broker starts the Unchained broker and contains its DI.
 func Broker() {
-	log.Start(config.App.System.Log)
 	log.Logger.
 		With("Version", constants.Version).
 		With("Protocol", constants.ProtocolVersion).
 		Info("Running Unchained | Broker")
 
-	err := config.Load(configPath, secretsPath)
+	err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
 	if err != nil {
 		panic(err)
 	}

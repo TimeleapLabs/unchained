@@ -10,13 +10,13 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/KenshiTech/unchained/datasets"
-	"github.com/KenshiTech/unchained/ent/assetprice"
-	"github.com/KenshiTech/unchained/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/ent/eventlog"
-	"github.com/KenshiTech/unchained/ent/helpers"
-	"github.com/KenshiTech/unchained/ent/predicate"
-	"github.com/KenshiTech/unchained/ent/signer"
+	"github.com/KenshiTech/unchained/internal/datasets"
+	"github.com/KenshiTech/unchained/internal/ent/assetprice"
+	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/internal/ent/eventlog"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
+	"github.com/KenshiTech/unchained/internal/ent/predicate"
+	"github.com/KenshiTech/unchained/internal/ent/signer"
 )
 
 const (

@@ -8,22 +8,22 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/internal/config"
 
-	"github.com/KenshiTech/unchained/address"
-	"github.com/KenshiTech/unchained/constants/opcodes"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/crypto/shake"
-	"github.com/KenshiTech/unchained/datasets"
-	"github.com/KenshiTech/unchained/db"
-	"github.com/KenshiTech/unchained/ent"
-	"github.com/KenshiTech/unchained/ent/helpers"
-	"github.com/KenshiTech/unchained/ent/signer"
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/pos"
-	"github.com/KenshiTech/unchained/service/evmlog"
-	"github.com/KenshiTech/unchained/transport/client/conn"
+	"github.com/KenshiTech/unchained/internal/address"
+	"github.com/KenshiTech/unchained/internal/constants/opcodes"
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/crypto/shake"
+	"github.com/KenshiTech/unchained/internal/datasets"
+	"github.com/KenshiTech/unchained/internal/db"
+	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
+	"github.com/KenshiTech/unchained/internal/ent/signer"
+	"github.com/KenshiTech/unchained/internal/ethereum"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/pos"
+	"github.com/KenshiTech/unchained/internal/service/evmlog"
+	"github.com/KenshiTech/unchained/internal/transport/client/conn"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -495,7 +495,7 @@ func (u *Service) syncBlock(token datasets.Token, caser cases.Caser, key *datase
 	}
 
 	toHash := priceInfo.Sia().Content
-	signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
+	signature, hash := bls.Sign(*bls.MachineIdentity.SecretKey, toHash)
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()

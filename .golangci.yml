@@ -146,7 +146,7 @@ linters:
     - forbidigo
     - funlen
     - gocheckcompilerdirectives
-#    - gochecknoinits
+    - gochecknoinits
     - gocognit
     - goconst
     - gocritic

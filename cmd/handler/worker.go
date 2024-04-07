@@ -1,12 +1,13 @@
-package cmd
+package handler
 
 import (
-	"github.com/KenshiTech/unchained/config"
+	"github.com/KenshiTech/unchained/internal/app"
+	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/spf13/cobra"
 )
 
-// workerCmd represents the worker command.
-var workerCmd = &cobra.Command{
+// worker represents the worker command.
+var worker = &cobra.Command{
 	Use:   "worker",
 	Short: "Run the Unchained client in worker mode",
 	Long:  `Run the Unchained client in worker mode`,
@@ -16,14 +17,15 @@ var workerCmd = &cobra.Command{
 	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-
+		app.Worker()
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(workerCmd)
+// WithWorkerCmd appends the worker command to the root command.
+func WithWorkerCmd(cmd *cobra.Command) {
+	cmd.AddCommand(worker)
 
-	workerCmd.Flags().StringP(
+	worker.Flags().StringP(
 		"broker",
 		"b",
 		"wss://shinobi.brokers.kenshi.io",

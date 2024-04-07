@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/service/correctness"
-	"github.com/KenshiTech/unchained/service/evmlog"
-	"github.com/KenshiTech/unchained/service/uniswap"
+	"github.com/KenshiTech/unchained/internal/service/correctness"
+	"github.com/KenshiTech/unchained/internal/service/evmlog"
+	"github.com/KenshiTech/unchained/internal/service/uniswap"
 )
 
 type Handler struct {

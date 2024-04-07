@@ -1,11 +1,9 @@
 package kosk
 
-// TODO: Move to "crypto"
-
 import (
 	"crypto/rand"
 
-	"github.com/KenshiTech/unchained/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
@@ -48,7 +46,6 @@ func NewChallenge() [LenOfChallenge]byte {
 }
 
 // TODO: We should use small signatures
-
 func VerifyChallenge(challenge [LenOfChallenge]byte,
 	publicKeyBytes [LenOfPublicKey]byte,
 	signatureBytes [LenOfSignature]byte) (bool, error) {
@@ -67,5 +64,5 @@ func VerifyChallenge(challenge [LenOfChallenge]byte,
 		return false, err
 	}
 
-	return bls.Verify(signature, hash, publicKey)
+	return bls.MachineIdentity.Verify(signature, hash, publicKey)
 }

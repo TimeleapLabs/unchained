@@ -48,7 +48,7 @@ const makeReleaseFile = (name, files) => {
     copyFileSync(source, `release/${dirName}/${target}`);
   }
   execSync(`cd release && zip -r ${dirName}.zip ${dirName}`);
-  execSync(`cp release/${dirName}.zip internal/bin/`);
+  execSync(`cp release/${dirName}.zip bin/`);
 };
 
 await makeReleaseNotes();

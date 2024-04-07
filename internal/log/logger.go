@@ -9,19 +9,16 @@ import (
 )
 
 var Logger *slog.Logger
-var Levels map[string]slog.Level
-
-func init() {
-	Levels = make(map[string]slog.Level)
-	Levels["info"] = slog.LevelInfo
-	Levels["warn"] = slog.LevelWarn
-	Levels["debug"] = slog.LevelDebug
-	Levels["error"] = slog.LevelError
-}
 
 func Start(logLevel string) {
+	levels := make(map[string]slog.Level)
+	levels["info"] = slog.LevelInfo
+	levels["warn"] = slog.LevelWarn
+	levels["debug"] = slog.LevelDebug
+	levels["error"] = slog.LevelError
+
 	Logger = slog.New(tint.NewHandler(colorable.NewColorableStdout(), &tint.Options{
-		Level:      Levels[logLevel],
+		Level:      levels[logLevel],
 		TimeFormat: time.RFC3339,
 	}))
 }

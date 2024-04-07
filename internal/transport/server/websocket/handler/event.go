@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/datasets"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/transport/server/websocket/middleware"
-	"github.com/KenshiTech/unchained/transport/server/websocket/store"
+	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/datasets"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/transport/server/websocket/middleware"
+	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
@@ -43,7 +43,7 @@ func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 
-	ok, err = bls.Verify(signature, hash, pk)
+	ok, err = bls.MachineIdentity.Verify(signature, hash, pk)
 	if err != nil {
 		log.Logger.Error("Can't recover bls pub-key: %v", err)
 		return []byte{}, constants.ErrCantVerifyBls
