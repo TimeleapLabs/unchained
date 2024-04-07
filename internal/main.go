@@ -1,6 +1,8 @@
 package main
 
-import "github.com/KenshiTech/unchained/cmd"
+import (
+	"unchained/cmd"
+)
 
 func main() {
 	cmd.Execute()

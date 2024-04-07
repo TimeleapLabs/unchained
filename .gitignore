@@ -18,5 +18,6 @@ docker/pgadmin
 .clinic
 node_trace.*
 internal/bin
-conf.*.private
+**/conf.*.private
+**/conf-*.yaml
 .idea
