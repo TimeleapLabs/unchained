@@ -80,7 +80,9 @@ func WithUniswapEvents(
 }
 
 func (s *Scheduler) AddTask(duration time.Duration, task Task) {
-	log.Logger.With("duration", duration).Info("Register a new task")
+	log.Logger.
+		With("duration", duration).
+		Info("New UniSwap task scheduled.")
 
 	_, err := s.scheduler.NewJob(
 		gocron.DurationJob(duration),

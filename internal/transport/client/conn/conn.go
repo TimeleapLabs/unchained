@@ -21,7 +21,9 @@ var mu = new(sync.Mutex)
 func Start() {
 	var err error
 
-	log.Logger.With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).Info("Connecting to broker")
+	log.Logger.
+		With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
+		Info("Connecting to the broker")
 
 	conn, _, err = websocket.DefaultDialer.Dial(
 		fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion), nil,

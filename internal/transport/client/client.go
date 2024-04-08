@@ -23,7 +23,7 @@ func Consume(handler handler.Handler) {
 			case opcodes.Feedback:
 				log.Logger.
 					With("Feedback", string(payload[1:])).
-					Warn("Broker")
+					Info("Broker")
 
 			case opcodes.KoskChallenge:
 				challenge := handler.Challenge(payload[1:])
@@ -41,7 +41,7 @@ func Consume(handler handler.Handler) {
 			default:
 				log.Logger.
 					With("Code", payload[0]).
-					Info("Unknown call code")
+					Error("Unknown call code")
 			}
 		}
 	}()

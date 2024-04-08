@@ -17,7 +17,7 @@ var upgrader = websocket.Upgrader{}
 
 func WithWebsocket() func() {
 	return func() {
-		log.Logger.Info("Websocket is activated")
+		log.Logger.Info("Starting a websocket server")
 
 		versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
 		http.HandleFunc(versionedRoot, multiplexer)
@@ -27,7 +27,7 @@ func WithWebsocket() func() {
 func multiplexer(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Logger.Error("Can't upgrade connection: %v", err)
+		log.Logger.Error("Can't upgrade the HTTP connection: %v", err)
 		return
 	}
 
