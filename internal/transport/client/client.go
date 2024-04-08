@@ -7,7 +7,7 @@ import (
 	"github.com/KenshiTech/unchained/transport/client/handler"
 )
 
-func Consume(handler handler.Handler) {
+func NewRPC(handler handler.Handler) {
 	incoming := conn.Read()
 
 	go func() {

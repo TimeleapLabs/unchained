@@ -57,7 +57,7 @@ var workerCmd = &cobra.Command{
 		conn.Start()
 
 		handler := handler.NewWorkerHandler()
-		client.Consume(handler)
+		client.NewRPC(handler)
 
 		scheduler.Start()
 	},

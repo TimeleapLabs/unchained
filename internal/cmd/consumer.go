@@ -55,7 +55,7 @@ var consumerCmd = &cobra.Command{
 		conn.Start()
 
 		handler := handler.NewConsumerHandler(correctnessService, uniswapService, evmLogService)
-		client.Consume(handler)
+		client.NewRPC(handler)
 
 		server.New(
 			gql.WithGraphQL(),
