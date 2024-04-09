@@ -40,4 +40,3 @@ imports:
 
 fmt:
 	go fmt ./...
-
