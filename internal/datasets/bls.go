@@ -7,7 +7,7 @@ import (
 
 type Signer struct {
 	Name           string
-	EvmWallet      string
+	EvmAddress     string
 	PublicKey      [96]byte
 	ShortPublicKey [48]byte
 }
@@ -41,14 +41,14 @@ func (s *Signature) DeSia(sia *sia.Sia) *Signature {
 func (s *Signer) Sia() *sia.Sia {
 	return new(sia.Sia).
 		AddString8(s.Name).
-		AddString8(s.EvmWallet).
+		AddString8(s.EvmAddress).
 		AddByteArray8(s.PublicKey[:]).
 		AddByteArray8(s.ShortPublicKey[:])
 }
 
 func (s *Signer) DeSia(sia *sia.Sia) *Signer {
 	s.Name = sia.ReadString8()
-	s.EvmWallet = sia.ReadString8()
+	s.EvmAddress = sia.ReadString8()
 	copy(s.PublicKey[:], sia.ReadByteArray8())
 	copy(s.ShortPublicKey[:], sia.ReadByteArray8())
 

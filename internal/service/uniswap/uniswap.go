@@ -259,7 +259,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		newSigner := newSigners[i]
 		sc.SetName(newSigner.Name).
-			SetEvm(newSigner.EvmWallet).
+			SetEvm(newSigner.EvmAddress).
 			SetKey(newSigner.PublicKey[:]).
 			SetShortkey(newSigner.ShortPublicKey[:]).
 			SetPoints(0)

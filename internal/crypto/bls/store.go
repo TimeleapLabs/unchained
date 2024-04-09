@@ -67,7 +67,7 @@ func InitClientIdentity() {
 
 	ClientSigner = datasets.Signer{
 		Name:           config.App.System.Name,
-		EvmWallet:      config.App.Secret.EvmWallet,
+		EvmAddress:     config.App.Secret.EvmAddress,
 		PublicKey:      ClientPublicKey.Bytes(),
 		ShortPublicKey: ClientShortPublicKey.Bytes(),
 	}
