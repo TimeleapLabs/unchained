@@ -18,8 +18,8 @@ func New(options ...func()) {
 		Info("Starting a HTTP server")
 
 	server := &http.Server{
-		Addr:              config.App.Network.Bind,
-		ReadHeaderTimeout: config.App.Network.ReadHeaderTimeout,
+		Addr:          config.App.Network.Bind,
+		BrokerTimeout: config.App.Network.BrokerTimeout,
 	}
 
 	err := server.ListenAndServe()
