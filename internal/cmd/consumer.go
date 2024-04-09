@@ -12,6 +12,7 @@ import (
 	evmlogService "github.com/KenshiTech/unchained/internal/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
 	"github.com/KenshiTech/unchained/internal/transport/client"
+	"github.com/KenshiTech/unchained/internal/transport/client/conn"
 	"github.com/KenshiTech/unchained/internal/transport/client/handler"
 	"github.com/KenshiTech/unchained/internal/transport/server"
 	"github.com/KenshiTech/unchained/internal/transport/server/gql"

@@ -9,10 +9,10 @@ import (
 	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/pos"
 	"github.com/KenshiTech/unchained/internal/scheduler"
-	correctnessService "github.com/KenshiTech/unchained/internal/service/correctness"
 	evmlogService "github.com/KenshiTech/unchained/internal/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
 	"github.com/KenshiTech/unchained/internal/transport/client"
+	"github.com/KenshiTech/unchained/internal/transport/client/conn"
 	"github.com/KenshiTech/unchained/internal/transport/client/handler"
 	"github.com/spf13/cobra"
 )

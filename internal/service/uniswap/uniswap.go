@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/utils"
+	"github.com/KenshiTech/unchained/internal/utils"
 
 	"github.com/KenshiTech/unchained/internal/config"
 
