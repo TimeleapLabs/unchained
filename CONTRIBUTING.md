@@ -70,6 +70,12 @@ tools to get started:
   messages and maintaining a logfile.
 - [Golangci-lint](https://golangci-lint.run/): Used for Golang lint checks.
 
+You'll need to run the following command to setup the pre-commit hooks:
+
+```sh
+pre-commit install --install-hooks --hook-type commit-msg --hook-type pre-push
+```
+
 ## Conclusion
 
 Following these guidelines helps us maintain a high standard of quality for our
