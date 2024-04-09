@@ -30,9 +30,10 @@ var workerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Start(config.App.System.Log)
 		log.Logger.
+			With("Mode", "Worker").
 			With("Version", constants.Version).
 			With("Protocol", constants.ProtocolVersion).
-			Info("Running Unchained | Worker")
+			Info("Running Unchained ")
 
 		err := config.Load(configPath, secretsPath)
 		if err != nil {
@@ -45,17 +46,20 @@ var workerCmd = &cobra.Command{
 		pos := pos.New(ethRPC)
 		badger := persistence.New(contextPath)
 
-		correctnessService := correctnessService.New(ethRPC)
 		evmLogService := evmlogService.New(ethRPC, pos)
 		uniswapService := uniswapService.New(ethRPC, pos)
 
-		scheduler.New(
+		scheduler := scheduler.New(
 			scheduler.WithEthLogs(evmLogService, ethRPC, badger),
 			scheduler.WithUniswapEvents(uniswapService, ethRPC),
 		)
 
-		handler := handler.New(correctnessService, uniswapService, evmLogService)
-		client.Consume(handler)
+		conn.Start()
+
+		handler := handler.NewWorkerHandler()
+		client.NewRPC(handler)
+
+		scheduler.Start()
 	},
 }
 

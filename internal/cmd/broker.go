@@ -20,9 +20,10 @@ var brokerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Start(config.App.System.Log)
 		log.Logger.
+			With("Mode", "Broker").
 			With("Version", constants.Version).
 			With("Protocol", constants.ProtocolVersion).
-			Info("Running Unchained | Broker")
+			Info("Running Unchained")
 
 		err := config.Load(configPath, secretsPath)
 		if err != nil {

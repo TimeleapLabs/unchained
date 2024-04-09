@@ -17,7 +17,7 @@ var upgrader = websocket.Upgrader{}
 
 func WithWebsocket() func() {
 	return func() {
-		log.Logger.Info("Websocket is activated")
+		log.Logger.Info("Starting a websocket server")
 
 		versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
 		http.HandleFunc(versionedRoot, multiplexer)
@@ -27,7 +27,7 @@ func WithWebsocket() func() {
 func multiplexer(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Logger.Error("Can't upgrade connection: %v", err)
+		log.Logger.Error("Can't upgrade the HTTP connection: %v", err)
 		return
 	}
 
@@ -49,29 +49,35 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
+		if len(payload) == 0 {
+			continue
+		}
+
 		switch opcodes.OpCode(payload[0]) {
 		case opcodes.Hello:
+			log.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
 			result, err := handler.Hello(conn, payload[1:])
 			if err != nil {
 				handler.SendError(conn, messageType, opcodes.Error, err)
+				continue
 			}
 
 			handler.SendMessage(conn, messageType, opcodes.Feedback, "conf.ok")
 			handler.Send(conn, messageType, opcodes.KoskChallenge, result)
-
 		case opcodes.PriceReport:
 			result, err := handler.PriceReport(conn, payload[1:])
 			if err != nil {
 				handler.SendError(conn, messageType, opcodes.Error, err)
+				continue
 			}
 
 			handler.BroadcastPayload(opcodes.PriceReportBroadcast, result)
 			handler.SendMessage(conn, messageType, opcodes.Feedback, "signature.accepted")
-
 		case opcodes.EventLog:
 			result, err := handler.EventLog(conn, payload[1:])
 			if err != nil {
 				handler.SendError(conn, messageType, opcodes.Error, err)
+				continue
 			}
 
 			handler.BroadcastPayload(opcodes.EventLogBroadcast, result)
@@ -81,6 +87,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			result, err := handler.CorrectnessRecord(conn, payload[1:])
 			if err != nil {
 				handler.SendError(conn, messageType, opcodes.Error, err)
+				continue
 			}
 
 			handler.BroadcastPayload(opcodes.CorrectnessReportBroadcast, result)
@@ -90,14 +97,17 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			err := handler.Kosk(conn, payload[1:])
 			if err != nil {
 				handler.SendError(conn, messageType, opcodes.Error, err)
+				continue
 			}
+
 			handler.SendMessage(conn, messageType, opcodes.Feedback, "kosk.ok")
 
 		case opcodes.RegisterConsumer:
+			log.Logger.With("IP", conn.RemoteAddr().String()).Info("New Consumer registered")
+
 			// TODO: Consumers must specify what they're subscribing to
 			store.Consumers.Store(conn, true)
 			store.BroadcastMutex.Store(conn, new(sync.Mutex))
-
 		default:
 			handler.SendError(conn, messageType, opcodes.Error, constants.ErrNotSupportedInstruction)
 		}
