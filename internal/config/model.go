@@ -71,10 +71,10 @@ type Postgres struct {
 }
 
 type Secret struct {
-	Address   string `env:"ADDRESS"    yaml:"address"`
-	EvmWallet string `env:"EVM_WALLET" yaml:"evm-wallet"`
-	SecretKey string `env:"SECRET_KEY" yaml:"secret-key"`
-	PublicKey string `env:"PUBLIC_KEY" yaml:"public-key"`
+	Address    string `env:"ADDRESS"     yaml:"address"`
+	EvmAddress string `env:"EVM_ADDRESS" yaml:"evmAddress"`
+	SecretKey  string `env:"SECRET_KEY"  yaml:"secretKey"`
+	PublicKey  string `env:"PUBLIC_KEY"  yaml:"publicKey"`
 }
 
 type Config struct {

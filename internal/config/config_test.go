@@ -10,10 +10,10 @@ import (
 )
 
 var s = config.Secret{
-	Address:   "n1",
-	EvmWallet: "n2",
-	SecretKey: "n3",
-	PublicKey: "n4",
+	Address:    "n1",
+	EvmAddress: "n2",
+	SecretKey:  "n3",
+	PublicKey:  "n4",
 }
 
 func TestSaveSecret(t *testing.T) {
