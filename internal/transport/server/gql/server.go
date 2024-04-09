@@ -13,7 +13,7 @@ import (
 
 func WithGraphQL() func() {
 	return func() {
-		log.Logger.Info("GraphQL is activated")
+		log.Logger.Info("GraphQL service is activated")
 
 		srv := handler.NewDefaultServer(NewSchema(db.GetClient()))
 		http.Handle("/gql", playground.Handler("Unchained Playground", "/gql/query"))

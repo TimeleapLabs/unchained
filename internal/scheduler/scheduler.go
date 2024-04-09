@@ -82,7 +82,7 @@ func WithUniswapEvents(
 func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 	log.Logger.
 		With("duration", duration).
-		Info("New UniSwap task scheduled.")
+		Info("New UniSwap task scheduled")
 
 	_, err := s.scheduler.NewJob(
 		gocron.DurationJob(duration),
@@ -90,7 +90,7 @@ func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
-		log.Logger.Error("Failed to schedule task.")
+		log.Logger.Error("Failed to schedule task")
 		os.Exit(1)
 	}
 }

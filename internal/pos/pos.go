@@ -91,8 +91,8 @@ func New(
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 
 	log.Logger.
-		With("Hex", addrHexStr).
-		Info("Unchained")
+		With("Address", addrHexStr).
+		Info("PoS identity initialized")
 
 	var err error
 

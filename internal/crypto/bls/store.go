@@ -8,6 +8,7 @@ import (
 
 	"github.com/KenshiTech/unchained/address"
 	"github.com/KenshiTech/unchained/datasets"
+	"github.com/KenshiTech/unchained/ethereum"
 	"github.com/KenshiTech/unchained/log"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -67,14 +68,14 @@ func InitClientIdentity() {
 
 	ClientSigner = datasets.Signer{
 		Name:           config.App.System.Name,
-		EvmAddress:     config.App.Secret.EvmAddress,
+		EvmAddress:     ethereum.EvmSignerInstance.Address,
 		PublicKey:      ClientPublicKey.Bytes(),
 		ShortPublicKey: ClientShortPublicKey.Bytes(),
 	}
 
 	log.Logger.
 		With("Address", addrStr).
-		Info("Unchained")
+		Info("Unchained identity initialized")
 
 	// TODO: Avoid recalculating this
 	config.App.Secret.PublicKey = hex.EncodeToString(pkBytes[:])

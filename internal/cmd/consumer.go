@@ -42,6 +42,7 @@ var consumerCmd = &cobra.Command{
 			panic(err)
 		}
 
+		ethereum.InitClientIdentity()
 		bls.InitClientIdentity()
 
 		ethRPC := ethereum.New()
