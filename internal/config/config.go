@@ -20,7 +20,7 @@ func Load(configPath, secretPath string) error {
 	}
 
 	if secretPath == "" {
-		secretPath = "./secrets.yaml"
+		secretPath = "./secrets.yaml" // #nosec G101
 	}
 
 	SecretFilePath = secretPath

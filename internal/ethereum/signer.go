@@ -35,7 +35,6 @@ func saveConfig() error {
 }
 
 func InitClientIdentity() error {
-
 	var privateKey *ecdsa.PrivateKey
 	var err error
 	var privateKeyRegenerated bool

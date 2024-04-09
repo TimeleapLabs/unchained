@@ -30,7 +30,11 @@ var brokerCmd = &cobra.Command{
 			panic(err)
 		}
 
-		ethereum.InitClientIdentity()
+		err = ethereum.InitClientIdentity()
+		if err != nil {
+			panic(err)
+		}
+
 		bls.InitClientIdentity()
 
 		ethRPC := ethereum.New()
