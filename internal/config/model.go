@@ -72,7 +72,7 @@ type Postgres struct {
 
 type Secret struct {
 	Address   string `env:"ADDRESS"    yaml:"address"`
-	EvmWallet string `env:"ENM_WALLET" yaml:"evm-wallet"`
+	EvmWallet string `env:"EVM_WALLET" yaml:"evm-wallet"`
 	SecretKey string `env:"SECRET_KEY" yaml:"secret-key"`
 	PublicKey string `env:"PUBLIC_KEY" yaml:"public-key"`
 }
