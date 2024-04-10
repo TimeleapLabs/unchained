@@ -23,6 +23,7 @@ type Repository struct {
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
 	base         *big.Int
 	evmSigner    *ethereum.EvmSigner
+	eip712Signer *eip712.EIP712Signer
 }
 
 func (s *Repository) GetTotalVotingPower() (*big.Int, error) {
@@ -151,7 +152,7 @@ func New(
 		return s
 	}
 
-	eip712.InitDomain(chainID, config.App.ProofOfStake.Address)
+	s.eip712Signer = eip712.New(chainID, config.App.ProofOfStake.Address)
 
 	return s
 }

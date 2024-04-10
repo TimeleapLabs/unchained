@@ -7,7 +7,6 @@ import (
 	"github.com/KenshiTech/unchained/config"
 	"github.com/KenshiTech/unchained/ethereum/contracts"
 	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/pos/eip712"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -31,7 +30,7 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 		NftIds: nftIds,
 	}
 
-	signature, err := eip712.SignTransferRequest(s.evmSigner, &transfer)
+	signature, err := s.eip712Signer.SignTransferRequest(s.evmSigner, &transfer)
 
 	if err != nil {
 		log.Logger.

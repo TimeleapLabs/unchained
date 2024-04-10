@@ -11,17 +11,19 @@ import (
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 )
 
-var domain apitypes.TypedDataDomain
+type EIP712Signer struct {
+	domain apitypes.TypedDataDomain
+}
 
-func bytesToUnchainedSignature(b []byte) *contracts.UnchainedStakingSignature {
+func (s *EIP712Signer) bytesToUnchainedSignature(signature []byte) *contracts.UnchainedStakingSignature {
 	return &contracts.UnchainedStakingSignature{
-		V: b[64],
-		R: [32]byte(b[:32]),
-		S: [32]byte(b[32:64]),
+		V: signature[64],
+		R: [32]byte(signature[:32]),
+		S: [32]byte(signature[32:64]),
 	}
 }
 
-func signEip712Message(evmSigner *ethereum.EvmSigner, data *apitypes.TypedData) (*contracts.UnchainedStakingSignature, error) {
+func (s *EIP712Signer) signEip712Message(evmSigner *ethereum.EvmSigner, data *apitypes.TypedData) (*contracts.UnchainedStakingSignature, error) {
 	domainSeparator, err := data.HashStruct("EIP712Domain", data.Domain.Map())
 	if err != nil {
 		return nil, err
@@ -44,14 +46,14 @@ func signEip712Message(evmSigner *ethereum.EvmSigner, data *apitypes.TypedData) 
 		signature[64] += 27
 	}
 
-	return bytesToUnchainedSignature(signature), nil
+	return s.bytesToUnchainedSignature(signature), nil
 }
 
-func SignTransferRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712Transfer) (*contracts.UnchainedStakingSignature, error) {
+func (s *EIP712Signer) SignTransferRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712Transfer) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "Transfer",
-		Domain:      domain,
+		Domain:      s.domain,
 		Message: map[string]interface{}{
 			"signer": evmSigner.Address,
 			"from":   request.From,
@@ -62,14 +64,14 @@ func SignTransferRequest(evmSigner *ethereum.EvmSigner, request *contracts.Uncha
 		},
 	}
 
-	return signEip712Message(evmSigner, data)
+	return s.signEip712Message(evmSigner, data)
 }
 
-func SignSetParamsRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetParams) (*contracts.UnchainedStakingSignature, error) {
+func (s *EIP712Signer) SignSetParamsRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetParams) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "SetParams",
-		Domain:      domain,
+		Domain:      s.domain,
 		Message: map[string]interface{}{
 			"requester":  evmSigner.Address,
 			"token":      request.Token,
@@ -81,14 +83,14 @@ func SignSetParamsRequest(evmSigner *ethereum.EvmSigner, request *contracts.Unch
 		},
 	}
 
-	return signEip712Message(evmSigner, data)
+	return s.signEip712Message(evmSigner, data)
 }
 
-func SignSetNftPriceRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetNftPrice) (*contracts.UnchainedStakingSignature, error) {
+func (s *EIP712Signer) SignSetNftPriceRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetNftPrice) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "SetNftPrice",
-		Domain:      domain,
+		Domain:      s.domain,
 		Message: map[string]interface{}{
 			"requester": evmSigner.Address,
 			"nftId":     request.NftId,
@@ -97,14 +99,16 @@ func SignSetNftPriceRequest(evmSigner *ethereum.EvmSigner, request *contracts.Un
 		},
 	}
 
-	return signEip712Message(evmSigner, data)
+	return s.signEip712Message(evmSigner, data)
 }
 
-func InitDomain(chainID *big.Int, verifyingContract string) {
-	domain = apitypes.TypedDataDomain{
-		Name:              "Unchained",
-		Version:           "1.0.0",
-		ChainId:           math.NewHexOrDecimal256(chainID.Int64()),
-		VerifyingContract: verifyingContract,
+func New(chainID *big.Int, verifyingContract string) *EIP712Signer {
+	return &EIP712Signer{
+		domain: apitypes.TypedDataDomain{
+			Name:              "Unchained",
+			Version:           "1.0.0",
+			ChainId:           math.NewHexOrDecimal256(chainID.Int64()),
+			VerifyingContract: verifyingContract,
+		},
 	}
 }
