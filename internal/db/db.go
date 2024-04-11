@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/log"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/ent"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/ent"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"

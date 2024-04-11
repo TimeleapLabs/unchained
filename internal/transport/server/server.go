@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/log"
 )
 
 func New(options ...func()) {

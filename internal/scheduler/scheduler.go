@@ -4,16 +4,16 @@ import (
 	"os"
 	"time"
 
-	"github.com/KenshiTech/unchained/ethereum"
+	"github.com/KenshiTech/unchained/internal/ethereum"
 
-	"github.com/KenshiTech/unchained/persistence"
-	"github.com/KenshiTech/unchained/scheduler/uniswap"
-	evmLogService "github.com/KenshiTech/unchained/service/evmlog"
-	uniswapService "github.com/KenshiTech/unchained/service/uniswap"
+	"github.com/KenshiTech/unchained/internal/persistence"
+	"github.com/KenshiTech/unchained/internal/scheduler/uniswap"
+	evmLogService "github.com/KenshiTech/unchained/internal/service/evmlog"
+	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/scheduler/logs"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/scheduler/logs"
 	"github.com/go-co-op/gocron/v2"
 )
 

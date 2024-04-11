@@ -22,10 +22,10 @@ jobs:
         with:
           go-version: "stable"
           cache-dependency-path: |
-            internal/go.sum
+            go.sum
 
       - name: Build
-        run: cd internal && make prod
+        run: make prod
 
       - name: "Run release script"
         run: node scripts/docker-release.mjs ${{ github.ref_name }}
@@ -33,7 +33,7 @@ jobs:
       - name: "Release"
         uses: softprops/action-gh-release@v1
         with:
-          files: ./internal/bin/*
+          files: ./bin/*
           name: Unchained ${{ github.ref_name}}
           tag_name: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}

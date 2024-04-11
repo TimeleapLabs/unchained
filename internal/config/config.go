@@ -3,9 +3,9 @@ package config
 import (
 	"os"
 
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/log"
 
-	"github.com/KenshiTech/unchained/constants"
+	"github.com/KenshiTech/unchained/internal/constants"
 	"gopkg.in/yaml.v3"
 
 	"github.com/ilyakaznacheev/cleanenv"

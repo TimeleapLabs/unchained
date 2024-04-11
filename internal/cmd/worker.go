@@ -1,19 +1,19 @@
 package cmd
 
 import (
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/persistence"
-	"github.com/KenshiTech/unchained/pos"
-	"github.com/KenshiTech/unchained/scheduler"
-	evmlogService "github.com/KenshiTech/unchained/service/evmlog"
-	uniswapService "github.com/KenshiTech/unchained/service/uniswap"
-	"github.com/KenshiTech/unchained/transport/client"
-	"github.com/KenshiTech/unchained/transport/client/conn"
-	"github.com/KenshiTech/unchained/transport/client/handler"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/ethereum"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/persistence"
+	"github.com/KenshiTech/unchained/internal/pos"
+	"github.com/KenshiTech/unchained/internal/scheduler"
+	evmlogService "github.com/KenshiTech/unchained/internal/service/evmlog"
+	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
+	"github.com/KenshiTech/unchained/internal/transport/client"
+	"github.com/KenshiTech/unchained/internal/transport/client/conn"
+	"github.com/KenshiTech/unchained/internal/transport/client/handler"
 	"github.com/spf13/cobra"
 )
 

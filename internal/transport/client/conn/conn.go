@@ -5,11 +5,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/constants/opcodes"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/constants/opcodes"
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/log"
 
 	"github.com/gorilla/websocket"
 )

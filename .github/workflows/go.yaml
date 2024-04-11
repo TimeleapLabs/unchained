@@ -23,13 +23,10 @@ jobs:
           cache: false
 
       - name: Install Tools
-        working-directory: "internal"
         run: make tools
 
       - name: Lint
-        working-directory: "internal"
         run: make lint
 
       - name: Error Check
-        working-directory: "internal"
         run: make errors

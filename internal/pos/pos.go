@@ -4,14 +4,13 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/KenshiTech/unchained/ethereum"
-	"github.com/KenshiTech/unchained/pos/eip712"
-
-	"github.com/KenshiTech/unchained/address"
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/crypto/bls"
-	"github.com/KenshiTech/unchained/ethereum/contracts"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/address"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/ethereum"
+	"github.com/KenshiTech/unchained/internal/ethereum/contracts"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/pos/eip712"
 
 	"github.com/puzpuzpuz/xsync/v3"
 )

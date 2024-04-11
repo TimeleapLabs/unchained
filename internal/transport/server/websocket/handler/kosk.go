@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/constants"
-	"github.com/KenshiTech/unchained/crypto/kosk"
-	"github.com/KenshiTech/unchained/log"
-	"github.com/KenshiTech/unchained/transport/server/websocket/store"
+	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/crypto/kosk"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )

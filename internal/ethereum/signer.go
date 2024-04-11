@@ -3,8 +3,8 @@ package ethereum
 import (
 	"crypto/ecdsa"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/log"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
