@@ -4,9 +4,9 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/config"
-	"github.com/KenshiTech/unchained/ethereum/contracts"
-	"github.com/KenshiTech/unchained/log"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/ethereum/contracts"
+	"github.com/KenshiTech/unchained/internal/log"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

@@ -1,6 +1,9 @@
 package pos
 
 import (
+	"math/big"
+	"os"
+
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
@@ -8,8 +11,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/ethereum/contracts"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos/eip712"
-	"math/big"
-	"os"
 
 	"github.com/puzpuzpuz/xsync/v3"
 )

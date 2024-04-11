@@ -2,11 +2,12 @@ package bls
 
 import (
 	"encoding/hex"
+	"math/big"
+
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
-	"math/big"
 
 	"github.com/KenshiTech/unchained/internal/config"
 
