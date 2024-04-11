@@ -29,6 +29,21 @@ var (
 	_ = abi.ConvertType
 )
 
+// UnchainedStakingEIP712SetNftPrice is an auto generated low-level Go binding around an user-defined struct.
+type UnchainedStakingEIP712SetNftPrice struct {
+	Requester common.Address
+	NftId     *big.Int
+	Price     *big.Int
+	Nonce     *big.Int
+}
+
+// UnchainedStakingEIP712SetNftPriceKey is an auto generated low-level Go binding around an user-defined struct.
+type UnchainedStakingEIP712SetNftPriceKey struct {
+	NftId *big.Int
+	Price *big.Int
+	Nonce *big.Int
+}
+
 // UnchainedStakingEIP712SetParams is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingEIP712SetParams struct {
 	Requester  common.Address
@@ -58,23 +73,29 @@ type UnchainedStakingEIP712SetSigner struct {
 
 // UnchainedStakingEIP712Transfer is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingEIP712Transfer struct {
-	Signer    common.Address
-	From      common.Address
-	To        common.Address
-	Amount    *big.Int
-	NftIds    []*big.Int
-	Nonces    []*big.Int
-	FromStake bool
+	Signer common.Address
+	From   common.Address
+	To     common.Address
+	Amount *big.Int
+	NftIds []*big.Int
+	Nonces []*big.Int
 }
 
 // UnchainedStakingEIP712TransferKey is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingEIP712TransferKey struct {
-	From      common.Address
-	To        common.Address
-	Amount    *big.Int
-	NftIds    []*big.Int
-	Nonces    []*big.Int
-	FromStake bool
+	From   common.Address
+	To     common.Address
+	Amount *big.Int
+	NftIds []*big.Int
+	Nonces []*big.Int
+}
+
+// UnchainedStakingNftPriceInfo is an auto generated low-level Go binding around an user-defined struct.
+type UnchainedStakingNftPriceInfo struct {
+	NftId    *big.Int
+	Price    *big.Int
+	Voted    *big.Int
+	Accepted bool
 }
 
 // UnchainedStakingParamsInfo is an auto generated low-level Go binding around an user-defined struct.
@@ -105,19 +126,18 @@ type UnchainedStakingStake struct {
 
 // UnchainedStakingTransferInfo is an auto generated low-level Go binding around an user-defined struct.
 type UnchainedStakingTransferInfo struct {
-	From      common.Address
-	To        common.Address
-	Amount    *big.Int
-	NftIds    []*big.Int
-	Voted     *big.Int
-	FromStake bool
-	Accepted  bool
-	Nonces    []*big.Int
+	From     common.Address
+	To       common.Address
+	Amount   *big.Int
+	NftIds   []*big.Int
+	Voted    *big.Int
+	Accepted bool
+	Nonces   []*big.Int
 }
 
 // UnchainedStakingMetaData contains all meta data concerning the UnchainedStaking contract.
 var UnchainedStakingMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTrackerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"consensusLock\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AddressInUse\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AddressZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"AlreadyAccused\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AlreadyStaked\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"AlreadyVoted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BlsNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DurationZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Forbidden\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"InvalidSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LengthMismatch\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"NonceUsed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"NotConsumer\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotUnlocked\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"SafeERC20FailedOperation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"StakeExpiresBeforeVote\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"TopicExpired\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"VotingPowerZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WrongEIP712Signature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WrongNFT\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"accused\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"accuser\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"incident\",\"type\":\"bytes32\"}],\"name\":\"Accused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"from\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"to\",\"type\":\"bytes32\"}],\"name\":\"BlsAddressChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"}],\"name\":\"Extended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"ParamsChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"StakeIncreased\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"Staked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TransferIn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"name\":\"TransferOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"UnStaked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"VotedForParams\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"blsAddressOf\",\"outputs\":[{\"internalType\":\"bytes20\",\"name\":\"\",\"type\":\"bytes20\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"evmAddressOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"extend\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getChainId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getConsensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getParams\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"}],\"name\":\"getRequestedSetParams\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"transferer\",\"type\":\"address\"}],\"name\":\"getRequestedTransferOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getSetParamsData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getTransferOutData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.TransferInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"getVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"getVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"increaseStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"recoverERC20\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"blsAddress\",\"type\":\"bytes20\"}],\"name\":\"setBlsAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams[]\",\"name\":\"eip712SetParams\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"setParams\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"signerToStaker\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"stake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"}],\"name\":\"stakerToSigner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer[]\",\"name\":\"eip712Transferes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"transferOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unstake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams\",\"name\":\"eip712SetParam\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"},{\"internalType\":\"bool\",\"name\":\"fromStake\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer\",\"name\":\"eip712Transfer\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTrackerAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"consensusLock\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AddressInUse\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AlreadyStaked\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"BlsNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DurationZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Forbidden\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"InvalidSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LengthMismatch\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"NonceUsed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotUnlocked\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"SafeERC20FailedOperation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"StakeExpiresBeforeVote\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"TopicExpired\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"VotingPowerZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WrongNFT\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"from\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"to\",\"type\":\"bytes32\"}],\"name\":\"BlsAddressChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"}],\"name\":\"Extended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"name\":\"ParamsChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"StakeIncreased\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"Staked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"UnStaked\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"blsAddressOf\",\"outputs\":[{\"internalType\":\"bytes20\",\"name\":\"\",\"type\":\"bytes20\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"evmAddressOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"extend\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getChainId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getConsensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"}],\"name\":\"getNftPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getParams\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetNftPriceKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"}],\"name\":\"getRequestedSetNftPrice\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"}],\"name\":\"getRequestedSetParams\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"transferer\",\"type\":\"address\"}],\"name\":\"getRequestedTransfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetNftPriceKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getSetNftPriceData\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.NftPriceInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParamsKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getSetParamsData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"}],\"internalType\":\"structUnchainedStaking.ParamsInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unlock\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712TransferKey\",\"name\":\"key\",\"type\":\"tuple\"}],\"name\":\"getTransferData\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"voted\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"accepted\",\"type\":\"bool\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.TransferInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"bls\",\"type\":\"bytes20\"}],\"name\":\"getVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"evm\",\"type\":\"address\"}],\"name\":\"getVotingPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"increaseStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"recoverERC20\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes20\",\"name\":\"blsAddress\",\"type\":\"bytes20\"}],\"name\":\"setBlsAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetNftPrice[]\",\"name\":\"eip712SetNftPrices\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"setNftPrices\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams[]\",\"name\":\"eip712SetParams\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"setParams\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"signerToStaker\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"}],\"name\":\"stake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"}],\"name\":\"stakerToSigner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer[]\",\"name\":\"eip712Transferes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature[]\",\"name\":\"signatures\",\"type\":\"tuple[]\"}],\"name\":\"transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unstake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nftTracker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetParams\",\"name\":\"eip712SetParam\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"}],\"internalType\":\"structUnchainedStaking.EIP712SetNftPrice\",\"name\":\"eip712SetNftPrice\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"internalType\":\"structUnchainedStaking.EIP712SetSigner\",\"name\":\"eip712SetSigner\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"stakerSignature\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signerSignature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"nftIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"nonces\",\"type\":\"uint256[]\"}],\"internalType\":\"structUnchainedStaking.EIP712Transfer\",\"name\":\"eip712Transfer\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"internalType\":\"structUnchainedStaking.Signature\",\"name\":\"signature\",\"type\":\"tuple\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // UnchainedStakingABI is the input ABI used to generate the binding from.
@@ -390,6 +410,37 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) GetConsensusThreshold() 
 	return _UnchainedStaking.Contract.GetConsensusThreshold(&_UnchainedStaking.CallOpts)
 }
 
+// GetNftPrice is a free data retrieval call binding the contract method 0x7bf0989a.
+//
+// Solidity: function getNftPrice(uint256 nftId) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingCaller) GetNftPrice(opts *bind.CallOpts, nftId *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _UnchainedStaking.contract.Call(opts, &out, "getNftPrice", nftId)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetNftPrice is a free data retrieval call binding the contract method 0x7bf0989a.
+//
+// Solidity: function getNftPrice(uint256 nftId) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingSession) GetNftPrice(nftId *big.Int) (*big.Int, error) {
+	return _UnchainedStaking.Contract.GetNftPrice(&_UnchainedStaking.CallOpts, nftId)
+}
+
+// GetNftPrice is a free data retrieval call binding the contract method 0x7bf0989a.
+//
+// Solidity: function getNftPrice(uint256 nftId) view returns(uint256)
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetNftPrice(nftId *big.Int) (*big.Int, error) {
+	return _UnchainedStaking.Contract.GetNftPrice(&_UnchainedStaking.CallOpts, nftId)
+}
+
 // GetParams is a free data retrieval call binding the contract method 0x5e615a6b.
 //
 // Solidity: function getParams() view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
@@ -419,6 +470,37 @@ func (_UnchainedStaking *UnchainedStakingSession) GetParams() (UnchainedStakingP
 // Solidity: function getParams() view returns((address,address,address,uint256,uint256,uint256,uint256,bool))
 func (_UnchainedStaking *UnchainedStakingCallerSession) GetParams() (UnchainedStakingParamsInfo, error) {
 	return _UnchainedStaking.Contract.GetParams(&_UnchainedStaking.CallOpts)
+}
+
+// GetRequestedSetNftPrice is a free data retrieval call binding the contract method 0x45a6e62f.
+//
+// Solidity: function getRequestedSetNftPrice((uint256,uint256,uint256) key, address requester) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedSetNftPrice(opts *bind.CallOpts, key UnchainedStakingEIP712SetNftPriceKey, requester common.Address) (bool, error) {
+	var out []interface{}
+	err := _UnchainedStaking.contract.Call(opts, &out, "getRequestedSetNftPrice", key, requester)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// GetRequestedSetNftPrice is a free data retrieval call binding the contract method 0x45a6e62f.
+//
+// Solidity: function getRequestedSetNftPrice((uint256,uint256,uint256) key, address requester) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingSession) GetRequestedSetNftPrice(key UnchainedStakingEIP712SetNftPriceKey, requester common.Address) (bool, error) {
+	return _UnchainedStaking.Contract.GetRequestedSetNftPrice(&_UnchainedStaking.CallOpts, key, requester)
+}
+
+// GetRequestedSetNftPrice is a free data retrieval call binding the contract method 0x45a6e62f.
+//
+// Solidity: function getRequestedSetNftPrice((uint256,uint256,uint256) key, address requester) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetRequestedSetNftPrice(key UnchainedStakingEIP712SetNftPriceKey, requester common.Address) (bool, error) {
+	return _UnchainedStaking.Contract.GetRequestedSetNftPrice(&_UnchainedStaking.CallOpts, key, requester)
 }
 
 // GetRequestedSetParams is a free data retrieval call binding the contract method 0x984d92e8.
@@ -452,12 +534,12 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) GetRequestedSetParams(ke
 	return _UnchainedStaking.Contract.GetRequestedSetParams(&_UnchainedStaking.CallOpts, key, requester)
 }
 
-// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x27bf8afd.
+// GetRequestedTransfer is a free data retrieval call binding the contract method 0xf8560edb.
 //
-// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[],uint256[],bool) key, address transferer) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedTransferOut(opts *bind.CallOpts, key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
+// Solidity: function getRequestedTransfer((address,address,uint256,uint256[],uint256[]) key, address transferer) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedTransfer(opts *bind.CallOpts, key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
 	var out []interface{}
-	err := _UnchainedStaking.contract.Call(opts, &out, "getRequestedTransferOut", key, transferer)
+	err := _UnchainedStaking.contract.Call(opts, &out, "getRequestedTransfer", key, transferer)
 
 	if err != nil {
 		return *new(bool), err
@@ -469,18 +551,49 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetRequestedTransferOut(opts *b
 
 }
 
-// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x27bf8afd.
+// GetRequestedTransfer is a free data retrieval call binding the contract method 0xf8560edb.
 //
-// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[],uint256[],bool) key, address transferer) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingSession) GetRequestedTransferOut(key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
-	return _UnchainedStaking.Contract.GetRequestedTransferOut(&_UnchainedStaking.CallOpts, key, transferer)
+// Solidity: function getRequestedTransfer((address,address,uint256,uint256[],uint256[]) key, address transferer) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingSession) GetRequestedTransfer(key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
+	return _UnchainedStaking.Contract.GetRequestedTransfer(&_UnchainedStaking.CallOpts, key, transferer)
 }
 
-// GetRequestedTransferOut is a free data retrieval call binding the contract method 0x27bf8afd.
+// GetRequestedTransfer is a free data retrieval call binding the contract method 0xf8560edb.
 //
-// Solidity: function getRequestedTransferOut((address,address,uint256,uint256[],uint256[],bool) key, address transferer) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingCallerSession) GetRequestedTransferOut(key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
-	return _UnchainedStaking.Contract.GetRequestedTransferOut(&_UnchainedStaking.CallOpts, key, transferer)
+// Solidity: function getRequestedTransfer((address,address,uint256,uint256[],uint256[]) key, address transferer) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetRequestedTransfer(key UnchainedStakingEIP712TransferKey, transferer common.Address) (bool, error) {
+	return _UnchainedStaking.Contract.GetRequestedTransfer(&_UnchainedStaking.CallOpts, key, transferer)
+}
+
+// GetSetNftPriceData is a free data retrieval call binding the contract method 0xbbb5b849.
+//
+// Solidity: function getSetNftPriceData((uint256,uint256,uint256) key) view returns((uint256,uint256,uint256,bool))
+func (_UnchainedStaking *UnchainedStakingCaller) GetSetNftPriceData(opts *bind.CallOpts, key UnchainedStakingEIP712SetNftPriceKey) (UnchainedStakingNftPriceInfo, error) {
+	var out []interface{}
+	err := _UnchainedStaking.contract.Call(opts, &out, "getSetNftPriceData", key)
+
+	if err != nil {
+		return *new(UnchainedStakingNftPriceInfo), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(UnchainedStakingNftPriceInfo)).(*UnchainedStakingNftPriceInfo)
+
+	return out0, err
+
+}
+
+// GetSetNftPriceData is a free data retrieval call binding the contract method 0xbbb5b849.
+//
+// Solidity: function getSetNftPriceData((uint256,uint256,uint256) key) view returns((uint256,uint256,uint256,bool))
+func (_UnchainedStaking *UnchainedStakingSession) GetSetNftPriceData(key UnchainedStakingEIP712SetNftPriceKey) (UnchainedStakingNftPriceInfo, error) {
+	return _UnchainedStaking.Contract.GetSetNftPriceData(&_UnchainedStaking.CallOpts, key)
+}
+
+// GetSetNftPriceData is a free data retrieval call binding the contract method 0xbbb5b849.
+//
+// Solidity: function getSetNftPriceData((uint256,uint256,uint256) key) view returns((uint256,uint256,uint256,bool))
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetSetNftPriceData(key UnchainedStakingEIP712SetNftPriceKey) (UnchainedStakingNftPriceInfo, error) {
+	return _UnchainedStaking.Contract.GetSetNftPriceData(&_UnchainedStaking.CallOpts, key)
 }
 
 // GetSetParamsData is a free data retrieval call binding the contract method 0x300fab4f.
@@ -607,12 +720,12 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) GetTotalVotingPower() (*
 	return _UnchainedStaking.Contract.GetTotalVotingPower(&_UnchainedStaking.CallOpts)
 }
 
-// GetTransferOutData is a free data retrieval call binding the contract method 0xee4344ea.
+// GetTransferData is a free data retrieval call binding the contract method 0x865e1281.
 //
-// Solidity: function getTransferOutData((address,address,uint256,uint256[],uint256[],bool) key) view returns((address,address,uint256,uint256[],uint256,bool,bool,uint256[]))
-func (_UnchainedStaking *UnchainedStakingCaller) GetTransferOutData(opts *bind.CallOpts, key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
+// Solidity: function getTransferData((address,address,uint256,uint256[],uint256[]) key) view returns((address,address,uint256,uint256[],uint256,bool,uint256[]))
+func (_UnchainedStaking *UnchainedStakingCaller) GetTransferData(opts *bind.CallOpts, key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
 	var out []interface{}
-	err := _UnchainedStaking.contract.Call(opts, &out, "getTransferOutData", key)
+	err := _UnchainedStaking.contract.Call(opts, &out, "getTransferData", key)
 
 	if err != nil {
 		return *new(UnchainedStakingTransferInfo), err
@@ -624,18 +737,18 @@ func (_UnchainedStaking *UnchainedStakingCaller) GetTransferOutData(opts *bind.C
 
 }
 
-// GetTransferOutData is a free data retrieval call binding the contract method 0xee4344ea.
+// GetTransferData is a free data retrieval call binding the contract method 0x865e1281.
 //
-// Solidity: function getTransferOutData((address,address,uint256,uint256[],uint256[],bool) key) view returns((address,address,uint256,uint256[],uint256,bool,bool,uint256[]))
-func (_UnchainedStaking *UnchainedStakingSession) GetTransferOutData(key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
-	return _UnchainedStaking.Contract.GetTransferOutData(&_UnchainedStaking.CallOpts, key)
+// Solidity: function getTransferData((address,address,uint256,uint256[],uint256[]) key) view returns((address,address,uint256,uint256[],uint256,bool,uint256[]))
+func (_UnchainedStaking *UnchainedStakingSession) GetTransferData(key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
+	return _UnchainedStaking.Contract.GetTransferData(&_UnchainedStaking.CallOpts, key)
 }
 
-// GetTransferOutData is a free data retrieval call binding the contract method 0xee4344ea.
+// GetTransferData is a free data retrieval call binding the contract method 0x865e1281.
 //
-// Solidity: function getTransferOutData((address,address,uint256,uint256[],uint256[],bool) key) view returns((address,address,uint256,uint256[],uint256,bool,bool,uint256[]))
-func (_UnchainedStaking *UnchainedStakingCallerSession) GetTransferOutData(key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
-	return _UnchainedStaking.Contract.GetTransferOutData(&_UnchainedStaking.CallOpts, key)
+// Solidity: function getTransferData((address,address,uint256,uint256[],uint256[]) key) view returns((address,address,uint256,uint256[],uint256,bool,uint256[]))
+func (_UnchainedStaking *UnchainedStakingCallerSession) GetTransferData(key UnchainedStakingEIP712TransferKey) (UnchainedStakingTransferInfo, error) {
+	return _UnchainedStaking.Contract.GetTransferData(&_UnchainedStaking.CallOpts, key)
 }
 
 // GetVotingPower is a free data retrieval call binding the contract method 0x68eacf93.
@@ -855,12 +968,12 @@ func (_UnchainedStaking *UnchainedStakingCallerSession) Verify(eip712SetParam Un
 	return _UnchainedStaking.Contract.Verify(&_UnchainedStaking.CallOpts, eip712SetParam, signature)
 }
 
-// Verify0 is a free data retrieval call binding the contract method 0x7856cc70.
+// Verify0 is a free data retrieval call binding the contract method 0x709eb01b.
 //
-// Solidity: function verify((address,address) eip712SetSigner, (uint8,bytes32,bytes32) stakerSignature, (uint8,bytes32,bytes32) signerSignature) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingCaller) Verify0(opts *bind.CallOpts, eip712SetSigner UnchainedStakingEIP712SetSigner, stakerSignature UnchainedStakingSignature, signerSignature UnchainedStakingSignature) (bool, error) {
+// Solidity: function verify((address,uint256,uint256,uint256) eip712SetNftPrice, (uint8,bytes32,bytes32) signature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCaller) Verify0(opts *bind.CallOpts, eip712SetNftPrice UnchainedStakingEIP712SetNftPrice, signature UnchainedStakingSignature) (bool, error) {
 	var out []interface{}
-	err := _UnchainedStaking.contract.Call(opts, &out, "verify0", eip712SetSigner, stakerSignature, signerSignature)
+	err := _UnchainedStaking.contract.Call(opts, &out, "verify0", eip712SetNftPrice, signature)
 
 	if err != nil {
 		return *new(bool), err
@@ -872,26 +985,26 @@ func (_UnchainedStaking *UnchainedStakingCaller) Verify0(opts *bind.CallOpts, ei
 
 }
 
-// Verify0 is a free data retrieval call binding the contract method 0x7856cc70.
+// Verify0 is a free data retrieval call binding the contract method 0x709eb01b.
 //
-// Solidity: function verify((address,address) eip712SetSigner, (uint8,bytes32,bytes32) stakerSignature, (uint8,bytes32,bytes32) signerSignature) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingSession) Verify0(eip712SetSigner UnchainedStakingEIP712SetSigner, stakerSignature UnchainedStakingSignature, signerSignature UnchainedStakingSignature) (bool, error) {
-	return _UnchainedStaking.Contract.Verify0(&_UnchainedStaking.CallOpts, eip712SetSigner, stakerSignature, signerSignature)
+// Solidity: function verify((address,uint256,uint256,uint256) eip712SetNftPrice, (uint8,bytes32,bytes32) signature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingSession) Verify0(eip712SetNftPrice UnchainedStakingEIP712SetNftPrice, signature UnchainedStakingSignature) (bool, error) {
+	return _UnchainedStaking.Contract.Verify0(&_UnchainedStaking.CallOpts, eip712SetNftPrice, signature)
 }
 
-// Verify0 is a free data retrieval call binding the contract method 0x7856cc70.
+// Verify0 is a free data retrieval call binding the contract method 0x709eb01b.
 //
-// Solidity: function verify((address,address) eip712SetSigner, (uint8,bytes32,bytes32) stakerSignature, (uint8,bytes32,bytes32) signerSignature) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingCallerSession) Verify0(eip712SetSigner UnchainedStakingEIP712SetSigner, stakerSignature UnchainedStakingSignature, signerSignature UnchainedStakingSignature) (bool, error) {
-	return _UnchainedStaking.Contract.Verify0(&_UnchainedStaking.CallOpts, eip712SetSigner, stakerSignature, signerSignature)
+// Solidity: function verify((address,uint256,uint256,uint256) eip712SetNftPrice, (uint8,bytes32,bytes32) signature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCallerSession) Verify0(eip712SetNftPrice UnchainedStakingEIP712SetNftPrice, signature UnchainedStakingSignature) (bool, error) {
+	return _UnchainedStaking.Contract.Verify0(&_UnchainedStaking.CallOpts, eip712SetNftPrice, signature)
 }
 
-// Verify1 is a free data retrieval call binding the contract method 0xa451de1a.
+// Verify1 is a free data retrieval call binding the contract method 0x7856cc70.
 //
-// Solidity: function verify((address,address,address,uint256,uint256[],uint256[],bool) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingCaller) Verify1(opts *bind.CallOpts, eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
+// Solidity: function verify((address,address) eip712SetSigner, (uint8,bytes32,bytes32) stakerSignature, (uint8,bytes32,bytes32) signerSignature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCaller) Verify1(opts *bind.CallOpts, eip712SetSigner UnchainedStakingEIP712SetSigner, stakerSignature UnchainedStakingSignature, signerSignature UnchainedStakingSignature) (bool, error) {
 	var out []interface{}
-	err := _UnchainedStaking.contract.Call(opts, &out, "verify1", eip712Transfer, signature)
+	err := _UnchainedStaking.contract.Call(opts, &out, "verify1", eip712SetSigner, stakerSignature, signerSignature)
 
 	if err != nil {
 		return *new(bool), err
@@ -903,18 +1016,49 @@ func (_UnchainedStaking *UnchainedStakingCaller) Verify1(opts *bind.CallOpts, ei
 
 }
 
-// Verify1 is a free data retrieval call binding the contract method 0xa451de1a.
+// Verify1 is a free data retrieval call binding the contract method 0x7856cc70.
 //
-// Solidity: function verify((address,address,address,uint256,uint256[],uint256[],bool) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingSession) Verify1(eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
-	return _UnchainedStaking.Contract.Verify1(&_UnchainedStaking.CallOpts, eip712Transfer, signature)
+// Solidity: function verify((address,address) eip712SetSigner, (uint8,bytes32,bytes32) stakerSignature, (uint8,bytes32,bytes32) signerSignature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingSession) Verify1(eip712SetSigner UnchainedStakingEIP712SetSigner, stakerSignature UnchainedStakingSignature, signerSignature UnchainedStakingSignature) (bool, error) {
+	return _UnchainedStaking.Contract.Verify1(&_UnchainedStaking.CallOpts, eip712SetSigner, stakerSignature, signerSignature)
 }
 
-// Verify1 is a free data retrieval call binding the contract method 0xa451de1a.
+// Verify1 is a free data retrieval call binding the contract method 0x7856cc70.
 //
-// Solidity: function verify((address,address,address,uint256,uint256[],uint256[],bool) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
-func (_UnchainedStaking *UnchainedStakingCallerSession) Verify1(eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
-	return _UnchainedStaking.Contract.Verify1(&_UnchainedStaking.CallOpts, eip712Transfer, signature)
+// Solidity: function verify((address,address) eip712SetSigner, (uint8,bytes32,bytes32) stakerSignature, (uint8,bytes32,bytes32) signerSignature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCallerSession) Verify1(eip712SetSigner UnchainedStakingEIP712SetSigner, stakerSignature UnchainedStakingSignature, signerSignature UnchainedStakingSignature) (bool, error) {
+	return _UnchainedStaking.Contract.Verify1(&_UnchainedStaking.CallOpts, eip712SetSigner, stakerSignature, signerSignature)
+}
+
+// Verify2 is a free data retrieval call binding the contract method 0xb7543d3e.
+//
+// Solidity: function verify((address,address,address,uint256,uint256[],uint256[]) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCaller) Verify2(opts *bind.CallOpts, eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
+	var out []interface{}
+	err := _UnchainedStaking.contract.Call(opts, &out, "verify2", eip712Transfer, signature)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// Verify2 is a free data retrieval call binding the contract method 0xb7543d3e.
+//
+// Solidity: function verify((address,address,address,uint256,uint256[],uint256[]) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingSession) Verify2(eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
+	return _UnchainedStaking.Contract.Verify2(&_UnchainedStaking.CallOpts, eip712Transfer, signature)
+}
+
+// Verify2 is a free data retrieval call binding the contract method 0xb7543d3e.
+//
+// Solidity: function verify((address,address,address,uint256,uint256[],uint256[]) eip712Transfer, (uint8,bytes32,bytes32) signature) view returns(bool)
+func (_UnchainedStaking *UnchainedStakingCallerSession) Verify2(eip712Transfer UnchainedStakingEIP712Transfer, signature UnchainedStakingSignature) (bool, error) {
+	return _UnchainedStaking.Contract.Verify2(&_UnchainedStaking.CallOpts, eip712Transfer, signature)
 }
 
 // Extend is a paid mutator transaction binding the contract method 0x9714378c.
@@ -1022,6 +1166,27 @@ func (_UnchainedStaking *UnchainedStakingTransactorSession) SetBlsAddress(blsAdd
 	return _UnchainedStaking.Contract.SetBlsAddress(&_UnchainedStaking.TransactOpts, blsAddress)
 }
 
+// SetNftPrices is a paid mutator transaction binding the contract method 0xd43d8d1e.
+//
+// Solidity: function setNftPrices((address,uint256,uint256,uint256)[] eip712SetNftPrices, (uint8,bytes32,bytes32)[] signatures) returns()
+func (_UnchainedStaking *UnchainedStakingTransactor) SetNftPrices(opts *bind.TransactOpts, eip712SetNftPrices []UnchainedStakingEIP712SetNftPrice, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
+	return _UnchainedStaking.contract.Transact(opts, "setNftPrices", eip712SetNftPrices, signatures)
+}
+
+// SetNftPrices is a paid mutator transaction binding the contract method 0xd43d8d1e.
+//
+// Solidity: function setNftPrices((address,uint256,uint256,uint256)[] eip712SetNftPrices, (uint8,bytes32,bytes32)[] signatures) returns()
+func (_UnchainedStaking *UnchainedStakingSession) SetNftPrices(eip712SetNftPrices []UnchainedStakingEIP712SetNftPrice, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
+	return _UnchainedStaking.Contract.SetNftPrices(&_UnchainedStaking.TransactOpts, eip712SetNftPrices, signatures)
+}
+
+// SetNftPrices is a paid mutator transaction binding the contract method 0xd43d8d1e.
+//
+// Solidity: function setNftPrices((address,uint256,uint256,uint256)[] eip712SetNftPrices, (uint8,bytes32,bytes32)[] signatures) returns()
+func (_UnchainedStaking *UnchainedStakingTransactorSession) SetNftPrices(eip712SetNftPrices []UnchainedStakingEIP712SetNftPrice, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
+	return _UnchainedStaking.Contract.SetNftPrices(&_UnchainedStaking.TransactOpts, eip712SetNftPrices, signatures)
+}
+
 // SetParams is a paid mutator transaction binding the contract method 0x642ca50f.
 //
 // Solidity: function setParams((address,address,address,address,uint256,uint256,uint256)[] eip712SetParams, (uint8,bytes32,bytes32)[] signatures) returns()
@@ -1085,46 +1250,25 @@ func (_UnchainedStaking *UnchainedStakingTransactorSession) Stake(duration *big.
 	return _UnchainedStaking.Contract.Stake(&_UnchainedStaking.TransactOpts, duration, amount, nftIds)
 }
 
-// TransferIn is a paid mutator transaction binding the contract method 0xd65014c3.
+// Transfer is a paid mutator transaction binding the contract method 0xdc668266.
 //
-// Solidity: function transferIn(uint256 amount) returns()
-func (_UnchainedStaking *UnchainedStakingTransactor) TransferIn(opts *bind.TransactOpts, amount *big.Int) (*types.Transaction, error) {
-	return _UnchainedStaking.contract.Transact(opts, "transferIn", amount)
+// Solidity: function transfer((address,address,address,uint256,uint256[],uint256[])[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
+func (_UnchainedStaking *UnchainedStakingTransactor) Transfer(opts *bind.TransactOpts, eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
+	return _UnchainedStaking.contract.Transact(opts, "transfer", eip712Transferes, signatures)
 }
 
-// TransferIn is a paid mutator transaction binding the contract method 0xd65014c3.
+// Transfer is a paid mutator transaction binding the contract method 0xdc668266.
 //
-// Solidity: function transferIn(uint256 amount) returns()
-func (_UnchainedStaking *UnchainedStakingSession) TransferIn(amount *big.Int) (*types.Transaction, error) {
-	return _UnchainedStaking.Contract.TransferIn(&_UnchainedStaking.TransactOpts, amount)
+// Solidity: function transfer((address,address,address,uint256,uint256[],uint256[])[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
+func (_UnchainedStaking *UnchainedStakingSession) Transfer(eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
+	return _UnchainedStaking.Contract.Transfer(&_UnchainedStaking.TransactOpts, eip712Transferes, signatures)
 }
 
-// TransferIn is a paid mutator transaction binding the contract method 0xd65014c3.
+// Transfer is a paid mutator transaction binding the contract method 0xdc668266.
 //
-// Solidity: function transferIn(uint256 amount) returns()
-func (_UnchainedStaking *UnchainedStakingTransactorSession) TransferIn(amount *big.Int) (*types.Transaction, error) {
-	return _UnchainedStaking.Contract.TransferIn(&_UnchainedStaking.TransactOpts, amount)
-}
-
-// TransferOut is a paid mutator transaction binding the contract method 0xa4722ded.
-//
-// Solidity: function transferOut((address,address,address,uint256,uint256[],uint256[],bool)[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
-func (_UnchainedStaking *UnchainedStakingTransactor) TransferOut(opts *bind.TransactOpts, eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
-	return _UnchainedStaking.contract.Transact(opts, "transferOut", eip712Transferes, signatures)
-}
-
-// TransferOut is a paid mutator transaction binding the contract method 0xa4722ded.
-//
-// Solidity: function transferOut((address,address,address,uint256,uint256[],uint256[],bool)[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
-func (_UnchainedStaking *UnchainedStakingSession) TransferOut(eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
-	return _UnchainedStaking.Contract.TransferOut(&_UnchainedStaking.TransactOpts, eip712Transferes, signatures)
-}
-
-// TransferOut is a paid mutator transaction binding the contract method 0xa4722ded.
-//
-// Solidity: function transferOut((address,address,address,uint256,uint256[],uint256[],bool)[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
-func (_UnchainedStaking *UnchainedStakingTransactorSession) TransferOut(eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
-	return _UnchainedStaking.Contract.TransferOut(&_UnchainedStaking.TransactOpts, eip712Transferes, signatures)
+// Solidity: function transfer((address,address,address,uint256,uint256[],uint256[])[] eip712Transferes, (uint8,bytes32,bytes32)[] signatures) returns()
+func (_UnchainedStaking *UnchainedStakingTransactorSession) Transfer(eip712Transferes []UnchainedStakingEIP712Transfer, signatures []UnchainedStakingSignature) (*types.Transaction, error) {
+	return _UnchainedStaking.Contract.Transfer(&_UnchainedStaking.TransactOpts, eip712Transferes, signatures)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
@@ -1167,144 +1311,6 @@ func (_UnchainedStaking *UnchainedStakingSession) Unstake() (*types.Transaction,
 // Solidity: function unstake() returns()
 func (_UnchainedStaking *UnchainedStakingTransactorSession) Unstake() (*types.Transaction, error) {
 	return _UnchainedStaking.Contract.Unstake(&_UnchainedStaking.TransactOpts)
-}
-
-// UnchainedStakingAccusedIterator is returned from FilterAccused and is used to iterate over the raw logs and unpacked data for Accused events raised by the UnchainedStaking contract.
-type UnchainedStakingAccusedIterator struct {
-	Event *UnchainedStakingAccused // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *UnchainedStakingAccusedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(UnchainedStakingAccused)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(UnchainedStakingAccused)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *UnchainedStakingAccusedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *UnchainedStakingAccusedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// UnchainedStakingAccused represents a Accused event raised by the UnchainedStaking contract.
-type UnchainedStakingAccused struct {
-	Accused  common.Address
-	Accuser  common.Address
-	Amount   *big.Int
-	Voted    *big.Int
-	Incident [32]byte
-	Raw      types.Log // Blockchain specific contextual infos
-}
-
-// FilterAccused is a free log retrieval operation binding the contract event 0xdc67704e99fa42c847e50d5d0ca44644110b5ac921c8cb738d66369a3ae5423a.
-//
-// Solidity: event Accused(address accused, address accuser, uint256 amount, uint256 voted, bytes32 incident)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterAccused(opts *bind.FilterOpts) (*UnchainedStakingAccusedIterator, error) {
-
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "Accused")
-	if err != nil {
-		return nil, err
-	}
-	return &UnchainedStakingAccusedIterator{contract: _UnchainedStaking.contract, event: "Accused", logs: logs, sub: sub}, nil
-}
-
-// WatchAccused is a free log subscription operation binding the contract event 0xdc67704e99fa42c847e50d5d0ca44644110b5ac921c8cb738d66369a3ae5423a.
-//
-// Solidity: event Accused(address accused, address accuser, uint256 amount, uint256 voted, bytes32 incident)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchAccused(opts *bind.WatchOpts, sink chan<- *UnchainedStakingAccused) (event.Subscription, error) {
-
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "Accused")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(UnchainedStakingAccused)
-				if err := _UnchainedStaking.contract.UnpackLog(event, "Accused", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseAccused is a log parse operation binding the contract event 0xdc67704e99fa42c847e50d5d0ca44644110b5ac921c8cb738d66369a3ae5423a.
-//
-// Solidity: event Accused(address accused, address accuser, uint256 amount, uint256 voted, bytes32 incident)
-func (_UnchainedStaking *UnchainedStakingFilterer) ParseAccused(log types.Log) (*UnchainedStakingAccused, error) {
-	event := new(UnchainedStakingAccused)
-	if err := _UnchainedStaking.contract.UnpackLog(event, "Accused", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
 }
 
 // UnchainedStakingBlsAddressChangedIterator is returned from FilterBlsAddressChanged and is used to iterate over the raw logs and unpacked data for BlsAddressChanged events raised by the UnchainedStaking contract.
@@ -1384,10 +1390,23 @@ type UnchainedStakingBlsAddressChanged struct {
 
 // FilterBlsAddressChanged is a free log retrieval operation binding the contract event 0xa5c20a3e40dbfce0ccdadcb27e2f561e84ddf0618a41338cc1acb1524780ff39.
 //
-// Solidity: event BlsAddressChanged(address user, bytes32 from, bytes32 to)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterBlsAddressChanged(opts *bind.FilterOpts) (*UnchainedStakingBlsAddressChangedIterator, error) {
+// Solidity: event BlsAddressChanged(address indexed user, bytes32 indexed from, bytes32 indexed to)
+func (_UnchainedStaking *UnchainedStakingFilterer) FilterBlsAddressChanged(opts *bind.FilterOpts, user []common.Address, from [][32]byte, to [][32]byte) (*UnchainedStakingBlsAddressChangedIterator, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "BlsAddressChanged")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+	var fromRule []interface{}
+	for _, fromItem := range from {
+		fromRule = append(fromRule, fromItem)
+	}
+	var toRule []interface{}
+	for _, toItem := range to {
+		toRule = append(toRule, toItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "BlsAddressChanged", userRule, fromRule, toRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1396,10 +1415,23 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterBlsAddressChanged(opts 
 
 // WatchBlsAddressChanged is a free log subscription operation binding the contract event 0xa5c20a3e40dbfce0ccdadcb27e2f561e84ddf0618a41338cc1acb1524780ff39.
 //
-// Solidity: event BlsAddressChanged(address user, bytes32 from, bytes32 to)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchBlsAddressChanged(opts *bind.WatchOpts, sink chan<- *UnchainedStakingBlsAddressChanged) (event.Subscription, error) {
+// Solidity: event BlsAddressChanged(address indexed user, bytes32 indexed from, bytes32 indexed to)
+func (_UnchainedStaking *UnchainedStakingFilterer) WatchBlsAddressChanged(opts *bind.WatchOpts, sink chan<- *UnchainedStakingBlsAddressChanged, user []common.Address, from [][32]byte, to [][32]byte) (event.Subscription, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "BlsAddressChanged")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+	var fromRule []interface{}
+	for _, fromItem := range from {
+		fromRule = append(fromRule, fromItem)
+	}
+	var toRule []interface{}
+	for _, toItem := range to {
+		toRule = append(toRule, toItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "BlsAddressChanged", userRule, fromRule, toRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1433,7 +1465,7 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchBlsAddressChanged(opts *
 
 // ParseBlsAddressChanged is a log parse operation binding the contract event 0xa5c20a3e40dbfce0ccdadcb27e2f561e84ddf0618a41338cc1acb1524780ff39.
 //
-// Solidity: event BlsAddressChanged(address user, bytes32 from, bytes32 to)
+// Solidity: event BlsAddressChanged(address indexed user, bytes32 indexed from, bytes32 indexed to)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseBlsAddressChanged(log types.Log) (*UnchainedStakingBlsAddressChanged, error) {
 	event := new(UnchainedStakingBlsAddressChanged)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "BlsAddressChanged", log); err != nil {
@@ -1519,10 +1551,15 @@ type UnchainedStakingExtended struct {
 
 // FilterExtended is a free log retrieval operation binding the contract event 0xa29fc12cda82ff659de006abb10fa5ee256d922af1661e395e5f2fb6b004387e.
 //
-// Solidity: event Extended(address user, uint256 unlock)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterExtended(opts *bind.FilterOpts) (*UnchainedStakingExtendedIterator, error) {
+// Solidity: event Extended(address indexed user, uint256 unlock)
+func (_UnchainedStaking *UnchainedStakingFilterer) FilterExtended(opts *bind.FilterOpts, user []common.Address) (*UnchainedStakingExtendedIterator, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "Extended")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "Extended", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1531,10 +1568,15 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterExtended(opts *bind.Fil
 
 // WatchExtended is a free log subscription operation binding the contract event 0xa29fc12cda82ff659de006abb10fa5ee256d922af1661e395e5f2fb6b004387e.
 //
-// Solidity: event Extended(address user, uint256 unlock)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchExtended(opts *bind.WatchOpts, sink chan<- *UnchainedStakingExtended) (event.Subscription, error) {
+// Solidity: event Extended(address indexed user, uint256 unlock)
+func (_UnchainedStaking *UnchainedStakingFilterer) WatchExtended(opts *bind.WatchOpts, sink chan<- *UnchainedStakingExtended, user []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "Extended")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "Extended", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1568,7 +1610,7 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchExtended(opts *bind.Watc
 
 // ParseExtended is a log parse operation binding the contract event 0xa29fc12cda82ff659de006abb10fa5ee256d922af1661e395e5f2fb6b004387e.
 //
-// Solidity: event Extended(address user, uint256 unlock)
+// Solidity: event Extended(address indexed user, uint256 unlock)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseExtended(log types.Log) (*UnchainedStakingExtended, error) {
 	event := new(UnchainedStakingExtended)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "Extended", log); err != nil {
@@ -1947,10 +1989,19 @@ type UnchainedStakingSignerChanged struct {
 
 // FilterSignerChanged is a free log retrieval operation binding the contract event 0xeeb293e1f8f3a9db91ade748726387ed1352ca78f5430c5f06fe3d1e1ad50579.
 //
-// Solidity: event SignerChanged(address staker, address signer)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterSignerChanged(opts *bind.FilterOpts) (*UnchainedStakingSignerChangedIterator, error) {
+// Solidity: event SignerChanged(address indexed staker, address indexed signer)
+func (_UnchainedStaking *UnchainedStakingFilterer) FilterSignerChanged(opts *bind.FilterOpts, staker []common.Address, signer []common.Address) (*UnchainedStakingSignerChangedIterator, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "SignerChanged")
+	var stakerRule []interface{}
+	for _, stakerItem := range staker {
+		stakerRule = append(stakerRule, stakerItem)
+	}
+	var signerRule []interface{}
+	for _, signerItem := range signer {
+		signerRule = append(signerRule, signerItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "SignerChanged", stakerRule, signerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1959,10 +2010,19 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterSignerChanged(opts *bin
 
 // WatchSignerChanged is a free log subscription operation binding the contract event 0xeeb293e1f8f3a9db91ade748726387ed1352ca78f5430c5f06fe3d1e1ad50579.
 //
-// Solidity: event SignerChanged(address staker, address signer)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchSignerChanged(opts *bind.WatchOpts, sink chan<- *UnchainedStakingSignerChanged) (event.Subscription, error) {
+// Solidity: event SignerChanged(address indexed staker, address indexed signer)
+func (_UnchainedStaking *UnchainedStakingFilterer) WatchSignerChanged(opts *bind.WatchOpts, sink chan<- *UnchainedStakingSignerChanged, staker []common.Address, signer []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "SignerChanged")
+	var stakerRule []interface{}
+	for _, stakerItem := range staker {
+		stakerRule = append(stakerRule, stakerItem)
+	}
+	var signerRule []interface{}
+	for _, signerItem := range signer {
+		signerRule = append(signerRule, signerItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "SignerChanged", stakerRule, signerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1996,7 +2056,7 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchSignerChanged(opts *bind
 
 // ParseSignerChanged is a log parse operation binding the contract event 0xeeb293e1f8f3a9db91ade748726387ed1352ca78f5430c5f06fe3d1e1ad50579.
 //
-// Solidity: event SignerChanged(address staker, address signer)
+// Solidity: event SignerChanged(address indexed staker, address indexed signer)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseSignerChanged(log types.Log) (*UnchainedStakingSignerChanged, error) {
 	event := new(UnchainedStakingSignerChanged)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "SignerChanged", log); err != nil {
@@ -2083,10 +2143,15 @@ type UnchainedStakingStakeIncreased struct {
 
 // FilterStakeIncreased is a free log retrieval operation binding the contract event 0x26e4d06799c60ba22ec168ee4a9314ed451cf9c78dbf6a5f7bfeaf3c84688f58.
 //
-// Solidity: event StakeIncreased(address user, uint256 amount, uint256[] nftIds)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterStakeIncreased(opts *bind.FilterOpts) (*UnchainedStakingStakeIncreasedIterator, error) {
+// Solidity: event StakeIncreased(address indexed user, uint256 amount, uint256[] nftIds)
+func (_UnchainedStaking *UnchainedStakingFilterer) FilterStakeIncreased(opts *bind.FilterOpts, user []common.Address) (*UnchainedStakingStakeIncreasedIterator, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "StakeIncreased")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "StakeIncreased", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2095,10 +2160,15 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterStakeIncreased(opts *bi
 
 // WatchStakeIncreased is a free log subscription operation binding the contract event 0x26e4d06799c60ba22ec168ee4a9314ed451cf9c78dbf6a5f7bfeaf3c84688f58.
 //
-// Solidity: event StakeIncreased(address user, uint256 amount, uint256[] nftIds)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchStakeIncreased(opts *bind.WatchOpts, sink chan<- *UnchainedStakingStakeIncreased) (event.Subscription, error) {
+// Solidity: event StakeIncreased(address indexed user, uint256 amount, uint256[] nftIds)
+func (_UnchainedStaking *UnchainedStakingFilterer) WatchStakeIncreased(opts *bind.WatchOpts, sink chan<- *UnchainedStakingStakeIncreased, user []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "StakeIncreased")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "StakeIncreased", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2132,7 +2202,7 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchStakeIncreased(opts *bin
 
 // ParseStakeIncreased is a log parse operation binding the contract event 0x26e4d06799c60ba22ec168ee4a9314ed451cf9c78dbf6a5f7bfeaf3c84688f58.
 //
-// Solidity: event StakeIncreased(address user, uint256 amount, uint256[] nftIds)
+// Solidity: event StakeIncreased(address indexed user, uint256 amount, uint256[] nftIds)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseStakeIncreased(log types.Log) (*UnchainedStakingStakeIncreased, error) {
 	event := new(UnchainedStakingStakeIncreased)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "StakeIncreased", log); err != nil {
@@ -2220,10 +2290,15 @@ type UnchainedStakingStaked struct {
 
 // FilterStaked is a free log retrieval operation binding the contract event 0x5df5de9ccb680fe3d60088f6d4c3b6d535074c704699377046c743a5b276e171.
 //
-// Solidity: event Staked(address user, uint256 unlock, uint256 amount, uint256[] nftIds)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterStaked(opts *bind.FilterOpts) (*UnchainedStakingStakedIterator, error) {
+// Solidity: event Staked(address indexed user, uint256 unlock, uint256 amount, uint256[] nftIds)
+func (_UnchainedStaking *UnchainedStakingFilterer) FilterStaked(opts *bind.FilterOpts, user []common.Address) (*UnchainedStakingStakedIterator, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "Staked")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "Staked", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2232,10 +2307,15 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterStaked(opts *bind.Filte
 
 // WatchStaked is a free log subscription operation binding the contract event 0x5df5de9ccb680fe3d60088f6d4c3b6d535074c704699377046c743a5b276e171.
 //
-// Solidity: event Staked(address user, uint256 unlock, uint256 amount, uint256[] nftIds)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchStaked(opts *bind.WatchOpts, sink chan<- *UnchainedStakingStaked) (event.Subscription, error) {
+// Solidity: event Staked(address indexed user, uint256 unlock, uint256 amount, uint256[] nftIds)
+func (_UnchainedStaking *UnchainedStakingFilterer) WatchStaked(opts *bind.WatchOpts, sink chan<- *UnchainedStakingStaked, user []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "Staked")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "Staked", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2269,7 +2349,7 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchStaked(opts *bind.WatchO
 
 // ParseStaked is a log parse operation binding the contract event 0x5df5de9ccb680fe3d60088f6d4c3b6d535074c704699377046c743a5b276e171.
 //
-// Solidity: event Staked(address user, uint256 unlock, uint256 amount, uint256[] nftIds)
+// Solidity: event Staked(address indexed user, uint256 unlock, uint256 amount, uint256[] nftIds)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseStaked(log types.Log) (*UnchainedStakingStaked, error) {
 	event := new(UnchainedStakingStaked)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "Staked", log); err != nil {
@@ -2279,9 +2359,9 @@ func (_UnchainedStaking *UnchainedStakingFilterer) ParseStaked(log types.Log) (*
 	return event, nil
 }
 
-// UnchainedStakingTransferInIterator is returned from FilterTransferIn and is used to iterate over the raw logs and unpacked data for TransferIn events raised by the UnchainedStaking contract.
-type UnchainedStakingTransferInIterator struct {
-	Event *UnchainedStakingTransferIn // Event containing the contract specifics and raw log
+// UnchainedStakingTransferIterator is returned from FilterTransfer and is used to iterate over the raw logs and unpacked data for Transfer events raised by the UnchainedStaking contract.
+type UnchainedStakingTransferIterator struct {
+	Event *UnchainedStakingTransfer // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -2295,7 +2375,7 @@ type UnchainedStakingTransferInIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *UnchainedStakingTransferInIterator) Next() bool {
+func (it *UnchainedStakingTransferIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -2304,7 +2384,7 @@ func (it *UnchainedStakingTransferInIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(UnchainedStakingTransferIn)
+			it.Event = new(UnchainedStakingTransfer)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -2319,7 +2399,7 @@ func (it *UnchainedStakingTransferInIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(UnchainedStakingTransferIn)
+		it.Event = new(UnchainedStakingTransfer)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -2335,154 +2415,20 @@ func (it *UnchainedStakingTransferInIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *UnchainedStakingTransferInIterator) Error() error {
+func (it *UnchainedStakingTransferIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *UnchainedStakingTransferInIterator) Close() error {
+func (it *UnchainedStakingTransferIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// UnchainedStakingTransferIn represents a TransferIn event raised by the UnchainedStaking contract.
-type UnchainedStakingTransferIn struct {
+// UnchainedStakingTransfer represents a Transfer event raised by the UnchainedStaking contract.
+type UnchainedStakingTransfer struct {
 	From   common.Address
-	Amount *big.Int
-	Raw    types.Log // Blockchain specific contextual infos
-}
-
-// FilterTransferIn is a free log retrieval operation binding the contract event 0x20bdd1a9edc2be1c156c5768ce9e83b8a08cd73923158e955da8718d6c7bbbfc.
-//
-// Solidity: event TransferIn(address from, uint256 amount)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterTransferIn(opts *bind.FilterOpts) (*UnchainedStakingTransferInIterator, error) {
-
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "TransferIn")
-	if err != nil {
-		return nil, err
-	}
-	return &UnchainedStakingTransferInIterator{contract: _UnchainedStaking.contract, event: "TransferIn", logs: logs, sub: sub}, nil
-}
-
-// WatchTransferIn is a free log subscription operation binding the contract event 0x20bdd1a9edc2be1c156c5768ce9e83b8a08cd73923158e955da8718d6c7bbbfc.
-//
-// Solidity: event TransferIn(address from, uint256 amount)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchTransferIn(opts *bind.WatchOpts, sink chan<- *UnchainedStakingTransferIn) (event.Subscription, error) {
-
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "TransferIn")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(UnchainedStakingTransferIn)
-				if err := _UnchainedStaking.contract.UnpackLog(event, "TransferIn", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseTransferIn is a log parse operation binding the contract event 0x20bdd1a9edc2be1c156c5768ce9e83b8a08cd73923158e955da8718d6c7bbbfc.
-//
-// Solidity: event TransferIn(address from, uint256 amount)
-func (_UnchainedStaking *UnchainedStakingFilterer) ParseTransferIn(log types.Log) (*UnchainedStakingTransferIn, error) {
-	event := new(UnchainedStakingTransferIn)
-	if err := _UnchainedStaking.contract.UnpackLog(event, "TransferIn", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// UnchainedStakingTransferOutIterator is returned from FilterTransferOut and is used to iterate over the raw logs and unpacked data for TransferOut events raised by the UnchainedStaking contract.
-type UnchainedStakingTransferOutIterator struct {
-	Event *UnchainedStakingTransferOut // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *UnchainedStakingTransferOutIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(UnchainedStakingTransferOut)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(UnchainedStakingTransferOut)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *UnchainedStakingTransferOutIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *UnchainedStakingTransferOutIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// UnchainedStakingTransferOut represents a TransferOut event raised by the UnchainedStaking contract.
-type UnchainedStakingTransferOut struct {
 	To     common.Address
 	Amount *big.Int
 	NftIds []*big.Int
@@ -2490,24 +2436,24 @@ type UnchainedStakingTransferOut struct {
 	Raw    types.Log // Blockchain specific contextual infos
 }
 
-// FilterTransferOut is a free log retrieval operation binding the contract event 0xf7ee5f873d6767380fe6374fa9caa8f67304dcb08733c1f474c8f8e0332963d8.
+// FilterTransfer is a free log retrieval operation binding the contract event 0x26a79d74e745222aa0f380aabeac7f0a270b037daf3b5fb1b1b66ff7f4c3144f.
 //
-// Solidity: event TransferOut(address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterTransferOut(opts *bind.FilterOpts) (*UnchainedStakingTransferOutIterator, error) {
+// Solidity: event Transfer(address from, address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
+func (_UnchainedStaking *UnchainedStakingFilterer) FilterTransfer(opts *bind.FilterOpts) (*UnchainedStakingTransferIterator, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "TransferOut")
+	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "Transfer")
 	if err != nil {
 		return nil, err
 	}
-	return &UnchainedStakingTransferOutIterator{contract: _UnchainedStaking.contract, event: "TransferOut", logs: logs, sub: sub}, nil
+	return &UnchainedStakingTransferIterator{contract: _UnchainedStaking.contract, event: "Transfer", logs: logs, sub: sub}, nil
 }
 
-// WatchTransferOut is a free log subscription operation binding the contract event 0xf7ee5f873d6767380fe6374fa9caa8f67304dcb08733c1f474c8f8e0332963d8.
+// WatchTransfer is a free log subscription operation binding the contract event 0x26a79d74e745222aa0f380aabeac7f0a270b037daf3b5fb1b1b66ff7f4c3144f.
 //
-// Solidity: event TransferOut(address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchTransferOut(opts *bind.WatchOpts, sink chan<- *UnchainedStakingTransferOut) (event.Subscription, error) {
+// Solidity: event Transfer(address from, address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
+func (_UnchainedStaking *UnchainedStakingFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *UnchainedStakingTransfer) (event.Subscription, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "TransferOut")
+	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "Transfer")
 	if err != nil {
 		return nil, err
 	}
@@ -2517,8 +2463,8 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchTransferOut(opts *bind.W
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(UnchainedStakingTransferOut)
-				if err := _UnchainedStaking.contract.UnpackLog(event, "TransferOut", log); err != nil {
+				event := new(UnchainedStakingTransfer)
+				if err := _UnchainedStaking.contract.UnpackLog(event, "Transfer", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -2539,12 +2485,12 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchTransferOut(opts *bind.W
 	}), nil
 }
 
-// ParseTransferOut is a log parse operation binding the contract event 0xf7ee5f873d6767380fe6374fa9caa8f67304dcb08733c1f474c8f8e0332963d8.
+// ParseTransfer is a log parse operation binding the contract event 0x26a79d74e745222aa0f380aabeac7f0a270b037daf3b5fb1b1b66ff7f4c3144f.
 //
-// Solidity: event TransferOut(address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
-func (_UnchainedStaking *UnchainedStakingFilterer) ParseTransferOut(log types.Log) (*UnchainedStakingTransferOut, error) {
-	event := new(UnchainedStakingTransferOut)
-	if err := _UnchainedStaking.contract.UnpackLog(event, "TransferOut", log); err != nil {
+// Solidity: event Transfer(address from, address to, uint256 amount, uint256[] nftIds, uint256[] nonces)
+func (_UnchainedStaking *UnchainedStakingFilterer) ParseTransfer(log types.Log) (*UnchainedStakingTransfer, error) {
+	event := new(UnchainedStakingTransfer)
+	if err := _UnchainedStaking.contract.UnpackLog(event, "Transfer", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -2628,10 +2574,15 @@ type UnchainedStakingUnStaked struct {
 
 // FilterUnStaked is a free log retrieval operation binding the contract event 0xef4ce4a0205d268e0effbc76aaabb2ad2509ec58a2e9013645347d3c3cd9be42.
 //
-// Solidity: event UnStaked(address user, uint256 amount, uint256[] nftIds)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterUnStaked(opts *bind.FilterOpts) (*UnchainedStakingUnStakedIterator, error) {
+// Solidity: event UnStaked(address indexed user, uint256 amount, uint256[] nftIds)
+func (_UnchainedStaking *UnchainedStakingFilterer) FilterUnStaked(opts *bind.FilterOpts, user []common.Address) (*UnchainedStakingUnStakedIterator, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "UnStaked")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "UnStaked", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2640,10 +2591,15 @@ func (_UnchainedStaking *UnchainedStakingFilterer) FilterUnStaked(opts *bind.Fil
 
 // WatchUnStaked is a free log subscription operation binding the contract event 0xef4ce4a0205d268e0effbc76aaabb2ad2509ec58a2e9013645347d3c3cd9be42.
 //
-// Solidity: event UnStaked(address user, uint256 amount, uint256[] nftIds)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchUnStaked(opts *bind.WatchOpts, sink chan<- *UnchainedStakingUnStaked) (event.Subscription, error) {
+// Solidity: event UnStaked(address indexed user, uint256 amount, uint256[] nftIds)
+func (_UnchainedStaking *UnchainedStakingFilterer) WatchUnStaked(opts *bind.WatchOpts, sink chan<- *UnchainedStakingUnStaked, user []common.Address) (event.Subscription, error) {
 
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "UnStaked")
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "UnStaked", userRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2677,145 +2633,10 @@ func (_UnchainedStaking *UnchainedStakingFilterer) WatchUnStaked(opts *bind.Watc
 
 // ParseUnStaked is a log parse operation binding the contract event 0xef4ce4a0205d268e0effbc76aaabb2ad2509ec58a2e9013645347d3c3cd9be42.
 //
-// Solidity: event UnStaked(address user, uint256 amount, uint256[] nftIds)
+// Solidity: event UnStaked(address indexed user, uint256 amount, uint256[] nftIds)
 func (_UnchainedStaking *UnchainedStakingFilterer) ParseUnStaked(log types.Log) (*UnchainedStakingUnStaked, error) {
 	event := new(UnchainedStakingUnStaked)
 	if err := _UnchainedStaking.contract.UnpackLog(event, "UnStaked", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// UnchainedStakingVotedForParamsIterator is returned from FilterVotedForParams and is used to iterate over the raw logs and unpacked data for VotedForParams events raised by the UnchainedStaking contract.
-type UnchainedStakingVotedForParamsIterator struct {
-	Event *UnchainedStakingVotedForParams // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *UnchainedStakingVotedForParamsIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(UnchainedStakingVotedForParams)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(UnchainedStakingVotedForParams)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *UnchainedStakingVotedForParamsIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *UnchainedStakingVotedForParamsIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// UnchainedStakingVotedForParams represents a VotedForParams event raised by the UnchainedStaking contract.
-type UnchainedStakingVotedForParams struct {
-	User  common.Address
-	Nonce *big.Int
-	Raw   types.Log // Blockchain specific contextual infos
-}
-
-// FilterVotedForParams is a free log retrieval operation binding the contract event 0x6143a6e12175d81f2e3478633048270835198f154641368d807deeb1b8b641b1.
-//
-// Solidity: event VotedForParams(address user, uint256 nonce)
-func (_UnchainedStaking *UnchainedStakingFilterer) FilterVotedForParams(opts *bind.FilterOpts) (*UnchainedStakingVotedForParamsIterator, error) {
-
-	logs, sub, err := _UnchainedStaking.contract.FilterLogs(opts, "VotedForParams")
-	if err != nil {
-		return nil, err
-	}
-	return &UnchainedStakingVotedForParamsIterator{contract: _UnchainedStaking.contract, event: "VotedForParams", logs: logs, sub: sub}, nil
-}
-
-// WatchVotedForParams is a free log subscription operation binding the contract event 0x6143a6e12175d81f2e3478633048270835198f154641368d807deeb1b8b641b1.
-//
-// Solidity: event VotedForParams(address user, uint256 nonce)
-func (_UnchainedStaking *UnchainedStakingFilterer) WatchVotedForParams(opts *bind.WatchOpts, sink chan<- *UnchainedStakingVotedForParams) (event.Subscription, error) {
-
-	logs, sub, err := _UnchainedStaking.contract.WatchLogs(opts, "VotedForParams")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(UnchainedStakingVotedForParams)
-				if err := _UnchainedStaking.contract.UnpackLog(event, "VotedForParams", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseVotedForParams is a log parse operation binding the contract event 0x6143a6e12175d81f2e3478633048270835198f154641368d807deeb1b8b641b1.
-//
-// Solidity: event VotedForParams(address user, uint256 nonce)
-func (_UnchainedStaking *UnchainedStakingFilterer) ParseVotedForParams(log types.Log) (*UnchainedStakingVotedForParams, error) {
-	event := new(UnchainedStakingVotedForParams)
-	if err := _UnchainedStaking.contract.UnpackLog(event, "VotedForParams", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

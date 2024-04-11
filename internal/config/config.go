@@ -2,8 +2,6 @@ package config
 
 import (
 	"os"
-	"path"
-	"runtime"
 
 	"github.com/KenshiTech/unchained/internal/log"
 
@@ -17,14 +15,12 @@ var App Config
 var SecretFilePath string
 
 func Load(configPath, secretPath string) error {
-	_, b, _, _ := runtime.Caller(0)
-
 	if configPath == "" {
-		configPath = path.Join(b, "../..", "./config.yaml")
+		configPath = "./config.yaml"
 	}
 
 	if secretPath == "" {
-		secretPath = path.Join(b, "../..", "./secrets.yaml")
+		secretPath = "./secrets.yaml" // #nosec G101
 	}
 
 	SecretFilePath = secretPath

@@ -19,7 +19,7 @@ func New(options ...func()) {
 
 	server := &http.Server{
 		Addr:              config.App.Network.Bind,
-		ReadHeaderTimeout: config.App.Network.ReadHeaderTimeout,
+		ReadHeaderTimeout: config.App.Network.BrokerTimeout,
 	}
 
 	err := server.ListenAndServe()

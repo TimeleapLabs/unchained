@@ -13,14 +13,14 @@ rpc:
       - wss://ethereum.publicnode.com
       - https://eth.rpc.blxrbdn.com
 
-  - name: arbitrum:
+  - name: arbitrum
     nodes:
       - https://arbitrum-one.publicnode.com
       - https://arbitrum.llamarpc.com
       - wss://arbitrum-one.publicnode.com
       - https://arbitrum-one.public.blastapi.io
 
-  - name: arbitrum_sepolia
+  - name: arbitrumSepolia
     nodes:
       - https://sepolia-rollup.arbitrum.io/rpc
 
