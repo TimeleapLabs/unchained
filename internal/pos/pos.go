@@ -1,11 +1,12 @@
 package pos
 
 import (
+	"math/big"
+	"os"
+
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
-	"math/big"
-	"os"
 
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"

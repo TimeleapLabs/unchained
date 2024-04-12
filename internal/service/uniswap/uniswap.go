@@ -3,13 +3,14 @@ package uniswap
 import (
 	"context"
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/crypto"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"math/big"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/utils"
 

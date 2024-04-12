@@ -2,9 +2,10 @@ package conn
 
 import (
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/crypto"
 	"sync"
 	"time"
+
+	"github.com/KenshiTech/unchained/internal/crypto"
 
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/constants"

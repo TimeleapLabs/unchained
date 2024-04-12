@@ -2,10 +2,11 @@ package evmlog
 
 import (
 	"context"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"math/big"
 	"sync"
 	"time"
+
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"

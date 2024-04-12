@@ -2,10 +2,11 @@ package uniswap
 
 import (
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"math/big"
 	"os"
 	"strings"
+
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/datasets"
 

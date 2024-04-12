@@ -2,9 +2,10 @@ package eip712
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"

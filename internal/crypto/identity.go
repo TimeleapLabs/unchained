@@ -3,6 +3,7 @@ package crypto
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
@@ -83,23 +84,23 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 			return err
 		}
 
-		address := ethCrypto.PubkeyToAddress(*publicKeyECDSA).Hex()
+		ethAddress := ethCrypto.PubkeyToAddress(*publicKeyECDSA).Hex()
 
-		evmSignerInstance := &ethereum.EvmSigner{
+		machineIdentity.Eth = &ethereum.EvmSigner{
 			PublicKey:  publicKeyECDSA,
 			PrivateKey: privateKey,
-			Address:    address,
+			Address:    ethAddress,
 		}
 
 		if privateKeyRegenerated || config.App.Secret.EvmAddress == "" {
-			privateKeyBytes := ethCrypto.FromECDSA(evmSignerInstance.PrivateKey)
+			privateKeyBytes := ethCrypto.FromECDSA(machineIdentity.Eth.PrivateKey)
 
 			config.App.Secret.EvmPrivateKey = hexutil.Encode(privateKeyBytes)[2:]
-			config.App.Secret.EvmAddress = evmSignerInstance.Address
+			config.App.Secret.EvmAddress = machineIdentity.Eth.Address
 		}
 
 		log.Logger.
-			With("Address", evmSignerInstance.Address).
+			With("Address", machineIdentity.Eth.Address).
 			Info("EVM identity initialized")
 
 		return nil

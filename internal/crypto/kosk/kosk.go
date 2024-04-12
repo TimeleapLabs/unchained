@@ -2,6 +2,7 @@ package kosk
 
 import (
 	"crypto/rand"
+
 	"github.com/KenshiTech/unchained/internal/crypto"
 
 	"github.com/KenshiTech/unchained/internal/crypto/bls"

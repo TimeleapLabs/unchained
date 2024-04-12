@@ -2,9 +2,10 @@ package correctness
 
 import (
 	"context"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"sync"
 	"time"
+
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"

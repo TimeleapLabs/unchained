@@ -1,9 +1,10 @@
 package scheduler
 
 import (
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"os"
 	"time"
+
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/scheduler/uniswap"

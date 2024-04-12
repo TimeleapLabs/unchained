@@ -3,8 +3,9 @@ package ethereum
 import (
 	"context"
 	"fmt"
-	contracts2 "github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 	"sync"
+
+	contracts2 "github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/KenshiTech/unchained/internal/config"
 
