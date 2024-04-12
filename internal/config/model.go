@@ -61,15 +61,15 @@ type Token struct {
 }
 
 type ProofOfStake struct {
-	Chain   string `env:"POS_CHAIN"   env-default:"arbitrum_sepolia"                           yaml:"chain"`
+	Chain   string `env:"POS_CHAIN"   env-default:"arbitrumSepolia"                            yaml:"chain"`
 	Address string `env:"POS_ADDRESS" env-default:"0x965e364987356785b7E89e2Fe7B70f5E5107332d" yaml:"address"`
 	Base    int64  `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
 }
 
 type Network struct {
-	Bind              string        `env:"BIND"           env-default:"0.0.0.0:9123"                    yaml:"bind"`
-	BrokerURI         string        `env:"BROKER_URI"     env-default:"wss://shinobi.brokers.kenshi.io" yaml:"broker-uri"`
-	ReadHeaderTimeout time.Duration `env:"BROKER_TIMEOUT" env-default:"3s"                              yaml:"read_header_timeout"`
+	Bind          string        `env:"BIND"           env-default:"0.0.0.0:9123"                    yaml:"bind"`
+	BrokerURI     string        `env:"BROKER_URI"     env-default:"wss://shinobi.brokers.kenshi.io" yaml:"brokerUri"`
+	BrokerTimeout time.Duration `env:"BROKER_TIMEOUT" env-default:"3s"                              yaml:"brokerTimeout"`
 }
 
 type Postgres struct {
@@ -78,10 +78,11 @@ type Postgres struct {
 
 // Secret struct hold the secret keys of the application and loaded from secret.yaml.
 type Secret struct {
-	Address   string `env:"ADDRESS"    yaml:"address"`
-	EvmWallet string `env:"ENM_WALLET" yaml:"evm-wallet"`
-	SecretKey string `env:"SECRET_KEY" yaml:"secret-key"`
-	PublicKey string `env:"PUBLIC_KEY" yaml:"public-key"`
+	Address       string `env:"ADDRESS"         yaml:"address"`
+	EvmAddress    string `env:"EVM_ADDRESS"     yaml:"evmAddress"`
+	SecretKey     string `env:"SECRET_KEY"      yaml:"secretKey"`
+	PublicKey     string `env:"PUBLIC_KEY"      yaml:"publicKey"`
+	EvmPrivateKey string `env:"EVM_PRIVATE_KEY" yaml:"evmPrivateKey"`
 }
 
 // Config struct is the main configuration struct of application.

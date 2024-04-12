@@ -1,26 +1,27 @@
 package pos
 
 import (
+	"github.com/KenshiTech/unchained/internal/crypto"
+	ethereum2 "github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 	"math/big"
 	"os"
 
-	"github.com/KenshiTech/unchained/internal/ethereum"
-
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/ethereum/contracts"
 	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/pos/eip712"
 
 	"github.com/puzpuzpuz/xsync/v3"
 )
 
 type Repository struct {
-	ethRPC       *ethereum.Repository
+	ethRPC       *ethereum2.Repository
 	posContract  *contracts.UnchainedStaking
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
 	base         *big.Int
+	eip712Signer *eip712.EIP712Signer
 }
 
 func (s *Repository) GetTotalVotingPower() (*big.Int, error) {
@@ -79,20 +80,21 @@ func (s *Repository) VotingPowerToFloat(power *big.Int) *big.Float {
 	return powerFloat
 }
 
-func New(
-	ethRPC *ethereum.Repository,
-) *Repository {
-	s := &Repository{ethRPC: ethRPC}
+func New(ethRPC *ethereum2.Repository) *Repository {
+	s := &Repository{
+		ethRPC: ethRPC,
+	}
+
 	s.init()
 
 	s.base = big.NewInt(config.App.ProofOfStake.Base)
 
-	pkBytes := bls.MachineIdentity.PublicKey.Bytes()
+	pkBytes := crypto.Identity.Bls.PublicKey.Bytes()
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 
 	log.Logger.
-		With("Hex", addrHexStr).
-		Info("Unchained")
+		With("Address", addrHexStr).
+		Info("PoS identity initialized")
 
 	var err error
 
@@ -134,6 +136,18 @@ func New(
 		With("Power", s.VotingPowerToFloat(power)).
 		With("Network", s.VotingPowerToFloat(total)).
 		Info("PoS")
+
+	chainID, err := s.posContract.GetChainId(nil)
+
+	if err != nil {
+		log.Logger.
+			With("Error", err).
+			Error("Failed to get chain ID")
+
+		return s
+	}
+
+	s.eip712Signer = eip712.New(chainID, config.App.ProofOfStake.Address)
 
 	return s
 }

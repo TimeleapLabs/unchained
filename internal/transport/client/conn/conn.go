@@ -2,13 +2,13 @@ package conn
 
 import (
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/crypto"
 	"sync"
 	"time"
 
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/constants"
 	"github.com/KenshiTech/unchained/internal/constants/opcodes"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/log"
 
 	"github.com/gorilla/websocket"
@@ -21,7 +21,9 @@ var mu = new(sync.Mutex)
 func Start() {
 	var err error
 
-	log.Logger.With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).Info("Connecting to broker")
+	log.Logger.
+		With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
+		Info("Connecting to the broker")
 
 	conn, _, err = websocket.DefaultDialer.Dial(
 		fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion), nil,
@@ -34,12 +36,12 @@ func Start() {
 		panic(err)
 	}
 
-	Send(opcodes.Hello, bls.ClientSigner.Sia().Content)
+	Send(opcodes.Hello, crypto.Identity.ExportBlsSigner().Sia().Content)
 }
 
 func Reconnect(err error) {
 	IsClosed = true
-	hello := bls.ClientSigner.Sia().Content
+	hello := crypto.Identity.ExportBlsSigner().Sia().Content
 
 	if websocket.IsUnexpectedCloseError(err) {
 		for i := 1; i < 6; i++ {

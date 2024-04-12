@@ -3,6 +3,8 @@ package uniswap
 import (
 	"context"
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"math/big"
 	"os"
 	"strings"
@@ -22,7 +24,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos"
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
@@ -259,7 +260,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		newSigner := newSigners[i]
 		sc.SetName(newSigner.Name).
-			SetEvm(newSigner.EvmWallet).
+			SetEvm(newSigner.EvmAddress).
 			SetKey(newSigner.PublicKey[:]).
 			SetShortkey(newSigner.ShortPublicKey[:]).
 			SetPoints(0)
@@ -498,7 +499,7 @@ func (u *Service) syncBlock(token datasets.Token, caser cases.Caser, key *datase
 	}
 
 	toHash := priceInfo.Sia().Content
-	signature, hash := bls.Sign(*bls.MachineIdentity.SecretKey, toHash)
+	signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, toHash)
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()
@@ -515,7 +516,7 @@ func (u *Service) syncBlock(token datasets.Token, caser cases.Caser, key *datase
 	if token.Store {
 		u.RecordSignature(
 			signature,
-			bls.ClientSigner,
+			*crypto.Identity.ExportBlsSigner(),
 			hash,
 			priceInfo,
 			false,

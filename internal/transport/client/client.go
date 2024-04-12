@@ -7,7 +7,7 @@ import (
 	"github.com/KenshiTech/unchained/internal/transport/client/handler"
 )
 
-func Consume(handler handler.Handler) {
+func NewRPC(handler handler.Handler) {
 	incoming := conn.Read()
 
 	go func() {
@@ -23,7 +23,7 @@ func Consume(handler handler.Handler) {
 			case opcodes.Feedback:
 				log.Logger.
 					With("Feedback", string(payload[1:])).
-					Debug("Broker")
+					Info("Broker")
 
 			case opcodes.KoskChallenge:
 				challenge := handler.Challenge(payload[1:])
@@ -41,7 +41,7 @@ func Consume(handler handler.Handler) {
 			default:
 				log.Logger.
 					With("Code", payload[0]).
-					Info("Unknown call code")
+					Error("Unknown call code")
 			}
 		}
 	}()

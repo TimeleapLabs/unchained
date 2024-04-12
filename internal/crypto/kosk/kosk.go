@@ -2,6 +2,7 @@ package kosk
 
 import (
 	"crypto/rand"
+	"github.com/KenshiTech/unchained/internal/crypto"
 
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 
@@ -64,5 +65,5 @@ func VerifyChallenge(challenge [LenOfChallenge]byte,
 		return false, err
 	}
 
-	return bls.MachineIdentity.Verify(signature, hash, publicKey)
+	return crypto.Identity.Bls.Verify(signature, hash, publicKey)
 }

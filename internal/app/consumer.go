@@ -2,9 +2,9 @@ package app
 
 import (
 	"github.com/KenshiTech/unchained/internal/constants"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/db"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos"
 	correctnessService "github.com/KenshiTech/unchained/internal/service/correctness"
@@ -20,11 +20,15 @@ import (
 // Consumer starts the Unchained consumer and contains its DI.
 func Consumer() {
 	log.Logger.
+		With("Mode", "Consumer").
 		With("Version", constants.Version).
 		With("Protocol", constants.ProtocolVersion).
-		Info("Running Unchained | Consumer")
+		Info("Running Unchained")
 
-	bls.InitClientIdentity()
+	crypto.InitMachineIdentity(
+		crypto.WithEvmSigner(),
+		crypto.WithBlsIdentity(),
+	)
 
 	ethRPC := ethereum.New()
 	pos := pos.New(ethRPC)
@@ -37,7 +41,7 @@ func Consumer() {
 	conn.Start()
 
 	handler := handler.NewConsumerHandler(correctnessService, uniswapService, evmLogService)
-	client.Consume(handler)
+	client.NewRPC(handler)
 
 	server.New(
 		gql.WithGraphQL(),

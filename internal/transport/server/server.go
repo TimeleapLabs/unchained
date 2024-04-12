@@ -13,11 +13,13 @@ func New(options ...func()) {
 		option()
 	}
 
-	log.Logger.With("Bind", fmt.Sprintf("http://%s", config.App.Network.Bind)).Info("Server is starting")
+	log.Logger.
+		With("Bind", fmt.Sprintf("http://%s", config.App.Network.Bind)).
+		Info("Starting a HTTP server")
 
 	server := &http.Server{
 		Addr:              config.App.Network.Bind,
-		ReadHeaderTimeout: config.App.Network.ReadHeaderTimeout,
+		ReadHeaderTimeout: config.App.Network.BrokerTimeout,
 	}
 
 	err := server.ListenAndServe()

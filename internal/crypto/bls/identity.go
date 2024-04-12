@@ -11,7 +11,9 @@ import (
 	bls12381_fr "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
 )
 
-type Identity struct {
+type BlsSigner struct {
+	Name           string
+	EvmAddress     string
 	SecretKey      *big.Int
 	PublicKey      *bls12381.G2Affine
 	ShortPublicKey *bls12381.G1Affine
@@ -20,8 +22,8 @@ type Identity struct {
 	g1Aff bls12381.G1Affine
 }
 
-func NewIdentity() *Identity {
-	b := &Identity{
+func NewIdentity() *BlsSigner {
+	b := &BlsSigner{
 		SecretKey: new(big.Int),
 	}
 
@@ -47,15 +49,15 @@ func NewIdentity() *Identity {
 	return b
 }
 
-func (b *Identity) getPublicKey(sk *big.Int) *bls12381.G2Affine {
+func (b *BlsSigner) getPublicKey(sk *big.Int) *bls12381.G2Affine {
 	return new(bls12381.G2Affine).ScalarMultiplication(&b.g2Aff, sk)
 }
 
-func (b *Identity) getShortPublicKey(sk *big.Int) *bls12381.G1Affine {
+func (b *BlsSigner) getShortPublicKey(sk *big.Int) *bls12381.G1Affine {
 	return new(bls12381.G1Affine).ScalarMultiplication(&b.g1Aff, sk)
 }
 
-func (b *Identity) generateKeyPair() {
+func (b *BlsSigner) generateKeyPair() {
 	// generate a random point in G2
 	g2Order := bls12381_fr.Modulus()
 	sk, err := rand.Int(rand.Reader, g2Order)
@@ -70,7 +72,7 @@ func (b *Identity) generateKeyPair() {
 	b.PublicKey = pk
 }
 
-func (b *Identity) Verify(
+func (b *BlsSigner) Verify(
 	signature bls12381.G1Affine,
 	hashedMessage bls12381.G1Affine,
 	publicKey bls12381.G2Affine) (bool, error) {
@@ -88,16 +90,4 @@ func (b *Identity) Verify(
 	ok := pairingSigG2.Equal(&pairingHmPk)
 
 	return ok, pairingError
-}
-
-func (b *Identity) Save() {
-	pkBytes := b.PublicKey.Bytes()
-
-	config.App.Secret.SecretKey = hex.EncodeToString(b.SecretKey.Bytes())
-	config.App.Secret.PublicKey = hex.EncodeToString(pkBytes[:])
-	err := config.App.Secret.Save()
-
-	if err != nil {
-		panic(err)
-	}
 }

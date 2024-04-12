@@ -2,6 +2,7 @@ package correctness
 
 import (
 	"context"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"sync"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -147,7 +147,7 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
-			SetEvm(signer.EvmWallet).
+			SetEvm(signer.EvmAddress).
 			SetKey(signer.PublicKey[:]).
 			SetShortkey(signer.ShortPublicKey[:]).
 			SetPoints(0)

@@ -3,8 +3,8 @@ package app
 import (
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/constants"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/ethereum"
+	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/pos"
@@ -19,11 +19,15 @@ import (
 // Worker starts the Unchained worker and contains its DI.
 func Worker() {
 	log.Logger.
+		With("Mode", "Worker").
 		With("Version", constants.Version).
 		With("Protocol", constants.ProtocolVersion).
-		Info("Running Unchained | Worker")
+		Info("Running Unchained")
 
-	bls.InitClientIdentity()
+	crypto.InitMachineIdentity(
+		crypto.WithEvmSigner(),
+		crypto.WithBlsIdentity(),
+	)
 
 	ethRPC := ethereum.New()
 	pos := pos.New(ethRPC)
@@ -40,7 +44,7 @@ func Worker() {
 	conn.Start()
 
 	handler := handler.NewWorkerHandler()
-	client.Consume(handler)
+	client.NewRPC(handler)
 
 	scheduler.Start()
 }

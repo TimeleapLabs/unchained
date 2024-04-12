@@ -2,6 +2,7 @@ package evmlog
 
 import (
 	"context"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"math/big"
 	"sync"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/db"
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos"
 	"github.com/KenshiTech/unchained/internal/transport/client/conn"
@@ -183,7 +183,7 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
-			SetEvm(signer.EvmWallet).
+			SetEvm(signer.EvmAddress).
 			SetKey(signer.PublicKey[:]).
 			SetShortkey(signer.ShortPublicKey[:]).
 			SetPoints(0)

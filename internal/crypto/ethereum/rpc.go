@@ -3,11 +3,11 @@ package ethereum
 import (
 	"context"
 	"fmt"
+	contracts2 "github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 	"sync"
 
 	"github.com/KenshiTech/unchained/internal/config"
 
-	"github.com/KenshiTech/unchained/internal/ethereum/contracts"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/ethereum/go-ethereum/common"
 
@@ -53,20 +53,20 @@ func (r *Repository) RefreshRPC(network string) {
 func (r *Repository) GetNewStakingContract(
 	network string,
 	address string,
-	refresh bool) (*contracts.UnchainedStaking, error) {
+	refresh bool) (*contracts2.UnchainedStaking, error) {
 	if refresh {
 		r.RefreshRPC(network)
 	}
 
-	return contracts.NewUnchainedStaking(common.HexToAddress(address), r.Clients[network])
+	return contracts2.NewUnchainedStaking(common.HexToAddress(address), r.Clients[network])
 }
 
-func (r *Repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
+func (r *Repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts2.UniV3, error) {
 	if refresh {
 		r.RefreshRPC(network)
 	}
 
-	return contracts.NewUniV3(common.HexToAddress(address), r.Clients[network])
+	return contracts2.NewUniV3(common.HexToAddress(address), r.Clients[network])
 }
 
 func (r *Repository) GetBlockNumber(network string) (uint64, error) {

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/log"
@@ -43,7 +44,7 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 
-	ok, err = bls.MachineIdentity.Verify(signature, hash, pk)
+	ok, err = crypto.Identity.Bls.Verify(signature, hash, pk)
 	if err != nil {
 		log.Logger.With("Error", err).Error("Can't verify bls")
 		return []byte{}, constants.ErrCantVerifyBls

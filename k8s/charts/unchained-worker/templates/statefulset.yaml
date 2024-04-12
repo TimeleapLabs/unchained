@@ -86,7 +86,7 @@ spec:
     - metadata:
         name: data
       spec:
-        accessModes: 
+        accessModes:
           - ReadWriteOnce
         resources:
           requests:

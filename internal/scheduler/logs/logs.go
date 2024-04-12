@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"math/big"
 	"os"
 	"sort"
@@ -12,7 +14,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
@@ -178,7 +179,7 @@ func (e *EvmLog) Run() {
 			}
 
 			toHash := event.Sia().Content
-			signature, hash := bls.Sign(*bls.MachineIdentity.SecretKey, toHash)
+			signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, toHash)
 
 			if conf.Send {
 				e.evmLogService.SendPriceReport(signature, event)
@@ -187,7 +188,7 @@ func (e *EvmLog) Run() {
 			if conf.Store {
 				e.evmLogService.RecordSignature(
 					signature,
-					bls.ClientSigner,
+					*crypto.Identity.ExportBlsSigner(),
 					hash,
 					event,
 					false,

@@ -1,10 +1,9 @@
 package scheduler
 
 import (
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"os"
 	"time"
-
-	"github.com/KenshiTech/unchained/internal/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/scheduler/uniswap"
@@ -83,7 +82,9 @@ func WithUniswapEvents(
 }
 
 func (s *Scheduler) AddTask(duration time.Duration, task Task) {
-	log.Logger.With("duration", duration).Info("Register a new task")
+	log.Logger.
+		With("duration", duration).
+		Info("New UniSwap task scheduled")
 
 	_, err := s.scheduler.NewJob(
 		gocron.DurationJob(duration),
@@ -91,7 +92,7 @@ func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
-		log.Logger.Error("Failed to schedule task.")
+		log.Logger.Error("Failed to schedule task")
 		os.Exit(1)
 	}
 }

@@ -1,0 +1,18 @@
+extends: relaxed
+
+yaml-files:
+  - '*.yaml'
+  - '*.yaml.template'
+  - '*.yml'
+  - '.yamllint'
+
+ignore:
+  - k8s/charts/unchained-worker/*
+  - '*.private/*'
+  - '*.private.yaml'
+
+rules:
+  indentation:
+    spaces: 2
+
+  line-length: disable
