@@ -25,7 +25,7 @@ You can setup a node using a docker deployment or local deployment:
 Running Unchained with Docker is straightforward. Make sure you
 [have Docker installed](https://docs.docker.com/engine/install/).
 Then, head over to the
-[Unchained release page](https://github.com/KenshiTech/unchained/internal/releases)
+[Unchained release page](https://github.com/KenshiTech/unchained/releases)
 on GitHub, find the latest Docker release file (file name ends with
 `-docker.zip`), download it, and uncompress it.
 

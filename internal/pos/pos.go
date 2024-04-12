@@ -2,7 +2,7 @@ package pos
 
 import (
 	"github.com/KenshiTech/unchained/internal/crypto"
-	ethereum2 "github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 	"math/big"
 	"os"
@@ -16,7 +16,7 @@ import (
 )
 
 type Repository struct {
-	ethRPC       *ethereum2.Repository
+	ethRPC       *ethereum.Repository
 	posContract  *contracts.UnchainedStaking
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
@@ -80,7 +80,7 @@ func (s *Repository) VotingPowerToFloat(power *big.Int) *big.Float {
 	return powerFloat
 }
 
-func New(ethRPC *ethereum2.Repository) *Repository {
+func New(ethRPC *ethereum.Repository) *Repository {
 	s := &Repository{
 		ethRPC: ethRPC,
 	}
