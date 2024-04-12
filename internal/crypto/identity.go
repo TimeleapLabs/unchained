@@ -14,7 +14,7 @@ import (
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
-// MachineIdentity holds machine identity and provide and manage keys
+// MachineIdentity holds machine identity and provide and manage keys.
 type MachineIdentity struct {
 	Bls *bls.BlsSigner
 	Eth *ethereum.EvmSigner
@@ -24,7 +24,7 @@ var Identity = &MachineIdentity{}
 
 type Option func(identity *MachineIdentity) error
 
-// InitMachineIdentity loads all provided identities and save them to secret file
+// InitMachineIdentity loads all provided identities and save them to secret file.
 func InitMachineIdentity(options ...Option) {
 	for _, option := range options {
 		err := option(Identity)
@@ -48,7 +48,7 @@ func (i *MachineIdentity) ExportBlsSigner() *datasets.Signer {
 	}
 }
 
-// WithEvmSigner initialize and will add Evm keys to machine identity
+// WithEvmSigner initialize and will add Evm keys to machine identity.
 func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
 		var privateKey *ecdsa.PrivateKey
@@ -110,7 +110,7 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 	}
 }
 
-// WithBlsIdentity initialize and will add Bls keys to machine identity
+// WithBlsIdentity initialize and will add Bls keys to machine identity.
 func WithBlsIdentity() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
 		machineIdentity.Bls = bls.NewIdentity()
