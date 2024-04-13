@@ -40,4 +40,4 @@ func (h *consumer) EventLog(message []byte) {
 	)
 }
 
-func (w worker) EventLog(message []byte) {}
+func (w worker) EventLog(_ []byte) {}

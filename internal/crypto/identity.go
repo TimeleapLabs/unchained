@@ -16,7 +16,7 @@ import (
 
 // MachineIdentity holds machine identity and provide and manage keys.
 type MachineIdentity struct {
-	Bls *bls.BlsSigner
+	Bls *bls.Signer
 	Eth *ethereum.EvmSigner
 }
 

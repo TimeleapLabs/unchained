@@ -7,7 +7,7 @@ import (
 // System struct hold the internal system configuration.
 type System struct {
 	Name string `env:"SYSTEM_NAME" env-default:"Unchained" yaml:"name"`
-	Log  string `env:"SYSTEM_LOG"  env-default:"debug"     yaml:"log"`
+	Log  string `env:"SYSTEM_LOG"  env-default:"info"      yaml:"log"`
 
 	ConfigPath   string
 	SecretsPath  string

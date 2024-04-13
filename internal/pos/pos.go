@@ -22,7 +22,7 @@ type Repository struct {
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
 	base         *big.Int
-	eip712Signer *eip712.EIP712Signer
+	eip712Signer *eip712.Signer
 }
 
 func (s *Repository) GetTotalVotingPower() (*big.Int, error) {

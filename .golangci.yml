@@ -121,7 +121,6 @@ linters-settings:
   tenv:
     all: true
 
-
 linters:
   disable-all: true
   enable:
@@ -173,7 +172,7 @@ linters:
     - predeclared
     - promlinter
     - reassign
-#    - revive
+    - revive
     - rowserrcheck
     - sqlclosecheck
     - stylecheck

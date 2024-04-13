@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	OldBlockNumber = 96
+	MaxBlockNumberDelta = 96
 )
 
 var DebouncedSaveSignatures func(key datasets.AssetKey, arg SaveSignatureArgs)
@@ -123,7 +123,7 @@ func (u *Service) RecordSignature(
 
 	if !historical {
 		// TODO: this won't work for Arbitrum
-		if *blockNumber-info.Asset.Block > OldBlockNumber {
+		if *blockNumber-info.Asset.Block > MaxBlockNumberDelta {
 			log.Logger.
 				With("Packet", info.Asset.Block).
 				With("Current", *blockNumber).
@@ -179,10 +179,6 @@ func (u *Service) RecordSignature(
 		return
 	}
 
-	if !isMajority {
-		log.Logger.Debug("Not a majority")
-	}
-
 	reportLog := log.Logger.
 		With("Block", info.Asset.Block).
 		With("Price", info.Price.String()).
@@ -206,11 +202,6 @@ func (u *Service) RecordSignature(
 	reportLog.
 		With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
 		Debug("Values")
-
-	DebouncedSaveSignatures(
-		info.Asset,
-		SaveSignatureArgs{Hash: hash, Info: info},
-	)
 
 	if debounce {
 		DebouncedSaveSignatures(

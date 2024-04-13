@@ -11,7 +11,7 @@ import (
 	bls12381_fr "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
 )
 
-type BlsSigner struct {
+type Signer struct {
 	Name           string
 	EvmAddress     string
 	SecretKey      *big.Int
@@ -22,8 +22,8 @@ type BlsSigner struct {
 	g1Aff bls12381.G1Affine
 }
 
-func NewIdentity() *BlsSigner {
-	b := &BlsSigner{
+func NewIdentity() *Signer {
+	b := &Signer{
 		SecretKey: new(big.Int),
 	}
 
@@ -49,15 +49,15 @@ func NewIdentity() *BlsSigner {
 	return b
 }
 
-func (b *BlsSigner) getPublicKey(sk *big.Int) *bls12381.G2Affine {
+func (b *Signer) getPublicKey(sk *big.Int) *bls12381.G2Affine {
 	return new(bls12381.G2Affine).ScalarMultiplication(&b.g2Aff, sk)
 }
 
-func (b *BlsSigner) getShortPublicKey(sk *big.Int) *bls12381.G1Affine {
+func (b *Signer) getShortPublicKey(sk *big.Int) *bls12381.G1Affine {
 	return new(bls12381.G1Affine).ScalarMultiplication(&b.g1Aff, sk)
 }
 
-func (b *BlsSigner) generateKeyPair() {
+func (b *Signer) generateKeyPair() {
 	// generate a random point in G2
 	g2Order := bls12381_fr.Modulus()
 	sk, err := rand.Int(rand.Reader, g2Order)
@@ -72,7 +72,7 @@ func (b *BlsSigner) generateKeyPair() {
 	b.PublicKey = pk
 }
 
-func (b *BlsSigner) Verify(
+func (b *Signer) Verify(
 	signature bls12381.G1Affine,
 	hashedMessage bls12381.G1Affine,
 	publicKey bls12381.G2Affine) (bool, error) {
