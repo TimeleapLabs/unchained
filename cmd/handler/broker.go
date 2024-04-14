@@ -12,7 +12,7 @@ var broker = &cobra.Command{
 	Use:   "broker",
 	Short: "Run the Unchained client in broker mode",
 	Long:  `Run the Unchained client in broker mode`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
 		if err != nil {
 			panic(err)

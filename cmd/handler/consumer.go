@@ -13,12 +13,12 @@ var consumer = &cobra.Command{
 	Short: "Run the Unchained client in consumer mode",
 	Long:  `Run the Unchained client in consumer mode`,
 
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRun: func(cmd *cobra.Command, _ []string) {
 		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
 		config.App.Network.Bind = cmd.Flags().Lookup("graphql").Value.String()
 	},
 
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
 		if err != nil {
 			panic(err)

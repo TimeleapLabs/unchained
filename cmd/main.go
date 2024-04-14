@@ -15,7 +15,7 @@ var root = &cobra.Command{
 	Use:   "unchained",
 	Short: "Unchained is the universal data validation and processing protocol",
 	Long:  `Unchained is the universal data validation and processing protocol`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		if config.App.System.PrintVersion {
 			fmt.Println(constants.Version)
 		} else {

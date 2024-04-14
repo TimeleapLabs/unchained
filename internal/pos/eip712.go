@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int, nftIds []*big.Int) error {
+func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int, nftIDs []*big.Int) error {
 	evmAddress, err := s.posContract.EvmAddressOf(nil, address)
 
 	if err != nil {
@@ -29,7 +29,7 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 		From:   evmAddress,
 		To:     to,
 		Amount: amount,
-		NftIds: nftIds,
+		NftIds: nftIDs,
 	}
 
 	signature, err := s.eip712Signer.SignTransferRequest(crypto.Identity.Eth, &transfer)
@@ -78,7 +78,7 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 		With("Address", evmAddress.Hex()).
 		With("To", to.Hex()).
 		With("Amount", amount.String()).
-		With("NftIds", nftIds).
+		With("NftIds", nftIDs).
 		Info("Slashed")
 
 	return nil

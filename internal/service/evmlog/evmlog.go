@@ -202,7 +202,7 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	signerIds, err := dbClient.Signer.
+	signerIDs, err := dbClient.Signer.
 		Query().
 		Where(signer.KeyIn(keys...)).
 		IDs(ctx)
@@ -237,7 +237,7 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
 		SetArgs(args.Info.Args).
-		AddSignerIDs(signerIds...).
+		AddSignerIDs(signerIDs...).
 		OnConflictColumns("block", "transaction", "index").
 		UpdateNewValues().
 		Exec(ctx)

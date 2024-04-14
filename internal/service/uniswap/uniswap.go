@@ -203,14 +203,10 @@ func (u *Service) RecordSignature(
 		With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
 		Debug("Values")
 
-	if debounce {
-		DebouncedSaveSignatures(
-			info.Asset,
-			SaveSignatureArgs{Hash: hash, Info: info},
-		)
-	} else {
-		u.saveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
-	}
+	DebouncedSaveSignatures(
+		info.Asset,
+		SaveSignatureArgs{Hash: hash, Info: info},
+	)
 }
 
 type SaveSignatureArgs struct {
@@ -274,7 +270,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	signerIds, err := dbClient.Signer.
+	signerIDs, err := dbClient.Signer.
 		Query().
 		Where(signer.KeyIn(keys...)).
 		IDs(ctx)
@@ -306,7 +302,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 
 	signatureBytes := aggregate.Bytes()
 
-	// TODO: Handle cases where signerIds need to be removed
+	// TODO: Handle cases where signerIDs need to be removed
 	err = dbClient.AssetPrice.
 		Create().
 		SetPair(strings.ToLower(args.Info.Asset.Token.Pair)).
@@ -316,7 +312,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 		SetPrice(&helpers.BigInt{Int: args.Info.Price}).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
-		AddSignerIDs(signerIds...).
+		AddSignerIDs(signerIDs...).
 		OnConflictColumns("block", "chain", "asset", "pair").
 		UpdateNewValues().
 		Exec(ctx)
