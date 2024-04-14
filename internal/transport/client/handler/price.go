@@ -40,4 +40,4 @@ func (h *consumer) PriceReport(message []byte) {
 	)
 }
 
-func (w worker) PriceReport(message []byte) {}
+func (w worker) PriceReport(_ []byte) {}

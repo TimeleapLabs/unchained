@@ -39,4 +39,4 @@ func (h *consumer) CorrectnessReport(message []byte) {
 	)
 }
 
-func (w worker) CorrectnessReport(message []byte) {}
+func (w worker) CorrectnessReport(_ []byte) {}

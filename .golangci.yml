@@ -121,7 +121,6 @@ linters-settings:
   tenv:
     all: true
 
-
 linters:
   disable-all: true
   enable:
@@ -146,7 +145,7 @@ linters:
     - forbidigo
     - funlen
     - gocheckcompilerdirectives
-#    - gochecknoinits
+    - gochecknoinits
     - gocognit
     - goconst
     - gocritic
@@ -173,7 +172,7 @@ linters:
     - predeclared
     - promlinter
     - reassign
-#    - revive
+    - revive
     - rowserrcheck
     - sqlclosecheck
     - stylecheck
@@ -203,6 +202,7 @@ issues:
       linters:
         - funlen
         - forbidigo
+        - gochecknoinits
     - path: "ent"
       linters:
         - gomnd

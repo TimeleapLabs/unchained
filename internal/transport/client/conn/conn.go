@@ -5,10 +5,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/crypto"
+
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/constants"
 	"github.com/KenshiTech/unchained/internal/constants/opcodes"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/log"
 
 	"github.com/gorilla/websocket"
@@ -36,12 +37,12 @@ func Start() {
 		panic(err)
 	}
 
-	Send(opcodes.Hello, bls.ClientSigner.Sia().Content)
+	Send(opcodes.Hello, crypto.Identity.ExportBlsSigner().Sia().Content)
 }
 
 func Reconnect(err error) {
 	IsClosed = true
-	hello := bls.ClientSigner.Sia().Content
+	hello := crypto.Identity.ExportBlsSigner().Sia().Content
 
 	if websocket.IsUnexpectedCloseError(err) {
 		for i := 1; i < 6; i++ {

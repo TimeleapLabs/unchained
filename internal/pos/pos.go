@@ -4,11 +4,12 @@ import (
 	"math/big"
 	"os"
 
+	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
+
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/ethereum"
-	"github.com/KenshiTech/unchained/internal/ethereum/contracts"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos/eip712"
 
@@ -21,8 +22,7 @@ type Repository struct {
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
 	base         *big.Int
-	evmSigner    *ethereum.EvmSigner
-	eip712Signer *eip712.EIP712Signer
+	eip712Signer *eip712.Signer
 }
 
 func (s *Repository) GetTotalVotingPower() (*big.Int, error) {
@@ -81,19 +81,16 @@ func (s *Repository) VotingPowerToFloat(power *big.Int) *big.Float {
 	return powerFloat
 }
 
-func New(
-	ethRPC *ethereum.Repository,
-) *Repository {
+func New(ethRPC *ethereum.Repository) *Repository {
 	s := &Repository{
-		ethRPC:    ethRPC,
-		evmSigner: ethereum.EvmSignerInstance,
+		ethRPC: ethRPC,
 	}
 
 	s.init()
 
 	s.base = big.NewInt(config.App.ProofOfStake.Base)
 
-	pkBytes := bls.ClientPublicKey.Bytes()
+	pkBytes := crypto.Identity.Bls.PublicKey.Bytes()
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 
 	log.Logger.

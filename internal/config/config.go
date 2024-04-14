@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 
+	pureLog "log"
+
 	"github.com/KenshiTech/unchained/internal/log"
 
 	"github.com/KenshiTech/unchained/internal/constants"
@@ -26,13 +28,12 @@ func Load(configPath, secretPath string) error {
 	SecretFilePath = secretPath
 	err := cleanenv.ReadConfig(secretPath, &App.Secret)
 	if err != nil {
-		log.Logger.With("Error", err).Warn("Can't read secret file")
+		pureLog.Println("Can't load secrets")
 		// return constants.ErrCantLoadSecret
 	}
 
 	err = cleanenv.ReadConfig(configPath, &App)
 	if err != nil {
-		log.Logger.With("Error", err).Error("Can't read config file")
 		return constants.ErrCantLoadConfig
 	}
 

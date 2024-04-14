@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/ethereum"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/scheduler/uniswap"
@@ -17,14 +17,17 @@ import (
 	"github.com/go-co-op/gocron/v2"
 )
 
+// Scheduler represents the scheduler service in the application and handles running tasks in a specific duration..
 type Scheduler struct {
 	scheduler gocron.Scheduler
 }
 
+// Task represents a task that can be scheduled by the scheduler.
 type Task interface {
 	Run()
 }
 
+// New creates a new scheduler service.
 func New(options ...func(s *Scheduler)) *Scheduler {
 	s := &Scheduler{}
 

@@ -1,64 +1,10 @@
 package bls
 
 import (
-	"crypto/rand"
 	"math/big"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
-	bls12381_fr "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
 )
-
-var (
-	g2Aff bls12381.G2Affine
-	g1Aff bls12381.G1Affine
-)
-
-func init() {
-	_, _, g1Aff, g2Aff = bls12381.Generators()
-}
-
-func GetPublicKey(sk *big.Int) *bls12381.G2Affine {
-	return new(bls12381.G2Affine).ScalarMultiplication(&g2Aff, sk)
-}
-
-func GetShortPublicKey(sk *big.Int) *bls12381.G1Affine {
-	return new(bls12381.G1Affine).ScalarMultiplication(&g1Aff, sk)
-}
-
-// generate BLS private and public key pair.
-func GenerateKeyPair() (*big.Int, *bls12381.G2Affine, error) {
-	// generate a random point in G2
-	g2Order := bls12381_fr.Modulus()
-	sk, err := rand.Int(rand.Reader, g2Order)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	pk := GetPublicKey(sk)
-
-	return sk, pk, nil
-}
-
-func Verify(
-	signature bls12381.G1Affine,
-	hashedMessage bls12381.G1Affine,
-	publicKey bls12381.G2Affine) (bool, error) {
-	pairingSigG2, err := bls12381.Pair(
-		[]bls12381.G1Affine{signature},
-		[]bls12381.G2Affine{g2Aff})
-	if err != nil {
-		return false, err
-	}
-
-	pairingHmPk, pairingError := bls12381.Pair(
-		[]bls12381.G1Affine{hashedMessage},
-		[]bls12381.G2Affine{publicKey})
-
-	ok := pairingSigG2.Equal(&pairingHmPk)
-
-	return ok, pairingError
-}
 
 func FastVerify(
 	signature bls12381.G1Affine,

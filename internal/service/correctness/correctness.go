@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/crypto/shake"
@@ -13,7 +15,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -165,7 +166,7 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	signerIds, err := dbClient.Signer.
+	signerIDs, err := dbClient.Signer.
 		Query().
 		Where(signer.KeyIn(keys...)).
 		IDs(ctx)
@@ -202,7 +203,7 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 		SetHash(args.Info.Hash[:]).
 		SetTimestamp(args.Info.Timestamp).
 		SetTopic(args.Info.Topic[:]).
-		AddSignerIDs(signerIds...).
+		AddSignerIDs(signerIDs...).
 		OnConflictColumns("topic", "hash").
 		UpdateNewValues().
 		Exec(ctx)

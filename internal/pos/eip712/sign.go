@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/internal/ethereum"
-	"github.com/KenshiTech/unchained/internal/ethereum/contracts"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
+
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 )
 
-type EIP712Signer struct {
+type Signer struct {
 	domain apitypes.TypedDataDomain
 }
 
-func (s *EIP712Signer) bytesToUnchainedSignature(signature []byte) *contracts.UnchainedStakingSignature {
+func (s *Signer) bytesToUnchainedSignature(signature []byte) *contracts.UnchainedStakingSignature {
 	return &contracts.UnchainedStakingSignature{
 		V: signature[64],
 		R: [32]byte(signature[:32]),
@@ -23,7 +24,7 @@ func (s *EIP712Signer) bytesToUnchainedSignature(signature []byte) *contracts.Un
 	}
 }
 
-func (s *EIP712Signer) signEip712Message(evmSigner *ethereum.EvmSigner, data *apitypes.TypedData) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) signEip712Message(evmSigner *ethereum.EvmSigner, data *apitypes.TypedData) (*contracts.UnchainedStakingSignature, error) {
 	domainSeparator, err := data.HashStruct("EIP712Domain", data.Domain.Map())
 	if err != nil {
 		return nil, err
@@ -49,7 +50,7 @@ func (s *EIP712Signer) signEip712Message(evmSigner *ethereum.EvmSigner, data *ap
 	return s.bytesToUnchainedSignature(signature), nil
 }
 
-func (s *EIP712Signer) SignTransferRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712Transfer) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) SignTransferRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712Transfer) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "Transfer",
@@ -67,7 +68,7 @@ func (s *EIP712Signer) SignTransferRequest(evmSigner *ethereum.EvmSigner, reques
 	return s.signEip712Message(evmSigner, data)
 }
 
-func (s *EIP712Signer) SignSetParamsRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetParams) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) SignSetParamsRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetParams) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "SetParams",
@@ -86,7 +87,7 @@ func (s *EIP712Signer) SignSetParamsRequest(evmSigner *ethereum.EvmSigner, reque
 	return s.signEip712Message(evmSigner, data)
 }
 
-func (s *EIP712Signer) SignSetNftPriceRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetNftPrice) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) SignSetNftPriceRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetNftPrice) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "SetNftPrice",
@@ -102,8 +103,8 @@ func (s *EIP712Signer) SignSetNftPriceRequest(evmSigner *ethereum.EvmSigner, req
 	return s.signEip712Message(evmSigner, data)
 }
 
-func New(chainID *big.Int, verifyingContract string) *EIP712Signer {
-	return &EIP712Signer{
+func New(chainID *big.Int, verifyingContract string) *Signer {
+	return &Signer{
 		domain: apitypes.TypedDataDomain{
 			Name:              "Unchained",
 			Version:           "1.0.0",

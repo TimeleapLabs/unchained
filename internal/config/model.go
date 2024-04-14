@@ -4,9 +4,15 @@ import (
 	"time"
 )
 
+// System struct hold the internal system configuration.
 type System struct {
 	Name string `env:"SYSTEM_NAME" env-default:"Unchained" yaml:"name"`
 	Log  string `env:"SYSTEM_LOG"  env-default:"info"      yaml:"log"`
+
+	ConfigPath   string
+	SecretsPath  string
+	ContextPath  string
+	PrintVersion bool
 }
 
 type RPC struct {
@@ -70,6 +76,7 @@ type Postgres struct {
 	URL string `env:"DATABASE_URL" yaml:"url"`
 }
 
+// Secret struct hold the secret keys of the application and loaded from secret.yaml.
 type Secret struct {
 	Address       string `env:"ADDRESS"         yaml:"address"`
 	EvmAddress    string `env:"EVM_ADDRESS"     yaml:"evmAddress"`
@@ -78,6 +85,7 @@ type Secret struct {
 	EvmPrivateKey string `env:"EVM_PRIVATE_KEY" yaml:"evmPrivateKey"`
 }
 
+// Config struct is the main configuration struct of application.
 type Config struct {
 	System       System       `yaml:"system"`
 	Network      Network      `yaml:"network"`

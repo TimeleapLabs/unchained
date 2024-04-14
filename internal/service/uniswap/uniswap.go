@@ -9,6 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+
 	"github.com/KenshiTech/unchained/internal/utils"
 
 	"github.com/KenshiTech/unchained/internal/config"
@@ -22,7 +25,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos"
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
@@ -37,7 +39,7 @@ import (
 )
 
 const (
-	OldBlockNumber = 96
+	MaxBlockNumberDelta = 96
 )
 
 var DebouncedSaveSignatures func(key datasets.AssetKey, arg SaveSignatureArgs)
@@ -121,7 +123,7 @@ func (u *Service) RecordSignature(
 
 	if !historical {
 		// TODO: this won't work for Arbitrum
-		if *blockNumber-info.Asset.Block > OldBlockNumber {
+		if *blockNumber-info.Asset.Block > MaxBlockNumberDelta {
 			log.Logger.
 				With("Packet", info.Asset.Block).
 				With("Current", *blockNumber).
@@ -177,47 +179,34 @@ func (u *Service) RecordSignature(
 		return
 	}
 
-	if isMajority {
-		reportLog := log.Logger.
-			With("Block", info.Asset.Block).
-			With("Price", info.Price.String()).
-			With("Token", info.Asset.Token.Name)
+	reportLog := log.Logger.
+		With("Block", info.Asset.Block).
+		With("Price", info.Price.String()).
+		With("Token", info.Asset.Token.Name)
 
-		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
-			reportLog = reportLog.With(
-				fmt.Sprintf("%x", hash.Bytes())[:8],
-				value.String(),
-			)
-			return true
-		})
-		reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
-			reportLog = reportLog.With(
-				fmt.Sprintf("%x", hash.Bytes())[:8],
-				value.String(),
-			)
-			return true
-		})
-
-		reportLog.
-			With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
-			Debug("Values")
-
-		DebouncedSaveSignatures(
-			info.Asset,
-			SaveSignatureArgs{Hash: hash, Info: info},
+	reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+		reportLog = reportLog.With(
+			fmt.Sprintf("%x", hash.Bytes())[:8],
+			value.String(),
 		)
+		return true
+	})
+	reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
+		reportLog = reportLog.With(
+			fmt.Sprintf("%x", hash.Bytes())[:8],
+			value.String(),
+		)
+		return true
+	})
 
-		if debounce {
-			DebouncedSaveSignatures(
-				info.Asset,
-				SaveSignatureArgs{Hash: hash, Info: info},
-			)
-		} else {
-			u.saveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
-		}
-	} else {
-		log.Logger.Debug("Not a majority")
-	}
+	reportLog.
+		With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+		Debug("Values")
+
+	DebouncedSaveSignatures(
+		info.Asset,
+		SaveSignatureArgs{Hash: hash, Info: info},
+	)
 }
 
 type SaveSignatureArgs struct {
@@ -281,7 +270,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	signerIds, err := dbClient.Signer.
+	signerIDs, err := dbClient.Signer.
 		Query().
 		Where(signer.KeyIn(keys...)).
 		IDs(ctx)
@@ -313,7 +302,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 
 	signatureBytes := aggregate.Bytes()
 
-	// TODO: Handle cases where signerIds need to be removed
+	// TODO: Handle cases where signerIDs need to be removed
 	err = dbClient.AssetPrice.
 		Create().
 		SetPair(strings.ToLower(args.Info.Asset.Token.Pair)).
@@ -323,7 +312,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 		SetPrice(&helpers.BigInt{Int: args.Info.Price}).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
-		AddSignerIDs(signerIds...).
+		AddSignerIDs(signerIDs...).
 		OnConflictColumns("block", "chain", "asset", "pair").
 		UpdateNewValues().
 		Exec(ctx)
@@ -498,7 +487,7 @@ func (u *Service) syncBlock(token datasets.Token, caser cases.Caser, key *datase
 	}
 
 	toHash := priceInfo.Sia().Content
-	signature, hash := bls.Sign(*bls.ClientSecretKey, toHash)
+	signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, toHash)
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()
@@ -515,7 +504,7 @@ func (u *Service) syncBlock(token datasets.Token, caser cases.Caser, key *datase
 	if token.Store {
 		u.RecordSignature(
 			signature,
-			bls.ClientSigner,
+			*crypto.Identity.ExportBlsSigner(),
 			hash,
 			priceInfo,
 			false,

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/log"
@@ -43,7 +44,7 @@ func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, constants.ErrCantVerifyBls
 	}
 
-	ok, err = bls.Verify(signature, hash, pk)
+	ok, err = crypto.Identity.Bls.Verify(signature, hash, pk)
 	if err != nil {
 		log.Logger.Error("Can't recover bls pub-key: %v", err)
 		return []byte{}, constants.ErrCantVerifyBls

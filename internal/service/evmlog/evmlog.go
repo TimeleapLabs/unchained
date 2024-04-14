@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+
 	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/constants/opcodes"
@@ -14,7 +16,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/db"
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/ethereum"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos"
 	"github.com/KenshiTech/unchained/internal/transport/client/conn"
@@ -201,7 +202,7 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 		panic(err)
 	}
 
-	signerIds, err := dbClient.Signer.
+	signerIDs, err := dbClient.Signer.
 		Query().
 		Where(signer.KeyIn(keys...)).
 		IDs(ctx)
@@ -236,7 +237,7 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
 		SetArgs(args.Info.Args).
-		AddSignerIDs(signerIds...).
+		AddSignerIDs(signerIDs...).
 		OnConflictColumns("block", "transaction", "index").
 		UpdateNewValues().
 		Exec(ctx)

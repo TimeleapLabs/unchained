@@ -11,6 +11,8 @@ import (
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+
+	// these imports are required for ent to work with postgres.
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/lib/pq"
 )
