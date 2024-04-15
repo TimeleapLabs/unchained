@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/predicate"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
 )
@@ -99,6 +100,26 @@ func (cru *CorrectnessReportUpdate) SetNillableCorrect(b *bool) *CorrectnessRepo
 	if b != nil {
 		cru.SetCorrect(*b)
 	}
+	return cru
+}
+
+// SetConsensus sets the "consensus" field.
+func (cru *CorrectnessReportUpdate) SetConsensus(b bool) *CorrectnessReportUpdate {
+	cru.mutation.SetConsensus(b)
+	return cru
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (cru *CorrectnessReportUpdate) SetNillableConsensus(b *bool) *CorrectnessReportUpdate {
+	if b != nil {
+		cru.SetConsensus(*b)
+	}
+	return cru
+}
+
+// SetVoted sets the "voted" field.
+func (cru *CorrectnessReportUpdate) SetVoted(hi *helpers.BigInt) *CorrectnessReportUpdate {
+	cru.mutation.SetVoted(hi)
 	return cru
 }
 
@@ -225,6 +246,12 @@ func (cru *CorrectnessReportUpdate) sqlSave(ctx context.Context) (n int, err err
 	}
 	if value, ok := cru.mutation.Correct(); ok {
 		_spec.SetField(correctnessreport.FieldCorrect, field.TypeBool, value)
+	}
+	if value, ok := cru.mutation.Consensus(); ok {
+		_spec.SetField(correctnessreport.FieldConsensus, field.TypeBool, value)
+	}
+	if value, ok := cru.mutation.Voted(); ok {
+		_spec.SetField(correctnessreport.FieldVoted, field.TypeUint, value)
 	}
 	if cru.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -362,6 +389,26 @@ func (cruo *CorrectnessReportUpdateOne) SetNillableCorrect(b *bool) *Correctness
 	if b != nil {
 		cruo.SetCorrect(*b)
 	}
+	return cruo
+}
+
+// SetConsensus sets the "consensus" field.
+func (cruo *CorrectnessReportUpdateOne) SetConsensus(b bool) *CorrectnessReportUpdateOne {
+	cruo.mutation.SetConsensus(b)
+	return cruo
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (cruo *CorrectnessReportUpdateOne) SetNillableConsensus(b *bool) *CorrectnessReportUpdateOne {
+	if b != nil {
+		cruo.SetConsensus(*b)
+	}
+	return cruo
+}
+
+// SetVoted sets the "voted" field.
+func (cruo *CorrectnessReportUpdateOne) SetVoted(hi *helpers.BigInt) *CorrectnessReportUpdateOne {
+	cruo.mutation.SetVoted(hi)
 	return cruo
 }
 
@@ -518,6 +565,12 @@ func (cruo *CorrectnessReportUpdateOne) sqlSave(ctx context.Context) (_node *Cor
 	}
 	if value, ok := cruo.mutation.Correct(); ok {
 		_spec.SetField(correctnessreport.FieldCorrect, field.TypeBool, value)
+	}
+	if value, ok := cruo.mutation.Consensus(); ok {
+		_spec.SetField(correctnessreport.FieldConsensus, field.TypeBool, value)
+	}
+	if value, ok := cruo.mutation.Voted(); ok {
+		_spec.SetField(correctnessreport.FieldVoted, field.TypeUint, value)
 	}
 	if cruo.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{

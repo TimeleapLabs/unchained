@@ -46,6 +46,11 @@ func (r *correctnessReportResolver) Topic(ctx context.Context, obj *ent.Correctn
 	return obj.Topic, nil
 }
 
+// Voted is the resolver for the voted field.
+func (r *correctnessReportResolver) Voted(ctx context.Context, obj *ent.CorrectnessReport) (uint64, error) {
+	panic(fmt.Errorf("not implemented: Voted - voted"))
+}
+
 // Signature is the resolver for the signature field.
 func (r *eventLogResolver) Signature(ctx context.Context, obj *ent.EventLog) (types.Bytes, error) {
 	return obj.Signature, nil
@@ -206,6 +211,46 @@ func (r *assetPriceWhereInputResolver) VotedLt(ctx context.Context, obj *ent.Ass
 
 // VotedLte is the resolver for the votedLTE field.
 func (r *assetPriceWhereInputResolver) VotedLte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedLte - votedLTE"))
+}
+
+// Voted is the resolver for the voted field.
+func (r *correctnessReportWhereInputResolver) Voted(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: Voted - voted"))
+}
+
+// VotedNeq is the resolver for the votedNEQ field.
+func (r *correctnessReportWhereInputResolver) VotedNeq(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedNeq - votedNEQ"))
+}
+
+// VotedIn is the resolver for the votedIn field.
+func (r *correctnessReportWhereInputResolver) VotedIn(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data []uint64) error {
+	panic(fmt.Errorf("not implemented: VotedIn - votedIn"))
+}
+
+// VotedNotIn is the resolver for the votedNotIn field.
+func (r *correctnessReportWhereInputResolver) VotedNotIn(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data []uint64) error {
+	panic(fmt.Errorf("not implemented: VotedNotIn - votedNotIn"))
+}
+
+// VotedGt is the resolver for the votedGT field.
+func (r *correctnessReportWhereInputResolver) VotedGt(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedGt - votedGT"))
+}
+
+// VotedGte is the resolver for the votedGTE field.
+func (r *correctnessReportWhereInputResolver) VotedGte(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedGte - votedGTE"))
+}
+
+// VotedLt is the resolver for the votedLT field.
+func (r *correctnessReportWhereInputResolver) VotedLt(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedLt - votedLT"))
+}
+
+// VotedLte is the resolver for the votedLTE field.
+func (r *correctnessReportWhereInputResolver) VotedLte(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error {
 	panic(fmt.Errorf("not implemented: VotedLte - votedLTE"))
 }
 

@@ -19,6 +19,7 @@ import (
 type Repository struct {
 	ethRPC       *ethereum.Repository
 	posContract  *contracts.UnchainedStaking
+	posChain     string
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
 	base         *big.Int
@@ -69,9 +70,18 @@ func (s *Repository) GetVotingPower(address [20]byte, block *big.Int) (*big.Int,
 	return s.base, nil
 }
 
-func (s *Repository) GetVotingPowerOfPublicKey(pkBytes [96]byte, block *big.Int) (*big.Int, error) {
+func (s *Repository) GetVotingPowerOfPublicKeyAtBlock(pkBytes [96]byte, block *big.Int) (*big.Int, error) {
 	_, addrHex := address.CalculateHex(pkBytes[:])
 	return s.GetVotingPower(addrHex, block)
+}
+
+func (s *Repository) GetVotingPowerOfPublicKey(pkBytes [96]byte) (*big.Int, error) {
+	_, addrHex := address.CalculateHex(pkBytes[:])
+	block, err := s.ethRPC.GetBlockNumber(s.posChain)
+	if err != nil {
+		return nil, err
+	}
+	return s.GetVotingPower(addrHex, big.NewInt(int64(block)))
 }
 
 func (s *Repository) VotingPowerToFloat(power *big.Int) *big.Float {
@@ -149,6 +159,7 @@ func New(ethRPC *ethereum.Repository) *Repository {
 	}
 
 	s.eip712Signer = eip712.New(chainID, config.App.ProofOfStake.Address)
+	s.posChain = config.App.ProofOfStake.Chain
 
 	return s
 }

@@ -110,11 +110,7 @@ func (e *Service) RecordSignature(
 		e.consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
 	}
 
-	votingPower, err := e.pos.GetVotingPowerOfPublicKey(
-		signer.PublicKey,
-		big.NewInt(int64(*blockNumber)),
-	)
-
+	votingPower, err := e.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
 	if err != nil {
 		log.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).

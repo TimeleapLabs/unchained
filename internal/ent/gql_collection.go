@@ -218,6 +218,16 @@ func (cr *CorrectnessReportQuery) collectField(ctx context.Context, opCtx *graph
 				selectedFields = append(selectedFields, correctnessreport.FieldCorrect)
 				fieldSeen[correctnessreport.FieldCorrect] = struct{}{}
 			}
+		case "consensus":
+			if _, ok := fieldSeen[correctnessreport.FieldConsensus]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldConsensus)
+				fieldSeen[correctnessreport.FieldConsensus] = struct{}{}
+			}
+		case "voted":
+			if _, ok := fieldSeen[correctnessreport.FieldVoted]; !ok {
+				selectedFields = append(selectedFields, correctnessreport.FieldVoted)
+				fieldSeen[correctnessreport.FieldVoted] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

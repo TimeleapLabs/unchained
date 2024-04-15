@@ -541,6 +541,20 @@ type CorrectnessReportWhereInput struct {
 	Correct    *bool `json:"correct,omitempty"`
 	CorrectNEQ *bool `json:"correctNEQ,omitempty"`
 
+	// "consensus" field predicates.
+	Consensus    *bool `json:"consensus,omitempty"`
+	ConsensusNEQ *bool `json:"consensusNEQ,omitempty"`
+
+	// "voted" field predicates.
+	Voted      *helpers.BigInt   `json:"voted,omitempty"`
+	VotedNEQ   *helpers.BigInt   `json:"votedNEQ,omitempty"`
+	VotedIn    []*helpers.BigInt `json:"votedIn,omitempty"`
+	VotedNotIn []*helpers.BigInt `json:"votedNotIn,omitempty"`
+	VotedGT    *helpers.BigInt   `json:"votedGT,omitempty"`
+	VotedGTE   *helpers.BigInt   `json:"votedGTE,omitempty"`
+	VotedLT    *helpers.BigInt   `json:"votedLT,omitempty"`
+	VotedLTE   *helpers.BigInt   `json:"votedLTE,omitempty"`
+
 	// "signers" edge predicates.
 	HasSigners     *bool               `json:"hasSigners,omitempty"`
 	HasSignersWith []*SignerWhereInput `json:"hasSignersWith,omitempty"`
@@ -694,6 +708,36 @@ func (i *CorrectnessReportWhereInput) P() (predicate.CorrectnessReport, error) {
 	}
 	if i.CorrectNEQ != nil {
 		predicates = append(predicates, correctnessreport.CorrectNEQ(*i.CorrectNEQ))
+	}
+	if i.Consensus != nil {
+		predicates = append(predicates, correctnessreport.ConsensusEQ(*i.Consensus))
+	}
+	if i.ConsensusNEQ != nil {
+		predicates = append(predicates, correctnessreport.ConsensusNEQ(*i.ConsensusNEQ))
+	}
+	if i.Voted != nil {
+		predicates = append(predicates, correctnessreport.VotedEQ(i.Voted))
+	}
+	if i.VotedNEQ != nil {
+		predicates = append(predicates, correctnessreport.VotedNEQ(i.VotedNEQ))
+	}
+	if len(i.VotedIn) > 0 {
+		predicates = append(predicates, correctnessreport.VotedIn(i.VotedIn...))
+	}
+	if len(i.VotedNotIn) > 0 {
+		predicates = append(predicates, correctnessreport.VotedNotIn(i.VotedNotIn...))
+	}
+	if i.VotedGT != nil {
+		predicates = append(predicates, correctnessreport.VotedGT(i.VotedGT))
+	}
+	if i.VotedGTE != nil {
+		predicates = append(predicates, correctnessreport.VotedGTE(i.VotedGTE))
+	}
+	if i.VotedLT != nil {
+		predicates = append(predicates, correctnessreport.VotedLT(i.VotedLT))
+	}
+	if i.VotedLTE != nil {
+		predicates = append(predicates, correctnessreport.VotedLTE(i.VotedLTE))
 	}
 
 	if i.HasSigners != nil {

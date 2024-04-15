@@ -38,6 +38,10 @@ func init() {
 	correctnessreportDescTopic := correctnessreportFields[4].Descriptor()
 	// correctnessreport.TopicValidator is a validator for the "topic" field. It is called by the builders before save.
 	correctnessreport.TopicValidator = correctnessreportDescTopic.Validators[0].(func([]byte) error)
+	// correctnessreportDescConsensus is the schema descriptor for consensus field.
+	correctnessreportDescConsensus := correctnessreportFields[6].Descriptor()
+	// correctnessreport.DefaultConsensus holds the default value on creation for the consensus field.
+	correctnessreport.DefaultConsensus = correctnessreportDescConsensus.Default.(bool)
 	eventlogFields := schema.EventLog{}.Fields()
 	_ = eventlogFields
 	// eventlogDescSignature is the schema descriptor for signature field.

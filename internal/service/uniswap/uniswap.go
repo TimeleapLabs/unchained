@@ -142,10 +142,7 @@ func (u *Service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := u.pos.GetVotingPowerOfPublicKey(
-		signer.PublicKey,
-		big.NewInt(int64(*blockNumber)),
-	)
+	votingPower, err := u.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
 	if err != nil {
 		log.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -192,6 +189,7 @@ func (u *Service) RecordSignature(
 		)
 		return true
 	})
+
 	reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
 		reportLog = reportLog.With(
 			fmt.Sprintf("%x", hash.Bytes())[:8],

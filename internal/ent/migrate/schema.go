@@ -48,6 +48,8 @@ var (
 		{Name: "hash", Type: field.TypeBytes, Size: 64},
 		{Name: "topic", Type: field.TypeBytes, Size: 64},
 		{Name: "correct", Type: field.TypeBool},
+		{Name: "consensus", Type: field.TypeBool, Default: false},
+		{Name: "voted", Type: field.TypeUint, SchemaType: map[string]string{"postgres": "numeric(78, 0)", "sqlite3": "numeric(78, 0)"}},
 	}
 	// CorrectnessReportsTable holds the schema information for the "correctness_reports" table.
 	CorrectnessReportsTable = &schema.Table{

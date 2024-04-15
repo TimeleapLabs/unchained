@@ -200,6 +200,8 @@ type CorrectnessReport implements Node {
   hash: Bytes!
   topic: Bytes!
   correct: Boolean!
+  consensus: Boolean!
+  voted: Uint!
   signers: [Signer!]!
 }
 """
@@ -297,6 +299,22 @@ input CorrectnessReportWhereInput {
   """
   correct: Boolean
   correctNEQ: Boolean
+  """
+  consensus field predicates
+  """
+  consensus: Boolean
+  consensusNEQ: Boolean
+  """
+  voted field predicates
+  """
+  voted: Uint
+  votedNEQ: Uint
+  votedIn: [Uint!]
+  votedNotIn: [Uint!]
+  votedGT: Uint
+  votedGTE: Uint
+  votedLT: Uint
+  votedLTE: Uint
   """
   signers edge predicates
   """

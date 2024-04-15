@@ -31,6 +31,8 @@ type CorrectnessReportResolver interface {
 	Signature(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error)
 	Hash(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error)
 	Topic(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error)
+
+	Voted(ctx context.Context, obj *ent.CorrectnessReport) (uint64, error)
 }
 type EventLogResolver interface {
 	Signature(ctx context.Context, obj *ent.EventLog) (types.Bytes, error)
@@ -72,6 +74,15 @@ type AssetPriceWhereInputResolver interface {
 	VotedLte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 }
 type CorrectnessReportWhereInputResolver interface {
+	Voted(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error
+	VotedNeq(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error
+	VotedIn(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data []uint64) error
+	VotedNotIn(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data []uint64) error
+	VotedGt(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error
+	VotedGte(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error
+	VotedLt(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error
+	VotedLte(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *uint64) error
+
 	Topic(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
 	Hash(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
 }
@@ -1440,6 +1451,94 @@ func (ec *executionContext) fieldContext_CorrectnessReport_correct(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _CorrectnessReport_consensus(ctx context.Context, field graphql.CollectedField, obj *ent.CorrectnessReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CorrectnessReport_consensus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Consensus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CorrectnessReport_consensus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CorrectnessReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CorrectnessReport_voted(ctx context.Context, field graphql.CollectedField, obj *ent.CorrectnessReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CorrectnessReport_voted(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CorrectnessReport().Voted(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uint64)
+	fc.Result = res
+	return ec.marshalNUint2uint64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CorrectnessReport_voted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CorrectnessReport",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Uint does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CorrectnessReport_signers(ctx context.Context, field graphql.CollectedField, obj *ent.CorrectnessReport) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CorrectnessReport_signers(ctx, field)
 	if err != nil {
@@ -1699,6 +1798,10 @@ func (ec *executionContext) fieldContext_CorrectnessReportEdge_node(ctx context.
 				return ec.fieldContext_CorrectnessReport_topic(ctx, field)
 			case "correct":
 				return ec.fieldContext_CorrectnessReport_correct(ctx, field)
+			case "consensus":
+				return ec.fieldContext_CorrectnessReport_consensus(ctx, field)
+			case "voted":
+				return ec.fieldContext_CorrectnessReport_voted(ctx, field)
 			case "signers":
 				return ec.fieldContext_CorrectnessReport_signers(ctx, field)
 			}
@@ -3711,6 +3814,10 @@ func (ec *executionContext) fieldContext_Signer_correctnessreport(ctx context.Co
 				return ec.fieldContext_CorrectnessReport_topic(ctx, field)
 			case "correct":
 				return ec.fieldContext_CorrectnessReport_correct(ctx, field)
+			case "consensus":
+				return ec.fieldContext_CorrectnessReport_consensus(ctx, field)
+			case "voted":
+				return ec.fieldContext_CorrectnessReport_voted(ctx, field)
 			case "signers":
 				return ec.fieldContext_CorrectnessReport_signers(ctx, field)
 			}
@@ -4767,7 +4874,7 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "timestamp", "timestampNEQ", "timestampIn", "timestampNotIn", "timestampGT", "timestampGTE", "timestampLT", "timestampLTE", "correct", "correctNEQ", "hasSigners", "hasSignersWith", "topic", "hash"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "timestamp", "timestampNEQ", "timestampIn", "timestampNotIn", "timestampGT", "timestampGTE", "timestampLT", "timestampLTE", "correct", "correctNEQ", "consensus", "consensusNEQ", "voted", "votedNEQ", "votedIn", "votedNotIn", "votedGT", "votedGTE", "votedLT", "votedLTE", "hasSigners", "hasSignersWith", "topic", "hash"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4977,6 +5084,92 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 				return it, err
 			}
 			it.CorrectNEQ = data
+		case "consensus":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("consensus"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Consensus = data
+		case "consensusNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("consensusNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConsensusNEQ = data
+		case "voted":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("voted"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().Voted(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedNEQ"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().VotedNeq(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedIn"))
+			data, err := ec.unmarshalOUint2ᚕuint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().VotedIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedNotIn"))
+			data, err := ec.unmarshalOUint2ᚕuint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().VotedNotIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedGT"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().VotedGt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedGTE"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().VotedGte(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedLT"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().VotedLt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedLTE"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CorrectnessReportWhereInput().VotedLte(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "hasSigners":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSigners"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -6593,6 +6786,47 @@ func (ec *executionContext) _CorrectnessReport(ctx context.Context, sel ast.Sele
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "consensus":
+			out.Values[i] = ec._CorrectnessReport_consensus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "voted":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CorrectnessReport_voted(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "signers":
 			field := field
 

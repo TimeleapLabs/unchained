@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 	}
 
 	CorrectnessReport struct {
+		Consensus    func(childComplexity int) int
 		Correct      func(childComplexity int) int
 		Hash         func(childComplexity int) int
 		ID           func(childComplexity int) int
@@ -84,6 +85,7 @@ type ComplexityRoot struct {
 		SignersCount func(childComplexity int) int
 		Timestamp    func(childComplexity int) int
 		Topic        func(childComplexity int) int
+		Voted        func(childComplexity int) int
 	}
 
 	CorrectnessReportConnection struct {
@@ -300,6 +302,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AssetPriceEdge.Node(childComplexity), true
 
+	case "CorrectnessReport.consensus":
+		if e.complexity.CorrectnessReport.Consensus == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Consensus(childComplexity), true
+
 	case "CorrectnessReport.correct":
 		if e.complexity.CorrectnessReport.Correct == nil {
 			break
@@ -355,6 +364,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CorrectnessReport.Topic(childComplexity), true
+
+	case "CorrectnessReport.voted":
+		if e.complexity.CorrectnessReport.Voted == nil {
+			break
+		}
+
+		return e.complexity.CorrectnessReport.Voted(childComplexity), true
 
 	case "CorrectnessReportConnection.edges":
 		if e.complexity.CorrectnessReportConnection.Edges == nil {
@@ -1046,6 +1062,8 @@ type CorrectnessReport implements Node {
   hash: Bytes!
   topic: Bytes!
   correct: Boolean!
+  consensus: Boolean!
+  voted: Uint!
   signers: [Signer!]!
 }
 """
@@ -1143,6 +1161,22 @@ input CorrectnessReportWhereInput {
   """
   correct: Boolean
   correctNEQ: Boolean
+  """
+  consensus field predicates
+  """
+  consensus: Boolean
+  consensusNEQ: Boolean
+  """
+  voted field predicates
+  """
+  voted: Uint
+  votedNEQ: Uint
+  votedIn: [Uint!]
+  votedNotIn: [Uint!]
+  votedGT: Uint
+  votedGTE: Uint
+  votedLT: Uint
+  votedLTE: Uint
   """
   signers edge predicates
   """

@@ -2,10 +2,18 @@ package correctness
 
 import (
 	"context"
+	"fmt"
+	"math/big"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/pos"
+	"github.com/KenshiTech/unchained/internal/service/evmlog"
+	"github.com/puzpuzpuz/xsync/v3"
 
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
@@ -14,6 +22,7 @@ import (
 	"github.com/KenshiTech/unchained/internal/db"
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
 	"github.com/KenshiTech/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
@@ -29,13 +38,18 @@ type Conf struct {
 }
 
 type SaveSignatureArgs struct {
-	Info datasets.Correctness
-	Hash bls12381.G1Affine
+	Info      datasets.Correctness
+	Hash      bls12381.G1Affine
+	Consensus bool
+	Voted     *big.Int
 }
 type Service struct {
 	ethRPC *ethereum.Repository
+	pos    *pos.Repository
 
-	signatureCache          *lru.Cache[bls12381.G1Affine, []datasets.Signature]
+	signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
+	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]]
+
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 	signatureMutex          *sync.Mutex
 	supportedTopics         map[[64]byte]bool
@@ -66,6 +80,8 @@ func (s *Service) IsNewSigner(signature datasets.Signature, records []*ent.Corre
 	return true
 }
 
+// TODO: How should we handle older records?
+// Possible Solution: Add a not after timestamp to the document.
 func (s *Service) RecordSignature(
 	signature bls12381.G1Affine,
 	signer datasets.Signer,
@@ -97,13 +113,56 @@ func (s *Service) RecordSignature(
 		Signer:    signer,
 	}
 
+	key := Key{
+		Hash:    fmt.Sprintf("%x", info.Hash),
+		Topic:   fmt.Sprintf("%x", info.Topic),
+		Correct: info.Correct,
+	}
+
+	if !s.consensus.Contains(key) {
+		s.consensus.Add(key, *xsync.NewMapOf[bls12381.G1Affine, big.Int]())
+	}
+
+	reportedValues, _ := s.consensus.Get(key)
+	isMajority := true
+	voted, ok := reportedValues.Load(hash)
+	if !ok {
+		voted = *big.NewInt(0)
+	}
+
+	votingPower, err := s.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+	if err != nil {
+		log.Logger.
+			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Error", err).
+			Error("Failed to get voting power")
+		return
+	}
+
+	totalVoted := new(big.Int).Add(votingPower, &voted)
+
+	reportedValues.Range(func(_ bls12381.G1Affine, value big.Int) bool {
+		if value.Cmp(totalVoted) == 1 {
+			isMajority = false
+		}
+		return isMajority
+	})
+
+	reportedValues.Store(hash, *totalVoted)
 	signatures = append(signatures, packed)
 	s.signatureCache.Add(hash, signatures)
 
+	saveArgs := SaveSignatureArgs{
+		Info:      info,
+		Hash:      hash,
+		Consensus: isMajority,
+		Voted:     totalVoted,
+	}
+
 	if debounce {
-		s.DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
+		s.DebouncedSaveSignatures(hash, saveArgs)
 	} else {
-		s.SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+		s.SaveSignatures(saveArgs)
 	}
 }
 
@@ -214,6 +273,8 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 		SetHash(args.Info.Hash[:]).
 		SetTimestamp(args.Info.Timestamp).
 		SetTopic(args.Info.Topic[:]).
+		SetConsensus(args.Consensus).
+		SetVoted(&helpers.BigInt{Int: *args.Voted}).
 		AddSignerIDs(signerIDs...).
 		OnConflictColumns("topic", "hash").
 		UpdateNewValues().
@@ -239,14 +300,23 @@ func (s *Service) init() {
 	}
 }
 
-func New(ethRPC *ethereum.Repository) *Service {
+func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
 	c := Service{
 		ethRPC: ethRPC,
+		pos:    pos,
 	}
 	c.init()
 
 	for _, conf := range config.App.Plugins.Correctness {
 		c.supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
+	}
+
+	var err error
+	c.consensus, err = lru.New[Key, xsync.MapOf[bls12381.G1Affine, big.Int]](evmlog.LruSize)
+	if err != nil {
+		log.Logger.
+			Error("Failed to create correctness consensus cache.")
+		os.Exit(1)
 	}
 
 	return &c

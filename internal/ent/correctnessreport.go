@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 )
 
 // CorrectnessReport is the model entity for the CorrectnessReport schema.
@@ -28,6 +29,10 @@ type CorrectnessReport struct {
 	Topic []byte `json:"topic,omitempty"`
 	// Correct holds the value of the "correct" field.
 	Correct bool `json:"correct,omitempty"`
+	// Consensus holds the value of the "consensus" field.
+	Consensus bool `json:"consensus,omitempty"`
+	// Voted holds the value of the "voted" field.
+	Voted *helpers.BigInt `json:"voted,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CorrectnessReportQuery when eager-loading is set.
 	Edges        CorrectnessReportEdges `json:"edges"`
@@ -63,7 +68,9 @@ func (*CorrectnessReport) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case correctnessreport.FieldSignature, correctnessreport.FieldHash, correctnessreport.FieldTopic:
 			values[i] = new([]byte)
-		case correctnessreport.FieldCorrect:
+		case correctnessreport.FieldVoted:
+			values[i] = new(helpers.BigInt)
+		case correctnessreport.FieldCorrect, correctnessreport.FieldConsensus:
 			values[i] = new(sql.NullBool)
 		case correctnessreport.FieldID, correctnessreport.FieldSignersCount, correctnessreport.FieldTimestamp:
 			values[i] = new(sql.NullInt64)
@@ -124,6 +131,18 @@ func (cr *CorrectnessReport) assignValues(columns []string, values []any) error 
 			} else if value.Valid {
 				cr.Correct = value.Bool
 			}
+		case correctnessreport.FieldConsensus:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field consensus", values[i])
+			} else if value.Valid {
+				cr.Consensus = value.Bool
+			}
+		case correctnessreport.FieldVoted:
+			if value, ok := values[i].(*helpers.BigInt); !ok {
+				return fmt.Errorf("unexpected type %T for field voted", values[i])
+			} else if value != nil {
+				cr.Voted = value
+			}
 		default:
 			cr.selectValues.Set(columns[i], values[i])
 		}
@@ -182,6 +201,12 @@ func (cr *CorrectnessReport) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("correct=")
 	builder.WriteString(fmt.Sprintf("%v", cr.Correct))
+	builder.WriteString(", ")
+	builder.WriteString("consensus=")
+	builder.WriteString(fmt.Sprintf("%v", cr.Consensus))
+	builder.WriteString(", ")
+	builder.WriteString("voted=")
+	builder.WriteString(fmt.Sprintf("%v", cr.Voted))
 	builder.WriteByte(')')
 	return builder.String()
 }

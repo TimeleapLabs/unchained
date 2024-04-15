@@ -24,6 +24,10 @@ const (
 	FieldTopic = "topic"
 	// FieldCorrect holds the string denoting the correct field in the database.
 	FieldCorrect = "correct"
+	// FieldConsensus holds the string denoting the consensus field in the database.
+	FieldConsensus = "consensus"
+	// FieldVoted holds the string denoting the voted field in the database.
+	FieldVoted = "voted"
 	// EdgeSigners holds the string denoting the signers edge name in mutations.
 	EdgeSigners = "signers"
 	// Table holds the table name of the correctnessreport in the database.
@@ -44,6 +48,8 @@ var Columns = []string{
 	FieldHash,
 	FieldTopic,
 	FieldCorrect,
+	FieldConsensus,
+	FieldVoted,
 }
 
 var (
@@ -69,6 +75,8 @@ var (
 	HashValidator func([]byte) error
 	// TopicValidator is a validator for the "topic" field. It is called by the builders before save.
 	TopicValidator func([]byte) error
+	// DefaultConsensus holds the default value on creation for the "consensus" field.
+	DefaultConsensus bool
 )
 
 // OrderOption defines the ordering options for the CorrectnessReport queries.
@@ -92,6 +100,16 @@ func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
 // ByCorrect orders the results by the correct field.
 func ByCorrect(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCorrect, opts...).ToFunc()
+}
+
+// ByConsensus orders the results by the consensus field.
+func ByConsensus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConsensus, opts...).ToFunc()
+}
+
+// ByVoted orders the results by the voted field.
+func ByVoted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVoted, opts...).ToFunc()
 }
 
 // BySignersCount orders the results by signers count.
