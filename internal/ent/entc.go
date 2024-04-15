@@ -16,7 +16,7 @@ func main() {
 		// the Ent schema in a file named ent.graphql.
 		entgql.WithWhereInputs(true),
 		entgql.WithSchemaGenerator(),
-		entgql.WithSchemaPath("gql/unchained.graphql"),
+		entgql.WithSchemaPath("transport/server/gql/unchained.graphql"),
 		entgql.WithConfigPath("gqlgen.yml"),
 	)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent/eventlog"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/predicate"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
 )
@@ -159,6 +160,26 @@ func (elu *EventLogUpdate) AppendArgs(dla []datasets.EventLogArg) *EventLogUpdat
 	return elu
 }
 
+// SetConsensus sets the "consensus" field.
+func (elu *EventLogUpdate) SetConsensus(b bool) *EventLogUpdate {
+	elu.mutation.SetConsensus(b)
+	return elu
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (elu *EventLogUpdate) SetNillableConsensus(b *bool) *EventLogUpdate {
+	if b != nil {
+		elu.SetConsensus(*b)
+	}
+	return elu
+}
+
+// SetVoted sets the "voted" field.
+func (elu *EventLogUpdate) SetVoted(hi *helpers.BigInt) *EventLogUpdate {
+	elu.mutation.SetVoted(hi)
+	return elu
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (elu *EventLogUpdate) AddSignerIDs(ids ...int) *EventLogUpdate {
 	elu.mutation.AddSignerIDs(ids...)
@@ -294,6 +315,12 @@ func (elu *EventLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, eventlog.FieldArgs, value)
 		})
+	}
+	if value, ok := elu.mutation.Consensus(); ok {
+		_spec.SetField(eventlog.FieldConsensus, field.TypeBool, value)
+	}
+	if value, ok := elu.mutation.Voted(); ok {
+		_spec.SetField(eventlog.FieldVoted, field.TypeUint, value)
 	}
 	if elu.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -489,6 +516,26 @@ func (eluo *EventLogUpdateOne) AppendArgs(dla []datasets.EventLogArg) *EventLogU
 	return eluo
 }
 
+// SetConsensus sets the "consensus" field.
+func (eluo *EventLogUpdateOne) SetConsensus(b bool) *EventLogUpdateOne {
+	eluo.mutation.SetConsensus(b)
+	return eluo
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (eluo *EventLogUpdateOne) SetNillableConsensus(b *bool) *EventLogUpdateOne {
+	if b != nil {
+		eluo.SetConsensus(*b)
+	}
+	return eluo
+}
+
+// SetVoted sets the "voted" field.
+func (eluo *EventLogUpdateOne) SetVoted(hi *helpers.BigInt) *EventLogUpdateOne {
+	eluo.mutation.SetVoted(hi)
+	return eluo
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (eluo *EventLogUpdateOne) AddSignerIDs(ids ...int) *EventLogUpdateOne {
 	eluo.mutation.AddSignerIDs(ids...)
@@ -654,6 +701,12 @@ func (eluo *EventLogUpdateOne) sqlSave(ctx context.Context) (_node *EventLog, er
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, eventlog.FieldArgs, value)
 		})
+	}
+	if value, ok := eluo.mutation.Consensus(); ok {
+		_spec.SetField(eventlog.FieldConsensus, field.TypeBool, value)
+	}
+	if value, ok := eluo.mutation.Voted(); ok {
+		_spec.SetField(eventlog.FieldVoted, field.TypeUint, value)
 	}
 	if eluo.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{

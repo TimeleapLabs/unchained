@@ -53,6 +53,19 @@ func (s *Service) GetBlockNumber(network string) (*uint64, error) {
 	return &blockNumber, nil
 }
 
+func (s *Service) IsNewSigner(signature datasets.Signature, records []*ent.CorrectnessReport) bool {
+	// TODO: This isn't efficient, we should use a map
+	for _, record := range records {
+		for _, signer := range record.Edges.Signers {
+			if signature.Signer.PublicKey == [96]byte(signer.Key) {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 func (s *Service) RecordSignature(
 	signature bls12381.G1Affine,
 	signer datasets.Signer,
@@ -82,7 +95,6 @@ func (s *Service) RecordSignature(
 	packed := datasets.Signature{
 		Signature: signature,
 		Signer:    signer,
-		Processed: false,
 	}
 
 	signatures = append(signatures, packed)
@@ -114,30 +126,26 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 		keys = append(keys, signature.Signer.PublicKey[:])
 	}
 
-	currentRecord, err := dbClient.CorrectnessReport.
+	currentRecords, err := dbClient.CorrectnessReport.
 		Query().
 		Where(correctnessreport.And(
 			correctnessreport.Hash(args.Info.Hash[:]),
 			correctnessreport.Topic(args.Info.Topic[:]),
 			correctnessreport.Timestamp(args.Info.Timestamp),
-			correctnessreport.Correct(args.Info.Correct),
 		)).
-		Only(ctx)
+		All(ctx)
 
 	if err != nil && !ent.IsNotFound(err) {
 		panic(err)
 	}
 
 	// Select the new signers and signatures
+
 	for i := range signatures {
 		signature := signatures[i]
 
-		if currentRecord != nil {
-			for _, signer := range currentRecord.Edges.Signers {
-				if signature.Signer.PublicKey == [96]byte(signer.Key) {
-					continue
-				}
-			}
+		if !s.IsNewSigner(signature, currentRecords) {
+			continue
 		}
 
 		newSigners = append(newSigners, signature.Signer)
@@ -177,14 +185,17 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 
 	var aggregate bls12381.G1Affine
 
-	if currentRecord != nil {
-		currentSignature, err := bls.RecoverSignature([48]byte(currentRecord.Signature))
+	for _, record := range currentRecords {
+		if record.Correct == args.Info.Correct {
+			currentSignature, err := bls.RecoverSignature([48]byte(record.Signature))
 
-		if err != nil {
-			panic(err)
+			if err != nil {
+				panic(err)
+			}
+
+			newSignatures = append(newSignatures, currentSignature)
+			break
 		}
-
-		newSignatures = append(newSignatures, currentSignature)
 	}
 
 	aggregate, err = bls.AggregateSignatures(newSignatures)

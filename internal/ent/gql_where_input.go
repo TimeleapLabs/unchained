@@ -114,6 +114,20 @@ type AssetPriceWhereInput struct {
 	PairEqualFold    *string  `json:"pairEqualFold,omitempty"`
 	PairContainsFold *string  `json:"pairContainsFold,omitempty"`
 
+	// "consensus" field predicates.
+	Consensus    *bool `json:"consensus,omitempty"`
+	ConsensusNEQ *bool `json:"consensusNEQ,omitempty"`
+
+	// "voted" field predicates.
+	Voted      *helpers.BigInt   `json:"voted,omitempty"`
+	VotedNEQ   *helpers.BigInt   `json:"votedNEQ,omitempty"`
+	VotedIn    []*helpers.BigInt `json:"votedIn,omitempty"`
+	VotedNotIn []*helpers.BigInt `json:"votedNotIn,omitempty"`
+	VotedGT    *helpers.BigInt   `json:"votedGT,omitempty"`
+	VotedGTE   *helpers.BigInt   `json:"votedGTE,omitempty"`
+	VotedLT    *helpers.BigInt   `json:"votedLT,omitempty"`
+	VotedLTE   *helpers.BigInt   `json:"votedLTE,omitempty"`
+
 	// "signers" edge predicates.
 	HasSigners     *bool               `json:"hasSigners,omitempty"`
 	HasSignersWith []*SignerWhereInput `json:"hasSignersWith,omitempty"`
@@ -426,6 +440,36 @@ func (i *AssetPriceWhereInput) P() (predicate.AssetPrice, error) {
 	}
 	if i.PairContainsFold != nil {
 		predicates = append(predicates, assetprice.PairContainsFold(*i.PairContainsFold))
+	}
+	if i.Consensus != nil {
+		predicates = append(predicates, assetprice.ConsensusEQ(*i.Consensus))
+	}
+	if i.ConsensusNEQ != nil {
+		predicates = append(predicates, assetprice.ConsensusNEQ(*i.ConsensusNEQ))
+	}
+	if i.Voted != nil {
+		predicates = append(predicates, assetprice.VotedEQ(i.Voted))
+	}
+	if i.VotedNEQ != nil {
+		predicates = append(predicates, assetprice.VotedNEQ(i.VotedNEQ))
+	}
+	if len(i.VotedIn) > 0 {
+		predicates = append(predicates, assetprice.VotedIn(i.VotedIn...))
+	}
+	if len(i.VotedNotIn) > 0 {
+		predicates = append(predicates, assetprice.VotedNotIn(i.VotedNotIn...))
+	}
+	if i.VotedGT != nil {
+		predicates = append(predicates, assetprice.VotedGT(i.VotedGT))
+	}
+	if i.VotedGTE != nil {
+		predicates = append(predicates, assetprice.VotedGTE(i.VotedGTE))
+	}
+	if i.VotedLT != nil {
+		predicates = append(predicates, assetprice.VotedLT(i.VotedLT))
+	}
+	if i.VotedLTE != nil {
+		predicates = append(predicates, assetprice.VotedLTE(i.VotedLTE))
 	}
 
 	if i.HasSigners != nil {
@@ -772,6 +816,20 @@ type EventLogWhereInput struct {
 	EventEqualFold    *string  `json:"eventEqualFold,omitempty"`
 	EventContainsFold *string  `json:"eventContainsFold,omitempty"`
 
+	// "consensus" field predicates.
+	Consensus    *bool `json:"consensus,omitempty"`
+	ConsensusNEQ *bool `json:"consensusNEQ,omitempty"`
+
+	// "voted" field predicates.
+	Voted      *helpers.BigInt   `json:"voted,omitempty"`
+	VotedNEQ   *helpers.BigInt   `json:"votedNEQ,omitempty"`
+	VotedIn    []*helpers.BigInt `json:"votedIn,omitempty"`
+	VotedNotIn []*helpers.BigInt `json:"votedNotIn,omitempty"`
+	VotedGT    *helpers.BigInt   `json:"votedGT,omitempty"`
+	VotedGTE   *helpers.BigInt   `json:"votedGTE,omitempty"`
+	VotedLT    *helpers.BigInt   `json:"votedLT,omitempty"`
+	VotedLTE   *helpers.BigInt   `json:"votedLTE,omitempty"`
+
 	// "signers" edge predicates.
 	HasSigners     *bool               `json:"hasSigners,omitempty"`
 	HasSignersWith []*SignerWhereInput `json:"hasSignersWith,omitempty"`
@@ -1060,6 +1118,36 @@ func (i *EventLogWhereInput) P() (predicate.EventLog, error) {
 	}
 	if i.EventContainsFold != nil {
 		predicates = append(predicates, eventlog.EventContainsFold(*i.EventContainsFold))
+	}
+	if i.Consensus != nil {
+		predicates = append(predicates, eventlog.ConsensusEQ(*i.Consensus))
+	}
+	if i.ConsensusNEQ != nil {
+		predicates = append(predicates, eventlog.ConsensusNEQ(*i.ConsensusNEQ))
+	}
+	if i.Voted != nil {
+		predicates = append(predicates, eventlog.VotedEQ(i.Voted))
+	}
+	if i.VotedNEQ != nil {
+		predicates = append(predicates, eventlog.VotedNEQ(i.VotedNEQ))
+	}
+	if len(i.VotedIn) > 0 {
+		predicates = append(predicates, eventlog.VotedIn(i.VotedIn...))
+	}
+	if len(i.VotedNotIn) > 0 {
+		predicates = append(predicates, eventlog.VotedNotIn(i.VotedNotIn...))
+	}
+	if i.VotedGT != nil {
+		predicates = append(predicates, eventlog.VotedGT(i.VotedGT))
+	}
+	if i.VotedGTE != nil {
+		predicates = append(predicates, eventlog.VotedGTE(i.VotedGTE))
+	}
+	if i.VotedLT != nil {
+		predicates = append(predicates, eventlog.VotedLT(i.VotedLT))
+	}
+	if i.VotedLTE != nil {
+		predicates = append(predicates, eventlog.VotedLTE(i.VotedLTE))
 	}
 
 	if i.HasSigners != nil {

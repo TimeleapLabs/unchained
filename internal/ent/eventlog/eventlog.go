@@ -30,6 +30,10 @@ const (
 	FieldTransaction = "transaction"
 	// FieldArgs holds the string denoting the args field in the database.
 	FieldArgs = "args"
+	// FieldConsensus holds the string denoting the consensus field in the database.
+	FieldConsensus = "consensus"
+	// FieldVoted holds the string denoting the voted field in the database.
+	FieldVoted = "voted"
 	// EdgeSigners holds the string denoting the signers edge name in mutations.
 	EdgeSigners = "signers"
 	// Table holds the table name of the eventlog in the database.
@@ -53,6 +57,8 @@ var Columns = []string{
 	FieldEvent,
 	FieldTransaction,
 	FieldArgs,
+	FieldConsensus,
+	FieldVoted,
 }
 
 var (
@@ -76,6 +82,8 @@ var (
 	SignatureValidator func([]byte) error
 	// TransactionValidator is a validator for the "transaction" field. It is called by the builders before save.
 	TransactionValidator func([]byte) error
+	// DefaultConsensus holds the default value on creation for the "consensus" field.
+	DefaultConsensus bool
 )
 
 // OrderOption defines the ordering options for the EventLog queries.
@@ -114,6 +122,16 @@ func ByIndex(opts ...sql.OrderTermOption) OrderOption {
 // ByEvent orders the results by the event field.
 func ByEvent(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEvent, opts...).ToFunc()
+}
+
+// ByConsensus orders the results by the consensus field.
+func ByConsensus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConsensus, opts...).ToFunc()
+}
+
+// ByVoted orders the results by the voted field.
+func ByVoted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVoted, opts...).ToFunc()
 }
 
 // BySignersCount orders the results by signers count.

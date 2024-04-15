@@ -42,6 +42,7 @@ type ResolverRoot interface {
 	Signer() SignerResolver
 	AssetPriceWhereInput() AssetPriceWhereInputResolver
 	CorrectnessReportWhereInput() CorrectnessReportWhereInputResolver
+	EventLogWhereInput() EventLogWhereInputResolver
 	SignerWhereInput() SignerWhereInputResolver
 }
 
@@ -53,12 +54,14 @@ type ComplexityRoot struct {
 		Asset        func(childComplexity int) int
 		Block        func(childComplexity int) int
 		Chain        func(childComplexity int) int
+		Consensus    func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Pair         func(childComplexity int) int
 		Price        func(childComplexity int) int
 		Signature    func(childComplexity int) int
 		Signers      func(childComplexity int) int
 		SignersCount func(childComplexity int) int
+		Voted        func(childComplexity int) int
 	}
 
 	AssetPriceConnection struct {
@@ -99,6 +102,7 @@ type ComplexityRoot struct {
 		Args         func(childComplexity int) int
 		Block        func(childComplexity int) int
 		Chain        func(childComplexity int) int
+		Consensus    func(childComplexity int) int
 		Event        func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Index        func(childComplexity int) int
@@ -106,6 +110,7 @@ type ComplexityRoot struct {
 		Signers      func(childComplexity int) int
 		SignersCount func(childComplexity int) int
 		Transaction  func(childComplexity int) int
+		Voted        func(childComplexity int) int
 	}
 
 	EventLogArg struct {
@@ -204,6 +209,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AssetPrice.Chain(childComplexity), true
 
+	case "AssetPrice.consensus":
+		if e.complexity.AssetPrice.Consensus == nil {
+			break
+		}
+
+		return e.complexity.AssetPrice.Consensus(childComplexity), true
+
 	case "AssetPrice.id":
 		if e.complexity.AssetPrice.ID == nil {
 			break
@@ -245,6 +257,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AssetPrice.SignersCount(childComplexity), true
+
+	case "AssetPrice.voted":
+		if e.complexity.AssetPrice.Voted == nil {
+			break
+		}
+
+		return e.complexity.AssetPrice.Voted(childComplexity), true
 
 	case "AssetPriceConnection.edges":
 		if e.complexity.AssetPriceConnection.Edges == nil {
@@ -400,6 +419,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.EventLog.Chain(childComplexity), true
 
+	case "EventLog.consensus":
+		if e.complexity.EventLog.Consensus == nil {
+			break
+		}
+
+		return e.complexity.EventLog.Consensus(childComplexity), true
+
 	case "EventLog.event":
 		if e.complexity.EventLog.Event == nil {
 			break
@@ -448,6 +474,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.EventLog.Transaction(childComplexity), true
+
+	case "EventLog.voted":
+		if e.complexity.EventLog.Voted == nil {
+			break
+		}
+
+		return e.complexity.EventLog.Voted(childComplexity), true
 
 	case "EventLogArg.name":
 		if e.complexity.EventLogArg.Name == nil {
@@ -822,6 +855,8 @@ type AssetPrice implements Node {
   asset: String
   chain: String
   pair: String
+  consensus: Boolean!
+  voted: Uint!
   signers: [Signer!]!
 }
 """
@@ -982,6 +1017,22 @@ input AssetPriceWhereInput {
   pairEqualFold: String
   pairContainsFold: String
   """
+  consensus field predicates
+  """
+  consensus: Boolean
+  consensusNEQ: Boolean
+  """
+  voted field predicates
+  """
+  voted: Uint
+  votedNEQ: Uint
+  votedIn: [Uint!]
+  votedNotIn: [Uint!]
+  votedGT: Uint
+  votedGTE: Uint
+  votedLT: Uint
+  votedLTE: Uint
+  """
   signers edge predicates
   """
   hasSigners: Boolean
@@ -1114,6 +1165,8 @@ type EventLog implements Node {
   event: String!
   transaction: Bytes!
   args: [EventLogArg!]!
+  consensus: Boolean!
+  voted: Uint!
   signers: [Signer!]!
 }
 """
@@ -1265,6 +1318,22 @@ input EventLogWhereInput {
   eventHasSuffix: String
   eventEqualFold: String
   eventContainsFold: String
+  """
+  consensus field predicates
+  """
+  consensus: Boolean
+  consensusNEQ: Boolean
+  """
+  voted field predicates
+  """
+  voted: Uint
+  votedNEQ: Uint
+  votedIn: [Uint!]
+  votedNotIn: [Uint!]
+  votedGT: Uint
+  votedGTE: Uint
+  votedLT: Uint
+  votedLTE: Uint
   """
   signers edge predicates
   """

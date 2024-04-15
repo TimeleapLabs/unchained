@@ -26,6 +26,10 @@ const (
 	FieldChain = "chain"
 	// FieldPair holds the string denoting the pair field in the database.
 	FieldPair = "pair"
+	// FieldConsensus holds the string denoting the consensus field in the database.
+	FieldConsensus = "consensus"
+	// FieldVoted holds the string denoting the voted field in the database.
+	FieldVoted = "voted"
 	// EdgeSigners holds the string denoting the signers edge name in mutations.
 	EdgeSigners = "signers"
 	// Table holds the table name of the assetprice in the database.
@@ -47,6 +51,8 @@ var Columns = []string{
 	FieldAsset,
 	FieldChain,
 	FieldPair,
+	FieldConsensus,
+	FieldVoted,
 }
 
 var (
@@ -68,6 +74,8 @@ func ValidColumn(column string) bool {
 var (
 	// SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
 	SignatureValidator func([]byte) error
+	// DefaultConsensus holds the default value on creation for the "consensus" field.
+	DefaultConsensus bool
 )
 
 // OrderOption defines the ordering options for the AssetPrice queries.
@@ -106,6 +114,16 @@ func ByChain(opts ...sql.OrderTermOption) OrderOption {
 // ByPair orders the results by the pair field.
 func ByPair(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPair, opts...).ToFunc()
+}
+
+// ByConsensus orders the results by the consensus field.
+func ByConsensus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConsensus, opts...).ToFunc()
+}
+
+// ByVoted orders the results by the voted field.
+func ByVoted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVoted, opts...).ToFunc()
 }
 
 // BySignersCount orders the results by signers count.

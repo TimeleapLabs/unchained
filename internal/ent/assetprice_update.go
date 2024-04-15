@@ -149,6 +149,26 @@ func (apu *AssetPriceUpdate) ClearPair() *AssetPriceUpdate {
 	return apu
 }
 
+// SetConsensus sets the "consensus" field.
+func (apu *AssetPriceUpdate) SetConsensus(b bool) *AssetPriceUpdate {
+	apu.mutation.SetConsensus(b)
+	return apu
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (apu *AssetPriceUpdate) SetNillableConsensus(b *bool) *AssetPriceUpdate {
+	if b != nil {
+		apu.SetConsensus(*b)
+	}
+	return apu
+}
+
+// SetVoted sets the "voted" field.
+func (apu *AssetPriceUpdate) SetVoted(hi *helpers.BigInt) *AssetPriceUpdate {
+	apu.mutation.SetVoted(hi)
+	return apu
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (apu *AssetPriceUpdate) AddSignerIDs(ids ...int) *AssetPriceUpdate {
 	apu.mutation.AddSignerIDs(ids...)
@@ -277,6 +297,12 @@ func (apu *AssetPriceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if apu.mutation.PairCleared() {
 		_spec.ClearField(assetprice.FieldPair, field.TypeString)
+	}
+	if value, ok := apu.mutation.Consensus(); ok {
+		_spec.SetField(assetprice.FieldConsensus, field.TypeBool, value)
+	}
+	if value, ok := apu.mutation.Voted(); ok {
+		_spec.SetField(assetprice.FieldVoted, field.TypeUint, value)
 	}
 	if apu.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -463,6 +489,26 @@ func (apuo *AssetPriceUpdateOne) ClearPair() *AssetPriceUpdateOne {
 	return apuo
 }
 
+// SetConsensus sets the "consensus" field.
+func (apuo *AssetPriceUpdateOne) SetConsensus(b bool) *AssetPriceUpdateOne {
+	apuo.mutation.SetConsensus(b)
+	return apuo
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (apuo *AssetPriceUpdateOne) SetNillableConsensus(b *bool) *AssetPriceUpdateOne {
+	if b != nil {
+		apuo.SetConsensus(*b)
+	}
+	return apuo
+}
+
+// SetVoted sets the "voted" field.
+func (apuo *AssetPriceUpdateOne) SetVoted(hi *helpers.BigInt) *AssetPriceUpdateOne {
+	apuo.mutation.SetVoted(hi)
+	return apuo
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (apuo *AssetPriceUpdateOne) AddSignerIDs(ids ...int) *AssetPriceUpdateOne {
 	apuo.mutation.AddSignerIDs(ids...)
@@ -621,6 +667,12 @@ func (apuo *AssetPriceUpdateOne) sqlSave(ctx context.Context) (_node *AssetPrice
 	}
 	if apuo.mutation.PairCleared() {
 		_spec.ClearField(assetprice.FieldPair, field.TypeString)
+	}
+	if value, ok := apuo.mutation.Consensus(); ok {
+		_spec.SetField(assetprice.FieldConsensus, field.TypeBool, value)
+	}
+	if value, ok := apuo.mutation.Voted(); ok {
+		_spec.SetField(assetprice.FieldVoted, field.TypeUint, value)
 	}
 	if apuo.mutation.SignersCleared() {
 		edge := &sqlgraph.EdgeSpec{

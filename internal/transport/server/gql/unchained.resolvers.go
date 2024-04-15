@@ -6,14 +6,14 @@ package gql
 
 import (
 	"context"
+	"fmt"
 	"math/big"
-
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/generated"
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
 
 	"entgo.io/contrib/entgql"
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
+	"github.com/KenshiTech/unchained/internal/transport/server/gql/generated"
+	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
 )
 
 // Price is the resolver for the price field.
@@ -24,6 +24,11 @@ func (r *assetPriceResolver) Price(ctx context.Context, obj *ent.AssetPrice) (ui
 // Signature is the resolver for the signature field.
 func (r *assetPriceResolver) Signature(ctx context.Context, obj *ent.AssetPrice) (types.Bytes, error) {
 	return obj.Signature, nil
+}
+
+// Voted is the resolver for the voted field.
+func (r *assetPriceResolver) Voted(ctx context.Context, obj *ent.AssetPrice) (uint64, error) {
+	panic(fmt.Errorf("not implemented: Voted - voted"))
 }
 
 // Signature is the resolver for the signature field.
@@ -49,6 +54,11 @@ func (r *eventLogResolver) Signature(ctx context.Context, obj *ent.EventLog) (ty
 // Transaction is the resolver for the transaction field.
 func (r *eventLogResolver) Transaction(ctx context.Context, obj *ent.EventLog) (types.Bytes, error) {
 	return obj.Transaction, nil
+}
+
+// Voted is the resolver for the voted field.
+func (r *eventLogResolver) Voted(ctx context.Context, obj *ent.EventLog) (uint64, error) {
+	panic(fmt.Errorf("not implemented: Voted - voted"))
 }
 
 // Node is the resolver for the node field.
@@ -159,6 +169,86 @@ func (r *assetPriceWhereInputResolver) PriceLte(ctx context.Context, obj *ent.As
 	return nil
 }
 
+// Voted is the resolver for the voted field.
+func (r *assetPriceWhereInputResolver) Voted(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: Voted - voted"))
+}
+
+// VotedNeq is the resolver for the votedNEQ field.
+func (r *assetPriceWhereInputResolver) VotedNeq(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedNeq - votedNEQ"))
+}
+
+// VotedIn is the resolver for the votedIn field.
+func (r *assetPriceWhereInputResolver) VotedIn(ctx context.Context, obj *ent.AssetPriceWhereInput, data []uint64) error {
+	panic(fmt.Errorf("not implemented: VotedIn - votedIn"))
+}
+
+// VotedNotIn is the resolver for the votedNotIn field.
+func (r *assetPriceWhereInputResolver) VotedNotIn(ctx context.Context, obj *ent.AssetPriceWhereInput, data []uint64) error {
+	panic(fmt.Errorf("not implemented: VotedNotIn - votedNotIn"))
+}
+
+// VotedGt is the resolver for the votedGT field.
+func (r *assetPriceWhereInputResolver) VotedGt(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedGt - votedGT"))
+}
+
+// VotedGte is the resolver for the votedGTE field.
+func (r *assetPriceWhereInputResolver) VotedGte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedGte - votedGTE"))
+}
+
+// VotedLt is the resolver for the votedLT field.
+func (r *assetPriceWhereInputResolver) VotedLt(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedLt - votedLT"))
+}
+
+// VotedLte is the resolver for the votedLTE field.
+func (r *assetPriceWhereInputResolver) VotedLte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedLte - votedLTE"))
+}
+
+// Voted is the resolver for the voted field.
+func (r *eventLogWhereInputResolver) Voted(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: Voted - voted"))
+}
+
+// VotedNeq is the resolver for the votedNEQ field.
+func (r *eventLogWhereInputResolver) VotedNeq(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedNeq - votedNEQ"))
+}
+
+// VotedIn is the resolver for the votedIn field.
+func (r *eventLogWhereInputResolver) VotedIn(ctx context.Context, obj *ent.EventLogWhereInput, data []uint64) error {
+	panic(fmt.Errorf("not implemented: VotedIn - votedIn"))
+}
+
+// VotedNotIn is the resolver for the votedNotIn field.
+func (r *eventLogWhereInputResolver) VotedNotIn(ctx context.Context, obj *ent.EventLogWhereInput, data []uint64) error {
+	panic(fmt.Errorf("not implemented: VotedNotIn - votedNotIn"))
+}
+
+// VotedGt is the resolver for the votedGT field.
+func (r *eventLogWhereInputResolver) VotedGt(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedGt - votedGT"))
+}
+
+// VotedGte is the resolver for the votedGTE field.
+func (r *eventLogWhereInputResolver) VotedGte(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedGte - votedGTE"))
+}
+
+// VotedLt is the resolver for the votedLT field.
+func (r *eventLogWhereInputResolver) VotedLt(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedLt - votedLT"))
+}
+
+// VotedLte is the resolver for the votedLTE field.
+func (r *eventLogWhereInputResolver) VotedLte(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error {
+	panic(fmt.Errorf("not implemented: VotedLte - votedLTE"))
+}
+
 // AssetPrice returns generated.AssetPriceResolver implementation.
 func (r *Resolver) AssetPrice() generated.AssetPriceResolver { return &assetPriceResolver{r} }
 
@@ -186,6 +276,11 @@ func (r *Resolver) CorrectnessReportWhereInput() generated.CorrectnessReportWher
 	return &correctnessReportWhereInputResolver{r}
 }
 
+// EventLogWhereInput returns generated.EventLogWhereInputResolver implementation.
+func (r *Resolver) EventLogWhereInput() generated.EventLogWhereInputResolver {
+	return &eventLogWhereInputResolver{r}
+}
+
 // SignerWhereInput returns generated.SignerWhereInputResolver implementation.
 func (r *Resolver) SignerWhereInput() generated.SignerWhereInputResolver {
 	return &signerWhereInputResolver{r}
@@ -198,4 +293,5 @@ type queryResolver struct{ *Resolver }
 type signerResolver struct{ *Resolver }
 type assetPriceWhereInputResolver struct{ *Resolver }
 type correctnessReportWhereInputResolver struct{ *Resolver }
+type eventLogWhereInputResolver struct{ *Resolver }
 type signerWhereInputResolver struct{ *Resolver }

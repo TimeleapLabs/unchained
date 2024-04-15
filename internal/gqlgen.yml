@@ -1,17 +1,17 @@
 # schema tells gqlgen where the GraphQL schema is located.
 schema:
-  - gql/*.graphql
+  - transport/server/gql/*.graphql
 
 # resolver reports where the resolver implementations go.
 resolver:
   layout: follow-schema
-  dir: gql
+  dir: transport/server/gql
   package: gql
   filename_template: "{name}.resolvers.go"
 
 exec:
   layout: follow-schema
-  dir: gql/generated
+  dir: transport/server/gql/generated
   package: generated
 
 # gqlgen will search for any type names in the schema in these go packages
@@ -24,7 +24,7 @@ autobind:
   - github.com/KenshiTech/unchained/internal/ent/assetprice
   - github.com/KenshiTech/unchained/internal/ent/eventlog
   - github.com/KenshiTech/unchained/internal/datasets
-  - github.com/KenshiTech/unchained/internal/gql/types
+  - github.com/KenshiTech/unchained/internal/transport/server/gql/types
   - github.com/99designs/gqlgen/graphql
 
 # This section declares type mapping between the GraphQL and Go type systems.
@@ -46,7 +46,7 @@ models:
       - github.com/99designs/gqlgen/graphql.Uint32
   Bytes:
     model:
-      - github.com/KenshiTech/unchained/internal/gql/types.Bytes
+      - github.com/KenshiTech/unchained/internal/transport/server/gql/types.Bytes
   Any:
     model:
       - github.com/99designs/gqlgen/graphql.Any

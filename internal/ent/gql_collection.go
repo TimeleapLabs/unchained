@@ -82,6 +82,16 @@ func (ap *AssetPriceQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 				selectedFields = append(selectedFields, assetprice.FieldPair)
 				fieldSeen[assetprice.FieldPair] = struct{}{}
 			}
+		case "consensus":
+			if _, ok := fieldSeen[assetprice.FieldConsensus]; !ok {
+				selectedFields = append(selectedFields, assetprice.FieldConsensus)
+				fieldSeen[assetprice.FieldConsensus] = struct{}{}
+			}
+		case "voted":
+			if _, ok := fieldSeen[assetprice.FieldVoted]; !ok {
+				selectedFields = append(selectedFields, assetprice.FieldVoted)
+				fieldSeen[assetprice.FieldVoted] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:
@@ -348,6 +358,16 @@ func (el *EventLogQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 			if _, ok := fieldSeen[eventlog.FieldArgs]; !ok {
 				selectedFields = append(selectedFields, eventlog.FieldArgs)
 				fieldSeen[eventlog.FieldArgs] = struct{}{}
+			}
+		case "consensus":
+			if _, ok := fieldSeen[eventlog.FieldConsensus]; !ok {
+				selectedFields = append(selectedFields, eventlog.FieldConsensus)
+				fieldSeen[eventlog.FieldConsensus] = struct{}{}
+			}
+		case "voted":
+			if _, ok := fieldSeen[eventlog.FieldVoted]; !ok {
+				selectedFields = append(selectedFields, eventlog.FieldVoted)
+				fieldSeen[eventlog.FieldVoted] = struct{}{}
 			}
 		case "id":
 		case "__typename":

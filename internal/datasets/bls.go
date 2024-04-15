@@ -15,14 +15,12 @@ type Signer struct {
 type Signature struct {
 	Signature bls12381.G1Affine
 	Signer    Signer
-	Processed bool
 }
 
 func (s *Signature) Sia() *sia.Sia {
 	return new(sia.Sia).
 		AddByteArray8(s.Signature.Marshal()).
-		EmbedSia(s.Signer.Sia()).
-		AddBool(s.Processed)
+		EmbedSia(s.Signer.Sia())
 }
 
 func (s *Signature) DeSia(sia *sia.Sia) *Signature {
@@ -33,7 +31,6 @@ func (s *Signature) DeSia(sia *sia.Sia) *Signature {
 	}
 
 	s.Signer.DeSia(sia)
-	s.Processed = sia.ReadBool()
 
 	return s
 }

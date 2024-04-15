@@ -89,6 +89,16 @@ func Pair(v string) predicate.AssetPrice {
 	return predicate.AssetPrice(sql.FieldEQ(FieldPair, v))
 }
 
+// Consensus applies equality check predicate on the "consensus" field. It's identical to ConsensusEQ.
+func Consensus(v bool) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldConsensus, v))
+}
+
+// Voted applies equality check predicate on the "voted" field. It's identical to VotedEQ.
+func Voted(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldVoted, v))
+}
+
 // BlockEQ applies the EQ predicate on the "block" field.
 func BlockEQ(v uint64) predicate.AssetPrice {
 	return predicate.AssetPrice(sql.FieldEQ(FieldBlock, v))
@@ -482,6 +492,56 @@ func PairEqualFold(v string) predicate.AssetPrice {
 // PairContainsFold applies the ContainsFold predicate on the "pair" field.
 func PairContainsFold(v string) predicate.AssetPrice {
 	return predicate.AssetPrice(sql.FieldContainsFold(FieldPair, v))
+}
+
+// ConsensusEQ applies the EQ predicate on the "consensus" field.
+func ConsensusEQ(v bool) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldConsensus, v))
+}
+
+// ConsensusNEQ applies the NEQ predicate on the "consensus" field.
+func ConsensusNEQ(v bool) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNEQ(FieldConsensus, v))
+}
+
+// VotedEQ applies the EQ predicate on the "voted" field.
+func VotedEQ(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldEQ(FieldVoted, v))
+}
+
+// VotedNEQ applies the NEQ predicate on the "voted" field.
+func VotedNEQ(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNEQ(FieldVoted, v))
+}
+
+// VotedIn applies the In predicate on the "voted" field.
+func VotedIn(vs ...*helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldIn(FieldVoted, vs...))
+}
+
+// VotedNotIn applies the NotIn predicate on the "voted" field.
+func VotedNotIn(vs ...*helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldNotIn(FieldVoted, vs...))
+}
+
+// VotedGT applies the GT predicate on the "voted" field.
+func VotedGT(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGT(FieldVoted, v))
+}
+
+// VotedGTE applies the GTE predicate on the "voted" field.
+func VotedGTE(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldGTE(FieldVoted, v))
+}
+
+// VotedLT applies the LT predicate on the "voted" field.
+func VotedLT(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLT(FieldVoted, v))
+}
+
+// VotedLTE applies the LTE predicate on the "voted" field.
+func VotedLTE(v *helpers.BigInt) predicate.AssetPrice {
+	return predicate.AssetPrice(sql.FieldLTE(FieldVoted, v))
 }
 
 // HasSigners applies the HasEdge predicate on the "signers" edge.

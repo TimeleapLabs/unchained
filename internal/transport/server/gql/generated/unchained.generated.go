@@ -10,13 +10,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
-
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
@@ -25,6 +24,8 @@ import (
 type AssetPriceResolver interface {
 	Price(ctx context.Context, obj *ent.AssetPrice) (uint64, error)
 	Signature(ctx context.Context, obj *ent.AssetPrice) (types.Bytes, error)
+
+	Voted(ctx context.Context, obj *ent.AssetPrice) (uint64, error)
 }
 type CorrectnessReportResolver interface {
 	Signature(ctx context.Context, obj *ent.CorrectnessReport) (types.Bytes, error)
@@ -35,6 +36,8 @@ type EventLogResolver interface {
 	Signature(ctx context.Context, obj *ent.EventLog) (types.Bytes, error)
 
 	Transaction(ctx context.Context, obj *ent.EventLog) (types.Bytes, error)
+
+	Voted(ctx context.Context, obj *ent.EventLog) (uint64, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
@@ -58,10 +61,29 @@ type AssetPriceWhereInputResolver interface {
 	PriceGte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 	PriceLt(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 	PriceLte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
+
+	Voted(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
+	VotedNeq(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
+	VotedIn(ctx context.Context, obj *ent.AssetPriceWhereInput, data []uint64) error
+	VotedNotIn(ctx context.Context, obj *ent.AssetPriceWhereInput, data []uint64) error
+	VotedGt(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
+	VotedGte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
+	VotedLt(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
+	VotedLte(ctx context.Context, obj *ent.AssetPriceWhereInput, data *uint64) error
 }
 type CorrectnessReportWhereInputResolver interface {
 	Topic(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
 	Hash(ctx context.Context, obj *ent.CorrectnessReportWhereInput, data *string) error
+}
+type EventLogWhereInputResolver interface {
+	Voted(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error
+	VotedNeq(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error
+	VotedIn(ctx context.Context, obj *ent.EventLogWhereInput, data []uint64) error
+	VotedNotIn(ctx context.Context, obj *ent.EventLogWhereInput, data []uint64) error
+	VotedGt(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error
+	VotedGte(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error
+	VotedLt(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error
+	VotedLte(ctx context.Context, obj *ent.EventLogWhereInput, data *uint64) error
 }
 type SignerWhereInputResolver interface {
 	Key(ctx context.Context, obj *ent.SignerWhereInput, data *string) error
@@ -128,7 +150,7 @@ func (ec *executionContext) field_Query_assetPrices_args(ctx context.Context, ra
 	var arg4 *ent.AssetPriceOrder
 	if tmp, ok := rawArgs["orderBy"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOAssetPriceOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceOrder(ctx, tmp)
+		arg4, err = ec.unmarshalOAssetPriceOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceOrder(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +159,7 @@ func (ec *executionContext) field_Query_assetPrices_args(ctx context.Context, ra
 	var arg5 *ent.AssetPriceWhereInput
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInput(ctx, tmp)
+		arg5, err = ec.unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +210,7 @@ func (ec *executionContext) field_Query_correctnessReports_args(ctx context.Cont
 	var arg4 *ent.CorrectnessReportOrder
 	if tmp, ok := rawArgs["orderBy"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOCorrectnessReportOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportOrder(ctx, tmp)
+		arg4, err = ec.unmarshalOCorrectnessReportOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportOrder(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -197,7 +219,7 @@ func (ec *executionContext) field_Query_correctnessReports_args(ctx context.Cont
 	var arg5 *ent.CorrectnessReportWhereInput
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInput(ctx, tmp)
+		arg5, err = ec.unmarshalOCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -248,7 +270,7 @@ func (ec *executionContext) field_Query_eventLogs_args(ctx context.Context, rawA
 	var arg4 *ent.EventLogOrder
 	if tmp, ok := rawArgs["orderBy"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOEventLogOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogOrder(ctx, tmp)
+		arg4, err = ec.unmarshalOEventLogOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogOrder(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -257,7 +279,7 @@ func (ec *executionContext) field_Query_eventLogs_args(ctx context.Context, rawA
 	var arg5 *ent.EventLogWhereInput
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInput(ctx, tmp)
+		arg5, err = ec.unmarshalOEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -338,7 +360,7 @@ func (ec *executionContext) field_Query_signers_args(ctx context.Context, rawArg
 	var arg4 *ent.SignerOrder
 	if tmp, ok := rawArgs["orderBy"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOSignerOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrder(ctx, tmp)
+		arg4, err = ec.unmarshalOSignerOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerOrder(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -347,7 +369,7 @@ func (ec *executionContext) field_Query_signers_args(ctx context.Context, rawArg
 	var arg5 *ent.SignerWhereInput
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInput(ctx, tmp)
+		arg5, err = ec.unmarshalOSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -565,7 +587,7 @@ func (ec *executionContext) _AssetPrice_signature(ctx context.Context, field gra
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AssetPrice_signature(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -704,6 +726,94 @@ func (ec *executionContext) fieldContext_AssetPrice_pair(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _AssetPrice_consensus(ctx context.Context, field graphql.CollectedField, obj *ent.AssetPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AssetPrice_consensus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Consensus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AssetPrice_consensus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AssetPrice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AssetPrice_voted(ctx context.Context, field graphql.CollectedField, obj *ent.AssetPrice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AssetPrice_voted(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.AssetPrice().Voted(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uint64)
+	fc.Result = res
+	return ec.marshalNUint2uint64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AssetPrice_voted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AssetPrice",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Uint does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AssetPrice_signers(ctx context.Context, field graphql.CollectedField, obj *ent.AssetPrice) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AssetPrice_signers(ctx, field)
 	if err != nil {
@@ -732,7 +842,7 @@ func (ec *executionContext) _AssetPrice_signers(ctx context.Context, field graph
 	}
 	res := resTmp.([]*ent.Signer)
 	fc.Result = res
-	return ec.marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerᚄ(ctx, field.Selections, res)
+	return ec.marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AssetPrice_signers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -793,7 +903,7 @@ func (ec *executionContext) _AssetPriceConnection_edges(ctx context.Context, fie
 	}
 	res := resTmp.([]*ent.AssetPriceEdge)
 	fc.Result = res
-	return ec.marshalOAssetPriceEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceEdge(ctx, field.Selections, res)
+	return ec.marshalOAssetPriceEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AssetPriceConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -938,7 +1048,7 @@ func (ec *executionContext) _AssetPriceEdge_node(ctx context.Context, field grap
 	}
 	res := resTmp.(*ent.AssetPrice)
 	fc.Result = res
-	return ec.marshalOAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPrice(ctx, field.Selections, res)
+	return ec.marshalOAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPrice(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AssetPriceEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -965,6 +1075,10 @@ func (ec *executionContext) fieldContext_AssetPriceEdge_node(ctx context.Context
 				return ec.fieldContext_AssetPrice_chain(ctx, field)
 			case "pair":
 				return ec.fieldContext_AssetPrice_pair(ctx, field)
+			case "consensus":
+				return ec.fieldContext_AssetPrice_consensus(ctx, field)
+			case "voted":
+				return ec.fieldContext_AssetPrice_voted(ctx, field)
 			case "signers":
 				return ec.fieldContext_AssetPrice_signers(ctx, field)
 			}
@@ -1178,7 +1292,7 @@ func (ec *executionContext) _CorrectnessReport_signature(ctx context.Context, fi
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CorrectnessReport_signature(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1222,7 +1336,7 @@ func (ec *executionContext) _CorrectnessReport_hash(ctx context.Context, field g
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CorrectnessReport_hash(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1266,7 +1380,7 @@ func (ec *executionContext) _CorrectnessReport_topic(ctx context.Context, field 
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CorrectnessReport_topic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1354,7 +1468,7 @@ func (ec *executionContext) _CorrectnessReport_signers(ctx context.Context, fiel
 	}
 	res := resTmp.([]*ent.Signer)
 	fc.Result = res
-	return ec.marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerᚄ(ctx, field.Selections, res)
+	return ec.marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CorrectnessReport_signers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1415,7 +1529,7 @@ func (ec *executionContext) _CorrectnessReportConnection_edges(ctx context.Conte
 	}
 	res := resTmp.([]*ent.CorrectnessReportEdge)
 	fc.Result = res
-	return ec.marshalOCorrectnessReportEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportEdge(ctx, field.Selections, res)
+	return ec.marshalOCorrectnessReportEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CorrectnessReportConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1560,7 +1674,7 @@ func (ec *executionContext) _CorrectnessReportEdge_node(ctx context.Context, fie
 	}
 	res := resTmp.(*ent.CorrectnessReport)
 	fc.Result = res
-	return ec.marshalOCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReport(ctx, field.Selections, res)
+	return ec.marshalOCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReport(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CorrectnessReportEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1798,7 +1912,7 @@ func (ec *executionContext) _EventLog_signature(ctx context.Context, field graph
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EventLog_signature(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2018,7 +2132,7 @@ func (ec *executionContext) _EventLog_transaction(ctx context.Context, field gra
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EventLog_transaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2062,7 +2176,7 @@ func (ec *executionContext) _EventLog_args(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]datasets.EventLogArg)
 	fc.Result = res
-	return ec.marshalNEventLogArg2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋdatasetsᚐEventLogArgᚄ(ctx, field.Selections, res)
+	return ec.marshalNEventLogArg2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArgᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EventLog_args(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2079,6 +2193,94 @@ func (ec *executionContext) fieldContext_EventLog_args(ctx context.Context, fiel
 				return ec.fieldContext_EventLogArg_value(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EventLogArg", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EventLog_consensus(ctx context.Context, field graphql.CollectedField, obj *ent.EventLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EventLog_consensus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Consensus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EventLog_consensus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EventLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EventLog_voted(ctx context.Context, field graphql.CollectedField, obj *ent.EventLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EventLog_voted(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EventLog().Voted(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uint64)
+	fc.Result = res
+	return ec.marshalNUint2uint64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EventLog_voted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EventLog",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Uint does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2112,7 +2314,7 @@ func (ec *executionContext) _EventLog_signers(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*ent.Signer)
 	fc.Result = res
-	return ec.marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerᚄ(ctx, field.Selections, res)
+	return ec.marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EventLog_signers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2173,7 +2375,7 @@ func (ec *executionContext) _EventLogConnection_edges(ctx context.Context, field
 	}
 	res := resTmp.([]*ent.EventLogEdge)
 	fc.Result = res
-	return ec.marshalOEventLogEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogEdge(ctx, field.Selections, res)
+	return ec.marshalOEventLogEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EventLogConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2318,7 +2520,7 @@ func (ec *executionContext) _EventLogEdge_node(ctx context.Context, field graphq
 	}
 	res := resTmp.(*ent.EventLog)
 	fc.Result = res
-	return ec.marshalOEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLog(ctx, field.Selections, res)
+	return ec.marshalOEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLog(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_EventLogEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2349,6 +2551,10 @@ func (ec *executionContext) fieldContext_EventLogEdge_node(ctx context.Context, 
 				return ec.fieldContext_EventLog_transaction(ctx, field)
 			case "args":
 				return ec.fieldContext_EventLog_args(ctx, field)
+			case "consensus":
+				return ec.fieldContext_EventLog_consensus(ctx, field)
+			case "voted":
+				return ec.fieldContext_EventLog_voted(ctx, field)
 			case "signers":
 				return ec.fieldContext_EventLog_signers(ctx, field)
 			}
@@ -2597,7 +2803,7 @@ func (ec *executionContext) _Query_node(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(ent.Noder)
 	fc.Result = res
-	return ec.marshalONode2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐNoder(ctx, field.Selections, res)
+	return ec.marshalONode2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐNoder(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2652,7 +2858,7 @@ func (ec *executionContext) _Query_nodes(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]ent.Noder)
 	fc.Result = res
-	return ec.marshalNNode2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐNoder(ctx, field.Selections, res)
+	return ec.marshalNNode2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐNoder(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_nodes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2707,7 +2913,7 @@ func (ec *executionContext) _Query_assetPrices(ctx context.Context, field graphq
 	}
 	res := resTmp.(*ent.AssetPriceConnection)
 	fc.Result = res
-	return ec.marshalNAssetPriceConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceConnection(ctx, field.Selections, res)
+	return ec.marshalNAssetPriceConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_assetPrices(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2770,7 +2976,7 @@ func (ec *executionContext) _Query_correctnessReports(ctx context.Context, field
 	}
 	res := resTmp.(*ent.CorrectnessReportConnection)
 	fc.Result = res
-	return ec.marshalNCorrectnessReportConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportConnection(ctx, field.Selections, res)
+	return ec.marshalNCorrectnessReportConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_correctnessReports(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2833,7 +3039,7 @@ func (ec *executionContext) _Query_eventLogs(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*ent.EventLogConnection)
 	fc.Result = res
-	return ec.marshalNEventLogConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogConnection(ctx, field.Selections, res)
+	return ec.marshalNEventLogConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_eventLogs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2896,7 +3102,7 @@ func (ec *executionContext) _Query_signers(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*ent.SignerConnection)
 	fc.Result = res
-	return ec.marshalNSignerConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerConnection(ctx, field.Selections, res)
+	return ec.marshalNSignerConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_signers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3217,7 +3423,7 @@ func (ec *executionContext) _Signer_key(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Signer_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3261,7 +3467,7 @@ func (ec *executionContext) _Signer_shortkey(ctx context.Context, field graphql.
 	}
 	res := resTmp.(types.Bytes)
 	fc.Result = res
-	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
+	return ec.marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Signer_shortkey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3346,7 +3552,7 @@ func (ec *executionContext) _Signer_assetprice(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*ent.AssetPrice)
 	fc.Result = res
-	return ec.marshalOAssetPrice2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceᚄ(ctx, field.Selections, res)
+	return ec.marshalOAssetPrice2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Signer_assetprice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3373,6 +3579,10 @@ func (ec *executionContext) fieldContext_Signer_assetprice(ctx context.Context, 
 				return ec.fieldContext_AssetPrice_chain(ctx, field)
 			case "pair":
 				return ec.fieldContext_AssetPrice_pair(ctx, field)
+			case "consensus":
+				return ec.fieldContext_AssetPrice_consensus(ctx, field)
+			case "voted":
+				return ec.fieldContext_AssetPrice_voted(ctx, field)
 			case "signers":
 				return ec.fieldContext_AssetPrice_signers(ctx, field)
 			}
@@ -3407,7 +3617,7 @@ func (ec *executionContext) _Signer_eventlogs(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*ent.EventLog)
 	fc.Result = res
-	return ec.marshalOEventLog2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogᚄ(ctx, field.Selections, res)
+	return ec.marshalOEventLog2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Signer_eventlogs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3438,6 +3648,10 @@ func (ec *executionContext) fieldContext_Signer_eventlogs(ctx context.Context, f
 				return ec.fieldContext_EventLog_transaction(ctx, field)
 			case "args":
 				return ec.fieldContext_EventLog_args(ctx, field)
+			case "consensus":
+				return ec.fieldContext_EventLog_consensus(ctx, field)
+			case "voted":
+				return ec.fieldContext_EventLog_voted(ctx, field)
 			case "signers":
 				return ec.fieldContext_EventLog_signers(ctx, field)
 			}
@@ -3472,7 +3686,7 @@ func (ec *executionContext) _Signer_correctnessreport(ctx context.Context, field
 	}
 	res := resTmp.([]*ent.CorrectnessReport)
 	fc.Result = res
-	return ec.marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportᚄ(ctx, field.Selections, res)
+	return ec.marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Signer_correctnessreport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3531,7 +3745,7 @@ func (ec *executionContext) _SignerConnection_edges(ctx context.Context, field g
 	}
 	res := resTmp.([]*ent.SignerEdge)
 	fc.Result = res
-	return ec.marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx, field.Selections, res)
+	return ec.marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SignerConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3676,7 +3890,7 @@ func (ec *executionContext) _SignerEdge_node(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*ent.Signer)
 	fc.Result = res
-	return ec.marshalOSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSigner(ctx, field.Selections, res)
+	return ec.marshalOSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSigner(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SignerEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3787,7 +4001,7 @@ func (ec *executionContext) unmarshalInputAssetPriceOrder(ctx context.Context, o
 			it.Direction = data
 		case "field":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceOrderField(ctx, v)
+			data, err := ec.unmarshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3805,7 +4019,7 @@ func (ec *executionContext) unmarshalInputAssetPriceWhereInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "block", "blockNEQ", "blockIn", "blockNotIn", "blockGT", "blockGTE", "blockLT", "blockLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "signerscountIsNil", "signerscountNotNil", "price", "priceNEQ", "priceIn", "priceNotIn", "priceGT", "priceGTE", "priceLT", "priceLTE", "asset", "assetNEQ", "assetIn", "assetNotIn", "assetGT", "assetGTE", "assetLT", "assetLTE", "assetContains", "assetHasPrefix", "assetHasSuffix", "assetIsNil", "assetNotNil", "assetEqualFold", "assetContainsFold", "chain", "chainNEQ", "chainIn", "chainNotIn", "chainGT", "chainGTE", "chainLT", "chainLTE", "chainContains", "chainHasPrefix", "chainHasSuffix", "chainIsNil", "chainNotNil", "chainEqualFold", "chainContainsFold", "pair", "pairNEQ", "pairIn", "pairNotIn", "pairGT", "pairGTE", "pairLT", "pairLTE", "pairContains", "pairHasPrefix", "pairHasSuffix", "pairIsNil", "pairNotNil", "pairEqualFold", "pairContainsFold", "hasSigners", "hasSignersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "block", "blockNEQ", "blockIn", "blockNotIn", "blockGT", "blockGTE", "blockLT", "blockLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "signerscountIsNil", "signerscountNotNil", "price", "priceNEQ", "priceIn", "priceNotIn", "priceGT", "priceGTE", "priceLT", "priceLTE", "asset", "assetNEQ", "assetIn", "assetNotIn", "assetGT", "assetGTE", "assetLT", "assetLTE", "assetContains", "assetHasPrefix", "assetHasSuffix", "assetIsNil", "assetNotNil", "assetEqualFold", "assetContainsFold", "chain", "chainNEQ", "chainIn", "chainNotIn", "chainGT", "chainGTE", "chainLT", "chainLTE", "chainContains", "chainHasPrefix", "chainHasSuffix", "chainIsNil", "chainNotNil", "chainEqualFold", "chainContainsFold", "pair", "pairNEQ", "pairIn", "pairNotIn", "pairGT", "pairGTE", "pairLT", "pairLTE", "pairContains", "pairHasPrefix", "pairHasSuffix", "pairIsNil", "pairNotNil", "pairEqualFold", "pairContainsFold", "consensus", "consensusNEQ", "voted", "votedNEQ", "votedIn", "votedNotIn", "votedGT", "votedGTE", "votedLT", "votedLTE", "hasSigners", "hasSignersWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3814,21 +4028,21 @@ func (ec *executionContext) unmarshalInputAssetPriceWhereInput(ctx context.Conte
 		switch k {
 		case "not":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInput(ctx, v)
+			data, err := ec.unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Not = data
 		case "and":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.And = data
 		case "or":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4402,6 +4616,92 @@ func (ec *executionContext) unmarshalInputAssetPriceWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.PairContainsFold = data
+		case "consensus":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("consensus"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Consensus = data
+		case "consensusNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("consensusNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConsensusNEQ = data
+		case "voted":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("voted"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().Voted(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedNEQ"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().VotedNeq(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedIn"))
+			data, err := ec.unmarshalOUint2ᚕuint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().VotedIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedNotIn"))
+			data, err := ec.unmarshalOUint2ᚕuint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().VotedNotIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedGT"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().VotedGt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedGTE"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().VotedGte(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedLT"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().VotedLt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedLTE"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.AssetPriceWhereInput().VotedLte(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "hasSigners":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSigners"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -4411,7 +4711,7 @@ func (ec *executionContext) unmarshalInputAssetPriceWhereInput(ctx context.Conte
 			it.HasSigners = data
 		case "hasSignersWith":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSignersWith"))
-			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4449,7 +4749,7 @@ func (ec *executionContext) unmarshalInputCorrectnessReportOrder(ctx context.Con
 			it.Direction = data
 		case "field":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNCorrectnessReportOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportOrderField(ctx, v)
+			data, err := ec.unmarshalNCorrectnessReportOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4476,21 +4776,21 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 		switch k {
 		case "not":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInput(ctx, v)
+			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Not = data
 		case "and":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.And = data
 		case "or":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4686,7 +4986,7 @@ func (ec *executionContext) unmarshalInputCorrectnessReportWhereInput(ctx contex
 			it.HasSigners = data
 		case "hasSignersWith":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSignersWith"))
-			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4742,7 +5042,7 @@ func (ec *executionContext) unmarshalInputEventLogOrder(ctx context.Context, obj
 			it.Direction = data
 		case "field":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNEventLogOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogOrderField(ctx, v)
+			data, err := ec.unmarshalNEventLogOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4760,7 +5060,7 @@ func (ec *executionContext) unmarshalInputEventLogWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "block", "blockNEQ", "blockIn", "blockNotIn", "blockGT", "blockGTE", "blockLT", "blockLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "address", "addressNEQ", "addressIn", "addressNotIn", "addressGT", "addressGTE", "addressLT", "addressLTE", "addressContains", "addressHasPrefix", "addressHasSuffix", "addressEqualFold", "addressContainsFold", "chain", "chainNEQ", "chainIn", "chainNotIn", "chainGT", "chainGTE", "chainLT", "chainLTE", "chainContains", "chainHasPrefix", "chainHasSuffix", "chainEqualFold", "chainContainsFold", "index", "indexNEQ", "indexIn", "indexNotIn", "indexGT", "indexGTE", "indexLT", "indexLTE", "event", "eventNEQ", "eventIn", "eventNotIn", "eventGT", "eventGTE", "eventLT", "eventLTE", "eventContains", "eventHasPrefix", "eventHasSuffix", "eventEqualFold", "eventContainsFold", "hasSigners", "hasSignersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "block", "blockNEQ", "blockIn", "blockNotIn", "blockGT", "blockGTE", "blockLT", "blockLTE", "signerscount", "signerscountNEQ", "signerscountIn", "signerscountNotIn", "signerscountGT", "signerscountGTE", "signerscountLT", "signerscountLTE", "address", "addressNEQ", "addressIn", "addressNotIn", "addressGT", "addressGTE", "addressLT", "addressLTE", "addressContains", "addressHasPrefix", "addressHasSuffix", "addressEqualFold", "addressContainsFold", "chain", "chainNEQ", "chainIn", "chainNotIn", "chainGT", "chainGTE", "chainLT", "chainLTE", "chainContains", "chainHasPrefix", "chainHasSuffix", "chainEqualFold", "chainContainsFold", "index", "indexNEQ", "indexIn", "indexNotIn", "indexGT", "indexGTE", "indexLT", "indexLTE", "event", "eventNEQ", "eventIn", "eventNotIn", "eventGT", "eventGTE", "eventLT", "eventLTE", "eventContains", "eventHasPrefix", "eventHasSuffix", "eventEqualFold", "eventContainsFold", "consensus", "consensusNEQ", "voted", "votedNEQ", "votedIn", "votedNotIn", "votedGT", "votedGTE", "votedLT", "votedLTE", "hasSigners", "hasSignersWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4769,21 +5069,21 @@ func (ec *executionContext) unmarshalInputEventLogWhereInput(ctx context.Context
 		switch k {
 		case "not":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInput(ctx, v)
+			data, err := ec.unmarshalOEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Not = data
 		case "and":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.And = data
 		case "or":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5285,6 +5585,92 @@ func (ec *executionContext) unmarshalInputEventLogWhereInput(ctx context.Context
 				return it, err
 			}
 			it.EventContainsFold = data
+		case "consensus":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("consensus"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Consensus = data
+		case "consensusNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("consensusNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConsensusNEQ = data
+		case "voted":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("voted"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().Voted(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedNEQ"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().VotedNeq(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedIn"))
+			data, err := ec.unmarshalOUint2ᚕuint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().VotedIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedNotIn"))
+			data, err := ec.unmarshalOUint2ᚕuint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().VotedNotIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedGT"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().VotedGt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedGTE"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().VotedGte(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedLT"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().VotedLt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "votedLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("votedLTE"))
+			data, err := ec.unmarshalOUint2ᚖuint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.EventLogWhereInput().VotedLte(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "hasSigners":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSigners"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -5294,7 +5680,7 @@ func (ec *executionContext) unmarshalInputEventLogWhereInput(ctx context.Context
 			it.HasSigners = data
 		case "hasSignersWith":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSignersWith"))
-			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5332,7 +5718,7 @@ func (ec *executionContext) unmarshalInputSignerOrder(ctx context.Context, obj i
 			it.Direction = data
 		case "field":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrderField(ctx, v)
+			data, err := ec.unmarshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5359,21 +5745,21 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 		switch k {
 		case "not":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInput(ctx, v)
+			data, err := ec.unmarshalOSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Not = data
 		case "and":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.And = data
 		case "or":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5695,7 +6081,7 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 			it.HasAssetPrice = data
 		case "hasAssetPriceWith":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAssetPriceWith"))
-			data, err := ec.unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5709,7 +6095,7 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 			it.HasEventLogs = data
 		case "hasEventLogsWith":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasEventLogsWith"))
-			data, err := ec.unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5723,7 +6109,7 @@ func (ec *executionContext) unmarshalInputSignerWhereInput(ctx context.Context, 
 			it.HasCorrectnessReport = data
 		case "hasCorrectnessReportWith":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCorrectnessReportWith"))
-			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5881,6 +6267,47 @@ func (ec *executionContext) _AssetPrice(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._AssetPrice_chain(ctx, field, obj)
 		case "pair":
 			out.Values[i] = ec._AssetPrice_pair(ctx, field, obj)
+		case "consensus":
+			out.Values[i] = ec._AssetPrice_consensus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "voted":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._AssetPrice_voted(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "signers":
 			field := field
 
@@ -6435,6 +6862,47 @@ func (ec *executionContext) _EventLog(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "consensus":
+			out.Values[i] = ec._EventLog_consensus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "voted":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EventLog_voted(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "signers":
 			field := field
 
@@ -7121,7 +7589,7 @@ func (ec *executionContext) _SignerEdge(ctx context.Context, sel ast.SelectionSe
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPrice(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPrice) graphql.Marshaler {
+func (ec *executionContext) marshalNAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPrice(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPrice) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7131,11 +7599,11 @@ func (ec *executionContext) marshalNAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋun
 	return ec._AssetPrice(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAssetPriceConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceConnection(ctx context.Context, sel ast.SelectionSet, v ent.AssetPriceConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNAssetPriceConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceConnection(ctx context.Context, sel ast.SelectionSet, v ent.AssetPriceConnection) graphql.Marshaler {
 	return ec._AssetPriceConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAssetPriceConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceConnection(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPriceConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNAssetPriceConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceConnection(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPriceConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7145,13 +7613,13 @@ func (ec *executionContext) marshalNAssetPriceConnection2ᚖgithubᚗcomᚋKensh
 	return ec._AssetPriceConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceOrderField(ctx context.Context, v interface{}) (*ent.AssetPriceOrderField, error) {
+func (ec *executionContext) unmarshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceOrderField(ctx context.Context, v interface{}) (*ent.AssetPriceOrderField, error) {
 	var res = new(ent.AssetPriceOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPriceOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPriceOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7161,12 +7629,12 @@ func (ec *executionContext) marshalNAssetPriceOrderField2ᚖgithubᚗcomᚋKensh
 	return v
 }
 
-func (ec *executionContext) unmarshalNAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInput(ctx context.Context, v interface{}) (*ent.AssetPriceWhereInput, error) {
+func (ec *executionContext) unmarshalNAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInput(ctx context.Context, v interface{}) (*ent.AssetPriceWhereInput, error) {
 	res, err := ec.unmarshalInputAssetPriceWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReport(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReport) graphql.Marshaler {
+func (ec *executionContext) marshalNCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReport(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReport) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7176,11 +7644,11 @@ func (ec *executionContext) marshalNCorrectnessReport2ᚖgithubᚗcomᚋKenshiTe
 	return ec._CorrectnessReport(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCorrectnessReportConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportConnection(ctx context.Context, sel ast.SelectionSet, v ent.CorrectnessReportConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNCorrectnessReportConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportConnection(ctx context.Context, sel ast.SelectionSet, v ent.CorrectnessReportConnection) graphql.Marshaler {
 	return ec._CorrectnessReportConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCorrectnessReportConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportConnection(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReportConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNCorrectnessReportConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportConnection(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReportConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7190,13 +7658,13 @@ func (ec *executionContext) marshalNCorrectnessReportConnection2ᚖgithubᚗcom�
 	return ec._CorrectnessReportConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNCorrectnessReportOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportOrderField(ctx context.Context, v interface{}) (*ent.CorrectnessReportOrderField, error) {
+func (ec *executionContext) unmarshalNCorrectnessReportOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportOrderField(ctx context.Context, v interface{}) (*ent.CorrectnessReportOrderField, error) {
 	var res = new(ent.CorrectnessReportOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNCorrectnessReportOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReportOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNCorrectnessReportOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReportOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7206,7 +7674,7 @@ func (ec *executionContext) marshalNCorrectnessReportOrderField2ᚖgithubᚗcom�
 	return v
 }
 
-func (ec *executionContext) unmarshalNCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInput(ctx context.Context, v interface{}) (*ent.CorrectnessReportWhereInput, error) {
+func (ec *executionContext) unmarshalNCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInput(ctx context.Context, v interface{}) (*ent.CorrectnessReportWhereInput, error) {
 	res, err := ec.unmarshalInputCorrectnessReportWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -7221,7 +7689,7 @@ func (ec *executionContext) marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCurso
 	return v
 }
 
-func (ec *executionContext) marshalNEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLog(ctx context.Context, sel ast.SelectionSet, v *ent.EventLog) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLog(ctx context.Context, sel ast.SelectionSet, v *ent.EventLog) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7231,11 +7699,11 @@ func (ec *executionContext) marshalNEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunch
 	return ec._EventLog(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNEventLogConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogConnection(ctx context.Context, sel ast.SelectionSet, v ent.EventLogConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLogConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogConnection(ctx context.Context, sel ast.SelectionSet, v ent.EventLogConnection) graphql.Marshaler {
 	return ec._EventLogConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEventLogConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogConnection(ctx context.Context, sel ast.SelectionSet, v *ent.EventLogConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLogConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogConnection(ctx context.Context, sel ast.SelectionSet, v *ent.EventLogConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7245,13 +7713,13 @@ func (ec *executionContext) marshalNEventLogConnection2ᚖgithubᚗcomᚋKenshiT
 	return ec._EventLogConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEventLogOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogOrderField(ctx context.Context, v interface{}) (*ent.EventLogOrderField, error) {
+func (ec *executionContext) unmarshalNEventLogOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogOrderField(ctx context.Context, v interface{}) (*ent.EventLogOrderField, error) {
 	var res = new(ent.EventLogOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNEventLogOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.EventLogOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLogOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.EventLogOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7261,12 +7729,12 @@ func (ec *executionContext) marshalNEventLogOrderField2ᚖgithubᚗcomᚋKenshiT
 	return v
 }
 
-func (ec *executionContext) unmarshalNEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInput(ctx context.Context, v interface{}) (*ent.EventLogWhereInput, error) {
+func (ec *executionContext) unmarshalNEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInput(ctx context.Context, v interface{}) (*ent.EventLogWhereInput, error) {
 	res, err := ec.unmarshalInputEventLogWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v []ent.Noder) graphql.Marshaler {
+func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v []ent.Noder) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -7290,7 +7758,7 @@ func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋKenshiTechᚋunchaine
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalONode2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐNoder(ctx, sel, v[i])
+			ret[i] = ec.marshalONode2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐNoder(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7318,7 +7786,7 @@ func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPag
 	return ec._PageInfo(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Signer) graphql.Marshaler {
+func (ec *executionContext) marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Signer) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -7342,7 +7810,7 @@ func (ec *executionContext) marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunc
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSigner(ctx, sel, v[i])
+			ret[i] = ec.marshalNSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSigner(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7362,7 +7830,7 @@ func (ec *executionContext) marshalNSigner2ᚕᚖgithubᚗcomᚋKenshiTechᚋunc
 	return ret
 }
 
-func (ec *executionContext) marshalNSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSigner(ctx context.Context, sel ast.SelectionSet, v *ent.Signer) graphql.Marshaler {
+func (ec *executionContext) marshalNSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSigner(ctx context.Context, sel ast.SelectionSet, v *ent.Signer) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7372,11 +7840,11 @@ func (ec *executionContext) marshalNSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchai
 	return ec._Signer(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSignerConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerConnection(ctx context.Context, sel ast.SelectionSet, v ent.SignerConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNSignerConnection2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerConnection(ctx context.Context, sel ast.SelectionSet, v ent.SignerConnection) graphql.Marshaler {
 	return ec._SignerConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSignerConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerConnection(ctx context.Context, sel ast.SelectionSet, v *ent.SignerConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNSignerConnection2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerConnection(ctx context.Context, sel ast.SelectionSet, v *ent.SignerConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7386,13 +7854,13 @@ func (ec *executionContext) marshalNSignerConnection2ᚖgithubᚗcomᚋKenshiTec
 	return ec._SignerConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrderField(ctx context.Context, v interface{}) (*ent.SignerOrderField, error) {
+func (ec *executionContext) unmarshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerOrderField(ctx context.Context, v interface{}) (*ent.SignerOrderField, error) {
 	var res = new(ent.SignerOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.SignerOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.SignerOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -7402,7 +7870,7 @@ func (ec *executionContext) marshalNSignerOrderField2ᚖgithubᚗcomᚋKenshiTec
 	return v
 }
 
-func (ec *executionContext) unmarshalNSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInput(ctx context.Context, v interface{}) (*ent.SignerWhereInput, error) {
+func (ec *executionContext) unmarshalNSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInput(ctx context.Context, v interface{}) (*ent.SignerWhereInput, error) {
 	res, err := ec.unmarshalInputSignerWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -7422,7 +7890,7 @@ func (ec *executionContext) marshalNUint2uint64(ctx context.Context, sel ast.Sel
 	return res
 }
 
-func (ec *executionContext) marshalOAssetPrice2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.AssetPrice) graphql.Marshaler {
+func (ec *executionContext) marshalOAssetPrice2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.AssetPrice) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7449,7 +7917,7 @@ func (ec *executionContext) marshalOAssetPrice2ᚕᚖgithubᚗcomᚋKenshiTech�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPrice(ctx, sel, v[i])
+			ret[i] = ec.marshalNAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPrice(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7469,14 +7937,14 @@ func (ec *executionContext) marshalOAssetPrice2ᚕᚖgithubᚗcomᚋKenshiTech�
 	return ret
 }
 
-func (ec *executionContext) marshalOAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPrice(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPrice) graphql.Marshaler {
+func (ec *executionContext) marshalOAssetPrice2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPrice(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPrice) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._AssetPrice(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOAssetPriceEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.AssetPriceEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOAssetPriceEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.AssetPriceEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7503,7 +7971,7 @@ func (ec *executionContext) marshalOAssetPriceEdge2ᚕᚖgithubᚗcomᚋKenshiTe
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOAssetPriceEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOAssetPriceEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7517,14 +7985,14 @@ func (ec *executionContext) marshalOAssetPriceEdge2ᚕᚖgithubᚗcomᚋKenshiTe
 	return ret
 }
 
-func (ec *executionContext) marshalOAssetPriceEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceEdge(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPriceEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOAssetPriceEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceEdge(ctx context.Context, sel ast.SelectionSet, v *ent.AssetPriceEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._AssetPriceEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOAssetPriceOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceOrder(ctx context.Context, v interface{}) (*ent.AssetPriceOrder, error) {
+func (ec *executionContext) unmarshalOAssetPriceOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceOrder(ctx context.Context, v interface{}) (*ent.AssetPriceOrder, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7532,7 +8000,7 @@ func (ec *executionContext) unmarshalOAssetPriceOrder2ᚖgithubᚗcomᚋKenshiTe
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AssetPriceWhereInput, error) {
+func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AssetPriceWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7544,7 +8012,7 @@ func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋ
 	res := make([]*ent.AssetPriceWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -7552,7 +8020,7 @@ func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚕᚖgithubᚗcomᚋ
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐAssetPriceWhereInput(ctx context.Context, v interface{}) (*ent.AssetPriceWhereInput, error) {
+func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐAssetPriceWhereInput(ctx context.Context, v interface{}) (*ent.AssetPriceWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7560,7 +8028,7 @@ func (ec *executionContext) unmarshalOAssetPriceWhereInput2ᚖgithubᚗcomᚋKen
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.CorrectnessReport) graphql.Marshaler {
+func (ec *executionContext) marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.CorrectnessReport) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7587,7 +8055,7 @@ func (ec *executionContext) marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKensh
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReport(ctx, sel, v[i])
+			ret[i] = ec.marshalNCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReport(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7607,14 +8075,14 @@ func (ec *executionContext) marshalOCorrectnessReport2ᚕᚖgithubᚗcomᚋKensh
 	return ret
 }
 
-func (ec *executionContext) marshalOCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReport(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReport) graphql.Marshaler {
+func (ec *executionContext) marshalOCorrectnessReport2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReport(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReport) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CorrectnessReport(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCorrectnessReportEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.CorrectnessReportEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOCorrectnessReportEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.CorrectnessReportEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7641,7 +8109,7 @@ func (ec *executionContext) marshalOCorrectnessReportEdge2ᚕᚖgithubᚗcomᚋK
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOCorrectnessReportEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOCorrectnessReportEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7655,14 +8123,14 @@ func (ec *executionContext) marshalOCorrectnessReportEdge2ᚕᚖgithubᚗcomᚋK
 	return ret
 }
 
-func (ec *executionContext) marshalOCorrectnessReportEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportEdge(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReportEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOCorrectnessReportEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportEdge(ctx context.Context, sel ast.SelectionSet, v *ent.CorrectnessReportEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CorrectnessReportEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOCorrectnessReportOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportOrder(ctx context.Context, v interface{}) (*ent.CorrectnessReportOrder, error) {
+func (ec *executionContext) unmarshalOCorrectnessReportOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportOrder(ctx context.Context, v interface{}) (*ent.CorrectnessReportOrder, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7670,7 +8138,7 @@ func (ec *executionContext) unmarshalOCorrectnessReportOrder2ᚖgithubᚗcomᚋK
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.CorrectnessReportWhereInput, error) {
+func (ec *executionContext) unmarshalOCorrectnessReportWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.CorrectnessReportWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7682,7 +8150,7 @@ func (ec *executionContext) unmarshalOCorrectnessReportWhereInput2ᚕᚖgithub�
 	res := make([]*ent.CorrectnessReportWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -7690,7 +8158,7 @@ func (ec *executionContext) unmarshalOCorrectnessReportWhereInput2ᚕᚖgithub�
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐCorrectnessReportWhereInput(ctx context.Context, v interface{}) (*ent.CorrectnessReportWhereInput, error) {
+func (ec *executionContext) unmarshalOCorrectnessReportWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐCorrectnessReportWhereInput(ctx context.Context, v interface{}) (*ent.CorrectnessReportWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7714,7 +8182,7 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 	return v
 }
 
-func (ec *executionContext) marshalOEventLog2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.EventLog) graphql.Marshaler {
+func (ec *executionContext) marshalOEventLog2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.EventLog) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7741,7 +8209,7 @@ func (ec *executionContext) marshalOEventLog2ᚕᚖgithubᚗcomᚋKenshiTechᚋu
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLog(ctx, sel, v[i])
+			ret[i] = ec.marshalNEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLog(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7761,14 +8229,14 @@ func (ec *executionContext) marshalOEventLog2ᚕᚖgithubᚗcomᚋKenshiTechᚋu
 	return ret
 }
 
-func (ec *executionContext) marshalOEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLog(ctx context.Context, sel ast.SelectionSet, v *ent.EventLog) graphql.Marshaler {
+func (ec *executionContext) marshalOEventLog2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLog(ctx context.Context, sel ast.SelectionSet, v *ent.EventLog) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._EventLog(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOEventLogEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.EventLogEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOEventLogEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.EventLogEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7795,7 +8263,7 @@ func (ec *executionContext) marshalOEventLogEdge2ᚕᚖgithubᚗcomᚋKenshiTech
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOEventLogEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOEventLogEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7809,14 +8277,14 @@ func (ec *executionContext) marshalOEventLogEdge2ᚕᚖgithubᚗcomᚋKenshiTech
 	return ret
 }
 
-func (ec *executionContext) marshalOEventLogEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogEdge(ctx context.Context, sel ast.SelectionSet, v *ent.EventLogEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOEventLogEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogEdge(ctx context.Context, sel ast.SelectionSet, v *ent.EventLogEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._EventLogEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOEventLogOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogOrder(ctx context.Context, v interface{}) (*ent.EventLogOrder, error) {
+func (ec *executionContext) unmarshalOEventLogOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogOrder(ctx context.Context, v interface{}) (*ent.EventLogOrder, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7824,7 +8292,7 @@ func (ec *executionContext) unmarshalOEventLogOrder2ᚖgithubᚗcomᚋKenshiTech
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.EventLogWhereInput, error) {
+func (ec *executionContext) unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.EventLogWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7836,7 +8304,7 @@ func (ec *executionContext) unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKe
 	res := make([]*ent.EventLogWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -7844,7 +8312,7 @@ func (ec *executionContext) unmarshalOEventLogWhereInput2ᚕᚖgithubᚗcomᚋKe
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐEventLogWhereInput(ctx context.Context, v interface{}) (*ent.EventLogWhereInput, error) {
+func (ec *executionContext) unmarshalOEventLogWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐEventLogWhereInput(ctx context.Context, v interface{}) (*ent.EventLogWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7852,21 +8320,21 @@ func (ec *executionContext) unmarshalOEventLogWhereInput2ᚖgithubᚗcomᚋKensh
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalONode2githubᚗcomᚋKenshiTechᚋunchainedᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
+func (ec *executionContext) marshalONode2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSigner(ctx context.Context, sel ast.SelectionSet, v *ent.Signer) graphql.Marshaler {
+func (ec *executionContext) marshalOSigner2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSigner(ctx context.Context, sel ast.SelectionSet, v *ent.Signer) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Signer(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.SignerEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.SignerEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7893,7 +8361,7 @@ func (ec *executionContext) marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTech�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOSignerEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOSignerEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7907,14 +8375,14 @@ func (ec *executionContext) marshalOSignerEdge2ᚕᚖgithubᚗcomᚋKenshiTech�
 	return ret
 }
 
-func (ec *executionContext) marshalOSignerEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerEdge(ctx context.Context, sel ast.SelectionSet, v *ent.SignerEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOSignerEdge2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerEdge(ctx context.Context, sel ast.SelectionSet, v *ent.SignerEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SignerEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOSignerOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerOrder(ctx context.Context, v interface{}) (*ent.SignerOrder, error) {
+func (ec *executionContext) unmarshalOSignerOrder2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerOrder(ctx context.Context, v interface{}) (*ent.SignerOrder, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7922,7 +8390,7 @@ func (ec *executionContext) unmarshalOSignerOrder2ᚖgithubᚗcomᚋKenshiTech�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.SignerWhereInput, error) {
+func (ec *executionContext) unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.SignerWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7934,7 +8402,7 @@ func (ec *executionContext) unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKens
 	res := make([]*ent.SignerWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -7942,7 +8410,7 @@ func (ec *executionContext) unmarshalOSignerWhereInput2ᚕᚖgithubᚗcomᚋKens
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋentᚐSignerWhereInput(ctx context.Context, v interface{}) (*ent.SignerWhereInput, error) {
+func (ec *executionContext) unmarshalOSignerWhereInput2ᚖgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋentᚐSignerWhereInput(ctx context.Context, v interface{}) (*ent.SignerWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}

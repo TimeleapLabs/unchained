@@ -20,6 +20,10 @@ func init() {
 	assetpriceDescSignature := assetpriceFields[3].Descriptor()
 	// assetprice.SignatureValidator is a validator for the "signature" field. It is called by the builders before save.
 	assetprice.SignatureValidator = assetpriceDescSignature.Validators[0].(func([]byte) error)
+	// assetpriceDescConsensus is the schema descriptor for consensus field.
+	assetpriceDescConsensus := assetpriceFields[7].Descriptor()
+	// assetprice.DefaultConsensus holds the default value on creation for the consensus field.
+	assetprice.DefaultConsensus = assetpriceDescConsensus.Default.(bool)
 	correctnessreportFields := schema.CorrectnessReport{}.Fields()
 	_ = correctnessreportFields
 	// correctnessreportDescSignature is the schema descriptor for signature field.
@@ -44,6 +48,10 @@ func init() {
 	eventlogDescTransaction := eventlogFields[7].Descriptor()
 	// eventlog.TransactionValidator is a validator for the "transaction" field. It is called by the builders before save.
 	eventlog.TransactionValidator = eventlogDescTransaction.Validators[0].(func([]byte) error)
+	// eventlogDescConsensus is the schema descriptor for consensus field.
+	eventlogDescConsensus := eventlogFields[9].Descriptor()
+	// eventlog.DefaultConsensus holds the default value on creation for the consensus field.
+	eventlog.DefaultConsensus = eventlogDescConsensus.Default.(bool)
 	signerFields := schema.Signer{}.Fields()
 	_ = signerFields
 	// signerDescName is the schema descriptor for name field.
