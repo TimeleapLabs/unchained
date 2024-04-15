@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
 )
 
@@ -58,6 +59,26 @@ func (crc *CorrectnessReportCreate) SetCorrect(b bool) *CorrectnessReportCreate 
 	return crc
 }
 
+// SetConsensus sets the "consensus" field.
+func (crc *CorrectnessReportCreate) SetConsensus(b bool) *CorrectnessReportCreate {
+	crc.mutation.SetConsensus(b)
+	return crc
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (crc *CorrectnessReportCreate) SetNillableConsensus(b *bool) *CorrectnessReportCreate {
+	if b != nil {
+		crc.SetConsensus(*b)
+	}
+	return crc
+}
+
+// SetVoted sets the "voted" field.
+func (crc *CorrectnessReportCreate) SetVoted(hi *helpers.BigInt) *CorrectnessReportCreate {
+	crc.mutation.SetVoted(hi)
+	return crc
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (crc *CorrectnessReportCreate) AddSignerIDs(ids ...int) *CorrectnessReportCreate {
 	crc.mutation.AddSignerIDs(ids...)
@@ -80,6 +101,7 @@ func (crc *CorrectnessReportCreate) Mutation() *CorrectnessReportMutation {
 
 // Save creates the CorrectnessReport in the database.
 func (crc *CorrectnessReportCreate) Save(ctx context.Context) (*CorrectnessReport, error) {
+	crc.defaults()
 	return withHooks(ctx, crc.sqlSave, crc.mutation, crc.hooks)
 }
 
@@ -102,6 +124,14 @@ func (crc *CorrectnessReportCreate) Exec(ctx context.Context) error {
 func (crc *CorrectnessReportCreate) ExecX(ctx context.Context) {
 	if err := crc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (crc *CorrectnessReportCreate) defaults() {
+	if _, ok := crc.mutation.Consensus(); !ok {
+		v := correctnessreport.DefaultConsensus
+		crc.mutation.SetConsensus(v)
 	}
 }
 
@@ -139,6 +169,12 @@ func (crc *CorrectnessReportCreate) check() error {
 	}
 	if _, ok := crc.mutation.Correct(); !ok {
 		return &ValidationError{Name: "correct", err: errors.New(`ent: missing required field "CorrectnessReport.correct"`)}
+	}
+	if _, ok := crc.mutation.Consensus(); !ok {
+		return &ValidationError{Name: "consensus", err: errors.New(`ent: missing required field "CorrectnessReport.consensus"`)}
+	}
+	if _, ok := crc.mutation.Voted(); !ok {
+		return &ValidationError{Name: "voted", err: errors.New(`ent: missing required field "CorrectnessReport.voted"`)}
 	}
 	if len(crc.mutation.SignersIDs()) == 0 {
 		return &ValidationError{Name: "signers", err: errors.New(`ent: missing required edge "CorrectnessReport.signers"`)}
@@ -193,6 +229,14 @@ func (crc *CorrectnessReportCreate) createSpec() (*CorrectnessReport, *sqlgraph.
 	if value, ok := crc.mutation.Correct(); ok {
 		_spec.SetField(correctnessreport.FieldCorrect, field.TypeBool, value)
 		_node.Correct = value
+	}
+	if value, ok := crc.mutation.Consensus(); ok {
+		_spec.SetField(correctnessreport.FieldConsensus, field.TypeBool, value)
+		_node.Consensus = value
+	}
+	if value, ok := crc.mutation.Voted(); ok {
+		_spec.SetField(correctnessreport.FieldVoted, field.TypeUint, value)
+		_node.Voted = value
 	}
 	if nodes := crc.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -346,6 +390,30 @@ func (u *CorrectnessReportUpsert) UpdateCorrect() *CorrectnessReportUpsert {
 	return u
 }
 
+// SetConsensus sets the "consensus" field.
+func (u *CorrectnessReportUpsert) SetConsensus(v bool) *CorrectnessReportUpsert {
+	u.Set(correctnessreport.FieldConsensus, v)
+	return u
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *CorrectnessReportUpsert) UpdateConsensus() *CorrectnessReportUpsert {
+	u.SetExcluded(correctnessreport.FieldConsensus)
+	return u
+}
+
+// SetVoted sets the "voted" field.
+func (u *CorrectnessReportUpsert) SetVoted(v *helpers.BigInt) *CorrectnessReportUpsert {
+	u.Set(correctnessreport.FieldVoted, v)
+	return u
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *CorrectnessReportUpsert) UpdateVoted() *CorrectnessReportUpsert {
+	u.SetExcluded(correctnessreport.FieldVoted)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -484,6 +552,34 @@ func (u *CorrectnessReportUpsertOne) UpdateCorrect() *CorrectnessReportUpsertOne
 	})
 }
 
+// SetConsensus sets the "consensus" field.
+func (u *CorrectnessReportUpsertOne) SetConsensus(v bool) *CorrectnessReportUpsertOne {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.SetConsensus(v)
+	})
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *CorrectnessReportUpsertOne) UpdateConsensus() *CorrectnessReportUpsertOne {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.UpdateConsensus()
+	})
+}
+
+// SetVoted sets the "voted" field.
+func (u *CorrectnessReportUpsertOne) SetVoted(v *helpers.BigInt) *CorrectnessReportUpsertOne {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.SetVoted(v)
+	})
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *CorrectnessReportUpsertOne) UpdateVoted() *CorrectnessReportUpsertOne {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.UpdateVoted()
+	})
+}
+
 // Exec executes the query.
 func (u *CorrectnessReportUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -536,6 +632,7 @@ func (crcb *CorrectnessReportCreateBulk) Save(ctx context.Context) ([]*Correctne
 	for i := range crcb.builders {
 		func(i int, root context.Context) {
 			builder := crcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*CorrectnessReportMutation)
 				if !ok {
@@ -782,6 +879,34 @@ func (u *CorrectnessReportUpsertBulk) SetCorrect(v bool) *CorrectnessReportUpser
 func (u *CorrectnessReportUpsertBulk) UpdateCorrect() *CorrectnessReportUpsertBulk {
 	return u.Update(func(s *CorrectnessReportUpsert) {
 		s.UpdateCorrect()
+	})
+}
+
+// SetConsensus sets the "consensus" field.
+func (u *CorrectnessReportUpsertBulk) SetConsensus(v bool) *CorrectnessReportUpsertBulk {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.SetConsensus(v)
+	})
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *CorrectnessReportUpsertBulk) UpdateConsensus() *CorrectnessReportUpsertBulk {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.UpdateConsensus()
+	})
+}
+
+// SetVoted sets the "voted" field.
+func (u *CorrectnessReportUpsertBulk) SetVoted(v *helpers.BigInt) *CorrectnessReportUpsertBulk {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.SetVoted(v)
+	})
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *CorrectnessReportUpsertBulk) UpdateVoted() *CorrectnessReportUpsertBulk {
+	return u.Update(func(s *CorrectnessReportUpsert) {
+		s.UpdateVoted()
 	})
 }
 

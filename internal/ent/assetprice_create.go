@@ -97,6 +97,26 @@ func (apc *AssetPriceCreate) SetNillablePair(s *string) *AssetPriceCreate {
 	return apc
 }
 
+// SetConsensus sets the "consensus" field.
+func (apc *AssetPriceCreate) SetConsensus(b bool) *AssetPriceCreate {
+	apc.mutation.SetConsensus(b)
+	return apc
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (apc *AssetPriceCreate) SetNillableConsensus(b *bool) *AssetPriceCreate {
+	if b != nil {
+		apc.SetConsensus(*b)
+	}
+	return apc
+}
+
+// SetVoted sets the "voted" field.
+func (apc *AssetPriceCreate) SetVoted(hi *helpers.BigInt) *AssetPriceCreate {
+	apc.mutation.SetVoted(hi)
+	return apc
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (apc *AssetPriceCreate) AddSignerIDs(ids ...int) *AssetPriceCreate {
 	apc.mutation.AddSignerIDs(ids...)
@@ -119,6 +139,7 @@ func (apc *AssetPriceCreate) Mutation() *AssetPriceMutation {
 
 // Save creates the AssetPrice in the database.
 func (apc *AssetPriceCreate) Save(ctx context.Context) (*AssetPrice, error) {
+	apc.defaults()
 	return withHooks(ctx, apc.sqlSave, apc.mutation, apc.hooks)
 }
 
@@ -144,6 +165,14 @@ func (apc *AssetPriceCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (apc *AssetPriceCreate) defaults() {
+	if _, ok := apc.mutation.Consensus(); !ok {
+		v := assetprice.DefaultConsensus
+		apc.mutation.SetConsensus(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (apc *AssetPriceCreate) check() error {
 	if _, ok := apc.mutation.Block(); !ok {
@@ -159,6 +188,12 @@ func (apc *AssetPriceCreate) check() error {
 		if err := assetprice.SignatureValidator(v); err != nil {
 			return &ValidationError{Name: "signature", err: fmt.Errorf(`ent: validator failed for field "AssetPrice.signature": %w`, err)}
 		}
+	}
+	if _, ok := apc.mutation.Consensus(); !ok {
+		return &ValidationError{Name: "consensus", err: errors.New(`ent: missing required field "AssetPrice.consensus"`)}
+	}
+	if _, ok := apc.mutation.Voted(); !ok {
+		return &ValidationError{Name: "voted", err: errors.New(`ent: missing required field "AssetPrice.voted"`)}
 	}
 	if len(apc.mutation.SignersIDs()) == 0 {
 		return &ValidationError{Name: "signers", err: errors.New(`ent: missing required edge "AssetPrice.signers"`)}
@@ -217,6 +252,14 @@ func (apc *AssetPriceCreate) createSpec() (*AssetPrice, *sqlgraph.CreateSpec) {
 	if value, ok := apc.mutation.Pair(); ok {
 		_spec.SetField(assetprice.FieldPair, field.TypeString, value)
 		_node.Pair = value
+	}
+	if value, ok := apc.mutation.Consensus(); ok {
+		_spec.SetField(assetprice.FieldConsensus, field.TypeBool, value)
+		_node.Consensus = value
+	}
+	if value, ok := apc.mutation.Voted(); ok {
+		_spec.SetField(assetprice.FieldVoted, field.TypeUint, value)
+		_node.Voted = value
 	}
 	if nodes := apc.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -406,6 +449,30 @@ func (u *AssetPriceUpsert) ClearPair() *AssetPriceUpsert {
 	return u
 }
 
+// SetConsensus sets the "consensus" field.
+func (u *AssetPriceUpsert) SetConsensus(v bool) *AssetPriceUpsert {
+	u.Set(assetprice.FieldConsensus, v)
+	return u
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *AssetPriceUpsert) UpdateConsensus() *AssetPriceUpsert {
+	u.SetExcluded(assetprice.FieldConsensus)
+	return u
+}
+
+// SetVoted sets the "voted" field.
+func (u *AssetPriceUpsert) SetVoted(v *helpers.BigInt) *AssetPriceUpsert {
+	u.Set(assetprice.FieldVoted, v)
+	return u
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *AssetPriceUpsert) UpdateVoted() *AssetPriceUpsert {
+	u.SetExcluded(assetprice.FieldVoted)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -586,6 +653,34 @@ func (u *AssetPriceUpsertOne) ClearPair() *AssetPriceUpsertOne {
 	})
 }
 
+// SetConsensus sets the "consensus" field.
+func (u *AssetPriceUpsertOne) SetConsensus(v bool) *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetConsensus(v)
+	})
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *AssetPriceUpsertOne) UpdateConsensus() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateConsensus()
+	})
+}
+
+// SetVoted sets the "voted" field.
+func (u *AssetPriceUpsertOne) SetVoted(v *helpers.BigInt) *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetVoted(v)
+	})
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *AssetPriceUpsertOne) UpdateVoted() *AssetPriceUpsertOne {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateVoted()
+	})
+}
+
 // Exec executes the query.
 func (u *AssetPriceUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -638,6 +733,7 @@ func (apcb *AssetPriceCreateBulk) Save(ctx context.Context) ([]*AssetPrice, erro
 	for i := range apcb.builders {
 		func(i int, root context.Context) {
 			builder := apcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AssetPriceMutation)
 				if !ok {
@@ -926,6 +1022,34 @@ func (u *AssetPriceUpsertBulk) UpdatePair() *AssetPriceUpsertBulk {
 func (u *AssetPriceUpsertBulk) ClearPair() *AssetPriceUpsertBulk {
 	return u.Update(func(s *AssetPriceUpsert) {
 		s.ClearPair()
+	})
+}
+
+// SetConsensus sets the "consensus" field.
+func (u *AssetPriceUpsertBulk) SetConsensus(v bool) *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetConsensus(v)
+	})
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *AssetPriceUpsertBulk) UpdateConsensus() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateConsensus()
+	})
+}
+
+// SetVoted sets the "voted" field.
+func (u *AssetPriceUpsertBulk) SetVoted(v *helpers.BigInt) *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.SetVoted(v)
+	})
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *AssetPriceUpsertBulk) UpdateVoted() *AssetPriceUpsertBulk {
+	return u.Update(func(s *AssetPriceUpsert) {
+		s.UpdateVoted()
 	})
 }
 

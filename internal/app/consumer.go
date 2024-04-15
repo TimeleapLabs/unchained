@@ -34,7 +34,7 @@ func Consumer() {
 	pos := pos.New(ethRPC)
 	db.Start()
 
-	correctnessService := correctnessService.New(ethRPC)
+	correctnessService := correctnessService.New(ethRPC, pos)
 	evmLogService := evmlogService.New(ethRPC, pos)
 	uniswapService := uniswapService.New(ethRPC, pos)
 

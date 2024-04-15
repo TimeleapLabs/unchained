@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent/eventlog"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 )
 
 // EventLog is the model entity for the EventLog schema.
@@ -36,6 +37,10 @@ type EventLog struct {
 	Transaction []byte `json:"transaction,omitempty"`
 	// Args holds the value of the "args" field.
 	Args []datasets.EventLogArg `json:"args,omitempty"`
+	// Consensus holds the value of the "consensus" field.
+	Consensus bool `json:"consensus,omitempty"`
+	// Voted holds the value of the "voted" field.
+	Voted *helpers.BigInt `json:"voted,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventLogQuery when eager-loading is set.
 	Edges        EventLogEdges `json:"edges"`
@@ -71,6 +76,10 @@ func (*EventLog) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case eventlog.FieldSignature, eventlog.FieldTransaction, eventlog.FieldArgs:
 			values[i] = new([]byte)
+		case eventlog.FieldVoted:
+			values[i] = new(helpers.BigInt)
+		case eventlog.FieldConsensus:
+			values[i] = new(sql.NullBool)
 		case eventlog.FieldID, eventlog.FieldBlock, eventlog.FieldSignersCount, eventlog.FieldIndex:
 			values[i] = new(sql.NullInt64)
 		case eventlog.FieldAddress, eventlog.FieldChain, eventlog.FieldEvent:
@@ -152,6 +161,18 @@ func (el *EventLog) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field args: %w", err)
 				}
 			}
+		case eventlog.FieldConsensus:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field consensus", values[i])
+			} else if value.Valid {
+				el.Consensus = value.Bool
+			}
+		case eventlog.FieldVoted:
+			if value, ok := values[i].(*helpers.BigInt); !ok {
+				return fmt.Errorf("unexpected type %T for field voted", values[i])
+			} else if value != nil {
+				el.Voted = value
+			}
 		default:
 			el.selectValues.Set(columns[i], values[i])
 		}
@@ -219,6 +240,12 @@ func (el *EventLog) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("args=")
 	builder.WriteString(fmt.Sprintf("%v", el.Args))
+	builder.WriteString(", ")
+	builder.WriteString("consensus=")
+	builder.WriteString(fmt.Sprintf("%v", el.Consensus))
+	builder.WriteString(", ")
+	builder.WriteString("voted=")
+	builder.WriteString(fmt.Sprintf("%v", el.Voted))
 	builder.WriteByte(')')
 	return builder.String()
 }

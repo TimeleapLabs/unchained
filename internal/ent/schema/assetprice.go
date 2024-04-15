@@ -40,6 +40,16 @@ func (AssetPrice) Fields() []ent.Field {
 		field.String("asset").Optional(),
 		field.String("chain").Optional(),
 		field.String("pair").Optional(),
+		field.Bool("consensus").Default(false).
+			Annotations(entgql.Type("Boolean")),
+		field.Uint("voted").
+			GoType(new(helpers.BigInt)).
+			SchemaType(map[string]string{
+				// Uint256
+				dialect.SQLite:   "numeric(78, 0)",
+				dialect.Postgres: "numeric(78, 0)",
+			}).
+			Annotations(entgql.Type("Uint")),
 	}
 }
 
@@ -55,6 +65,7 @@ func (AssetPrice) Edges() []ent.Edge {
 func (AssetPrice) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("block", "chain", "asset", "pair").Unique(),
+		index.Fields("block", "chain", "asset", "pair", "price", "consensus"),
 	}
 }
 

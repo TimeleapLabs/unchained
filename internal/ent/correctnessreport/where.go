@@ -5,6 +5,7 @@ package correctnessreport
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/predicate"
 )
 
@@ -81,6 +82,16 @@ func Topic(v []byte) predicate.CorrectnessReport {
 // Correct applies equality check predicate on the "correct" field. It's identical to CorrectEQ.
 func Correct(v bool) predicate.CorrectnessReport {
 	return predicate.CorrectnessReport(sql.FieldEQ(FieldCorrect, v))
+}
+
+// Consensus applies equality check predicate on the "consensus" field. It's identical to ConsensusEQ.
+func Consensus(v bool) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldEQ(FieldConsensus, v))
+}
+
+// Voted applies equality check predicate on the "voted" field. It's identical to VotedEQ.
+func Voted(v *helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldEQ(FieldVoted, v))
 }
 
 // SignersCountEQ applies the EQ predicate on the "signersCount" field.
@@ -291,6 +302,56 @@ func CorrectEQ(v bool) predicate.CorrectnessReport {
 // CorrectNEQ applies the NEQ predicate on the "correct" field.
 func CorrectNEQ(v bool) predicate.CorrectnessReport {
 	return predicate.CorrectnessReport(sql.FieldNEQ(FieldCorrect, v))
+}
+
+// ConsensusEQ applies the EQ predicate on the "consensus" field.
+func ConsensusEQ(v bool) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldEQ(FieldConsensus, v))
+}
+
+// ConsensusNEQ applies the NEQ predicate on the "consensus" field.
+func ConsensusNEQ(v bool) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldNEQ(FieldConsensus, v))
+}
+
+// VotedEQ applies the EQ predicate on the "voted" field.
+func VotedEQ(v *helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldEQ(FieldVoted, v))
+}
+
+// VotedNEQ applies the NEQ predicate on the "voted" field.
+func VotedNEQ(v *helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldNEQ(FieldVoted, v))
+}
+
+// VotedIn applies the In predicate on the "voted" field.
+func VotedIn(vs ...*helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldIn(FieldVoted, vs...))
+}
+
+// VotedNotIn applies the NotIn predicate on the "voted" field.
+func VotedNotIn(vs ...*helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldNotIn(FieldVoted, vs...))
+}
+
+// VotedGT applies the GT predicate on the "voted" field.
+func VotedGT(v *helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldGT(FieldVoted, v))
+}
+
+// VotedGTE applies the GTE predicate on the "voted" field.
+func VotedGTE(v *helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldGTE(FieldVoted, v))
+}
+
+// VotedLT applies the LT predicate on the "voted" field.
+func VotedLT(v *helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldLT(FieldVoted, v))
+}
+
+// VotedLTE applies the LTE predicate on the "voted" field.
+func VotedLTE(v *helpers.BigInt) predicate.CorrectnessReport {
+	return predicate.CorrectnessReport(sql.FieldLTE(FieldVoted, v))
 }
 
 // HasSigners applies the HasEdge predicate on the "signers" edge.

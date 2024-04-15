@@ -9,6 +9,8 @@ type AssetPrice implements Node {
   asset: String
   chain: String
   pair: String
+  consensus: Boolean!
+  voted: Uint!
   signers: [Signer!]!
 }
 """
@@ -169,6 +171,22 @@ input AssetPriceWhereInput {
   pairEqualFold: String
   pairContainsFold: String
   """
+  consensus field predicates
+  """
+  consensus: Boolean
+  consensusNEQ: Boolean
+  """
+  voted field predicates
+  """
+  voted: Uint
+  votedNEQ: Uint
+  votedIn: [Uint!]
+  votedNotIn: [Uint!]
+  votedGT: Uint
+  votedGTE: Uint
+  votedLT: Uint
+  votedLTE: Uint
+  """
   signers edge predicates
   """
   hasSigners: Boolean
@@ -182,6 +200,8 @@ type CorrectnessReport implements Node {
   hash: Bytes!
   topic: Bytes!
   correct: Boolean!
+  consensus: Boolean!
+  voted: Uint!
   signers: [Signer!]!
 }
 """
@@ -280,6 +300,22 @@ input CorrectnessReportWhereInput {
   correct: Boolean
   correctNEQ: Boolean
   """
+  consensus field predicates
+  """
+  consensus: Boolean
+  consensusNEQ: Boolean
+  """
+  voted field predicates
+  """
+  voted: Uint
+  votedNEQ: Uint
+  votedIn: [Uint!]
+  votedNotIn: [Uint!]
+  votedGT: Uint
+  votedGTE: Uint
+  votedLT: Uint
+  votedLTE: Uint
+  """
   signers edge predicates
   """
   hasSigners: Boolean
@@ -301,6 +337,8 @@ type EventLog implements Node {
   event: String!
   transaction: Bytes!
   args: [EventLogArg!]!
+  consensus: Boolean!
+  voted: Uint!
   signers: [Signer!]!
 }
 """
@@ -452,6 +490,22 @@ input EventLogWhereInput {
   eventHasSuffix: String
   eventEqualFold: String
   eventContainsFold: String
+  """
+  consensus field predicates
+  """
+  consensus: Boolean
+  consensusNEQ: Boolean
+  """
+  voted field predicates
+  """
+  voted: Uint
+  votedNEQ: Uint
+  votedIn: [Uint!]
+  votedNotIn: [Uint!]
+  votedGT: Uint
+  votedGTE: Uint
+  votedLT: Uint
+  votedLTE: Uint
   """
   signers edge predicates
   """

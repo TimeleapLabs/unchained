@@ -2,7 +2,9 @@ package evmlog
 
 import (
 	"context"
+	"fmt"
 	"math/big"
+	"slices"
 	"sync"
 	"time"
 
@@ -15,6 +17,8 @@ import (
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/db"
 	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/KenshiTech/unchained/internal/ent/eventlog"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
 	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos"
@@ -31,8 +35,10 @@ const (
 )
 
 type SaveSignatureArgs struct {
-	Info datasets.EventLog
-	Hash bls12381.G1Affine
+	Info      datasets.EventLog
+	Hash      bls12381.G1Affine
+	Consensus bool
+	Voted     *big.Int
 }
 
 type Service struct {
@@ -41,7 +47,6 @@ type Service struct {
 
 	consensus               *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
 	signatureCache          *lru.Cache[bls12381.G1Affine, []datasets.Signature]
-	aggregateCache          *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 	signatureMutex          *sync.Mutex
 	supportedEvents         map[SupportKey]bool
@@ -105,11 +110,7 @@ func (e *Service) RecordSignature(
 		e.consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
 	}
 
-	votingPower, err := e.pos.GetVotingPowerOfPublicKey(
-		signer.PublicKey,
-		big.NewInt(int64(*blockNumber)),
-	)
-
+	votingPower, err := e.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
 	if err != nil {
 		log.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -135,7 +136,6 @@ func (e *Service) RecordSignature(
 	packed := datasets.Signature{
 		Signature: signature,
 		Signer:    signer,
-		Processed: false,
 	}
 
 	for _, item := range cached {
@@ -148,13 +148,37 @@ func (e *Service) RecordSignature(
 	cached = append(cached, packed)
 	e.signatureCache.Add(hash, cached)
 
-	if isMajority {
-		if debounce {
-			e.DebouncedSaveSignatures(hash, SaveSignatureArgs{Hash: hash, Info: info})
-		} else {
-			e.SaveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+	saveArgs := SaveSignatureArgs{
+		Hash:      hash,
+		Info:      info,
+		Consensus: isMajority,
+		Voted:     totalVoted,
+	}
+
+	if debounce {
+		e.DebouncedSaveSignatures(hash, saveArgs)
+	} else {
+		e.SaveSignatures(saveArgs)
+	}
+}
+
+func IsNewSigner(signature datasets.Signature, records []*ent.EventLog) bool {
+	for _, record := range records {
+		for _, signer := range record.Edges.Signers {
+			if signature.Signer.PublicKey == [96]byte(signer.Key) {
+				return false
+			}
 		}
 	}
+
+	return true
+}
+
+func sortEventArgs(lhs datasets.EventLogArg, rhs datasets.EventLogArg) int {
+	if lhs.Name < rhs.Name {
+		return -1
+	}
+	return 1
 }
 
 func (e *Service) SaveSignatures(args SaveSignatureArgs) {
@@ -171,17 +195,34 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
+	currentRecords, err := dbClient.EventLog.
+		Query().
+		Where(
+			eventlog.Block(args.Info.Block),
+			eventlog.TransactionEQ(args.Info.TxHash[:]),
+			eventlog.IndexEQ(args.Info.LogIndex),
+		).
+		WithSigners().
+		All(ctx)
+
+	if err != nil && !ent.IsNotFound(err) {
+		panic(err)
+	}
+
 	for i := range signatures {
 		signature := signatures[i]
 		keys = append(keys, signature.Signer.PublicKey[:])
-		if !signature.Processed {
-			newSignatures = append(newSignatures, signature.Signature)
-			newSigners = append(newSigners, signature.Signer)
+
+		if !IsNewSigner(signature, currentRecords) {
+			continue
 		}
+
+		newSignatures = append(newSignatures, signature.Signature)
+		newSigners = append(newSigners, signature.Signer)
 	}
 
 	// TODO: This part can be a shared library
-	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
+	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		signer := newSigners[i]
 		sc.SetName(signer.Name).
 			SetEvm(signer.EvmAddress).
@@ -212,10 +253,51 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 	}
 
 	var aggregate bls12381.G1Affine
-	currentAggregate, ok := e.aggregateCache.Get(args.Hash)
 
-	if ok {
+	sortedCurrentArgs := make([]datasets.EventLogArg, len(args.Info.Args))
+	copy(sortedCurrentArgs, args.Info.Args)
+	slices.SortFunc(sortedCurrentArgs, sortEventArgs)
+
+	for _, record := range currentRecords {
+		sortedRecordArgs := make([]datasets.EventLogArg, len(args.Info.Args))
+		copy(sortedRecordArgs, record.Args)
+		slices.SortFunc(sortedRecordArgs, sortEventArgs)
+
+		// compare args
+		if len(sortedCurrentArgs) != len(sortedRecordArgs) {
+			continue
+		}
+
+		for i := range sortedCurrentArgs {
+			if sortedCurrentArgs[i].Name != sortedRecordArgs[i].Name ||
+				sortedCurrentArgs[i].Value != sortedRecordArgs[i].Value {
+				continue
+			}
+		}
+
+		// Check if record mataches the passed event
+		if record.Chain != args.Info.Chain ||
+			record.Address != args.Info.Address ||
+			record.Event != args.Info.Event {
+			continue
+		}
+
+		currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
+
+		if err != nil {
+			log.Logger.
+				With("Block", args.Info.Block).
+				With("Transaction", fmt.Sprintf("%x", args.Info.TxHash)).
+				With("Index", args.Info.LogIndex).
+				With("Event", args.Info.Event).
+				With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+				With("Error", err).
+				Debug("Failed to recover signature")
+			return
+		}
+
 		newSignatures = append(newSignatures, currentAggregate)
+		break
 	}
 
 	aggregate, err = bls.AggregateSignatures(newSignatures)
@@ -237,6 +319,8 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
 		SetArgs(args.Info.Args).
+		SetConsensus(args.Consensus).
+		SetVoted(&helpers.BigInt{Int: *args.Voted}).
 		AddSignerIDs(signerIDs...).
 		OnConflictColumns("block", "transaction", "index").
 		UpdateNewValues().
@@ -245,12 +329,6 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 	if err != nil {
 		panic(err)
 	}
-
-	for inx := range signatures {
-		signatures[inx].Processed = true
-	}
-
-	e.aggregateCache.Add(args.Hash, aggregate)
 }
 
 func (e *Service) SendPriceReport(signature bls12381.G1Affine, event datasets.EventLog) {
@@ -288,11 +366,6 @@ func New(
 	}
 
 	s.consensus, err = lru.New[EventKey, map[bls12381.G1Affine]big.Int](LruSize)
-	if err != nil {
-		panic(err)
-	}
-
-	s.aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](LruSize)
 	if err != nil {
 		panic(err)
 	}

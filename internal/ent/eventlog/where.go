@@ -5,6 +5,7 @@ package eventlog
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/predicate"
 )
 
@@ -91,6 +92,16 @@ func Event(v string) predicate.EventLog {
 // Transaction applies equality check predicate on the "transaction" field. It's identical to TransactionEQ.
 func Transaction(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldEQ(FieldTransaction, v))
+}
+
+// Consensus applies equality check predicate on the "consensus" field. It's identical to ConsensusEQ.
+func Consensus(v bool) predicate.EventLog {
+	return predicate.EventLog(sql.FieldEQ(FieldConsensus, v))
+}
+
+// Voted applies equality check predicate on the "voted" field. It's identical to VotedEQ.
+func Voted(v *helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldEQ(FieldVoted, v))
 }
 
 // BlockEQ applies the EQ predicate on the "block" field.
@@ -486,6 +497,56 @@ func TransactionLT(v []byte) predicate.EventLog {
 // TransactionLTE applies the LTE predicate on the "transaction" field.
 func TransactionLTE(v []byte) predicate.EventLog {
 	return predicate.EventLog(sql.FieldLTE(FieldTransaction, v))
+}
+
+// ConsensusEQ applies the EQ predicate on the "consensus" field.
+func ConsensusEQ(v bool) predicate.EventLog {
+	return predicate.EventLog(sql.FieldEQ(FieldConsensus, v))
+}
+
+// ConsensusNEQ applies the NEQ predicate on the "consensus" field.
+func ConsensusNEQ(v bool) predicate.EventLog {
+	return predicate.EventLog(sql.FieldNEQ(FieldConsensus, v))
+}
+
+// VotedEQ applies the EQ predicate on the "voted" field.
+func VotedEQ(v *helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldEQ(FieldVoted, v))
+}
+
+// VotedNEQ applies the NEQ predicate on the "voted" field.
+func VotedNEQ(v *helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldNEQ(FieldVoted, v))
+}
+
+// VotedIn applies the In predicate on the "voted" field.
+func VotedIn(vs ...*helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldIn(FieldVoted, vs...))
+}
+
+// VotedNotIn applies the NotIn predicate on the "voted" field.
+func VotedNotIn(vs ...*helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldNotIn(FieldVoted, vs...))
+}
+
+// VotedGT applies the GT predicate on the "voted" field.
+func VotedGT(v *helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldGT(FieldVoted, v))
+}
+
+// VotedGTE applies the GTE predicate on the "voted" field.
+func VotedGTE(v *helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldGTE(FieldVoted, v))
+}
+
+// VotedLT applies the LT predicate on the "voted" field.
+func VotedLT(v *helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldLT(FieldVoted, v))
+}
+
+// VotedLTE applies the LTE predicate on the "voted" field.
+func VotedLTE(v *helpers.BigInt) predicate.EventLog {
+	return predicate.EventLog(sql.FieldLTE(FieldVoted, v))
 }
 
 // HasSigners applies the HasEdge predicate on the "signers" edge.

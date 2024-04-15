@@ -3,10 +3,12 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 )
 
 // DataSet holds the schema definition for the DataSet entity.
@@ -37,6 +39,16 @@ func (CorrectnessReport) Fields() []ent.Field {
 			MaxLen(HashMaxLen).
 			Annotations(entgql.Type("Bytes")),
 		field.Bool("correct"),
+		field.Bool("consensus").Default(false).
+			Annotations(entgql.Type("Boolean")),
+		field.Uint("voted").
+			GoType(new(helpers.BigInt)).
+			SchemaType(map[string]string{
+				// Uint256
+				dialect.SQLite:   "numeric(78, 0)",
+				dialect.Postgres: "numeric(78, 0)",
+			}).
+			Annotations(entgql.Type("Uint")),
 	}
 }
 

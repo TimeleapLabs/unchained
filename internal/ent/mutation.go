@@ -49,6 +49,8 @@ type AssetPriceMutation struct {
 	asset           *string
 	chain           *string
 	pair            *string
+	consensus       *bool
+	voted           **helpers.BigInt
 	clearedFields   map[string]struct{}
 	signers         map[int]struct{}
 	removedsigners  map[int]struct{}
@@ -501,6 +503,78 @@ func (m *AssetPriceMutation) ResetPair() {
 	delete(m.clearedFields, assetprice.FieldPair)
 }
 
+// SetConsensus sets the "consensus" field.
+func (m *AssetPriceMutation) SetConsensus(b bool) {
+	m.consensus = &b
+}
+
+// Consensus returns the value of the "consensus" field in the mutation.
+func (m *AssetPriceMutation) Consensus() (r bool, exists bool) {
+	v := m.consensus
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConsensus returns the old "consensus" field's value of the AssetPrice entity.
+// If the AssetPrice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AssetPriceMutation) OldConsensus(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConsensus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConsensus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConsensus: %w", err)
+	}
+	return oldValue.Consensus, nil
+}
+
+// ResetConsensus resets all changes to the "consensus" field.
+func (m *AssetPriceMutation) ResetConsensus() {
+	m.consensus = nil
+}
+
+// SetVoted sets the "voted" field.
+func (m *AssetPriceMutation) SetVoted(hi *helpers.BigInt) {
+	m.voted = &hi
+}
+
+// Voted returns the value of the "voted" field in the mutation.
+func (m *AssetPriceMutation) Voted() (r *helpers.BigInt, exists bool) {
+	v := m.voted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVoted returns the old "voted" field's value of the AssetPrice entity.
+// If the AssetPrice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AssetPriceMutation) OldVoted(ctx context.Context) (v *helpers.BigInt, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVoted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVoted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVoted: %w", err)
+	}
+	return oldValue.Voted, nil
+}
+
+// ResetVoted resets all changes to the "voted" field.
+func (m *AssetPriceMutation) ResetVoted() {
+	m.voted = nil
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by ids.
 func (m *AssetPriceMutation) AddSignerIDs(ids ...int) {
 	if m.signers == nil {
@@ -589,7 +663,7 @@ func (m *AssetPriceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AssetPriceMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.block != nil {
 		fields = append(fields, assetprice.FieldBlock)
 	}
@@ -610,6 +684,12 @@ func (m *AssetPriceMutation) Fields() []string {
 	}
 	if m.pair != nil {
 		fields = append(fields, assetprice.FieldPair)
+	}
+	if m.consensus != nil {
+		fields = append(fields, assetprice.FieldConsensus)
+	}
+	if m.voted != nil {
+		fields = append(fields, assetprice.FieldVoted)
 	}
 	return fields
 }
@@ -633,6 +713,10 @@ func (m *AssetPriceMutation) Field(name string) (ent.Value, bool) {
 		return m.Chain()
 	case assetprice.FieldPair:
 		return m.Pair()
+	case assetprice.FieldConsensus:
+		return m.Consensus()
+	case assetprice.FieldVoted:
+		return m.Voted()
 	}
 	return nil, false
 }
@@ -656,6 +740,10 @@ func (m *AssetPriceMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldChain(ctx)
 	case assetprice.FieldPair:
 		return m.OldPair(ctx)
+	case assetprice.FieldConsensus:
+		return m.OldConsensus(ctx)
+	case assetprice.FieldVoted:
+		return m.OldVoted(ctx)
 	}
 	return nil, fmt.Errorf("unknown AssetPrice field %s", name)
 }
@@ -713,6 +801,20 @@ func (m *AssetPriceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPair(v)
+		return nil
+	case assetprice.FieldConsensus:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConsensus(v)
+		return nil
+	case assetprice.FieldVoted:
+		v, ok := value.(*helpers.BigInt)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVoted(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AssetPrice field %s", name)
@@ -838,6 +940,12 @@ func (m *AssetPriceMutation) ResetField(name string) error {
 	case assetprice.FieldPair:
 		m.ResetPair()
 		return nil
+	case assetprice.FieldConsensus:
+		m.ResetConsensus()
+		return nil
+	case assetprice.FieldVoted:
+		m.ResetVoted()
+		return nil
 	}
 	return fmt.Errorf("unknown AssetPrice field %s", name)
 }
@@ -940,6 +1048,8 @@ type CorrectnessReportMutation struct {
 	hash            *[]byte
 	topic           *[]byte
 	correct         *bool
+	consensus       *bool
+	voted           **helpers.BigInt
 	clearedFields   map[string]struct{}
 	signers         map[int]struct{}
 	removedsigners  map[int]struct{}
@@ -1303,6 +1413,78 @@ func (m *CorrectnessReportMutation) ResetCorrect() {
 	m.correct = nil
 }
 
+// SetConsensus sets the "consensus" field.
+func (m *CorrectnessReportMutation) SetConsensus(b bool) {
+	m.consensus = &b
+}
+
+// Consensus returns the value of the "consensus" field in the mutation.
+func (m *CorrectnessReportMutation) Consensus() (r bool, exists bool) {
+	v := m.consensus
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConsensus returns the old "consensus" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldConsensus(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConsensus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConsensus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConsensus: %w", err)
+	}
+	return oldValue.Consensus, nil
+}
+
+// ResetConsensus resets all changes to the "consensus" field.
+func (m *CorrectnessReportMutation) ResetConsensus() {
+	m.consensus = nil
+}
+
+// SetVoted sets the "voted" field.
+func (m *CorrectnessReportMutation) SetVoted(hi *helpers.BigInt) {
+	m.voted = &hi
+}
+
+// Voted returns the value of the "voted" field in the mutation.
+func (m *CorrectnessReportMutation) Voted() (r *helpers.BigInt, exists bool) {
+	v := m.voted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVoted returns the old "voted" field's value of the CorrectnessReport entity.
+// If the CorrectnessReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CorrectnessReportMutation) OldVoted(ctx context.Context) (v *helpers.BigInt, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVoted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVoted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVoted: %w", err)
+	}
+	return oldValue.Voted, nil
+}
+
+// ResetVoted resets all changes to the "voted" field.
+func (m *CorrectnessReportMutation) ResetVoted() {
+	m.voted = nil
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by ids.
 func (m *CorrectnessReportMutation) AddSignerIDs(ids ...int) {
 	if m.signers == nil {
@@ -1391,7 +1573,7 @@ func (m *CorrectnessReportMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CorrectnessReportMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.signersCount != nil {
 		fields = append(fields, correctnessreport.FieldSignersCount)
 	}
@@ -1409,6 +1591,12 @@ func (m *CorrectnessReportMutation) Fields() []string {
 	}
 	if m.correct != nil {
 		fields = append(fields, correctnessreport.FieldCorrect)
+	}
+	if m.consensus != nil {
+		fields = append(fields, correctnessreport.FieldConsensus)
+	}
+	if m.voted != nil {
+		fields = append(fields, correctnessreport.FieldVoted)
 	}
 	return fields
 }
@@ -1430,6 +1618,10 @@ func (m *CorrectnessReportMutation) Field(name string) (ent.Value, bool) {
 		return m.Topic()
 	case correctnessreport.FieldCorrect:
 		return m.Correct()
+	case correctnessreport.FieldConsensus:
+		return m.Consensus()
+	case correctnessreport.FieldVoted:
+		return m.Voted()
 	}
 	return nil, false
 }
@@ -1451,6 +1643,10 @@ func (m *CorrectnessReportMutation) OldField(ctx context.Context, name string) (
 		return m.OldTopic(ctx)
 	case correctnessreport.FieldCorrect:
 		return m.OldCorrect(ctx)
+	case correctnessreport.FieldConsensus:
+		return m.OldConsensus(ctx)
+	case correctnessreport.FieldVoted:
+		return m.OldVoted(ctx)
 	}
 	return nil, fmt.Errorf("unknown CorrectnessReport field %s", name)
 }
@@ -1501,6 +1697,20 @@ func (m *CorrectnessReportMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCorrect(v)
+		return nil
+	case correctnessreport.FieldConsensus:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConsensus(v)
+		return nil
+	case correctnessreport.FieldVoted:
+		v, ok := value.(*helpers.BigInt)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVoted(v)
 		return nil
 	}
 	return fmt.Errorf("unknown CorrectnessReport field %s", name)
@@ -1595,6 +1805,12 @@ func (m *CorrectnessReportMutation) ResetField(name string) error {
 		return nil
 	case correctnessreport.FieldCorrect:
 		m.ResetCorrect()
+		return nil
+	case correctnessreport.FieldConsensus:
+		m.ResetConsensus()
+		return nil
+	case correctnessreport.FieldVoted:
+		m.ResetVoted()
 		return nil
 	}
 	return fmt.Errorf("unknown CorrectnessReport field %s", name)
@@ -1703,6 +1919,8 @@ type EventLogMutation struct {
 	transaction     *[]byte
 	args            *[]datasets.EventLogArg
 	appendargs      []datasets.EventLogArg
+	consensus       *bool
+	voted           **helpers.BigInt
 	clearedFields   map[string]struct{}
 	signers         map[int]struct{}
 	removedsigners  map[int]struct{}
@@ -2209,6 +2427,78 @@ func (m *EventLogMutation) ResetArgs() {
 	m.appendargs = nil
 }
 
+// SetConsensus sets the "consensus" field.
+func (m *EventLogMutation) SetConsensus(b bool) {
+	m.consensus = &b
+}
+
+// Consensus returns the value of the "consensus" field in the mutation.
+func (m *EventLogMutation) Consensus() (r bool, exists bool) {
+	v := m.consensus
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConsensus returns the old "consensus" field's value of the EventLog entity.
+// If the EventLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventLogMutation) OldConsensus(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConsensus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConsensus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConsensus: %w", err)
+	}
+	return oldValue.Consensus, nil
+}
+
+// ResetConsensus resets all changes to the "consensus" field.
+func (m *EventLogMutation) ResetConsensus() {
+	m.consensus = nil
+}
+
+// SetVoted sets the "voted" field.
+func (m *EventLogMutation) SetVoted(hi *helpers.BigInt) {
+	m.voted = &hi
+}
+
+// Voted returns the value of the "voted" field in the mutation.
+func (m *EventLogMutation) Voted() (r *helpers.BigInt, exists bool) {
+	v := m.voted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVoted returns the old "voted" field's value of the EventLog entity.
+// If the EventLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventLogMutation) OldVoted(ctx context.Context) (v *helpers.BigInt, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVoted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVoted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVoted: %w", err)
+	}
+	return oldValue.Voted, nil
+}
+
+// ResetVoted resets all changes to the "voted" field.
+func (m *EventLogMutation) ResetVoted() {
+	m.voted = nil
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by ids.
 func (m *EventLogMutation) AddSignerIDs(ids ...int) {
 	if m.signers == nil {
@@ -2297,7 +2587,7 @@ func (m *EventLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EventLogMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 11)
 	if m.block != nil {
 		fields = append(fields, eventlog.FieldBlock)
 	}
@@ -2325,6 +2615,12 @@ func (m *EventLogMutation) Fields() []string {
 	if m.args != nil {
 		fields = append(fields, eventlog.FieldArgs)
 	}
+	if m.consensus != nil {
+		fields = append(fields, eventlog.FieldConsensus)
+	}
+	if m.voted != nil {
+		fields = append(fields, eventlog.FieldVoted)
+	}
 	return fields
 }
 
@@ -2351,6 +2647,10 @@ func (m *EventLogMutation) Field(name string) (ent.Value, bool) {
 		return m.Transaction()
 	case eventlog.FieldArgs:
 		return m.Args()
+	case eventlog.FieldConsensus:
+		return m.Consensus()
+	case eventlog.FieldVoted:
+		return m.Voted()
 	}
 	return nil, false
 }
@@ -2378,6 +2678,10 @@ func (m *EventLogMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldTransaction(ctx)
 	case eventlog.FieldArgs:
 		return m.OldArgs(ctx)
+	case eventlog.FieldConsensus:
+		return m.OldConsensus(ctx)
+	case eventlog.FieldVoted:
+		return m.OldVoted(ctx)
 	}
 	return nil, fmt.Errorf("unknown EventLog field %s", name)
 }
@@ -2449,6 +2753,20 @@ func (m *EventLogMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetArgs(v)
+		return nil
+	case eventlog.FieldConsensus:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConsensus(v)
+		return nil
+	case eventlog.FieldVoted:
+		v, ok := value.(*helpers.BigInt)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVoted(v)
 		return nil
 	}
 	return fmt.Errorf("unknown EventLog field %s", name)
@@ -2564,6 +2882,12 @@ func (m *EventLogMutation) ResetField(name string) error {
 		return nil
 	case eventlog.FieldArgs:
 		m.ResetArgs()
+		return nil
+	case eventlog.FieldConsensus:
+		m.ResetConsensus()
+		return nil
+	case eventlog.FieldVoted:
+		m.ResetVoted()
 		return nil
 	}
 	return fmt.Errorf("unknown EventLog field %s", name)

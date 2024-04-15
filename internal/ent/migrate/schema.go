@@ -14,10 +14,12 @@ var (
 		{Name: "block", Type: field.TypeUint64},
 		{Name: "signers_count", Type: field.TypeUint64, Nullable: true},
 		{Name: "price", Type: field.TypeUint, SchemaType: map[string]string{"postgres": "numeric(78, 0)", "sqlite3": "numeric(78, 0)"}},
-		{Name: "signature", Type: field.TypeBytes, Size: 96},
+		{Name: "signature", Type: field.TypeBytes, Size: 48},
 		{Name: "asset", Type: field.TypeString, Nullable: true},
 		{Name: "chain", Type: field.TypeString, Nullable: true},
 		{Name: "pair", Type: field.TypeString, Nullable: true},
+		{Name: "consensus", Type: field.TypeBool, Default: false},
+		{Name: "voted", Type: field.TypeUint, SchemaType: map[string]string{"postgres": "numeric(78, 0)", "sqlite3": "numeric(78, 0)"}},
 	}
 	// AssetPricesTable holds the schema information for the "asset_prices" table.
 	AssetPricesTable = &schema.Table{
@@ -30,6 +32,11 @@ var (
 				Unique:  true,
 				Columns: []*schema.Column{AssetPricesColumns[1], AssetPricesColumns[6], AssetPricesColumns[5], AssetPricesColumns[7]},
 			},
+			{
+				Name:    "assetprice_block_chain_asset_pair_price_consensus",
+				Unique:  false,
+				Columns: []*schema.Column{AssetPricesColumns[1], AssetPricesColumns[6], AssetPricesColumns[5], AssetPricesColumns[7], AssetPricesColumns[3], AssetPricesColumns[8]},
+			},
 		},
 	}
 	// CorrectnessReportsColumns holds the columns for the "correctness_reports" table.
@@ -41,6 +48,8 @@ var (
 		{Name: "hash", Type: field.TypeBytes, Size: 64},
 		{Name: "topic", Type: field.TypeBytes, Size: 64},
 		{Name: "correct", Type: field.TypeBool},
+		{Name: "consensus", Type: field.TypeBool, Default: false},
+		{Name: "voted", Type: field.TypeUint, SchemaType: map[string]string{"postgres": "numeric(78, 0)", "sqlite3": "numeric(78, 0)"}},
 	}
 	// CorrectnessReportsTable holds the schema information for the "correctness_reports" table.
 	CorrectnessReportsTable = &schema.Table{
@@ -65,13 +74,15 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "block", Type: field.TypeUint64},
 		{Name: "signers_count", Type: field.TypeUint64},
-		{Name: "signature", Type: field.TypeBytes, Size: 96},
+		{Name: "signature", Type: field.TypeBytes, Size: 48},
 		{Name: "address", Type: field.TypeString},
 		{Name: "chain", Type: field.TypeString},
 		{Name: "index", Type: field.TypeUint64},
 		{Name: "event", Type: field.TypeString},
 		{Name: "transaction", Type: field.TypeBytes, Size: 32},
 		{Name: "args", Type: field.TypeJSON},
+		{Name: "consensus", Type: field.TypeBool, Default: false},
+		{Name: "voted", Type: field.TypeUint, SchemaType: map[string]string{"postgres": "numeric(78, 0)", "sqlite3": "numeric(78, 0)"}},
 	}
 	// EventLogsTable holds the schema information for the "event_logs" table.
 	EventLogsTable = &schema.Table{
@@ -85,9 +96,9 @@ var (
 				Columns: []*schema.Column{EventLogsColumns[1], EventLogsColumns[8], EventLogsColumns[6]},
 			},
 			{
-				Name:    "eventlog_block_address_event",
+				Name:    "eventlog_block_address_event_consensus",
 				Unique:  false,
-				Columns: []*schema.Column{EventLogsColumns[1], EventLogsColumns[4], EventLogsColumns[7]},
+				Columns: []*schema.Column{EventLogsColumns[1], EventLogsColumns[4], EventLogsColumns[7], EventLogsColumns[10]},
 			},
 		},
 	}

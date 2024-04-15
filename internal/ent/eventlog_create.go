@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent/eventlog"
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
 )
 
@@ -77,6 +78,26 @@ func (elc *EventLogCreate) SetArgs(dla []datasets.EventLogArg) *EventLogCreate {
 	return elc
 }
 
+// SetConsensus sets the "consensus" field.
+func (elc *EventLogCreate) SetConsensus(b bool) *EventLogCreate {
+	elc.mutation.SetConsensus(b)
+	return elc
+}
+
+// SetNillableConsensus sets the "consensus" field if the given value is not nil.
+func (elc *EventLogCreate) SetNillableConsensus(b *bool) *EventLogCreate {
+	if b != nil {
+		elc.SetConsensus(*b)
+	}
+	return elc
+}
+
+// SetVoted sets the "voted" field.
+func (elc *EventLogCreate) SetVoted(hi *helpers.BigInt) *EventLogCreate {
+	elc.mutation.SetVoted(hi)
+	return elc
+}
+
 // AddSignerIDs adds the "signers" edge to the Signer entity by IDs.
 func (elc *EventLogCreate) AddSignerIDs(ids ...int) *EventLogCreate {
 	elc.mutation.AddSignerIDs(ids...)
@@ -99,6 +120,7 @@ func (elc *EventLogCreate) Mutation() *EventLogMutation {
 
 // Save creates the EventLog in the database.
 func (elc *EventLogCreate) Save(ctx context.Context) (*EventLog, error) {
+	elc.defaults()
 	return withHooks(ctx, elc.sqlSave, elc.mutation, elc.hooks)
 }
 
@@ -121,6 +143,14 @@ func (elc *EventLogCreate) Exec(ctx context.Context) error {
 func (elc *EventLogCreate) ExecX(ctx context.Context) {
 	if err := elc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (elc *EventLogCreate) defaults() {
+	if _, ok := elc.mutation.Consensus(); !ok {
+		v := eventlog.DefaultConsensus
+		elc.mutation.SetConsensus(v)
 	}
 }
 
@@ -162,6 +192,12 @@ func (elc *EventLogCreate) check() error {
 	}
 	if _, ok := elc.mutation.Args(); !ok {
 		return &ValidationError{Name: "args", err: errors.New(`ent: missing required field "EventLog.args"`)}
+	}
+	if _, ok := elc.mutation.Consensus(); !ok {
+		return &ValidationError{Name: "consensus", err: errors.New(`ent: missing required field "EventLog.consensus"`)}
+	}
+	if _, ok := elc.mutation.Voted(); !ok {
+		return &ValidationError{Name: "voted", err: errors.New(`ent: missing required field "EventLog.voted"`)}
 	}
 	if len(elc.mutation.SignersIDs()) == 0 {
 		return &ValidationError{Name: "signers", err: errors.New(`ent: missing required edge "EventLog.signers"`)}
@@ -228,6 +264,14 @@ func (elc *EventLogCreate) createSpec() (*EventLog, *sqlgraph.CreateSpec) {
 	if value, ok := elc.mutation.Args(); ok {
 		_spec.SetField(eventlog.FieldArgs, field.TypeJSON, value)
 		_node.Args = value
+	}
+	if value, ok := elc.mutation.Consensus(); ok {
+		_spec.SetField(eventlog.FieldConsensus, field.TypeBool, value)
+		_node.Consensus = value
+	}
+	if value, ok := elc.mutation.Voted(); ok {
+		_spec.SetField(eventlog.FieldVoted, field.TypeUint, value)
+		_node.Voted = value
 	}
 	if nodes := elc.mutation.SignersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -423,6 +467,30 @@ func (u *EventLogUpsert) UpdateArgs() *EventLogUpsert {
 	return u
 }
 
+// SetConsensus sets the "consensus" field.
+func (u *EventLogUpsert) SetConsensus(v bool) *EventLogUpsert {
+	u.Set(eventlog.FieldConsensus, v)
+	return u
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *EventLogUpsert) UpdateConsensus() *EventLogUpsert {
+	u.SetExcluded(eventlog.FieldConsensus)
+	return u
+}
+
+// SetVoted sets the "voted" field.
+func (u *EventLogUpsert) SetVoted(v *helpers.BigInt) *EventLogUpsert {
+	u.Set(eventlog.FieldVoted, v)
+	return u
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *EventLogUpsert) UpdateVoted() *EventLogUpsert {
+	u.SetExcluded(eventlog.FieldVoted)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -610,6 +678,34 @@ func (u *EventLogUpsertOne) UpdateArgs() *EventLogUpsertOne {
 	})
 }
 
+// SetConsensus sets the "consensus" field.
+func (u *EventLogUpsertOne) SetConsensus(v bool) *EventLogUpsertOne {
+	return u.Update(func(s *EventLogUpsert) {
+		s.SetConsensus(v)
+	})
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *EventLogUpsertOne) UpdateConsensus() *EventLogUpsertOne {
+	return u.Update(func(s *EventLogUpsert) {
+		s.UpdateConsensus()
+	})
+}
+
+// SetVoted sets the "voted" field.
+func (u *EventLogUpsertOne) SetVoted(v *helpers.BigInt) *EventLogUpsertOne {
+	return u.Update(func(s *EventLogUpsert) {
+		s.SetVoted(v)
+	})
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *EventLogUpsertOne) UpdateVoted() *EventLogUpsertOne {
+	return u.Update(func(s *EventLogUpsert) {
+		s.UpdateVoted()
+	})
+}
+
 // Exec executes the query.
 func (u *EventLogUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -662,6 +758,7 @@ func (elcb *EventLogCreateBulk) Save(ctx context.Context) ([]*EventLog, error) {
 	for i := range elcb.builders {
 		func(i int, root context.Context) {
 			builder := elcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*EventLogMutation)
 				if !ok {
@@ -957,6 +1054,34 @@ func (u *EventLogUpsertBulk) SetArgs(v []datasets.EventLogArg) *EventLogUpsertBu
 func (u *EventLogUpsertBulk) UpdateArgs() *EventLogUpsertBulk {
 	return u.Update(func(s *EventLogUpsert) {
 		s.UpdateArgs()
+	})
+}
+
+// SetConsensus sets the "consensus" field.
+func (u *EventLogUpsertBulk) SetConsensus(v bool) *EventLogUpsertBulk {
+	return u.Update(func(s *EventLogUpsert) {
+		s.SetConsensus(v)
+	})
+}
+
+// UpdateConsensus sets the "consensus" field to the value that was provided on create.
+func (u *EventLogUpsertBulk) UpdateConsensus() *EventLogUpsertBulk {
+	return u.Update(func(s *EventLogUpsert) {
+		s.UpdateConsensus()
+	})
+}
+
+// SetVoted sets the "voted" field.
+func (u *EventLogUpsertBulk) SetVoted(v *helpers.BigInt) *EventLogUpsertBulk {
+	return u.Update(func(s *EventLogUpsert) {
+		s.SetVoted(v)
+	})
+}
+
+// UpdateVoted sets the "voted" field to the value that was provided on create.
+func (u *EventLogUpsertBulk) UpdateVoted() *EventLogUpsertBulk {
+	return u.Update(func(s *EventLogUpsert) {
+		s.UpdateVoted()
 	})
 }
 

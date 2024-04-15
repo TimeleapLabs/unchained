@@ -31,6 +31,10 @@ type AssetPrice struct {
 	Chain string `json:"chain,omitempty"`
 	// Pair holds the value of the "pair" field.
 	Pair string `json:"pair,omitempty"`
+	// Consensus holds the value of the "consensus" field.
+	Consensus bool `json:"consensus,omitempty"`
+	// Voted holds the value of the "voted" field.
+	Voted *helpers.BigInt `json:"voted,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AssetPriceQuery when eager-loading is set.
 	Edges        AssetPriceEdges `json:"edges"`
@@ -66,8 +70,10 @@ func (*AssetPrice) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case assetprice.FieldSignature:
 			values[i] = new([]byte)
-		case assetprice.FieldPrice:
+		case assetprice.FieldPrice, assetprice.FieldVoted:
 			values[i] = new(helpers.BigInt)
+		case assetprice.FieldConsensus:
+			values[i] = new(sql.NullBool)
 		case assetprice.FieldID, assetprice.FieldBlock, assetprice.FieldSignersCount:
 			values[i] = new(sql.NullInt64)
 		case assetprice.FieldAsset, assetprice.FieldChain, assetprice.FieldPair:
@@ -136,6 +142,18 @@ func (ap *AssetPrice) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ap.Pair = value.String
 			}
+		case assetprice.FieldConsensus:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field consensus", values[i])
+			} else if value.Valid {
+				ap.Consensus = value.Bool
+			}
+		case assetprice.FieldVoted:
+			if value, ok := values[i].(*helpers.BigInt); !ok {
+				return fmt.Errorf("unexpected type %T for field voted", values[i])
+			} else if value != nil {
+				ap.Voted = value
+			}
 		default:
 			ap.selectValues.Set(columns[i], values[i])
 		}
@@ -199,6 +217,12 @@ func (ap *AssetPrice) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("pair=")
 	builder.WriteString(ap.Pair)
+	builder.WriteString(", ")
+	builder.WriteString("consensus=")
+	builder.WriteString(fmt.Sprintf("%v", ap.Consensus))
+	builder.WriteString(", ")
+	builder.WriteString("voted=")
+	builder.WriteString(fmt.Sprintf("%v", ap.Voted))
 	builder.WriteByte(')')
 	return builder.String()
 }

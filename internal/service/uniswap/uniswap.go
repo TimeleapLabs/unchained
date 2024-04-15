@@ -23,6 +23,7 @@ import (
 	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/db"
 	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/KenshiTech/unchained/internal/ent/assetprice"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/signer"
 	"github.com/KenshiTech/unchained/internal/log"
@@ -50,7 +51,6 @@ type Service struct {
 
 	consensus       *lru.Cache[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
 	signatureCache  *lru.Cache[bls12381.G1Affine, []datasets.Signature]
-	aggregateCache  *lru.Cache[bls12381.G1Affine, bls12381.G1Affine]
 	SupportedTokens map[datasets.TokenKey]bool
 	signatureMutex  sync.Mutex
 
@@ -76,7 +76,6 @@ func (u *Service) CheckAndCacheSignature(
 	packed := datasets.Signature{
 		Signature: signature,
 		Signer:    signer,
-		Processed: false,
 	}
 
 	for _, item := range cached {
@@ -143,10 +142,7 @@ func (u *Service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := u.pos.GetVotingPowerOfPublicKey(
-		signer.PublicKey,
-		big.NewInt(int64(*blockNumber)),
-	)
+	votingPower, err := u.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
 	if err != nil {
 		log.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -169,13 +165,15 @@ func (u *Service) RecordSignature(
 		return
 	}
 
-	if !isMajority {
-		log.Logger.Debug("Not a majority")
-		return
+	saveArgs := SaveSignatureArgs{
+		Hash:      hash,
+		Info:      info,
+		Voted:     totalVoted,
+		Consensus: isMajority,
 	}
 
 	if !debounce {
-		u.saveSignatures(SaveSignatureArgs{Hash: hash, Info: info})
+		u.saveSignatures(saveArgs)
 		return
 	}
 
@@ -191,6 +189,7 @@ func (u *Service) RecordSignature(
 		)
 		return true
 	})
+
 	reportedValues.Range(func(hash bls12381.G1Affine, value big.Int) bool {
 		reportLog = reportLog.With(
 			fmt.Sprintf("%x", hash.Bytes())[:8],
@@ -203,15 +202,26 @@ func (u *Service) RecordSignature(
 		With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
 		Debug("Values")
 
-	DebouncedSaveSignatures(
-		info.Asset,
-		SaveSignatureArgs{Hash: hash, Info: info},
-	)
+	DebouncedSaveSignatures(info.Asset, saveArgs)
 }
 
 type SaveSignatureArgs struct {
-	Info datasets.PriceInfo
-	Hash bls12381.G1Affine
+	Info      datasets.PriceInfo
+	Hash      bls12381.G1Affine
+	Consensus bool
+	Voted     *big.Int
+}
+
+func IsNewSigner(signature datasets.Signature, records []*ent.AssetPrice) bool {
+	for _, record := range records {
+		for _, signer := range record.Edges.Signers {
+			if signature.Signer.PublicKey == [96]byte(signer.Key) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func (u *Service) saveSignatures(args SaveSignatureArgs) {
@@ -236,16 +246,32 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
+	currentRecords, err := dbClient.AssetPrice.
+		Query().
+		Where(assetprice.Block(args.Info.Asset.Block),
+			assetprice.Chain(args.Info.Asset.Token.Chain),
+			assetprice.Asset(args.Info.Asset.Token.Name),
+			assetprice.Pair(args.Info.Asset.Token.Pair)).
+		WithSigners().
+		All(ctx)
+
+	if err != nil && !ent.IsNotFound(err) {
+		panic(err)
+	}
+
 	for i := range signatures {
 		signature := signatures[i]
 		keys = append(keys, signature.Signer.PublicKey[:])
-		if !signature.Processed {
-			newSignatures = append(newSignatures, signature.Signature)
-			newSigners = append(newSigners, signature.Signer)
+
+		if !IsNewSigner(signature, currentRecords) {
+			continue
 		}
+
+		newSignatures = append(newSignatures, signature.Signature)
+		newSigners = append(newSigners, signature.Signer)
 	}
 
-	err := dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
+	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
 		newSigner := newSigners[i]
 		sc.SetName(newSigner.Name).
 			SetEvm(newSigner.EvmAddress).
@@ -284,10 +310,23 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 	}
 
 	var aggregate bls12381.G1Affine
-	currentAggregate, ok := u.aggregateCache.Get(args.Hash)
 
-	if ok {
-		newSignatures = append(newSignatures, currentAggregate)
+	for _, record := range currentRecords {
+		if record.Price.Cmp(&args.Info.Price) == 0 {
+			currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
+
+			if err != nil {
+				log.Logger.
+					With("Block", args.Info.Asset.Block).
+					With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+					With("Error", err).
+					Debug("Failed to recover signature")
+				return
+			}
+
+			newSignatures = append(newSignatures, currentAggregate)
+			break
+		}
 	}
 
 	aggregate, err = bls.AggregateSignatures(newSignatures)
@@ -312,6 +351,8 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 		SetPrice(&helpers.BigInt{Int: args.Info.Price}).
 		SetSignersCount(uint64(len(signatures))).
 		SetSignature(signatureBytes[:]).
+		SetConsensus(args.Consensus).
+		SetVoted(&helpers.BigInt{Int: *args.Voted}).
 		AddSignerIDs(signerIDs...).
 		OnConflictColumns("block", "chain", "asset", "pair").
 		UpdateNewValues().
@@ -324,20 +365,7 @@ func (u *Service) saveSignatures(args SaveSignatureArgs) {
 			Debug("Failed to upsert asset price")
 		panic(err)
 	}
-
-	// TODO: We probably need a context-aware mutex here
-	for inx := range signatures {
-		signatures[inx].Processed = true
-	}
-
-	u.aggregateCache.Add(args.Hash, aggregate)
 }
-
-//
-// func (u *Service) setPriceFromCache(block uint64, pair string) (big.Int, bool) {
-//	lruCache := u.PriceCache[strings.ToLower(pair)]
-//	return lruCache.Get(block)
-//}
 
 func (u *Service) GetBlockNumber(network string) (*uint64, error) {
 	blockNumber, err := u.ethRPC.GetBlockNumber(network)
@@ -376,27 +404,6 @@ func (u *Service) GetPriceAtBlockFromPair(
 
 	return &u.LastPrice, nil
 }
-
-//
-// func (u *Service) getPriceFromPair(
-//	network string, pairAddr string, decimalDif int64, inverse bool,
-// ) (*uint64, *big.Int, error) {
-//	blockNumber, err := ethereum.GetBlockNumber(network)
-//
-//	if err != nil {
-//		ethereum.RefreshRPC(network)
-//		return nil, nil, err
-//	}
-//
-//	lastPrice, err := u.GetPriceAtBlockFromPair(
-//		network,
-//		blockNumber,
-//		pairAddr,
-//		decimalDif,
-//		inverse)
-//
-//	return &blockNumber, lastPrice, err
-//}
 
 func (u *Service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *big.Int {
 	var decimalFix big.Int
@@ -561,7 +568,6 @@ func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
 
 		consensus:       nil,
 		signatureCache:  nil,
-		aggregateCache:  nil,
 		signatureMutex:  sync.Mutex{},
 		LastBlock:       *xsync.NewMapOf[datasets.TokenKey, uint64](),
 		SupportedTokens: map[datasets.TokenKey]bool{},
@@ -594,12 +600,6 @@ func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
 	u.consensus, err = lru.New[datasets.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]](evmlog.LruSize)
 	if err != nil {
 		log.Logger.Error("Failed to create token price consensus cache.")
-		os.Exit(1)
-	}
-
-	u.aggregateCache, err = lru.New[bls12381.G1Affine, bls12381.G1Affine](evmlog.LruSize)
-	if err != nil {
-		log.Logger.Error("Failed to create token price aggregate cache.")
 		os.Exit(1)
 	}
 
