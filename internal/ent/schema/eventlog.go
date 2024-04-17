@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
+	"github.com/KenshiTech/unchained/internal/model"
 )
 
 // DataSet holds the schema definition for the DataSet entity.
@@ -42,7 +42,7 @@ func (EventLog) Fields() []ent.Field {
 		field.Bytes("transaction").
 			MaxLen(TransactionMaxLen).
 			Annotations(entgql.Type("Bytes")),
-		field.JSON("args", []datasets.EventLogArg{}),
+		field.JSON("args", []model.EventLogArg{}),
 		field.Bool("consensus").Default(false).
 			Annotations(entgql.Type("Boolean")),
 		field.Uint("voted").

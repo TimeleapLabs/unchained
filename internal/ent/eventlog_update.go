@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/model"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
-	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent/eventlog"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	"github.com/KenshiTech/unchained/internal/ent/predicate"
@@ -149,13 +149,13 @@ func (elu *EventLogUpdate) SetTransaction(b []byte) *EventLogUpdate {
 }
 
 // SetArgs sets the "args" field.
-func (elu *EventLogUpdate) SetArgs(dla []datasets.EventLogArg) *EventLogUpdate {
+func (elu *EventLogUpdate) SetArgs(dla []model.EventLogArg) *EventLogUpdate {
 	elu.mutation.SetArgs(dla)
 	return elu
 }
 
 // AppendArgs appends dla to the "args" field.
-func (elu *EventLogUpdate) AppendArgs(dla []datasets.EventLogArg) *EventLogUpdate {
+func (elu *EventLogUpdate) AppendArgs(dla []model.EventLogArg) *EventLogUpdate {
 	elu.mutation.AppendArgs(dla)
 	return elu
 }
@@ -505,13 +505,13 @@ func (eluo *EventLogUpdateOne) SetTransaction(b []byte) *EventLogUpdateOne {
 }
 
 // SetArgs sets the "args" field.
-func (eluo *EventLogUpdateOne) SetArgs(dla []datasets.EventLogArg) *EventLogUpdateOne {
+func (eluo *EventLogUpdateOne) SetArgs(dla []model.EventLogArg) *EventLogUpdateOne {
 	eluo.mutation.SetArgs(dla)
 	return eluo
 }
 
 // AppendArgs appends dla to the "args" field.
-func (eluo *EventLogUpdateOne) AppendArgs(dla []datasets.EventLogArg) *EventLogUpdateOne {
+func (eluo *EventLogUpdateOne) AppendArgs(dla []model.EventLogArg) *EventLogUpdateOne {
 	eluo.mutation.AppendArgs(dla)
 	return eluo
 }

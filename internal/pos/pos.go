@@ -4,13 +4,14 @@ import (
 	"math/big"
 	"os"
 
+	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/KenshiTech/unchained/internal/utils/address"
+
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 
-	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos/eip712"
 
 	"github.com/puzpuzpuz/xsync/v3"
@@ -103,7 +104,7 @@ func New(ethRPC *ethereum.Repository) *Repository {
 	pkBytes := crypto.Identity.Bls.PublicKey.Bytes()
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 
-	log.Logger.
+	utils.Logger.
 		With("Address", addrHexStr).
 		Info("PoS identity initialized")
 
@@ -116,7 +117,7 @@ func New(ethRPC *ethereum.Repository) *Repository {
 	)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to connect to the staking contract")
 
@@ -126,7 +127,7 @@ func New(ethRPC *ethereum.Repository) *Repository {
 	power, err := s.GetVotingPower(addrHex, big.NewInt(0))
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to get voting power")
 
@@ -136,14 +137,14 @@ func New(ethRPC *ethereum.Repository) *Repository {
 	total, err := s.GetTotalVotingPower()
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to get total voting power")
 
 		return s
 	}
 
-	log.Logger.
+	utils.Logger.
 		With("Power", s.VotingPowerToFloat(power)).
 		With("Network", s.VotingPowerToFloat(total)).
 		Info("PoS")
@@ -151,7 +152,7 @@ func New(ethRPC *ethereum.Repository) *Repository {
 	chainID, err := s.posContract.GetChainId(nil)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to get chain ID")
 

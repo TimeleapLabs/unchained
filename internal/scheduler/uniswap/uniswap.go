@@ -2,16 +2,15 @@ package uniswap
 
 import (
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/KenshiTech/unchained/internal/utils"
 	"math/big"
 	"os"
 	"strings"
 
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
-	"github.com/KenshiTech/unchained/internal/datasets"
-
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/service/uniswap"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
@@ -33,13 +32,13 @@ func (u *Uniswap) Run() {
 
 	currBlockNumber, err := u.uniswapService.GetBlockNumber(u.chain)
 	if err != nil {
-		log.Logger.Error(
+		utils.Logger.Error(
 			fmt.Sprintf("Couldn't get latest block from %s RPC.", u.chain))
 		u.ethRPC.RefreshRPC(u.chain)
 		return
 	}
 
-	for _, token := range datasets.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
+	for _, token := range model.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
 		if token.Chain != u.chain {
 			continue
 		}
@@ -54,7 +53,10 @@ func (u *Uniswap) Run() {
 			return
 		}
 
-		u.uniswapService.SyncBlocks(token, *key, *currBlockNumber)
+		err = u.uniswapService.SyncBlocks(token, *key, *currBlockNumber)
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -70,12 +72,12 @@ func New(
 	}
 
 	for _, t := range tokens {
-		token := datasets.NewTokenFromCfg(t)
+		token := model.NewTokenFromCfg(t)
 		var err error
 		u.uniswapService.PriceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)
 
 		if err != nil {
-			log.Logger.Error("Failed to initialize token map.")
+			utils.Logger.Error("Failed to initialize token map.")
 			os.Exit(1)
 		}
 	}

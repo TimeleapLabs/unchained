@@ -1,4 +1,4 @@
-package datasets
+package model
 
 import (
 	"math/big"

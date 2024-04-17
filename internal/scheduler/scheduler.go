@@ -1,18 +1,19 @@
 package scheduler
 
 import (
+	"github.com/KenshiTech/unchained/internal/utils"
 	"os"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/scheduler/persistence"
+
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
-	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/scheduler/uniswap"
 	evmLogService "github.com/KenshiTech/unchained/internal/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
 
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/scheduler/logs"
 	"github.com/go-co-op/gocron/v2"
 )
@@ -34,7 +35,7 @@ func New(options ...func(s *Scheduler)) *Scheduler {
 	var err error
 	s.scheduler, err = gocron.NewScheduler()
 	if err != nil {
-		log.Logger.Error("Failed to create token scheduler.")
+		utils.Logger.Error("Failed to create token scheduler.")
 		os.Exit(1)
 	}
 
@@ -83,7 +84,7 @@ func WithUniswapEvents(
 }
 
 func (s *Scheduler) AddTask(duration time.Duration, task Task) {
-	log.Logger.
+	utils.Logger.
 		With("duration", duration).
 		Info("New UniSwap task scheduled")
 
@@ -93,7 +94,7 @@ func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
-		log.Logger.Error("Failed to schedule task")
+		utils.Logger.Error("Failed to schedule task")
 		os.Exit(1)
 	}
 }

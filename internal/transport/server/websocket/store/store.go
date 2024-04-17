@@ -1,17 +1,13 @@
 package store
 
 import (
-	"sync"
-
 	"github.com/KenshiTech/unchained/internal/crypto/kosk"
-	"github.com/KenshiTech/unchained/internal/datasets"
-
+	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"
 )
 
 var Consumers = xsync.NewMapOf[*websocket.Conn, bool]()
-var BroadcastMutex = xsync.NewMapOf[*websocket.Conn, *sync.Mutex]()
 
 var Challenges = xsync.NewMapOf[*websocket.Conn, kosk.Challenge]()
-var Signers = xsync.NewMapOf[*websocket.Conn, datasets.Signer]()
+var Signers = xsync.NewMapOf[*websocket.Conn, model.Signer]()

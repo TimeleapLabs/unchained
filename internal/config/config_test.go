@@ -4,8 +4,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/KenshiTech/unchained/internal/consts"
+
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/constants"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ var s = config.Secret{
 
 func TestSaveSecret(t *testing.T) {
 	err := s.Save()
-	assert.Equal(t, constants.ErrCantWriteSecret, err, "Should return error because path of secret is not defined")
+	assert.Equal(t, consts.ErrCantWriteSecret, err, "Should return error because path of secret is not defined")
 
 	config.SecretFilePath = "./secret.yaml"
 	err = s.Save()

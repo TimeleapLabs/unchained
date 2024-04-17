@@ -2,18 +2,18 @@ package handler
 
 import (
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/KenshiTech/unchained/internal/utils"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 func (h *consumer) EventLog(message []byte) {
-	packet := new(datasets.BroadcastEventPacket).DeSia(&sia.Sia{Content: message})
+	packet := new(model.BroadcastEventPacket).DeSia(&sia.Sia{Content: message})
 	toHash := packet.Info.Sia().Content
 	hash, err := bls.Hash(toHash)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Hash error")
 
@@ -23,14 +23,14 @@ func (h *consumer) EventLog(message []byte) {
 	signature, err := bls.RecoverSignature(packet.Signature)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to recover packet signature")
 
 		return
 	}
 
-	h.evmlog.RecordSignature(
+	err = h.evmlog.RecordSignature(
 		signature,
 		packet.Signer,
 		hash,
@@ -38,6 +38,9 @@ func (h *consumer) EventLog(message []byte) {
 		true,
 		false,
 	)
+	if err != nil {
+		return
+	}
 }
 
 func (w worker) EventLog(_ []byte) {}

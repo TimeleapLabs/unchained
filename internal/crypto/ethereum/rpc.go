@@ -2,14 +2,16 @@ package ethereum
 
 import (
 	"context"
-	"fmt"
 	"sync"
+
+	"github.com/KenshiTech/unchained/internal/utils"
+
+	"github.com/KenshiTech/unchained/internal/consts"
 
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/KenshiTech/unchained/internal/config"
 
-	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -74,8 +76,8 @@ func (r *Repository) GetBlockNumber(network string) (uint64, error) {
 	client, ok := r.Clients[network]
 
 	if !ok {
-		log.Logger.With("Network", network).Error("Client not found")
-		return 0, fmt.Errorf("client not found")
+		utils.Logger.With("Network", network).Error("Client not found")
+		return 0, consts.ErrClientNotFound
 	}
 
 	return client.BlockNumber(context.Background())

@@ -1,8 +1,9 @@
-package datasets
+package model
 
 import (
 	"encoding/json"
 
+	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
@@ -20,6 +21,12 @@ type EventLog struct {
 	Chain    string
 	TxHash   [32]byte
 	Args     []EventLogArg
+
+	Consensus    bool
+	SignersCount uint64
+	SignerIDs    []int
+	Signature    []byte
+	Voted        *helpers.BigInt
 }
 
 type EventLogReport struct {

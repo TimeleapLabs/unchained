@@ -3,24 +3,23 @@ package evmlog
 import (
 	"context"
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/KenshiTech/unchained/internal/utils/address"
 	"math/big"
 	"slices"
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/consts"
+
+	"github.com/KenshiTech/unchained/internal/repository"
+
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
-	"github.com/KenshiTech/unchained/internal/address"
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/constants/opcodes"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/db"
 	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/ent/eventlog"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/log"
 	"github.com/KenshiTech/unchained/internal/pos"
 	"github.com/KenshiTech/unchained/internal/transport/client/conn"
 	"github.com/KenshiTech/unchained/internal/utils"
@@ -35,18 +34,20 @@ const (
 )
 
 type SaveSignatureArgs struct {
-	Info      datasets.EventLog
+	Info      model.EventLog
 	Hash      bls12381.G1Affine
 	Consensus bool
 	Voted     *big.Int
 }
 
 type Service struct {
-	ethRPC *ethereum.Repository
-	pos    *pos.Repository
+	ethRPC       *ethereum.Repository
+	pos          *pos.Repository
+	eventLogRepo repository.EventLog
+	signerRepo   repository.Signer
 
 	consensus               *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
-	signatureCache          *lru.Cache[bls12381.G1Affine, []datasets.Signature]
+	signatureCache          *lru.Cache[bls12381.G1Affine, []model.Signature]
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 	signatureMutex          *sync.Mutex
 	supportedEvents         map[SupportKey]bool
@@ -54,51 +55,51 @@ type Service struct {
 	lastSyncedBlock         map[config.Event]uint64
 }
 
-func (e *Service) GetBlockNumber(network string) (*uint64, error) {
-	blockNumber, err := e.ethRPC.GetBlockNumber(network)
+func (s *Service) GetBlockNumber(network string) (*uint64, error) {
+	blockNumber, err := s.ethRPC.GetBlockNumber(network)
 
 	if err != nil {
-		e.ethRPC.RefreshRPC(network)
+		s.ethRPC.RefreshRPC(network)
 		return nil, err
 	}
 
 	return &blockNumber, nil
 }
 
-func (e *Service) RecordSignature(
-	signature bls12381.G1Affine, signer datasets.Signer, hash bls12381.G1Affine, info datasets.EventLog, debounce bool, historical bool,
-) {
+func (s *Service) RecordSignature(
+	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+) error {
 	supportKey := SupportKey{
 		Chain:   info.Chain,
 		Address: info.Address,
 		Event:   info.Event,
 	}
 
-	if supported := e.supportedEvents[supportKey]; !supported {
-		return
+	if supported := s.supportedEvents[supportKey]; !supported {
+		return consts.ErrTokenNotSupported
 	}
 
 	// TODO: Standalone mode shouldn't call this or check consensus
-	blockNumber, err := e.GetBlockNumber(info.Chain)
+	blockNumber, err := s.GetBlockNumber(info.Chain)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if !historical {
 		// TODO: this won't work for Arbitrum
 		// TODO: we disallow syncing historical events here
 		if *blockNumber-info.Block > BlockOutOfRange {
-			log.Logger.
+			utils.Logger.
 				With("Packet", info.Block).
 				With("Current", *blockNumber).
 				Debug("Data too old")
-			return // Data too old
+			return consts.ErrDataTooOld
 		}
 	}
 
-	e.signatureMutex.Lock()
-	defer e.signatureMutex.Unlock()
+	s.signatureMutex.Lock()
+	defer s.signatureMutex.Unlock()
 
 	key := EventKey{
 		Chain:    info.Chain,
@@ -106,20 +107,20 @@ func (e *Service) RecordSignature(
 		LogIndex: info.LogIndex,
 	}
 
-	if !e.consensus.Contains(key) {
-		e.consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
+	if !s.consensus.Contains(key) {
+		s.consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
 	}
 
-	votingPower, err := e.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
 			With("Error", err).
 			Error("Failed to get voting power")
-		return
+		return err
 	}
 
-	reportedValues, _ := e.consensus.Get(key)
+	reportedValues, _ := s.consensus.Get(key)
 	voted := reportedValues[hash]
 	totalVoted := new(big.Int).Add(votingPower, &voted)
 	isMajority := true
@@ -131,22 +132,22 @@ func (e *Service) RecordSignature(
 		}
 	}
 
-	cached, _ := e.signatureCache.Get(hash)
+	cached, _ := s.signatureCache.Get(hash)
 
-	packed := datasets.Signature{
+	packed := model.Signature{
 		Signature: signature,
 		Signer:    signer,
 	}
 
 	for _, item := range cached {
 		if item.Signer.PublicKey == signer.PublicKey {
-			return
+			return consts.ErrDuplicateSignature
 		}
 	}
 
 	reportedValues[hash] = *totalVoted
 	cached = append(cached, packed)
-	e.signatureCache.Add(hash, cached)
+	s.signatureCache.Add(hash, cached)
 
 	saveArgs := SaveSignatureArgs{
 		Hash:      hash,
@@ -156,13 +157,19 @@ func (e *Service) RecordSignature(
 	}
 
 	if debounce {
-		e.DebouncedSaveSignatures(hash, saveArgs)
-	} else {
-		e.SaveSignatures(saveArgs)
+		s.DebouncedSaveSignatures(hash, saveArgs)
+		return nil
 	}
+
+	err = s.SaveSignatures(saveArgs)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func IsNewSigner(signature datasets.Signature, records []*ent.EventLog) bool {
+func IsNewSigner(signature model.Signature, records []*ent.EventLog) bool {
 	for _, record := range records {
 		for _, signer := range record.Edges.Signers {
 			if signature.Signer.PublicKey == [96]byte(signer.Key) {
@@ -174,39 +181,28 @@ func IsNewSigner(signature datasets.Signature, records []*ent.EventLog) bool {
 	return true
 }
 
-func sortEventArgs(lhs datasets.EventLogArg, rhs datasets.EventLogArg) int {
+func sortEventArgs(lhs model.EventLogArg, rhs model.EventLogArg) int {
 	if lhs.Name < rhs.Name {
 		return -1
 	}
 	return 1
 }
 
-func (e *Service) SaveSignatures(args SaveSignatureArgs) {
-	dbClient := db.GetClient()
-	signatures, ok := e.signatureCache.Get(args.Hash)
-
+func (s *Service) SaveSignatures(args SaveSignatureArgs) error {
+	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
-		return
+		return consts.ErrInvalidSignature
 	}
 
 	ctx := context.Background()
 
-	var newSigners []datasets.Signer
+	var newSigners []model.Signer
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
-	currentRecords, err := dbClient.EventLog.
-		Query().
-		Where(
-			eventlog.Block(args.Info.Block),
-			eventlog.TransactionEQ(args.Info.TxHash[:]),
-			eventlog.IndexEQ(args.Info.LogIndex),
-		).
-		WithSigners().
-		All(ctx)
-
+	currentRecords, err := s.eventLogRepo.Find(ctx, args.Info.Block, args.Info.TxHash[:], args.Info.LogIndex)
 	if err != nil && !ent.IsNotFound(err) {
-		panic(err)
+		return err
 	}
 
 	for i := range signatures {
@@ -221,45 +217,26 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 		newSigners = append(newSigners, signature.Signer)
 	}
 
-	// TODO: This part can be a shared library
-	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
-		signer := newSigners[i]
-		sc.SetName(signer.Name).
-			SetEvm(signer.EvmAddress).
-			SetKey(signer.PublicKey[:]).
-			SetShortkey(signer.ShortPublicKey[:]).
-			SetPoints(0)
-	}).
-		OnConflictColumns("shortkey").
-		UpdateName().
-		UpdateEvm().
-		UpdateKey().
-		Update(func(su *ent.SignerUpsert) {
-			su.AddPoints(1)
-		}).
-		Exec(ctx)
+	err = s.signerRepo.CreateSigners(ctx, newSigners)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	signerIDs, err := dbClient.Signer.
-		Query().
-		Where(signer.KeyIn(keys...)).
-		IDs(ctx)
+	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(context.TODO(), keys)
 
 	if err != nil {
-		return
+		return err
 	}
 
 	var aggregate bls12381.G1Affine
 
-	sortedCurrentArgs := make([]datasets.EventLogArg, len(args.Info.Args))
+	sortedCurrentArgs := make([]model.EventLogArg, len(args.Info.Args))
 	copy(sortedCurrentArgs, args.Info.Args)
 	slices.SortFunc(sortedCurrentArgs, sortEventArgs)
 
 	for _, record := range currentRecords {
-		sortedRecordArgs := make([]datasets.EventLogArg, len(args.Info.Args))
+		sortedRecordArgs := make([]model.EventLogArg, len(args.Info.Args))
 		copy(sortedRecordArgs, record.Args)
 		slices.SortFunc(sortedRecordArgs, sortEventArgs)
 
@@ -285,7 +262,7 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 		currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
 
 		if err != nil {
-			log.Logger.
+			utils.Logger.
 				With("Block", args.Info.Block).
 				With("Transaction", fmt.Sprintf("%x", args.Info.TxHash)).
 				With("Index", args.Info.LogIndex).
@@ -293,7 +270,7 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 				With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
 				With("Error", err).
 				Debug("Failed to recover signature")
-			return
+			return consts.ErrCantRecoverSignature
 		}
 
 		newSignatures = append(newSignatures, currentAggregate)
@@ -303,53 +280,48 @@ func (e *Service) SaveSignatures(args SaveSignatureArgs) {
 	aggregate, err = bls.AggregateSignatures(newSignatures)
 
 	if err != nil {
-		return
+		return consts.ErrCantAggregateSignatures
 	}
 
 	signatureBytes := aggregate.Bytes()
 
-	err = dbClient.EventLog.
-		Create().
-		SetBlock(args.Info.Block).
-		SetChain(args.Info.Chain).
-		SetAddress(args.Info.Address).
-		SetEvent(args.Info.Event).
-		SetIndex(args.Info.LogIndex).
-		SetTransaction(args.Info.TxHash[:]).
-		SetSignersCount(uint64(len(signatures))).
-		SetSignature(signatureBytes[:]).
-		SetArgs(args.Info.Args).
-		SetConsensus(args.Consensus).
-		SetVoted(&helpers.BigInt{Int: *args.Voted}).
-		AddSignerIDs(signerIDs...).
-		OnConflictColumns("block", "transaction", "index").
-		UpdateNewValues().
-		Exec(ctx)
+	args.Info.SignersCount = uint64(len(signatures))
+	args.Info.SignerIDs = signerIDs
+	args.Info.Consensus = args.Consensus
+	args.Info.Signature = signatureBytes[:]
+	args.Info.Voted = &helpers.BigInt{Int: *args.Voted}
+	err = s.eventLogRepo.Upsert(ctx, args.Info)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func (e *Service) SendPriceReport(signature bls12381.G1Affine, event datasets.EventLog) {
+func (s *Service) SendPriceReport(signature bls12381.G1Affine, event model.EventLog) {
 	compressedSignature := signature.Bytes()
 
-	priceReport := datasets.EventLogReport{
+	priceReport := model.EventLogReport{
 		EventLog:  event,
 		Signature: compressedSignature,
 	}
 
 	payload := priceReport.Sia().Content
-	conn.Send(opcodes.EventLog, payload)
+	conn.Send(consts.OpCodeEventLog, payload)
 }
 
 func New(
 	ethRPC *ethereum.Repository,
 	pos *pos.Repository,
+	eventLogRepo repository.EventLog,
+	signerRepo repository.Signer,
 ) *Service {
 	s := Service{
-		ethRPC: ethRPC,
-		pos:    pos,
+		ethRPC:       ethRPC,
+		pos:          pos,
+		eventLogRepo: eventLogRepo,
+		signerRepo:   signerRepo,
 	}
 
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
@@ -360,7 +332,7 @@ func New(
 	s.supportedEvents = make(map[SupportKey]bool)
 
 	var err error
-	s.signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
+	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
 	if err != nil {
 		panic(err)
 	}

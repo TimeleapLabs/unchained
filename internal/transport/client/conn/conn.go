@@ -5,13 +5,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/KenshiTech/unchained/internal/utils"
+
+	"github.com/KenshiTech/unchained/internal/consts"
+
 	"github.com/KenshiTech/unchained/internal/crypto"
 
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/constants"
-	"github.com/KenshiTech/unchained/internal/constants/opcodes"
-	"github.com/KenshiTech/unchained/internal/log"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -22,22 +22,22 @@ var mu = new(sync.Mutex)
 func Start() {
 	var err error
 
-	log.Logger.
-		With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
+	utils.Logger.
+		With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
 		Info("Connecting to the broker")
 
 	conn, _, err = websocket.DefaultDialer.Dial(
-		fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion), nil,
+		fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion), nil,
 	)
 	if err != nil {
-		log.Logger.
-			With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
+		utils.Logger.
+			With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
 			With("Error", err).
 			Error("can't connect to broker")
 		panic(err)
 	}
 
-	Send(opcodes.Hello, crypto.Identity.ExportBlsSigner().Sia().Content)
+	Send(consts.OpCodeHello, crypto.Identity.ExportBlsSigner().Sia().Content)
 }
 
 func Reconnect(err error) {
@@ -48,21 +48,21 @@ func Reconnect(err error) {
 		for i := 1; i < 6; i++ {
 			time.Sleep(time.Duration(i) * 3 * time.Second)
 
-			log.Logger.
-				With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
+			utils.Logger.
+				With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
 				With("Retry", i).
 				Info("Reconnecting to broker")
 
 			conn, _, err = websocket.DefaultDialer.Dial(config.App.Network.BrokerURI, nil)
 			if err != nil {
-				log.Logger.
-					With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, constants.ProtocolVersion)).
+				utils.Logger.
+					With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
 					With("Error", err).
 					Error("can't connect to broker")
 			} else {
 				IsClosed = false
-				Send(opcodes.Hello, hello)
-				log.Logger.Info("Connection with broker recovered")
+				Send(consts.OpCodeHello, hello)
+				utils.Logger.Info("Connection with broker recovered")
 				return
 			}
 		}
@@ -75,7 +75,7 @@ func Close() {
 	if conn != nil && config.App.Network.BrokerURI != "" {
 		err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		if err != nil {
-			log.Logger.
+			utils.Logger.
 				With("Error", err).
 				Error("Can't sent close packet")
 		}
@@ -83,7 +83,7 @@ func Close() {
 		IsClosed = false
 		err = conn.Close()
 		if err != nil {
-			log.Logger.
+			utils.Logger.
 				With("Error", err).
 				Error("Connection closed")
 		}
@@ -97,7 +97,7 @@ func Read() <-chan []byte {
 		for {
 			_, payload, err := conn.ReadMessage()
 			if err != nil {
-				log.Logger.
+				utils.Logger.
 					With("Error", err).
 					Error("Read error")
 
@@ -109,8 +109,8 @@ func Read() <-chan []byte {
 				continue
 			}
 
-			if payload[0] == byte(opcodes.Error) {
-				log.Logger.
+			if payload[0] == byte(consts.OpCodeError) {
+				utils.Logger.
 					With("Error", string(payload[1:])).
 					Error("Incoming error")
 
@@ -135,15 +135,15 @@ func SendRaw(data []byte) error {
 	return conn.WriteMessage(websocket.BinaryMessage, data)
 }
 
-func Send(opCode opcodes.OpCode, payload []byte) {
+func Send(opCode consts.OpCode, payload []byte) {
 	err := SendRaw(
 		append([]byte{byte(opCode)}, payload...),
 	)
 	if err != nil {
-		log.Logger.Error("Can't send packet: %v", err)
+		utils.Logger.Error("Can't send packet: %v", err)
 	}
 }
 
-func SendMessage(opCode opcodes.OpCode, message string) {
+func SendMessage(opCode consts.OpCode, message string) {
 	Send(opCode, []byte(message))
 }

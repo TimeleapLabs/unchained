@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/utils"
 )
 
 type Bytes []byte
@@ -29,6 +29,6 @@ func (bytes Bytes) MarshalGQL(w io.Writer) {
 	hexValue := fmt.Sprintf(`"%x"`, bytes)
 	_, err := w.Write([]byte(hexValue))
 	if err != nil {
-		log.Logger.Error(err.Error())
+		utils.Logger.Error(err.Error())
 	}
 }

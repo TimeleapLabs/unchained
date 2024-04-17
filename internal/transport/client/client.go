@@ -1,45 +1,45 @@
 package client
 
 import (
-	"github.com/KenshiTech/unchained/internal/constants/opcodes"
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/transport/client/conn"
 	"github.com/KenshiTech/unchained/internal/transport/client/handler"
+	"github.com/KenshiTech/unchained/internal/utils"
 )
 
 func NewRPC(handler handler.Handler) {
 	incoming := conn.Read()
 
 	go func() {
-		log.Logger.Info("Starting consumer from broker")
+		utils.Logger.Info("Starting consumer from broker")
 
 		for payload := range incoming {
-			switch opcodes.OpCode(payload[0]) {
-			case opcodes.Error:
-				log.Logger.
+			switch consts.OpCode(payload[0]) {
+			case consts.OpCodeError:
+				utils.Logger.
 					With("Error", string(payload[1:])).
 					Error("Broker")
 
-			case opcodes.Feedback:
-				log.Logger.
+			case consts.OpCodeFeedback:
+				utils.Logger.
 					With("Feedback", string(payload[1:])).
 					Info("Broker")
 
-			case opcodes.KoskChallenge:
+			case consts.OpCodeKoskChallenge:
 				challenge := handler.Challenge(payload[1:])
-				conn.Send(opcodes.KoskResult, challenge.Sia().Content)
+				conn.Send(consts.OpCodeKoskResult, challenge.Sia().Content)
 
-			case opcodes.PriceReportBroadcast:
+			case consts.OpCodePriceReportBroadcast:
 				go handler.PriceReport(payload[1:])
 
-			case opcodes.EventLogBroadcast:
+			case consts.OpCodeEventLogBroadcast:
 				go handler.EventLog(payload[1:])
 
-			case opcodes.CorrectnessReportBroadcast:
+			case consts.OpCodeCorrectnessReportBroadcast:
 				go handler.CorrectnessReport(payload[1:])
 
 			default:
-				log.Logger.
+				utils.Logger.
 					With("Code", payload[0]).
 					Error("Unknown call code")
 			}

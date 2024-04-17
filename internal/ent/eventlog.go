@@ -5,11 +5,11 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/model"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent/eventlog"
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
 )
@@ -36,7 +36,7 @@ type EventLog struct {
 	// Transaction holds the value of the "transaction" field.
 	Transaction []byte `json:"transaction,omitempty"`
 	// Args holds the value of the "args" field.
-	Args []datasets.EventLogArg `json:"args,omitempty"`
+	Args []model.EventLogArg `json:"args,omitempty"`
 	// Consensus holds the value of the "consensus" field.
 	Consensus bool `json:"consensus,omitempty"`
 	// Voted holds the value of the "voted" field.

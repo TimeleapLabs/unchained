@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/constants/opcodes"
+	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/service/correctness"
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
 	"github.com/KenshiTech/unchained/internal/service/uniswap"
@@ -19,7 +20,7 @@ func NewConsumerHandler(
 	uniswap *uniswap.Service,
 	evmlog *evmlog.Service,
 ) Handler {
-	conn.Send(opcodes.RegisterConsumer, nil)
+	conn.Send(consts.OpCodeRegisterConsumer, []byte(config.App.Network.SubscribedChannel))
 
 	return &consumer{
 		correctness: correctness,

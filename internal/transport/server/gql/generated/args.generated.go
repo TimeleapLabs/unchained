@@ -5,12 +5,12 @@ package generated
 import (
 	"context"
 	"errors"
+	"github.com/KenshiTech/unchained/internal/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -18,7 +18,7 @@ import (
 // region    ************************** generated!.gotpl **************************
 
 type EventLogArgResolver interface {
-	Value(ctx context.Context, obj *datasets.EventLogArg) (string, error)
+	Value(ctx context.Context, obj *model.EventLogArg) (string, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -33,7 +33,7 @@ type EventLogArgResolver interface {
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _EventLogArg_name(ctx context.Context, field graphql.CollectedField, obj *datasets.EventLogArg) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventLogArg_name(ctx context.Context, field graphql.CollectedField, obj *model.EventLogArg) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_EventLogArg_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -77,7 +77,7 @@ func (ec *executionContext) fieldContext_EventLogArg_name(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _EventLogArg_value(ctx context.Context, field graphql.CollectedField, obj *datasets.EventLogArg) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventLogArg_value(ctx context.Context, field graphql.CollectedField, obj *model.EventLogArg) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_EventLogArg_value(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -135,7 +135,7 @@ func (ec *executionContext) fieldContext_EventLogArg_value(ctx context.Context, 
 
 var eventLogArgImplementors = []string{"EventLogArg"}
 
-func (ec *executionContext) _EventLogArg(ctx context.Context, sel ast.SelectionSet, obj *datasets.EventLogArg) graphql.Marshaler {
+func (ec *executionContext) _EventLogArg(ctx context.Context, sel ast.SelectionSet, obj *model.EventLogArg) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, eventLogArgImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -228,11 +228,11 @@ func (ec *executionContext) marshalNBytes2githubᚗcomᚋKenshiTechᚋunchained�
 	return v
 }
 
-func (ec *executionContext) marshalNEventLogArg2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArg(ctx context.Context, sel ast.SelectionSet, v datasets.EventLogArg) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLogArg2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArg(ctx context.Context, sel ast.SelectionSet, v model.EventLogArg) graphql.Marshaler {
 	return ec._EventLogArg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEventLogArg2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArgᚄ(ctx context.Context, sel ast.SelectionSet, v []datasets.EventLogArg) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLogArg2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArgᚄ(ctx context.Context, sel ast.SelectionSet, v []model.EventLogArg) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1

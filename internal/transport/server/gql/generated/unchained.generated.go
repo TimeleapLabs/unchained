@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -13,7 +14,6 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/KenshiTech/unchained/internal/datasets"
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -2277,7 +2277,7 @@ func (ec *executionContext) _EventLog_args(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]datasets.EventLogArg)
+	res := resTmp.([]model.EventLogArg)
 	fc.Result = res
 	return ec.marshalNEventLogArg2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArgᚄ(ctx, field.Selections, res)
 }

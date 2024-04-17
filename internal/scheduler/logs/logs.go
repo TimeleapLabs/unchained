@@ -4,19 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/KenshiTech/unchained/internal/utils"
 	"math/big"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/KenshiTech/unchained/internal/scheduler/persistence"
 
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/log"
-	"github.com/KenshiTech/unchained/internal/persistence"
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
 	"github.com/dgraph-io/badger/v4"
 	goEthereum "github.com/ethereum/go-ethereum"
@@ -134,7 +135,7 @@ func (e *EvmLog) Run() {
 				keys = append(keys, k)
 			}
 
-			message := log.Logger.
+			message := utils.Logger.
 				With("Event", conf.Event).
 				With("Block", vLog.BlockNumber)
 
@@ -151,7 +152,7 @@ func (e *EvmLog) Run() {
 				argTypes[input.Name] = input.Type.String()
 			}
 
-			args := []datasets.EventLogArg{}
+			args := []model.EventLogArg{}
 			for _, key := range keys {
 				value := eventData[key]
 
@@ -161,7 +162,7 @@ func (e *EvmLog) Run() {
 
 				args = append(
 					args,
-					datasets.EventLogArg{
+					model.EventLogArg{
 						Name:  key,
 						Value: value,
 						Type:  argTypes[key],
@@ -169,7 +170,7 @@ func (e *EvmLog) Run() {
 				)
 			}
 
-			event := datasets.EventLog{
+			event := model.EventLog{
 				LogIndex: uint64(vLog.Index),
 				Block:    vLog.BlockNumber,
 				Address:  vLog.Address.Hex(),
@@ -187,7 +188,7 @@ func (e *EvmLog) Run() {
 			}
 
 			if conf.Store {
-				e.evmLogService.RecordSignature(
+				err = e.evmLogService.RecordSignature(
 					signature,
 					*crypto.Identity.ExportBlsSigner(),
 					hash,
@@ -195,6 +196,9 @@ func (e *EvmLog) Run() {
 					false,
 					true,
 				)
+				if err != nil {
+					return
+				}
 			}
 		}
 

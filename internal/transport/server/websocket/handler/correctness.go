@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/middleware"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
+	"github.com/KenshiTech/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
@@ -20,40 +20,40 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 
 	signer, ok := store.Signers.Load(conn)
 	if !ok {
-		return nil, constants.ErrMissingHello
+		return nil, consts.ErrMissingHello
 	}
 
-	report := new(datasets.CorrectnessReport).DeSia(&sia.Sia{Content: payload})
+	report := new(model.CorrectnessReport).DeSia(&sia.Sia{Content: payload})
 	toHash := report.Correctness.Sia().Content
 	hash, err := bls.Hash(toHash)
 
 	if err != nil {
-		log.Logger.Error("Can't hash bls: %v", err)
-		return []byte{}, constants.ErrInternalError
+		utils.Logger.Error("Can't hash bls: %v", err)
+		return []byte{}, consts.ErrInternalError
 	}
 
 	signature, err := bls.RecoverSignature(report.Signature)
 	if err != nil {
-		log.Logger.Error("Can't recover bls signature: %v", err)
-		return []byte{}, constants.ErrInternalError
+		utils.Logger.Error("Can't recover bls signature: %v", err)
+		return []byte{}, consts.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
-		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrCantVerifyBls
+		utils.Logger.Error("Can't recover bls pub-key: %v", err)
+		return []byte{}, consts.ErrCantVerifyBls
 	}
 
 	ok, err = crypto.Identity.Bls.Verify(signature, hash, pk)
 	if err != nil {
-		log.Logger.With("Error", err).Error("Can't verify bls")
-		return []byte{}, constants.ErrCantVerifyBls
+		utils.Logger.With("Error", err).Error("Can't verify bls")
+		return []byte{}, consts.ErrCantVerifyBls
 	}
 	if !ok {
-		return []byte{}, constants.ErrInvalidSignature
+		return []byte{}, consts.ErrInvalidSignature
 	}
 
-	broadcastPacket := datasets.BroadcastCorrectnessPacket{
+	broadcastPacket := model.BroadcastCorrectnessPacket{
 		Info:      report.Correctness,
 		Signature: report.Signature,
 		Signer:    signer,

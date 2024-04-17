@@ -4,12 +4,12 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/KenshiTech/unchained/internal/utils"
+
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/log"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -19,7 +19,7 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 	evmAddress, err := s.posContract.EvmAddressOf(nil, address)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to get EVM address of the staker")
 		return err
@@ -35,7 +35,7 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 	signature, err := s.eip712Signer.SignTransferRequest(crypto.Identity.Eth, &transfer)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to sign transfer request")
 		return err
@@ -48,7 +48,7 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 	)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to transfer")
 		return err
@@ -61,20 +61,20 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 	)
 
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to wait for transaction to be mined")
 		return err
 	}
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Transaction failed")
 		return err
 	}
 
-	log.Logger.
+	utils.Logger.
 		With("Address", evmAddress.Hex()).
 		With("To", to.Hex()).
 		With("Amount", amount.String()).

@@ -1,14 +1,21 @@
-package datasets
+package model
 
 import (
+	"math/big"
+
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 type Correctness struct {
-	Timestamp uint64
-	Hash      [64]byte
-	Topic     [64]byte
-	Correct   bool
+	SignersCount uint64
+	Signature    []byte
+	Consensus    bool
+	Voted        big.Int
+	SignerIDs    []int
+	Timestamp    uint64
+	Hash         []byte
+	Topic        [64]byte
+	Correct      bool
 }
 
 type CorrectnessReport struct {
@@ -25,14 +32,14 @@ type BroadcastCorrectnessPacket struct {
 func (c *Correctness) Sia() *sia.Sia {
 	return new(sia.Sia).
 		AddUInt64(c.Timestamp).
-		AddByteArray8(c.Hash[:]).
+		AddByteArray8(c.Hash).
 		AddByteArray8(c.Topic[:]).
 		AddBool(c.Correct)
 }
 
 func (c *Correctness) DeSia(sia *sia.Sia) *Correctness {
 	c.Timestamp = sia.ReadUInt64()
-	copy(c.Hash[:], sia.ReadByteArray8())
+	copy(c.Hash, sia.ReadByteArray8())
 	copy(c.Topic[:], sia.ReadByteArray8())
 	c.Correct = sia.ReadBool()
 

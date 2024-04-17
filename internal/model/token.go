@@ -1,4 +1,4 @@
-package datasets
+package model
 
 import "github.com/KenshiTech/unchained/internal/config"
 
