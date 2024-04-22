@@ -72,7 +72,7 @@ func (s *Service) ProcessBlocks(chain string) error {
 			Addresses: []common.Address{contractAddress},
 		}
 
-		rpcClient := s.ethRPC.Clients[conf.Chain]
+		rpcClient := s.ethRPC.GetClient(conf.Chain)
 		logs, err := rpcClient.FilterLogs(context.Background(), query)
 
 		if err != nil {

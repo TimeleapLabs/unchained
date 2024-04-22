@@ -40,7 +40,7 @@ func Consumer() {
 	assetPrice := postgresRepo.NewAssetPrice(db)
 	correctnessRepo := postgresRepo.NewCorrectness(db)
 
-	correctnessService := correctnessService.New(ethRPC, pos, signerRepo, correctnessRepo)
+	correctnessService := correctnessService.New(pos, signerRepo, correctnessRepo)
 	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, nil)
 	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
 

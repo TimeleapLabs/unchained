@@ -1,8 +1,9 @@
 package pos
 
 import (
-	"github.com/KenshiTech/unchained/internal/service/pos/eip712"
 	"math/big"
+
+	"github.com/KenshiTech/unchained/internal/service/pos/eip712"
 
 	"github.com/KenshiTech/unchained/internal/utils"
 	"github.com/KenshiTech/unchained/internal/utils/address"
@@ -24,7 +25,7 @@ type Service interface {
 }
 
 type service struct {
-	ethRPC       ethereum.Rpc
+	ethRPC       ethereum.RPC
 	posContract  *contracts.UnchainedStaking
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
@@ -92,7 +93,7 @@ func (s *service) VotingPowerToFloat(power *big.Int) *big.Float {
 	return powerFloat
 }
 
-func New(ethRPC ethereum.Rpc) Service {
+func New(ethRPC ethereum.RPC) Service {
 	s := &service{
 		ethRPC:       ethRPC,
 		base:         big.NewInt(config.App.ProofOfStake.Base),

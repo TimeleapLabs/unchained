@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-type Rpc interface {
+type RPC interface {
 	RefreshRPC(network string)
 	GetClient(network string) *ethclient.Client
 	GetNewStakingContract(network string, address string, refresh bool) (*contracts.UnchainedStaking, error)
@@ -100,7 +100,7 @@ func (r *repository) init() {
 	r.rpcMutex = new(sync.Mutex)
 }
 
-func New() Rpc {
+func New() RPC {
 	r := &repository{}
 	r.init()
 

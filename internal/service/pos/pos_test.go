@@ -1,11 +1,12 @@
 package pos
 
 import (
+	"testing"
+
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/utils"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type PosTestSuite struct {

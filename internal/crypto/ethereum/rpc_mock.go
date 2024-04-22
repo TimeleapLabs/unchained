@@ -8,38 +8,38 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-type mockRpc struct {
+type mockRPC struct {
 	backend *backends.SimulatedBackend
 }
 
-func (m mockRpc) GetClient(network string) *ethclient.Client {
-	//TODO implement me
+func (m mockRPC) GetClient(_ string) *ethclient.Client {
+	// TODO implement me
 	panic("implement me")
 }
 
-func (m mockRpc) RefreshRPC(_ string) {}
+func (m mockRPC) RefreshRPC(_ string) {}
 
-func (m mockRpc) GetNewStakingContract(_ string, address string, _ bool) (*contracts.UnchainedStaking, error) {
+func (m mockRPC) GetNewStakingContract(_ string, address string, _ bool) (*contracts.UnchainedStaking, error) {
 	return contracts.NewUnchainedStaking(
 		common.HexToAddress(address),
 		m.backend,
 	)
 }
 
-func (m mockRpc) GetNewUniV3Contract(_ string, address string, _ bool) (*contracts.UniV3, error) {
+func (m mockRPC) GetNewUniV3Contract(_ string, address string, _ bool) (*contracts.UniV3, error) {
 	return contracts.NewUniV3(
 		common.HexToAddress(address),
 		m.backend,
 	)
 }
 
-func (m mockRpc) GetBlockNumber(_ string) (uint64, error) {
+func (m mockRPC) GetBlockNumber(_ string) (uint64, error) {
 	var blockNumber uint64 = 1000
 	return blockNumber, nil
 }
 
-func NewMock() Rpc {
-	return &mockRpc{
+func NewMock() RPC {
+	return &mockRPC{
 		backend: backends.NewSimulatedBackend(
 			core.DefaultGenesisBlock().Alloc,
 			9000000,

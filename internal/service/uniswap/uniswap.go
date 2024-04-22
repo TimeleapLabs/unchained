@@ -44,7 +44,7 @@ const (
 var DebouncedSaveSignatures func(key model.AssetKey, arg SaveSignatureArgs)
 
 type Service struct {
-	ethRPC         ethereum.Rpc
+	ethRPC         ethereum.RPC
 	pos            pos.Service
 	signerRepo     repository.Signer
 	assetPriceRepo repository.AssetPrice
@@ -421,7 +421,7 @@ func (s *Service) TokenKey(token model.Token) *model.TokenKey {
 }
 
 func New(
-	ethRPC ethereum.Rpc,
+	ethRPC ethereum.RPC,
 	pos pos.Service,
 	signerRepo repository.Signer,
 	assetPriceRepo repository.AssetPrice,

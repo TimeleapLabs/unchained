@@ -43,7 +43,7 @@ type SaveSignatureArgs struct {
 }
 
 type Service struct {
-	ethRPC       ethereum.Rpc
+	ethRPC       ethereum.RPC
 	pos          pos.Service
 	eventLogRepo repository.EventLog
 	signerRepo   repository.Signer
@@ -192,7 +192,7 @@ func (s *Service) SendPriceReport(signature bls12381.G1Affine, event model.Event
 }
 
 func New(
-	ethRPC ethereum.Rpc,
+	ethRPC ethereum.RPC,
 	pos pos.Service,
 	eventLogRepo repository.EventLog,
 	signerRepo repository.Signer,
