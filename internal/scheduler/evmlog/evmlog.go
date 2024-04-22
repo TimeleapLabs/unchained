@@ -6,7 +6,7 @@ import (
 
 type EvmLog struct {
 	chain         string
-	evmLogService *evmlog.Service
+	evmLogService evmlog.Service
 }
 
 func (e *EvmLog) Run() {
@@ -18,7 +18,7 @@ func (e *EvmLog) Run() {
 
 func New(
 	chanName string,
-	evmLogService *evmlog.Service,
+	evmLogService evmlog.Service,
 ) *EvmLog {
 	e := EvmLog{
 		chain:         chanName,

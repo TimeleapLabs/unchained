@@ -38,7 +38,15 @@ type SaveSignatureArgs struct {
 	Voted     *big.Int
 }
 
-type Service struct {
+type Service interface {
+	IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool
+	RecordSignature(
+		signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+	) error
+	SaveSignatures(args SaveSignatureArgs) error
+}
+
+type service struct {
 	pos             pos.Service
 	signerRepo      repository.Signer
 	correctnessRepo repository.CorrectnessReport
@@ -50,7 +58,7 @@ type Service struct {
 	supportedTopics         map[[64]byte]bool
 }
 
-func (s *Service) IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool {
+func (s *service) IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool {
 	// TODO: This isn't efficient, we should use a map
 	for _, record := range records {
 		for _, signer := range record.Edges.Signers {
@@ -65,7 +73,7 @@ func (s *Service) IsNewSigner(signature model.Signature, records []*ent.Correctn
 
 // TODO: How should we handle older records?
 // Possible Solution: Add a not after timestamp to the document.
-func (s *Service) RecordSignature(
+func (s *service) RecordSignature(
 	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
 ) error {
 	if supported := s.supportedTopics[info.Topic]; !supported {
@@ -151,7 +159,7 @@ func (s *Service) RecordSignature(
 	return nil
 }
 
-func (s *Service) SaveSignatures(args SaveSignatureArgs) error {
+func (s *service) SaveSignatures(args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
 		return consts.ErrSignatureNotfound
@@ -240,7 +248,7 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) error {
 	return nil
 }
 
-func (s *Service) init() {
+func (s *service) init() {
 	var err error
 
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
@@ -256,8 +264,8 @@ func New(
 	pos pos.Service,
 	signerRepo repository.Signer,
 	correctnessRepo repository.CorrectnessReport,
-) *Service {
-	c := Service{
+) Service {
+	c := service{
 		pos:             pos,
 		signerRepo:      signerRepo,
 		correctnessRepo: correctnessRepo,

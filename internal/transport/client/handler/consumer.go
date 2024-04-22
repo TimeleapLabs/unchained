@@ -10,15 +10,15 @@ import (
 )
 
 type consumer struct {
-	correctness *correctness.Service
-	uniswap     *uniswap.Service
-	evmlog      *evmlog.Service
+	correctness correctness.Service
+	uniswap     uniswap.Service
+	evmlog      evmlog.Service
 }
 
 func NewConsumerHandler(
-	correctness *correctness.Service,
-	uniswap *uniswap.Service,
-	evmlog *evmlog.Service,
+	correctness correctness.Service,
+	uniswap uniswap.Service,
+	evmlog evmlog.Service,
 ) Handler {
 	conn.Send(consts.OpCodeRegisterConsumer, []byte(config.App.Network.SubscribedChannel))
 

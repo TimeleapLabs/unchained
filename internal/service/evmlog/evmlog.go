@@ -42,7 +42,17 @@ type SaveSignatureArgs struct {
 	Voted     *big.Int
 }
 
-type Service struct {
+type Service interface {
+	GetBlockNumber(network string) (*uint64, error)
+	SaveSignatures(args SaveSignatureArgs) error
+	SendPriceReport(signature bls12381.G1Affine, event model.EventLog)
+	ProcessBlocks(chain string) error
+	RecordSignature(
+		signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+	) error
+}
+
+type service struct {
 	ethRPC       ethereum.RPC
 	pos          pos.Service
 	eventLogRepo repository.EventLog
@@ -57,7 +67,7 @@ type Service struct {
 	abiMap                  map[string]abi.ABI
 }
 
-func (s *Service) GetBlockNumber(network string) (*uint64, error) {
+func (s *service) GetBlockNumber(network string) (*uint64, error) {
 	blockNumber, err := s.ethRPC.GetBlockNumber(network)
 
 	if err != nil {
@@ -68,7 +78,7 @@ func (s *Service) GetBlockNumber(network string) (*uint64, error) {
 	return &blockNumber, nil
 }
 
-func (s *Service) SaveSignatures(args SaveSignatureArgs) error {
+func (s *service) SaveSignatures(args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
 		return consts.ErrInvalidSignature
@@ -179,7 +189,7 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) error {
 	return nil
 }
 
-func (s *Service) SendPriceReport(signature bls12381.G1Affine, event model.EventLog) {
+func (s *service) SendPriceReport(signature bls12381.G1Affine, event model.EventLog) {
 	compressedSignature := signature.Bytes()
 
 	priceReport := model.EventLogReportPacket{
@@ -197,8 +207,8 @@ func New(
 	eventLogRepo repository.EventLog,
 	signerRepo repository.Signer,
 	persistence *persistence.BadgerRepository,
-) *Service {
-	s := Service{
+) Service {
+	s := service{
 		ethRPC:       ethRPC,
 		pos:          pos,
 		eventLogRepo: eventLogRepo,

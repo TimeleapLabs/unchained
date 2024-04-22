@@ -10,7 +10,7 @@ import (
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 )
 
-func (s *Service) RecordSignature(
+func (s *service) RecordSignature(
 	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
 ) error {
 	supportKey := SupportKey{

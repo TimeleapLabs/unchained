@@ -30,6 +30,26 @@ func (s *PosTestSuite) TestGetTotalVotingPower() {
 	s.NoError(err)
 }
 
+func (s *PosTestSuite) TestGetVotingPower() {
+	_, err := s.service.GetVotingPower([20]byte{}, nil)
+	s.NoError(err)
+}
+
+func (s *PosTestSuite) TestGetVotingPowerFromContract() {
+	_, err := s.service.GetVotingPowerFromContract([20]byte{}, nil)
+	s.NoError(err)
+}
+
+func (s *PosTestSuite) TestGetVotingPowerOfPublicKey() {
+	_, err := s.service.GetVotingPowerOfPublicKey([96]byte{})
+	s.NoError(err)
+}
+
+func (s *PosTestSuite) TestVotingPowerToFloat() {
+	// := s.service.VotingPowerToFloat(nil)
+	// s.NoError(err)
+}
+
 func TestPosTestSuite(t *testing.T) {
 	suite.Run(t, new(PosTestSuite))
 }

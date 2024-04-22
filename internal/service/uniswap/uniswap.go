@@ -39,11 +39,28 @@ import (
 
 const (
 	MaxBlockNumberDelta = 96
+	SizeOfPriceCacheLru = 128
 )
 
 var DebouncedSaveSignatures func(key model.AssetKey, arg SaveSignatureArgs)
 
-type Service struct {
+type Service interface {
+	checkAndCacheSignature(
+		reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer model.Signer,
+		hash bls12381.G1Affine, totalVoted *big.Int,
+	) error
+	saveSignatures(args SaveSignatureArgs) error
+	GetBlockNumber(network string) (*uint64, error)
+	GetPriceAtBlockFromPair(network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool) (*big.Int, error)
+	SyncBlocks(token model.Token, key model.TokenKey, latest uint64) error
+	TokenKey(token model.Token) *model.TokenKey
+	RecordSignature(
+		signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+	) error
+	ProcessBlocks(chain string) error
+}
+
+type service struct {
 	ethRPC         ethereum.RPC
 	pos            pos.Service
 	signerRepo     repository.Signer
@@ -63,7 +80,7 @@ type Service struct {
 	LastPrice     big.Int
 }
 
-func (s *Service) checkAndCacheSignature(
+func (s *service) checkAndCacheSignature(
 	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer model.Signer,
 	hash bls12381.G1Affine, totalVoted *big.Int,
 ) error {
@@ -97,7 +114,7 @@ type SaveSignatureArgs struct {
 	Voted     *big.Int
 }
 
-func (s *Service) saveSignatures(args SaveSignatureArgs) error {
+func (s *service) saveSignatures(args SaveSignatureArgs) error {
 	utils.Logger.
 		With("Block", args.Info.Asset.Block).
 		With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
@@ -215,7 +232,7 @@ func (s *Service) saveSignatures(args SaveSignatureArgs) error {
 	return nil
 }
 
-func (s *Service) GetBlockNumber(network string) (*uint64, error) {
+func (s *service) GetBlockNumber(network string) (*uint64, error) {
 	blockNumber, err := s.ethRPC.GetBlockNumber(network)
 
 	if err != nil {
@@ -226,7 +243,7 @@ func (s *Service) GetBlockNumber(network string) (*uint64, error) {
 	return &blockNumber, nil
 }
 
-func (s *Service) GetPriceAtBlockFromPair(
+func (s *service) GetPriceAtBlockFromPair(
 	network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool,
 ) (*big.Int, error) {
 	pair, err := s.ethRPC.GetNewUniV3Contract(network, pairAddr, false)
@@ -253,7 +270,7 @@ func (s *Service) GetPriceAtBlockFromPair(
 	return &s.LastPrice, nil
 }
 
-func (s *Service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *big.Int {
+func (s *service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inverse bool) *big.Int {
 	var decimalFix big.Int
 	var powerUp big.Int
 	var rawPrice big.Int
@@ -276,7 +293,7 @@ func (s *Service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inve
 	return &price
 }
 
-func (s *Service) syncBlock(token model.Token, caser cases.Caser, key *model.TokenKey, blockInx uint64) error {
+func (s *service) syncBlock(token model.Token, caser cases.Caser, key *model.TokenKey, blockInx uint64) error {
 	lastSynced, ok := s.LastBlock.Load(*key)
 
 	if ok && blockInx <= lastSynced {
@@ -376,7 +393,7 @@ func (s *Service) syncBlock(token model.Token, caser cases.Caser, key *model.Tok
 	return nil
 }
 
-func (s *Service) SyncBlocks(token model.Token, key model.TokenKey, latest uint64) error {
+func (s *service) SyncBlocks(token model.Token, key model.TokenKey, latest uint64) error {
 	block, ok := s.LastBlock.Load(key)
 	if !ok {
 		return consts.ErrCantLoadLastBlock
@@ -394,7 +411,7 @@ func (s *Service) SyncBlocks(token model.Token, key model.TokenKey, latest uint6
 	return nil
 }
 
-func (s *Service) TokenKey(token model.Token) *model.TokenKey {
+func (s *service) TokenKey(token model.Token) *model.TokenKey {
 	var cross []model.TokenKey
 
 	for _, id := range token.Cross {
@@ -425,8 +442,8 @@ func New(
 	pos pos.Service,
 	signerRepo repository.Signer,
 	assetPriceRepo repository.AssetPrice,
-) *Service {
-	s := Service{
+) Service {
+	s := service{
 		ethRPC:         ethRPC,
 		pos:            pos,
 		signerRepo:     signerRepo,
@@ -453,6 +470,17 @@ func New(
 
 			key := s.TokenKey(token)
 			s.SupportedTokens[*key] = true
+		}
+	}
+
+	for _, t := range config.App.Plugins.Uniswap.Tokens {
+		token := model.NewTokenFromCfg(t)
+		var err error
+		s.PriceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)
+
+		if err != nil {
+			utils.Logger.Error("Failed to initialize token map.")
+			os.Exit(1)
 		}
 	}
 

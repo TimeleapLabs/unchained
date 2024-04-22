@@ -14,7 +14,7 @@ import (
 
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
-func (s *Service) RecordSignature(
+func (s *service) RecordSignature(
 	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
 ) error {
 	if supported := s.SupportedTokens[info.Asset.Token]; !supported {

@@ -5,7 +5,7 @@ import (
 	"github.com/KenshiTech/unchained/internal/model"
 )
 
-func (s *Service) ProcessBlocks(chain string) error {
+func (s *service) ProcessBlocks(chain string) error {
 	currBlockNumber, err := s.ethRPC.GetBlockNumber(chain)
 	if err != nil {
 		s.ethRPC.RefreshRPC(chain)

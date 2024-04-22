@@ -22,7 +22,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-func (s *Service) ProcessBlocks(chain string) error {
+func (s *service) ProcessBlocks(chain string) error {
 	for _, conf := range config.App.Plugins.EthLog.Events {
 		if conf.Chain != chain {
 			continue
