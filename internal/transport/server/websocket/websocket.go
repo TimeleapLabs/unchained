@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -31,8 +32,11 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithCancel(context.TODO())
+
 	defer store.Signers.Delete(conn)
 	defer store.Challenges.Delete(conn)
+	defer cancel()
 
 	for {
 		messageType, payload, err := conn.ReadMessage()
@@ -103,10 +107,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 				With("Channel", string(payload[1:])).
 				Info("New Consumer registered")
 
-			go handler.BroadcastListener(
-				conn,
-				pubsub.Subscribe(string(payload[1:])),
-			)
+			go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
 		default:
 			handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}

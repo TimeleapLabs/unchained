@@ -9,19 +9,13 @@ import (
 
 func (h *consumer) CorrectnessReport(message []byte) {
 	packet := new(model.BroadcastCorrectnessPacket).DeSia(&sia.Sia{Content: message})
-	toHash := packet.Info.Sia().Content
-	hash, err := bls.Hash(toHash)
 
+	correctnessHash, err := packet.Info.Bls()
 	if err != nil {
-		utils.Logger.
-			With("Error", err).
-			Error("Hash error")
-
 		return
 	}
 
 	signature, err := bls.RecoverSignature(packet.Signature)
-
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
@@ -33,15 +27,12 @@ func (h *consumer) CorrectnessReport(message []byte) {
 	err = h.correctness.RecordSignature(
 		signature,
 		packet.Signer,
-		hash,
+		correctnessHash,
 		packet.Info,
 		true,
 	)
-
 	if err != nil {
-		utils.Logger.
-			With("Error", err).
-			Error("Failed to record signature")
+		return
 	}
 }
 

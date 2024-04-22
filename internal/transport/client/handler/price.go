@@ -9,19 +9,13 @@ import (
 
 func (h *consumer) PriceReport(message []byte) {
 	packet := new(model.BroadcastPricePacket).DeSia(&sia.Sia{Content: message})
-	toHash := packet.Info.Sia().Content
-	hash, err := bls.Hash(toHash)
 
+	priceInfoHash, err := packet.Info.Bls()
 	if err != nil {
-		utils.Logger.
-			With("Error", err).
-			Error("Hash error")
-
 		return
 	}
 
 	signature, err := bls.RecoverSignature(packet.Signature)
-
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
@@ -33,7 +27,7 @@ func (h *consumer) PriceReport(message []byte) {
 	err = h.uniswap.RecordSignature(
 		signature,
 		packet.Signer,
-		hash,
+		priceInfoHash,
 		packet.Info,
 		true,
 		false,

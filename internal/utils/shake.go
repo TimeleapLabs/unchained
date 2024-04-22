@@ -1,4 +1,4 @@
-package shake
+package utils
 
 import "golang.org/x/crypto/sha3"
 

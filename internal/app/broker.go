@@ -4,7 +4,7 @@ import (
 	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-	"github.com/KenshiTech/unchained/internal/pos"
+	"github.com/KenshiTech/unchained/internal/service/pos"
 	"github.com/KenshiTech/unchained/internal/transport/server"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket"
 	"github.com/KenshiTech/unchained/internal/utils"

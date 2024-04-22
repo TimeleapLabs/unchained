@@ -3,7 +3,6 @@ package consts
 import "errors"
 
 var (
-	ErrCantSendPacket          = errors.New("socket.unreachable")
 	ErrInvalidKosk             = errors.New("kosk.invalid")
 	ErrInvalidConfig           = errors.New("conf.invalid")
 	ErrKosk                    = errors.New("kosk.error")
@@ -18,6 +17,8 @@ var (
 	ErrCantLoadConfig          = errors.New("can't load config")
 	ErrCantWriteSecret         = errors.New("can't write secrets")
 	ErrTokenNotSupported       = errors.New("token not supported")
+	ErrEventNotSupported       = errors.New("event not supported")
+	ErrTopicNotSupported       = errors.New("topic not supported")
 	ErrDataTooOld              = errors.New("data too old")
 	ErrCantAggregateSignatures = errors.New("can't aggregate signatures")
 	ErrCantRecoverSignature    = errors.New("can't recover signature")
@@ -26,4 +27,5 @@ var (
 	ErrCantLoadLastBlock       = errors.New("can't load last block")
 	ErrDuplicateSignature      = errors.New("duplicate signature")
 	ErrCrossPriceIsNotZero     = errors.New("cross price is not zero")
+	ErrAlreadySynced           = errors.New("already synced")
 )

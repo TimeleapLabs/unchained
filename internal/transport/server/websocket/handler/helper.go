@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/utils"
 	"github.com/gorilla/websocket"
@@ -22,11 +24,17 @@ func SendMessage(conn *websocket.Conn, messageType int, opCode consts.OpCode, me
 	Send(conn, messageType, opCode, []byte(message))
 }
 
-func BroadcastListener(conn *websocket.Conn, ch <-chan []byte) {
-	for message := range ch {
-		err := conn.WriteMessage(websocket.BinaryMessage, message)
-		if err != nil {
-			utils.Logger.Error(err.Error())
+func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte) {
+	for {
+		select {
+		case <-ctx.Done():
+			close(ch)
+			return
+		case message := <-ch:
+			err := conn.WriteMessage(websocket.BinaryMessage, message)
+			if err != nil {
+				utils.Logger.Error(err.Error())
+			}
 		}
 	}
 }

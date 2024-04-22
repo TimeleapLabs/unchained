@@ -9,19 +9,13 @@ import (
 
 func (h *consumer) EventLog(message []byte) {
 	packet := new(model.BroadcastEventPacket).DeSia(&sia.Sia{Content: message})
-	toHash := packet.Info.Sia().Content
-	hash, err := bls.Hash(toHash)
 
+	eventLogHash, err := packet.Info.Bls()
 	if err != nil {
-		utils.Logger.
-			With("Error", err).
-			Error("Hash error")
-
 		return
 	}
 
 	signature, err := bls.RecoverSignature(packet.Signature)
-
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
@@ -33,7 +27,7 @@ func (h *consumer) EventLog(message []byte) {
 	err = h.evmlog.RecordSignature(
 		signature,
 		packet.Signer,
-		hash,
+		eventLogHash,
 		packet.Info,
 		true,
 		false,

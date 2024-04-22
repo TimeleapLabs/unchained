@@ -21,8 +21,10 @@ type MachineIdentity struct {
 	Eth *ethereum.EvmSigner
 }
 
+// Identity is a global variable that holds machine identity.
 var Identity = &MachineIdentity{}
 
+// Option represents a function that can add new identity to machine identity.
 type Option func(identity *MachineIdentity) error
 
 // InitMachineIdentity loads all provided identities and save them to secret file.
@@ -40,6 +42,7 @@ func InitMachineIdentity(options ...Option) {
 	}
 }
 
+// ExportBlsSigner returns EVM signer from machine identity.
 func (i *MachineIdentity) ExportBlsSigner() *model.Signer {
 	return &model.Signer{
 		Name:           config.App.System.Name,

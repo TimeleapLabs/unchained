@@ -3,25 +3,24 @@ package correctness
 import (
 	"context"
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils/address"
 	"math/big"
 	"os"
-	"sync"
 	"time"
+
+	"github.com/KenshiTech/unchained/internal/service/pos"
+
+	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/KenshiTech/unchained/internal/utils/address"
 
 	"github.com/KenshiTech/unchained/internal/consts"
 
 	"github.com/KenshiTech/unchained/internal/repository"
 
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-	"github.com/KenshiTech/unchained/internal/pos"
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
 	"github.com/puzpuzpuz/xsync/v3"
 
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/crypto/shake"
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
@@ -32,10 +31,6 @@ const (
 	LruSize = 128
 )
 
-type Conf struct {
-	Topic string `mapstructure:"name"`
-}
-
 type SaveSignatureArgs struct {
 	Info      model.Correctness
 	Hash      bls12381.G1Affine
@@ -44,8 +39,7 @@ type SaveSignatureArgs struct {
 }
 
 type Service struct {
-	ethRPC          *ethereum.Repository
-	pos             *pos.Repository
+	pos             pos.Service
 	signerRepo      repository.Signer
 	correctnessRepo repository.CorrectnessReport
 
@@ -53,7 +47,6 @@ type Service struct {
 	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]]
 
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
-	signatureMutex          *sync.Mutex
 	supportedTopics         map[[64]byte]bool
 }
 
@@ -73,20 +66,16 @@ func (s *Service) IsNewSigner(signature model.Signature, records []*ent.Correctn
 // TODO: How should we handle older records?
 // Possible Solution: Add a not after timestamp to the document.
 func (s *Service) RecordSignature(
-	signature bls12381.G1Affine,
-	signer model.Signer,
-	hash bls12381.G1Affine,
-	info model.Correctness,
-	debounce bool) error {
+	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+) error {
 	if supported := s.supportedTopics[info.Topic]; !supported {
-		return consts.ErrTokenNotSupported
+		utils.Logger.
+			With("Topic", info.Topic).
+			Debug("Token not supported")
+		return consts.ErrTopicNotSupported
 	}
 
-	s.signatureMutex.Lock()
-	defer s.signatureMutex.Unlock()
-
 	signatures, ok := s.signatureCache.Get(hash)
-
 	if !ok {
 		signatures = make([]model.Signature, 0)
 	}
@@ -255,7 +244,6 @@ func (s *Service) init() {
 	var err error
 
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
-	s.signatureMutex = new(sync.Mutex)
 	s.supportedTopics = make(map[[64]byte]bool)
 	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
 
@@ -265,13 +253,11 @@ func (s *Service) init() {
 }
 
 func New(
-	ethRPC *ethereum.Repository,
-	pos *pos.Repository,
+	pos pos.Service,
 	signerRepo repository.Signer,
 	correctnessRepo repository.CorrectnessReport,
 ) *Service {
 	c := Service{
-		ethRPC:          ethRPC,
 		pos:             pos,
 		signerRepo:      signerRepo,
 		correctnessRepo: correctnessRepo,
@@ -279,7 +265,7 @@ func New(
 	c.init()
 
 	for _, conf := range config.App.Plugins.Correctness {
-		c.supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
+		c.supportedTopics[[64]byte(utils.Shake([]byte(conf)))] = true
 	}
 
 	var err error

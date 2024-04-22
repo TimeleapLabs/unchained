@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/KenshiTech/unchained/internal/consts"
-	"github.com/KenshiTech/unchained/internal/crypto/kosk"
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
 	"github.com/KenshiTech/unchained/internal/utils"
@@ -29,7 +28,7 @@ func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	store.Signers.Store(conn, *signer)
 
 	// Start KOSK verification
-	challenge := kosk.Challenge{Random: kosk.NewChallenge()}
+	challenge := model.ChallengePacket{Random: utils.NewChallenge()}
 	store.Challenges.Store(conn, challenge)
 	koskPayload := challenge.Sia().Content
 

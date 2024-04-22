@@ -72,10 +72,10 @@ func (b *Signer) generateKeyPair() {
 	b.PublicKey = pk
 }
 
+// Verify verifies the signature of a message belongs to the public key.
 func (b *Signer) Verify(
-	signature bls12381.G1Affine,
-	hashedMessage bls12381.G1Affine,
-	publicKey bls12381.G2Affine) (bool, error) {
+	signature bls12381.G1Affine, hashedMessage bls12381.G1Affine, publicKey bls12381.G2Affine,
+) (bool, error) {
 	pairingSigG2, err := bls12381.Pair(
 		[]bls12381.G1Affine{signature},
 		[]bls12381.G2Affine{b.g2Aff})

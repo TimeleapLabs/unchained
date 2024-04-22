@@ -1,24 +1,19 @@
-package logs
+package evmlog
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils"
 	"math/big"
-	"os"
 	"sort"
 	"strings"
 
-	"github.com/KenshiTech/unchained/internal/scheduler/persistence"
-
-	"github.com/KenshiTech/unchained/internal/crypto"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-
 	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/KenshiTech/unchained/internal/consts"
+	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/service/evmlog"
+	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/KenshiTech/unchained/internal/utils"
 	"github.com/dgraph-io/badger/v4"
 	goEthereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -27,47 +22,34 @@ import (
 	"golang.org/x/text/language"
 )
 
-type EvmLog struct {
-	chain         string
-	evmLogService *evmlog.Service
-	ethRPC        *ethereum.Repository
-	persistence   *persistence.BadgerRepository
-
-	supportedEvents map[evmlog.SupportKey]bool
-	abiMap          map[string]abi.ABI
-	lastSyncedBlock map[config.Event]uint64
-}
-
-func (e *EvmLog) Run() {
-	if config.App.Plugins.EthLog == nil {
-		return
-	}
-
+func (s *Service) ProcessBlocks(chain string) error {
 	for _, conf := range config.App.Plugins.EthLog.Events {
-		if conf.Chain != e.chain {
+		if conf.Chain != chain {
 			continue
 		}
 
-		blockNumber, err := e.evmLogService.GetBlockNumber(e.chain)
-		allowedBlock := *blockNumber - conf.Confirmations
-
+		// check if processing is needed
+		blockNumber, err := s.ethRPC.GetBlockNumber(chain)
 		if err != nil {
-			return
+			s.ethRPC.RefreshRPC(chain)
+			return err
 		}
 
-		if e.lastSyncedBlock[conf]+1 >= allowedBlock {
-			return
+		allowedBlock := blockNumber - conf.Confirmations
+
+		if s.lastSyncedBlock[conf]+1 >= allowedBlock {
+			return consts.ErrAlreadySynced
 		}
 
 		contractAddress := common.HexToAddress(conf.Address)
 		contextKey := fmt.Sprintf("plugins.logs.events.%s", conf.Name)
-		fromBlock := e.lastSyncedBlock[conf] + 1
+		fromBlock := s.lastSyncedBlock[conf] + 1
 
-		if e.lastSyncedBlock[conf] == 0 {
-			contextBlock, err := e.persistence.ReadUInt64(contextKey)
+		if s.lastSyncedBlock[conf] == 0 {
+			contextBlock, err := s.persistence.ReadUInt64(contextKey)
 
 			if err != nil && !errors.Is(err, badger.ErrKeyNotFound) {
-				panic(err)
+				return err
 			}
 
 			fromBlock = allowedBlock - conf.Step
@@ -90,14 +72,14 @@ func (e *EvmLog) Run() {
 			Addresses: []common.Address{contractAddress},
 		}
 
-		rpcClient := e.ethRPC.Clients[conf.Chain]
+		rpcClient := s.ethRPC.Clients[conf.Chain]
 		logs, err := rpcClient.FilterLogs(context.Background(), query)
 
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		contractAbi := e.abiMap[conf.Abi]
+		contractAbi := s.abiMap[conf.Abi]
 		caser := cases.Title(language.English, cases.NoLower)
 
 		for _, vLog := range logs {
@@ -109,13 +91,13 @@ func (e *EvmLog) Run() {
 			}
 
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			eventData := make(map[string]interface{})
 			err = contractAbi.UnpackIntoMap(eventData, eventAbi.Name, vLog.Data)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			indexedParams := make([]abi.Argument, 0)
@@ -127,7 +109,7 @@ func (e *EvmLog) Run() {
 
 			err = abi.ParseTopicsIntoMap(eventData, indexedParams, vLog.Topics[1:])
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			var keys []string
@@ -184,11 +166,11 @@ func (e *EvmLog) Run() {
 			signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, toHash)
 
 			if conf.Send {
-				e.evmLogService.SendPriceReport(signature, event)
+				s.SendPriceReport(signature, event)
 			}
 
 			if conf.Store {
-				err = e.evmLogService.RecordSignature(
+				err = s.RecordSignature(
 					signature,
 					*crypto.Identity.ExportBlsSigner(),
 					hash,
@@ -197,64 +179,17 @@ func (e *EvmLog) Run() {
 					true,
 				)
 				if err != nil {
-					return
+					return err
 				}
 			}
 		}
 
-		e.lastSyncedBlock[conf] = toBlock
-		err = e.persistence.WriteUint64(contextKey, toBlock)
+		s.lastSyncedBlock[conf] = toBlock
+		err = s.persistence.WriteUint64(contextKey, toBlock)
 		if err != nil {
-			panic(err)
-		}
-	}
-}
-
-func New(
-	chanName string, events []config.Event,
-	evmLogService *evmlog.Service,
-	ethRPC *ethereum.Repository,
-	persistence *persistence.BadgerRepository,
-) *EvmLog {
-	e := EvmLog{
-		chain:         chanName,
-		evmLogService: evmLogService,
-		ethRPC:        ethRPC,
-		persistence:   persistence,
-
-		supportedEvents: map[evmlog.SupportKey]bool{},
-		abiMap:          map[string]abi.ABI{},
-		lastSyncedBlock: map[config.Event]uint64{},
-	}
-
-	for _, conf := range events {
-		key := evmlog.SupportKey{
-			Chain:   conf.Chain,
-			Address: conf.Address,
-			Event:   conf.Event,
-		}
-		e.supportedEvents[key] = true
-
-		if _, exists := e.abiMap[conf.Abi]; exists {
-			continue
-		}
-
-		file, err := os.Open(conf.Abi)
-		if err != nil {
-			panic(err)
-		}
-
-		contractAbi, err := abi.JSON(file)
-		if err != nil {
-			panic(err)
-		}
-
-		e.abiMap[conf.Abi] = contractAbi
-		err = file.Close()
-		if err != nil {
-			panic(err)
+			return err
 		}
 	}
 
-	return &e
+	return nil
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int, nftIDs []*big.Int) error {
+func (s *service) Slash(address [20]byte, to common.Address, amount *big.Int, nftIDs []*big.Int) error {
 	evmAddress, err := s.posContract.EvmAddressOf(nil, address)
 
 	if err != nil {
@@ -56,7 +56,7 @@ func (s *Repository) Slash(address [20]byte, to common.Address, amount *big.Int,
 
 	receipt, err := bind.WaitMined(
 		context.Background(),
-		s.ethRPC.Clients[config.App.ProofOfStake.Chain],
+		s.ethRPC.GetClient(config.App.ProofOfStake.Chain),
 		tx,
 	)
 

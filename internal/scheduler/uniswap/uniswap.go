@@ -1,14 +1,12 @@
 package uniswap
 
 import (
-	"fmt"
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils"
 	"math/big"
 	"os"
 	"strings"
 
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/KenshiTech/unchained/internal/utils"
 
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/service/uniswap"
@@ -22,7 +20,6 @@ const (
 type Uniswap struct {
 	chain          string
 	uniswapService *uniswap.Service
-	ethRPC         *ethereum.Repository
 }
 
 func (u *Uniswap) Run() {
@@ -30,48 +27,22 @@ func (u *Uniswap) Run() {
 		return
 	}
 
-	currBlockNumber, err := u.uniswapService.GetBlockNumber(u.chain)
+	err := u.uniswapService.ProcessBlocks(u.chain)
 	if err != nil {
-		utils.Logger.Error(
-			fmt.Sprintf("Couldn't get latest block from %s RPC.", u.chain))
-		u.ethRPC.RefreshRPC(u.chain)
-		return
-	}
-
-	for _, token := range model.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
-		if token.Chain != u.chain {
-			continue
-		}
-
-		// TODO: this can be cached
-		key := u.uniswapService.TokenKey(token)
-		tokenLastBlock, exists := u.uniswapService.LastBlock.Load(*key)
-
-		if !exists {
-			u.uniswapService.LastBlock.Store(*key, *currBlockNumber-1)
-		} else if tokenLastBlock == *currBlockNumber {
-			return
-		}
-
-		err = u.uniswapService.SyncBlocks(token, *key, *currBlockNumber)
-		if err != nil {
-			return
-		}
+		panic(err)
 	}
 }
 
 func New(
-	chanName string, tokens []config.Token,
+	chanName string,
 	uniswapService *uniswap.Service,
-	ethRPC *ethereum.Repository,
 ) *Uniswap {
 	u := Uniswap{
 		chain:          chanName,
 		uniswapService: uniswapService,
-		ethRPC:         ethRPC,
 	}
 
-	for _, t := range tokens {
+	for _, t := range config.App.Plugins.Uniswap.Tokens {
 		token := model.NewTokenFromCfg(t)
 		var err error
 		u.uniswapService.PriceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)

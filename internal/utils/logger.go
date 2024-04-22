@@ -10,7 +10,8 @@ import (
 
 var Logger *slog.Logger
 
-func Start(logLevel string) {
+// Start initializes the logger.
+func SetupLogger(logLevel string) {
 	levels := make(map[string]slog.Level)
 	levels["info"] = slog.LevelInfo
 	levels["warn"] = slog.LevelWarn

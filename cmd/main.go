@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/consts"
 	"os"
+
+	"github.com/KenshiTech/unchained/internal/consts"
 
 	"github.com/KenshiTech/unchained/cmd/handler"
 	"github.com/KenshiTech/unchained/internal/config"

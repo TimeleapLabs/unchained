@@ -1,8 +1,8 @@
 package pos
 
 import (
+	"github.com/KenshiTech/unchained/internal/service/pos/eip712"
 	"math/big"
-	"os"
 
 	"github.com/KenshiTech/unchained/internal/utils"
 	"github.com/KenshiTech/unchained/internal/utils/address"
@@ -12,37 +12,43 @@ import (
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/pos/eip712"
-
 	"github.com/puzpuzpuz/xsync/v3"
 )
 
-type Repository struct {
-	ethRPC       *ethereum.Repository
+type Service interface {
+	GetTotalVotingPower() (*big.Int, error)
+	GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error)
+	GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error)
+	GetVotingPowerOfPublicKey(pkBytes [96]byte) (*big.Int, error)
+	VotingPowerToFloat(power *big.Int) *big.Float
+}
+
+type service struct {
+	ethRPC       ethereum.Rpc
 	posContract  *contracts.UnchainedStaking
-	posChain     string
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
 	base         *big.Int
 	eip712Signer *eip712.Signer
 }
 
-func (s *Repository) GetTotalVotingPower() (*big.Int, error) {
+func (s *service) GetTotalVotingPower() (*big.Int, error) {
 	return s.posContract.GetTotalVotingPower(nil)
 }
 
-func (s *Repository) GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error) {
+func (s *service) GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error) {
 	votingPower, err := s.posContract.GetVotingPower(nil, address)
-
-	if err == nil {
-		s.votingPowers.Store(address, votingPower)
-		s.lastUpdated.Store(address, block)
+	if err != nil {
+		return votingPower, err
 	}
 
-	return votingPower, err
+	s.votingPowers.Store(address, votingPower)
+	s.lastUpdated.Store(address, block)
+
+	return votingPower, nil
 }
 
-func (s *Repository) minBase(power *big.Int) *big.Int {
+func (s *service) minBase(power *big.Int) *big.Int {
 	if power == nil || power.Cmp(s.base) < 0 {
 		return s.base
 	}
@@ -50,9 +56,8 @@ func (s *Repository) minBase(power *big.Int) *big.Int {
 	return power
 }
 
-func (s *Repository) GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
+func (s *service) GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error) {
 	powerLastUpdated, ok := s.lastUpdated.Load(address)
-
 	if !ok {
 		powerLastUpdated = big.NewInt(0)
 	}
@@ -71,35 +76,29 @@ func (s *Repository) GetVotingPower(address [20]byte, block *big.Int) (*big.Int,
 	return s.base, nil
 }
 
-func (s *Repository) GetVotingPowerOfPublicKeyAtBlock(pkBytes [96]byte, block *big.Int) (*big.Int, error) {
+func (s *service) GetVotingPowerOfPublicKey(pkBytes [96]byte) (*big.Int, error) {
 	_, addrHex := address.CalculateHex(pkBytes[:])
-	return s.GetVotingPower(addrHex, block)
-}
-
-func (s *Repository) GetVotingPowerOfPublicKey(pkBytes [96]byte) (*big.Int, error) {
-	_, addrHex := address.CalculateHex(pkBytes[:])
-	block, err := s.ethRPC.GetBlockNumber(s.posChain)
+	block, err := s.ethRPC.GetBlockNumber(config.App.ProofOfStake.Chain)
 	if err != nil {
 		return nil, err
 	}
 	return s.GetVotingPower(addrHex, big.NewInt(int64(block)))
 }
 
-func (s *Repository) VotingPowerToFloat(power *big.Int) *big.Float {
+func (s *service) VotingPowerToFloat(power *big.Int) *big.Float {
 	decimalPlaces := big.NewInt(1e18)
 	powerFloat := new(big.Float).SetInt(power)
 	powerFloat.Quo(powerFloat, new(big.Float).SetInt(decimalPlaces))
 	return powerFloat
 }
 
-func New(ethRPC *ethereum.Repository) *Repository {
-	s := &Repository{
-		ethRPC: ethRPC,
+func New(ethRPC ethereum.Rpc) Service {
+	s := &service{
+		ethRPC:       ethRPC,
+		base:         big.NewInt(config.App.ProofOfStake.Base),
+		votingPowers: xsync.NewMapOf[[20]byte, *big.Int](),
+		lastUpdated:  xsync.NewMapOf[[20]byte, *big.Int](),
 	}
-
-	s.init()
-
-	s.base = big.NewInt(config.App.ProofOfStake.Base)
 
 	pkBytes := crypto.Identity.Bls.PublicKey.Bytes()
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
@@ -115,33 +114,30 @@ func New(ethRPC *ethereum.Repository) *Repository {
 		config.App.ProofOfStake.Address,
 		false,
 	)
-
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
 			Error("Failed to connect to the staking contract")
 
-		os.Exit(1)
+		panic(err)
 	}
 
 	power, err := s.GetVotingPower(addrHex, big.NewInt(0))
-
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
 			Error("Failed to get voting power")
 
-		return s
+		panic(err)
 	}
 
 	total, err := s.GetTotalVotingPower()
-
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
 			Error("Failed to get total voting power")
 
-		return s
+		panic(err)
 	}
 
 	utils.Logger.
@@ -150,22 +146,15 @@ func New(ethRPC *ethereum.Repository) *Repository {
 		Info("PoS")
 
 	chainID, err := s.posContract.GetChainId(nil)
-
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
 			Error("Failed to get chain ID")
 
-		return s
+		panic(err)
 	}
 
 	s.eip712Signer = eip712.New(chainID, config.App.ProofOfStake.Address)
-	s.posChain = config.App.ProofOfStake.Chain
 
 	return s
-}
-
-func (s *Repository) init() {
-	s.votingPowers = xsync.NewMapOf[[20]byte, *big.Int]()
-	s.lastUpdated = xsync.NewMapOf[[20]byte, *big.Int]()
 }

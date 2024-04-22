@@ -3,6 +3,10 @@ package model
 import (
 	"math/big"
 
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/utils"
+	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
+
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
@@ -23,11 +27,6 @@ type AssetKey struct {
 type PriceInfo struct {
 	Asset AssetKey
 	Price big.Int
-}
-
-type PriceReport struct {
-	PriceInfo PriceInfo
-	Signature [48]byte
 }
 
 type BroadcastPricePacket struct {
@@ -83,17 +82,14 @@ func (p *PriceInfo) DeSia(sia *sia.Sia) *PriceInfo {
 	return p
 }
 
-func (p *PriceReport) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(p.PriceInfo.Sia()).
-		AddByteArray8(p.Signature[:])
-}
+func (p *PriceInfo) Bls() (bls12381.G1Affine, error) {
+	hash, err := bls.Hash(p.Sia().Content)
+	if err != nil {
+		utils.Logger.With("err", err).Error("Can't hash bls")
+		return bls12381.G1Affine{}, err
+	}
 
-func (p *PriceReport) DeSia(sia *sia.Sia) *PriceReport {
-	p.PriceInfo.DeSia(sia)
-	copy(p.Signature[:], sia.ReadByteArray8())
-
-	return p
+	return hash, err
 }
 
 func (b *BroadcastPricePacket) Sia() *sia.Sia {

@@ -17,14 +17,26 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-type Repository struct {
+type Rpc interface {
+	RefreshRPC(network string)
+	GetClient(network string) *ethclient.Client
+	GetNewStakingContract(network string, address string, refresh bool) (*contracts.UnchainedStaking, error)
+	GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error)
+	GetBlockNumber(network string) (uint64, error)
+}
+
+type repository struct {
 	rpcList  map[string][]string
 	rpcIndex map[string]int
 	Clients  map[string]*ethclient.Client
 	rpcMutex *sync.Mutex
 }
 
-func (r *Repository) refreshRPCWithRetries(network string, retries int) bool {
+func (r *repository) GetClient(chain string) *ethclient.Client {
+	return r.Clients[chain]
+}
+
+func (r *repository) refreshRPCWithRetries(network string, retries int) bool {
 	if retries == 0 {
 		panic("Cannot connect to any of the provided RPCs")
 	}
@@ -47,16 +59,13 @@ func (r *Repository) refreshRPCWithRetries(network string, retries int) bool {
 	return true
 }
 
-func (r *Repository) RefreshRPC(network string) {
+func (r *repository) RefreshRPC(network string) {
 	r.rpcMutex.Lock()
 	defer r.rpcMutex.Unlock()
 	r.refreshRPCWithRetries(network, len(r.rpcList))
 }
 
-func (r *Repository) GetNewStakingContract(
-	network string,
-	address string,
-	refresh bool) (*contracts.UnchainedStaking, error) {
+func (r *repository) GetNewStakingContract(network string, address string, refresh bool) (*contracts.UnchainedStaking, error) {
 	if refresh {
 		r.RefreshRPC(network)
 	}
@@ -64,7 +73,7 @@ func (r *Repository) GetNewStakingContract(
 	return contracts.NewUnchainedStaking(common.HexToAddress(address), r.Clients[network])
 }
 
-func (r *Repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
+func (r *repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
 	if refresh {
 		r.RefreshRPC(network)
 	}
@@ -72,7 +81,8 @@ func (r *Repository) GetNewUniV3Contract(network string, address string, refresh
 	return contracts.NewUniV3(common.HexToAddress(address), r.Clients[network])
 }
 
-func (r *Repository) GetBlockNumber(network string) (uint64, error) {
+// GetBlockNumber returns the most recent block number.
+func (r *repository) GetBlockNumber(network string) (uint64, error) {
 	client, ok := r.Clients[network]
 
 	if !ok {
@@ -83,15 +93,15 @@ func (r *Repository) GetBlockNumber(network string) (uint64, error) {
 	return client.BlockNumber(context.Background())
 }
 
-func (r *Repository) init() {
+func (r *repository) init() {
 	r.rpcList = make(map[string][]string)
 	r.rpcIndex = make(map[string]int)
 	r.Clients = make(map[string]*ethclient.Client)
 	r.rpcMutex = new(sync.Mutex)
 }
 
-func New() *Repository {
-	r := &Repository{}
+func New() Rpc {
+	r := &repository{}
 	r.init()
 
 	for _, rpc := range config.App.RPC {

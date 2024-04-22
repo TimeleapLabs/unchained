@@ -4,10 +4,10 @@ import (
 	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/crypto"
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-	"github.com/KenshiTech/unchained/internal/pos"
 	postgresRepo "github.com/KenshiTech/unchained/internal/repository/postgres"
 	correctnessService "github.com/KenshiTech/unchained/internal/service/correctness"
 	evmlogService "github.com/KenshiTech/unchained/internal/service/evmlog"
+	"github.com/KenshiTech/unchained/internal/service/pos"
 	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
 	"github.com/KenshiTech/unchained/internal/transport/client"
 	"github.com/KenshiTech/unchained/internal/transport/client/conn"
@@ -41,7 +41,7 @@ func Consumer() {
 	correctnessRepo := postgresRepo.NewCorrectness(db)
 
 	correctnessService := correctnessService.New(ethRPC, pos, signerRepo, correctnessRepo)
-	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo)
+	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, nil)
 	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
 
 	conn.Start()

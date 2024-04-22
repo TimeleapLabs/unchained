@@ -1,20 +1,18 @@
 package scheduler
 
 import (
-	"github.com/KenshiTech/unchained/internal/utils"
 	"os"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/scheduler/persistence"
+	"github.com/KenshiTech/unchained/internal/scheduler/evmlog"
 
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/KenshiTech/unchained/internal/utils"
 
 	"github.com/KenshiTech/unchained/internal/scheduler/uniswap"
 	evmLogService "github.com/KenshiTech/unchained/internal/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
 
 	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/scheduler/logs"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -48,8 +46,6 @@ func New(options ...func(s *Scheduler)) *Scheduler {
 
 func WithEthLogs(
 	evmLogService *evmLogService.Service,
-	ethRPC *ethereum.Repository,
-	persistence *persistence.BadgerRepository,
 ) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.EthLog == nil {
@@ -57,9 +53,9 @@ func WithEthLogs(
 		}
 
 		for name, duration := range config.App.Plugins.EthLog.Schedule {
-			s.AddTask(duration, logs.New(
-				name, config.App.Plugins.EthLog.Events,
-				evmLogService, ethRPC, persistence,
+			s.AddTask(duration, evmlog.New(
+				name,
+				evmLogService,
 			))
 		}
 	}
@@ -67,7 +63,6 @@ func WithEthLogs(
 
 func WithUniswapEvents(
 	uniswapService *uniswapService.Service,
-	ethRPC *ethereum.Repository,
 ) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.Uniswap == nil {
@@ -76,8 +71,8 @@ func WithUniswapEvents(
 
 		for name, duration := range config.App.Plugins.Uniswap.Schedule {
 			s.AddTask(duration, uniswap.New(
-				name, config.App.Plugins.Uniswap.Tokens,
-				uniswapService, ethRPC,
+				name,
+				uniswapService,
 			))
 		}
 	}

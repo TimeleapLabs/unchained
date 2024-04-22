@@ -54,8 +54,7 @@ func (s *Secret) Save() error {
 	}
 
 	if SecretFilePath == "" {
-		utils.Logger.With("Error", err).Error("SecretFilePath is not defined")
-		return consts.ErrCantWriteSecret
+		SecretFilePath = "./secrets.yaml" // #nosec G101
 	}
 
 	err = os.WriteFile(SecretFilePath, yamlData, 0600)

@@ -3,9 +3,52 @@ package model
 import (
 	"encoding/json"
 
+	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/KenshiTech/unchained/internal/utils"
+	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
+
 	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
+
+type EventLogReportPacket struct {
+	EventLog
+	Signature [48]byte
+}
+
+func (e *EventLogReportPacket) Sia() *sia.Sia {
+	return new(sia.Sia).
+		EmbedSia(e.EventLog.Sia()).
+		AddByteArray8(e.Signature[:])
+}
+
+func (e *EventLogReportPacket) DeSia(sia *sia.Sia) *EventLogReportPacket {
+	e.EventLog.DeSia(sia)
+	copy(e.Signature[:], sia.ReadByteArray8())
+
+	return e
+}
+
+type BroadcastEventPacket struct {
+	Info      EventLog
+	Signature [48]byte
+	Signer    Signer
+}
+
+func (b *BroadcastEventPacket) Sia() *sia.Sia {
+	return new(sia.Sia).
+		EmbedSia(b.Info.Sia()).
+		AddByteArray8(b.Signature[:]).
+		EmbedSia(b.Signer.Sia())
+}
+
+func (b *BroadcastEventPacket) DeSia(sia *sia.Sia) *BroadcastEventPacket {
+	b.Info.DeSia(sia)
+	copy(b.Signature[:], sia.ReadByteArray8())
+	b.Signer.DeSia(sia)
+
+	return b
+}
 
 type EventLogArg struct {
 	Name  string `json:"Name"`
@@ -27,17 +70,6 @@ type EventLog struct {
 	SignerIDs    []int
 	Signature    []byte
 	Voted        *helpers.BigInt
-}
-
-type EventLogReport struct {
-	EventLog
-	Signature [48]byte
-}
-
-type BroadcastEventPacket struct {
-	Info      EventLog
-	Signature [48]byte
-	Signer    Signer
 }
 
 func (e *EventLog) Sia() *sia.Sia {
@@ -77,30 +109,12 @@ func (e *EventLog) DeSia(sia *sia.Sia) *EventLog {
 	return e
 }
 
-func (e *EventLogReport) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(e.EventLog.Sia()).
-		AddByteArray8(e.Signature[:])
-}
+func (e *EventLog) Bls() (bls12381.G1Affine, error) {
+	hash, err := bls.Hash(e.Sia().Content)
+	if err != nil {
+		utils.Logger.Error("Can't hash bls: %v", err)
+		return bls12381.G1Affine{}, err
+	}
 
-func (e *EventLogReport) DeSia(sia *sia.Sia) *EventLogReport {
-	e.EventLog.DeSia(sia)
-	copy(e.Signature[:], sia.ReadByteArray8())
-
-	return e
-}
-
-func (b *BroadcastEventPacket) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(b.Info.Sia()).
-		AddByteArray8(b.Signature[:]).
-		EmbedSia(b.Signer.Sia())
-}
-
-func (b *BroadcastEventPacket) DeSia(sia *sia.Sia) *BroadcastEventPacket {
-	b.Info.DeSia(sia)
-	copy(b.Signature[:], sia.ReadByteArray8())
-	b.Signer.DeSia(sia)
-
-	return b
+	return hash, err
 }

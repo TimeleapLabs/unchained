@@ -18,7 +18,7 @@ var broker = &cobra.Command{
 			panic(err)
 		}
 
-		utils.Start(config.App.System.Log)
+		utils.SetupLogger(config.App.System.Log)
 		app.Broker()
 	},
 }

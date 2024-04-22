@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/KenshiTech/unchained/internal/model"
 
 	"github.com/KenshiTech/unchained/internal/ent"
