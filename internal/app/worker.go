@@ -31,7 +31,7 @@ func Worker() {
 
 	ethRPC := ethereum.New()
 	pos := pos.New(ethRPC)
-	badger := evmlogService.New(config.App.System.ContextPath)
+	badger := evmlogService.NewBadger(config.App.System.ContextPath)
 
 	eventLogRepo := postgres.NewEventLog(nil)
 	signerRepo := postgres.NewSigner(nil)

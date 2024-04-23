@@ -2,10 +2,10 @@ package mock
 
 import (
 	"context"
-	"fmt"
+	"testing"
+
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/transport/database"
-	"testing"
 
 	"github.com/peterldowns/pgtestdb"
 )
@@ -34,7 +34,7 @@ func (m *mockConnection) GetConnection() *ent.Client {
 	)
 
 	var err error
-	m.db, err = ent.Open("postgres", fmt.Sprintf("postgresql://postgres:password@127.0.0.1:5433/unchained?sslmode=disable"))
+	m.db, err = ent.Open("postgres", "postgresql://postgres:password@127.0.0.1:5433/unchained?sslmode=disable")
 	if err != nil {
 		panic(err)
 	}

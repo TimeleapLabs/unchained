@@ -2,6 +2,7 @@ package evmlog
 
 import (
 	"context"
+
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
 )
 
