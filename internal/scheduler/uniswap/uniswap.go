@@ -1,7 +1,7 @@
 package uniswap
 
 import (
-	"github.com/KenshiTech/unchained/internal/config"
+	"context"
 	"github.com/KenshiTech/unchained/internal/service/uniswap"
 )
 
@@ -11,11 +11,7 @@ type Uniswap struct {
 }
 
 func (u *Uniswap) Run() {
-	if config.App.Plugins.Uniswap == nil {
-		return
-	}
-
-	err := u.uniswapService.ProcessBlocks(u.chain)
+	err := u.uniswapService.ProcessBlocks(context.TODO(), u.chain)
 	if err != nil {
 		panic(err)
 	}

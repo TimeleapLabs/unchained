@@ -1,6 +1,7 @@
 package pos
 
 import (
+	"context"
 	"math/big"
 
 	"github.com/KenshiTech/unchained/internal/service/pos/eip712"
@@ -20,7 +21,7 @@ type Service interface {
 	GetTotalVotingPower() (*big.Int, error)
 	GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error)
 	GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error)
-	GetVotingPowerOfPublicKey(pkBytes [96]byte) (*big.Int, error)
+	GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byte) (*big.Int, error)
 	VotingPowerToFloat(power *big.Int) *big.Float
 }
 
@@ -77,9 +78,9 @@ func (s *service) GetVotingPower(address [20]byte, block *big.Int) (*big.Int, er
 	return s.base, nil
 }
 
-func (s *service) GetVotingPowerOfPublicKey(pkBytes [96]byte) (*big.Int, error) {
+func (s *service) GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byte) (*big.Int, error) {
 	_, addrHex := address.CalculateHex(pkBytes[:])
-	block, err := s.ethRPC.GetBlockNumber(config.App.ProofOfStake.Chain)
+	block, err := s.ethRPC.GetBlockNumber(ctx, config.App.ProofOfStake.Chain)
 	if err != nil {
 		return nil, err
 	}

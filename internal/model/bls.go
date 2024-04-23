@@ -17,37 +17,39 @@ type Signature struct {
 	Signer    Signer
 }
 
-func (s *Signature) Sia() *sia.Sia {
-	return new(sia.Sia).
+func (s *Signature) Sia() sia.Sia {
+	return sia.New().
 		AddByteArray8(s.Signature.Marshal()).
-		EmbedSia(s.Signer.Sia())
+		EmbedBytes(s.Signer.Sia().Bytes())
 }
 
-func (s *Signature) DeSia(sia *sia.Sia) *Signature {
-	err := s.Signature.Unmarshal(sia.ReadByteArray8())
+func (s *Signature) FromBytes(payload []byte) *Signature {
+	siaMessage := sia.NewFromBytes(payload)
+	err := s.Signature.Unmarshal(siaMessage.ReadByteArray8())
 
 	if err != nil {
 		s.Signature = bls12381.G1Affine{}
 	}
 
-	s.Signer.DeSia(sia)
+	s.Signer.FromBytes(payload)
 
 	return s
 }
 
-func (s *Signer) Sia() *sia.Sia {
-	return new(sia.Sia).
+func (s *Signer) Sia() sia.Sia {
+	return sia.New().
 		AddString8(s.Name).
 		AddString8(s.EvmAddress).
 		AddByteArray8(s.PublicKey[:]).
 		AddByteArray8(s.ShortPublicKey[:])
 }
 
-func (s *Signer) DeSia(sia *sia.Sia) *Signer {
-	s.Name = sia.ReadString8()
-	s.EvmAddress = sia.ReadString8()
-	copy(s.PublicKey[:], sia.ReadByteArray8())
-	copy(s.ShortPublicKey[:], sia.ReadByteArray8())
+func (s *Signer) FromBytes(payload []byte) *Signer {
+	siaMessage := sia.NewFromBytes(payload)
+	s.Name = siaMessage.ReadString8()
+	s.EvmAddress = siaMessage.ReadString8()
+	copy(s.PublicKey[:], siaMessage.ReadByteArray8())
+	copy(s.ShortPublicKey[:], siaMessage.ReadByteArray8())
 
 	return s
 }

@@ -10,7 +10,6 @@ import (
 
 	"github.com/KenshiTech/unchained/internal/service/pos"
 
-	"github.com/KenshiTech/unchained/internal/scheduler/persistence"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	"github.com/KenshiTech/unchained/internal/consts"
@@ -43,12 +42,12 @@ type SaveSignatureArgs struct {
 }
 
 type Service interface {
-	GetBlockNumber(network string) (*uint64, error)
-	SaveSignatures(args SaveSignatureArgs) error
+	GetBlockNumber(ctx context.Context, network string) (*uint64, error)
+	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
 	SendPriceReport(signature bls12381.G1Affine, event model.EventLog)
-	ProcessBlocks(chain string) error
+	ProcessBlocks(ctx context.Context, chain string) error
 	RecordSignature(
-		signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
 	) error
 }
 
@@ -57,7 +56,7 @@ type service struct {
 	pos          pos.Service
 	eventLogRepo repository.EventLog
 	signerRepo   repository.Signer
-	persistence  *persistence.BadgerRepository
+	persistence  *Badger
 
 	consensus               *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
 	signatureCache          *lru.Cache[bls12381.G1Affine, []model.Signature]
@@ -67,8 +66,8 @@ type service struct {
 	abiMap                  map[string]abi.ABI
 }
 
-func (s *service) GetBlockNumber(network string) (*uint64, error) {
-	blockNumber, err := s.ethRPC.GetBlockNumber(network)
+func (s *service) GetBlockNumber(ctx context.Context, network string) (*uint64, error) {
+	blockNumber, err := s.ethRPC.GetBlockNumber(ctx, network)
 
 	if err != nil {
 		s.ethRPC.RefreshRPC(network)
@@ -78,13 +77,11 @@ func (s *service) GetBlockNumber(network string) (*uint64, error) {
 	return &blockNumber, nil
 }
 
-func (s *service) SaveSignatures(args SaveSignatureArgs) error {
+func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
 		return consts.ErrInvalidSignature
 	}
-
-	ctx := context.Background()
 
 	var newSigners []model.Signer
 	var newSignatures []bls12381.G1Affine
@@ -113,7 +110,7 @@ func (s *service) SaveSignatures(args SaveSignatureArgs) error {
 		return err
 	}
 
-	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(context.TODO(), keys)
+	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
 
 	if err != nil {
 		return err
@@ -197,8 +194,7 @@ func (s *service) SendPriceReport(signature bls12381.G1Affine, event model.Event
 		Signature: compressedSignature,
 	}
 
-	payload := priceReport.Sia().Content
-	conn.Send(consts.OpCodeEventLog, payload)
+	conn.Send(consts.OpCodeEventLog, priceReport.Sia().Bytes())
 }
 
 func New(
@@ -206,7 +202,7 @@ func New(
 	pos pos.Service,
 	eventLogRepo repository.EventLog,
 	signerRepo repository.Signer,
-	persistence *persistence.BadgerRepository,
+	persistence *Badger,
 ) Service {
 	s := service{
 		ethRPC:       ethRPC,
@@ -222,35 +218,6 @@ func New(
 
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
 
-	for _, conf := range config.App.Plugins.EthLog.Events {
-		key := SupportKey{
-			Chain:   conf.Chain,
-			Address: conf.Address,
-			Event:   conf.Event,
-		}
-		s.supportedEvents[key] = true
-
-		if _, exists := s.abiMap[conf.Abi]; exists {
-			continue
-		}
-
-		file, err := os.Open(conf.Abi)
-		if err != nil {
-			panic(err)
-		}
-
-		contractAbi, err := abi.JSON(file)
-		if err != nil {
-			panic(err)
-		}
-
-		s.abiMap[conf.Abi] = contractAbi
-		err = file.Close()
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	var err error
 	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
 	if err != nil {
@@ -260,6 +227,37 @@ func New(
 	s.consensus, err = lru.New[EventKey, map[bls12381.G1Affine]big.Int](LruSize)
 	if err != nil {
 		panic(err)
+	}
+
+	if config.App.Plugins.EthLog != nil {
+		for _, conf := range config.App.Plugins.EthLog.Events {
+			key := SupportKey{
+				Chain:   conf.Chain,
+				Address: conf.Address,
+				Event:   conf.Event,
+			}
+			s.supportedEvents[key] = true
+
+			if _, exists := s.abiMap[conf.Abi]; exists {
+				continue
+			}
+
+			file, err := os.Open(conf.Abi)
+			if err != nil {
+				panic(err)
+			}
+
+			contractAbi, err := abi.JSON(file)
+			if err != nil {
+				panic(err)
+			}
+
+			s.abiMap[conf.Abi] = contractAbi
+			err = file.Close()
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	return &s

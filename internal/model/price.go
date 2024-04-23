@@ -9,15 +9,15 @@ type PriceReportPacket struct {
 	Signature [48]byte
 }
 
-func (p *PriceReportPacket) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(p.PriceInfo.Sia()).
+func (p *PriceReportPacket) Sia() sia.Sia {
+	return sia.New().
+		EmbedBytes(p.PriceInfo.Sia().Bytes()).
 		AddByteArray8(p.Signature[:])
 }
 
-func (p *PriceReportPacket) DeSia(sia *sia.Sia) *PriceReportPacket {
-	p.PriceInfo.DeSia(sia)
-	copy(p.Signature[:], sia.ReadByteArray8())
+func (p *PriceReportPacket) FromBytes(payload []byte) *PriceReportPacket {
+	p.PriceInfo.FromBytes(payload)
+	copy(p.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
 
 	return p
 }

@@ -49,15 +49,15 @@ type Service interface {
 		reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer model.Signer,
 		hash bls12381.G1Affine, totalVoted *big.Int,
 	) error
-	saveSignatures(args SaveSignatureArgs) error
-	GetBlockNumber(network string) (*uint64, error)
+	saveSignatures(ctx context.Context, args SaveSignatureArgs) error
+	GetBlockNumber(ctx context.Context, network string) (*uint64, error)
 	GetPriceAtBlockFromPair(network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool) (*big.Int, error)
-	SyncBlocks(token model.Token, key model.TokenKey, latest uint64) error
+	SyncBlocks(ctx context.Context, token model.Token, key model.TokenKey, latest uint64) error
 	TokenKey(token model.Token) *model.TokenKey
 	RecordSignature(
-		signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
 	) error
-	ProcessBlocks(chain string) error
+	ProcessBlocks(ctx context.Context, chain string) error
 }
 
 type service struct {
@@ -114,7 +114,7 @@ type SaveSignatureArgs struct {
 	Voted     *big.Int
 }
 
-func (s *service) saveSignatures(args SaveSignatureArgs) error {
+func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	utils.Logger.
 		With("Block", args.Info.Asset.Block).
 		With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
@@ -128,8 +128,6 @@ func (s *service) saveSignatures(args SaveSignatureArgs) error {
 			Debug("Cache not found")
 		return consts.ErrSignatureNotfound
 	}
-
-	ctx := context.Background()
 
 	var newSigners []model.Signer
 	var newSignatures []bls12381.G1Affine
@@ -232,8 +230,8 @@ func (s *service) saveSignatures(args SaveSignatureArgs) error {
 	return nil
 }
 
-func (s *service) GetBlockNumber(network string) (*uint64, error) {
-	blockNumber, err := s.ethRPC.GetBlockNumber(network)
+func (s *service) GetBlockNumber(ctx context.Context, network string) (*uint64, error) {
+	blockNumber, err := s.ethRPC.GetBlockNumber(ctx, network)
 
 	if err != nil {
 		s.ethRPC.RefreshRPC(network)
@@ -293,7 +291,7 @@ func (s *service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inve
 	return &price
 }
 
-func (s *service) syncBlock(token model.Token, caser cases.Caser, key *model.TokenKey, blockInx uint64) error {
+func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.Caser, key *model.TokenKey, blockInx uint64) error {
 	lastSynced, ok := s.LastBlock.Load(*key)
 
 	if ok && blockInx <= lastSynced {
@@ -358,8 +356,7 @@ func (s *service) syncBlock(token model.Token, caser cases.Caser, key *model.Tok
 		},
 	}
 
-	toHash := priceInfo.Sia().Content
-	signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, toHash)
+	signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, priceInfo.Sia().Bytes())
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()
@@ -369,12 +366,12 @@ func (s *service) syncBlock(token model.Token, caser cases.Caser, key *model.Tok
 			Signature: compressedSignature,
 		}
 
-		payload := priceReport.Sia().Content
-		conn.Send(consts.OpCodePriceReport, payload)
+		conn.Send(consts.OpCodePriceReport, priceReport.Sia().Bytes())
 	}
 
 	if token.Store {
 		err = s.RecordSignature(
+			ctx,
 			signature,
 			*crypto.Identity.ExportBlsSigner(),
 			hash,
@@ -393,7 +390,7 @@ func (s *service) syncBlock(token model.Token, caser cases.Caser, key *model.Tok
 	return nil
 }
 
-func (s *service) SyncBlocks(token model.Token, key model.TokenKey, latest uint64) error {
+func (s *service) SyncBlocks(ctx context.Context, token model.Token, key model.TokenKey, latest uint64) error {
 	block, ok := s.LastBlock.Load(key)
 	if !ok {
 		return consts.ErrCantLoadLastBlock
@@ -402,7 +399,7 @@ func (s *service) SyncBlocks(token model.Token, key model.TokenKey, latest uint6
 	caser := cases.Title(language.English, cases.NoLower)
 
 	for blockInx := block + 1; blockInx < latest; blockInx++ {
-		err := s.syncBlock(token, caser, &key, blockInx)
+		err := s.syncBlock(ctx, token, caser, &key, blockInx)
 		if err != nil {
 			return err
 		}
@@ -420,8 +417,8 @@ func (s *service) TokenKey(token model.Token) *model.TokenKey {
 
 	toHash := new(sia.ArraySia[model.TokenKey]).
 		AddArray8(cross, func(s *sia.ArraySia[model.TokenKey], item model.TokenKey) {
-			s.EmbedSia(item.Sia())
-		}).Content
+			s.EmbedBytes(item.Sia().Bytes())
+		}).Bytes()
 
 	hash := utils.Shake(toHash)
 

@@ -6,11 +6,10 @@ import (
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
 	"github.com/KenshiTech/unchained/internal/utils"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
-	signer := new(model.Signer).DeSia(&sia.Sia{Content: payload})
+	signer := new(model.Signer).FromBytes(payload)
 
 	if signer.Name == "" {
 		utils.Logger.Error("Signer name is empty Or public key is invalid")
@@ -30,7 +29,6 @@ func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	// Start KOSK verification
 	challenge := model.ChallengePacket{Random: utils.NewChallenge()}
 	store.Challenges.Store(conn, challenge)
-	koskPayload := challenge.Sia().Content
 
-	return koskPayload, nil
+	return challenge.Sia().Bytes(), nil
 }

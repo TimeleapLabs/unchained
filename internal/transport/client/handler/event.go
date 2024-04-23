@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/utils"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-func (h *consumer) EventLog(message []byte) {
-	packet := new(model.BroadcastEventPacket).DeSia(&sia.Sia{Content: message})
+func (h *consumer) EventLog(ctx context.Context, message []byte) {
+	packet := new(model.BroadcastEventPacket).FromBytes(message)
 
 	eventLogHash, err := packet.Info.Bls()
 	if err != nil {
@@ -25,6 +26,7 @@ func (h *consumer) EventLog(message []byte) {
 	}
 
 	err = h.evmlog.RecordSignature(
+		ctx,
 		signature,
 		packet.Signer,
 		eventLogHash,
@@ -37,4 +39,4 @@ func (h *consumer) EventLog(message []byte) {
 	}
 }
 
-func (w worker) EventLog(_ []byte) {}
+func (w worker) EventLog(_ context.Context, _ []byte) {}

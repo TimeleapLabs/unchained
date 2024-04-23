@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/utils"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-func (h *consumer) PriceReport(message []byte) {
-	packet := new(model.BroadcastPricePacket).DeSia(&sia.Sia{Content: message})
+func (h *consumer) PriceReport(ctx context.Context, message []byte) {
+	packet := new(model.BroadcastPricePacket).FromBytes(message)
 
 	priceInfoHash, err := packet.Info.Bls()
 	if err != nil {
@@ -25,6 +26,7 @@ func (h *consumer) PriceReport(message []byte) {
 	}
 
 	err = h.uniswap.RecordSignature(
+		ctx,
 		signature,
 		packet.Signer,
 		priceInfoHash,
@@ -37,4 +39,4 @@ func (h *consumer) PriceReport(message []byte) {
 	}
 }
 
-func (w worker) PriceReport(_ []byte) {}
+func (w worker) PriceReport(_ context.Context, _ []byte) {}

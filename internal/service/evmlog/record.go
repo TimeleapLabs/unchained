@@ -1,6 +1,7 @@
 package evmlog
 
 import (
+	"context"
 	"math/big"
 
 	"github.com/KenshiTech/unchained/internal/consts"
@@ -11,7 +12,7 @@ import (
 )
 
 func (s *service) RecordSignature(
-	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
 ) error {
 	supportKey := SupportKey{
 		Chain:   info.Chain,
@@ -28,7 +29,7 @@ func (s *service) RecordSignature(
 	}
 
 	// TODO: Standalone mode shouldn't call this or check consensus
-	blockNumber, err := s.ethRPC.GetBlockNumber(info.Chain)
+	blockNumber, err := s.ethRPC.GetBlockNumber(ctx, info.Chain)
 	if err != nil {
 		s.ethRPC.RefreshRPC(info.Chain)
 		utils.Logger.
@@ -60,7 +61,7 @@ func (s *service) RecordSignature(
 		s.consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfPublicKey(ctx, signer.PublicKey)
 	if err != nil {
 		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -110,7 +111,7 @@ func (s *service) RecordSignature(
 		return nil
 	}
 
-	err = s.SaveSignatures(saveArgs)
+	err = s.SaveSignatures(ctx, saveArgs)
 	if err != nil {
 		return err
 	}

@@ -13,17 +13,18 @@ type ChallengePacket struct {
 	Signature [LenOfSignature]byte
 }
 
-func (c *ChallengePacket) Sia() *sia.Sia {
-	return new(sia.Sia).
+func (c *ChallengePacket) Sia() sia.Sia {
+	return sia.New().
 		AddBool(c.Passed).
 		AddByteArray8(c.Random[:]).
 		AddByteArray8(c.Signature[:])
 }
 
-func (c *ChallengePacket) DeSia(sia *sia.Sia) *ChallengePacket {
-	c.Passed = sia.ReadBool()
-	copy(c.Random[:], sia.ReadByteArray8())
-	copy(c.Signature[:], sia.ReadByteArray8())
+func (c *ChallengePacket) FromBytes(payload []byte) *ChallengePacket {
+	siaMessage := sia.NewFromBytes(payload)
+	c.Passed = siaMessage.ReadBool()
+	copy(c.Random[:], siaMessage.ReadByteArray8())
+	copy(c.Signature[:], siaMessage.ReadByteArray8())
 
 	return c
 }

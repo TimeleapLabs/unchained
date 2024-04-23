@@ -5,7 +5,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
@@ -14,7 +13,7 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	correctness := new(model.CorrectnessReportPacket).DeSia(&sia.Sia{Content: payload})
+	correctness := new(model.CorrectnessReportPacket).FromBytes(payload)
 	correctnessHash, err := correctness.Correctness.Bls()
 	if err != nil {
 		return []byte{}, consts.ErrInternalError
@@ -31,5 +30,5 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		Signer:    signer,
 	}
 
-	return broadcastPacket.Sia().Content, nil
+	return broadcastPacket.Sia().Bytes(), nil
 }

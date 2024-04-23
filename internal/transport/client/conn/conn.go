@@ -37,12 +37,12 @@ func Start() {
 		panic(err)
 	}
 
-	Send(consts.OpCodeHello, crypto.Identity.ExportBlsSigner().Sia().Content)
+	Send(consts.OpCodeHello, crypto.Identity.ExportBlsSigner().Sia().Bytes())
 }
 
 func Reconnect(err error) {
 	IsClosed = true
-	hello := crypto.Identity.ExportBlsSigner().Sia().Content
+	hello := crypto.Identity.ExportBlsSigner().Sia().Bytes()
 
 	if websocket.IsUnexpectedCloseError(err) {
 		for i := 1; i < 6; i++ {

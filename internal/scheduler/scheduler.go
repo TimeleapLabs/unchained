@@ -44,9 +44,7 @@ func New(options ...func(s *Scheduler)) *Scheduler {
 	return s
 }
 
-func WithEthLogs(
-	evmLogService evmLogService.Service,
-) func(s *Scheduler) {
+func WithEthLogs(evmLogService evmLogService.Service) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.EthLog == nil {
 			return
@@ -61,9 +59,7 @@ func WithEthLogs(
 	}
 }
 
-func WithUniswapEvents(
-	uniswapService uniswapService.Service,
-) func(s *Scheduler) {
+func WithUniswapEvents(uniswapService uniswapService.Service) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.Uniswap == nil {
 			return

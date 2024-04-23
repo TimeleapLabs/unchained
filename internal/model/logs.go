@@ -16,15 +16,15 @@ type EventLogReportPacket struct {
 	Signature [48]byte
 }
 
-func (e *EventLogReportPacket) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(e.EventLog.Sia()).
+func (e *EventLogReportPacket) Sia() sia.Sia {
+	return sia.New().
+		EmbedBytes(e.EventLog.Sia().Bytes()).
 		AddByteArray8(e.Signature[:])
 }
 
-func (e *EventLogReportPacket) DeSia(sia *sia.Sia) *EventLogReportPacket {
-	e.EventLog.DeSia(sia)
-	copy(e.Signature[:], sia.ReadByteArray8())
+func (e *EventLogReportPacket) FromBytes(payload []byte) *EventLogReportPacket {
+	e.EventLog.FromBytes(payload)
+	copy(e.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
 
 	return e
 }
@@ -35,17 +35,17 @@ type BroadcastEventPacket struct {
 	Signer    Signer
 }
 
-func (b *BroadcastEventPacket) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(b.Info.Sia()).
+func (b *BroadcastEventPacket) Sia() sia.Sia {
+	return sia.New().
+		EmbedBytes(b.Info.Sia().Bytes()).
 		AddByteArray8(b.Signature[:]).
-		EmbedSia(b.Signer.Sia())
+		EmbedBytes(b.Signer.Sia().Bytes())
 }
 
-func (b *BroadcastEventPacket) DeSia(sia *sia.Sia) *BroadcastEventPacket {
-	b.Info.DeSia(sia)
-	copy(b.Signature[:], sia.ReadByteArray8())
-	b.Signer.DeSia(sia)
+func (b *BroadcastEventPacket) FromBytes(payload []byte) *BroadcastEventPacket {
+	b.Info.FromBytes(payload)
+	copy(b.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
+	b.Signer.FromBytes(payload)
 
 	return b
 }
@@ -72,14 +72,14 @@ type EventLog struct {
 	Voted        *helpers.BigInt
 }
 
-func (e *EventLog) Sia() *sia.Sia {
+func (e *EventLog) Sia() sia.Sia {
 	argsEncoded, err := json.Marshal(e.Args)
 
 	if err != nil {
 		panic(err)
 	}
 
-	logSia := new(sia.Sia).
+	return sia.New().
 		AddUInt64(e.LogIndex).
 		AddUInt64(e.Block).
 		AddString8(e.Address).
@@ -87,19 +87,18 @@ func (e *EventLog) Sia() *sia.Sia {
 		AddString8(e.Chain).
 		AddByteArray8(e.TxHash[:]).
 		AddByteArray16(argsEncoded)
-
-	return logSia
 }
 
-func (e *EventLog) DeSia(sia *sia.Sia) *EventLog {
-	e.LogIndex = sia.ReadUInt64()
-	e.Block = sia.ReadUInt64()
-	e.Address = sia.ReadString8()
-	e.Event = sia.ReadString8()
-	e.Chain = sia.ReadString8()
-	copy(e.TxHash[:], sia.ReadByteArray8())
+func (e *EventLog) FromBytes(payload []byte) *EventLog {
+	siaMessage := sia.NewFromBytes(payload)
+	e.LogIndex = siaMessage.ReadUInt64()
+	e.Block = siaMessage.ReadUInt64()
+	e.Address = siaMessage.ReadString8()
+	e.Event = siaMessage.ReadString8()
+	e.Chain = siaMessage.ReadString8()
+	copy(e.TxHash[:], siaMessage.ReadByteArray8())
 
-	argsEncoded := sia.ReadByteArray16()
+	argsEncoded := siaMessage.ReadByteArray16()
 	err := json.Unmarshal(argsEncoded, &e.Args)
 
 	if err != nil {
@@ -110,7 +109,7 @@ func (e *EventLog) DeSia(sia *sia.Sia) *EventLog {
 }
 
 func (e *EventLog) Bls() (bls12381.G1Affine, error) {
-	hash, err := bls.Hash(e.Sia().Content)
+	hash, err := bls.Hash(e.Sia().Bytes())
 	if err != nil {
 		utils.Logger.Error("Can't hash bls: %v", err)
 		return bls12381.G1Affine{}, err

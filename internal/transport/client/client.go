@@ -1,6 +1,9 @@
 package client
 
 import (
+	"context"
+	"time"
+
 	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/transport/client/conn"
 	"github.com/KenshiTech/unchained/internal/transport/client/handler"
@@ -14,35 +17,40 @@ func NewRPC(handler handler.Handler) {
 		utils.Logger.Info("Starting consumer from broker")
 
 		for payload := range incoming {
-			switch consts.OpCode(payload[0]) {
-			case consts.OpCodeError:
-				utils.Logger.
-					With("Error", string(payload[1:])).
-					Error("Broker")
+			go func(payload []byte) {
+				ctx, cancel := context.WithTimeout(context.TODO(), time.Second*10)
+				defer cancel()
 
-			case consts.OpCodeFeedback:
-				utils.Logger.
-					With("Feedback", string(payload[1:])).
-					Info("Broker")
+				switch consts.OpCode(payload[0]) {
+				case consts.OpCodeError:
+					utils.Logger.
+						With("Error", string(payload[1:])).
+						Error("Broker")
 
-			case consts.OpCodeKoskChallenge:
-				challenge := handler.Challenge(payload[1:])
-				conn.Send(consts.OpCodeKoskResult, challenge.Sia().Content)
+				case consts.OpCodeFeedback:
+					utils.Logger.
+						With("Feedback", string(payload[1:])).
+						Info("Broker")
 
-			case consts.OpCodePriceReportBroadcast:
-				go handler.PriceReport(payload[1:])
+				case consts.OpCodeKoskChallenge:
+					challenge := handler.Challenge(payload[1:])
+					conn.Send(consts.OpCodeKoskResult, challenge)
 
-			case consts.OpCodeEventLogBroadcast:
-				go handler.EventLog(payload[1:])
+				case consts.OpCodePriceReportBroadcast:
+					handler.PriceReport(ctx, payload[1:])
 
-			case consts.OpCodeCorrectnessReportBroadcast:
-				go handler.CorrectnessReport(payload[1:])
+				case consts.OpCodeEventLogBroadcast:
+					handler.EventLog(ctx, payload[1:])
 
-			default:
-				utils.Logger.
-					With("Code", payload[0]).
-					Error("Unknown call code")
-			}
+				case consts.OpCodeCorrectnessReportBroadcast:
+					handler.CorrectnessReport(ctx, payload[1:])
+
+				default:
+					utils.Logger.
+						With("Code", payload[0]).
+						Error("Unknown call code")
+				}
+			}(payload)
 		}
 	}()
 }

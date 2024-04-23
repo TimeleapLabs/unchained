@@ -41,9 +41,9 @@ type SaveSignatureArgs struct {
 type Service interface {
 	IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool
 	RecordSignature(
-		signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
 	) error
-	SaveSignatures(args SaveSignatureArgs) error
+	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
 }
 
 type service struct {
@@ -74,7 +74,7 @@ func (s *service) IsNewSigner(signature model.Signature, records []*ent.Correctn
 // TODO: How should we handle older records?
 // Possible Solution: Add a not after timestamp to the document.
 func (s *service) RecordSignature(
-	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
 ) error {
 	if supported := s.supportedTopics[info.Topic]; !supported {
 		utils.Logger.
@@ -117,7 +117,7 @@ func (s *service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfPublicKey(ctx, signer.PublicKey)
 	if err != nil {
 		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -151,7 +151,7 @@ func (s *service) RecordSignature(
 		return nil
 	}
 
-	err = s.SaveSignatures(saveArgs)
+	err = s.SaveSignatures(ctx, saveArgs)
 	if err != nil {
 		return err
 	}
@@ -159,13 +159,11 @@ func (s *service) RecordSignature(
 	return nil
 }
 
-func (s *service) SaveSignatures(args SaveSignatureArgs) error {
+func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
 		return consts.ErrSignatureNotfound
 	}
-
-	ctx := context.Background()
 
 	var newSigners []model.Signer
 	var newSignatures []bls12381.G1Affine
@@ -201,7 +199,7 @@ func (s *service) SaveSignatures(args SaveSignatureArgs) error {
 		return err
 	}
 
-	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(context.TODO(), keys)
+	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
 	if err != nil {
 		return err
 	}

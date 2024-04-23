@@ -7,7 +7,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
 	"github.com/KenshiTech/unchained/internal/repository/postgres"
 	"github.com/KenshiTech/unchained/internal/scheduler"
-	"github.com/KenshiTech/unchained/internal/scheduler/persistence"
 	evmlogService "github.com/KenshiTech/unchained/internal/service/evmlog"
 	"github.com/KenshiTech/unchained/internal/service/pos"
 	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
@@ -32,7 +31,7 @@ func Worker() {
 
 	ethRPC := ethereum.New()
 	pos := pos.New(ethRPC)
-	badger := persistence.New(config.App.System.ContextPath)
+	badger := evmlogService.New(config.App.System.ContextPath)
 
 	eventLogRepo := postgres.NewEventLog(nil)
 	signerRepo := postgres.NewSigner(nil)

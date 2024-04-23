@@ -1,6 +1,8 @@
 package ethereum
 
 import (
+	"context"
+
 	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
@@ -33,7 +35,7 @@ func (m mockRPC) GetNewUniV3Contract(_ string, address string, _ bool) (*contrac
 	)
 }
 
-func (m mockRPC) GetBlockNumber(_ string) (uint64, error) {
+func (m mockRPC) GetBlockNumber(_ context.Context, _ string) (uint64, error) {
 	var blockNumber uint64 = 1000
 	return blockNumber, nil
 }

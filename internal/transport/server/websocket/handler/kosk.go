@@ -8,11 +8,10 @@ import (
 	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 func Kosk(conn *websocket.Conn, payload []byte) error {
-	challenge := new(model.ChallengePacket).DeSia(&sia.Sia{Content: payload})
+	challenge := new(model.ChallengePacket).FromBytes(payload)
 
 	hash, err := bls.Hash(challenge.Random[:])
 	if err != nil {

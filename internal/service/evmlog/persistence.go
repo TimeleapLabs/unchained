@@ -1,4 +1,4 @@
-package persistence
+package evmlog
 
 import (
 	"encoding/binary"
@@ -10,12 +10,12 @@ const (
 	SizeOfLogFile = 64 * 1024 * 1024
 )
 
-type BadgerRepository struct {
+type Badger struct {
 	db *badger.DB
 }
 
-func New(contextPath string) *BadgerRepository {
-	r := BadgerRepository{}
+func NewBadger(contextPath string) *Badger {
+	r := Badger{}
 
 	var err error
 	options := badger.
@@ -30,7 +30,7 @@ func New(contextPath string) *BadgerRepository {
 	return &r
 }
 
-func (r *BadgerRepository) ReadUInt64(key string) (uint64, error) {
+func (r *Badger) ReadUInt64(key string) (uint64, error) {
 	var value uint64
 
 	err := r.db.View(func(txn *badger.Txn) error {
@@ -49,7 +49,7 @@ func (r *BadgerRepository) ReadUInt64(key string) (uint64, error) {
 	return value, err
 }
 
-func (r *BadgerRepository) WriteUint64(key string, value uint64) error {
+func (r *Badger) WriteUint64(key string, value uint64) error {
 	err := r.db.Update(func(txn *badger.Txn) error {
 		bytes := binary.LittleEndian.AppendUint64([]byte{}, value)
 		entry := badger.NewEntry([]byte(key), bytes)

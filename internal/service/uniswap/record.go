@@ -1,6 +1,7 @@
 package uniswap
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 
@@ -15,7 +16,7 @@ import (
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func (s *service) RecordSignature(
-	signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
 ) error {
 	if supported := s.SupportedTokens[info.Asset.Token]; !supported {
 		utils.Logger.
@@ -27,7 +28,7 @@ func (s *service) RecordSignature(
 	}
 
 	// TODO: Standalone mode shouldn't call this or check consensus
-	blockNumber, err := s.ethRPC.GetBlockNumber(info.Asset.Token.Chain)
+	blockNumber, err := s.ethRPC.GetBlockNumber(ctx, info.Asset.Token.Chain)
 	if err != nil {
 		s.ethRPC.RefreshRPC(info.Asset.Token.Chain)
 		utils.Logger.
@@ -56,7 +57,7 @@ func (s *service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfPublicKey(ctx, signer.PublicKey)
 	if err != nil {
 		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -87,7 +88,7 @@ func (s *service) RecordSignature(
 	}
 
 	if !debounce {
-		err = s.saveSignatures(saveArgs)
+		err = s.saveSignatures(ctx, saveArgs)
 		if err != nil {
 			return err
 		}

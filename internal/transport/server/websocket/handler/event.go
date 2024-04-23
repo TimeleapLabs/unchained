@@ -5,7 +5,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
@@ -14,7 +13,7 @@ func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	priceReport := new(model.EventLogReportPacket).DeSia(&sia.Sia{Content: payload})
+	priceReport := new(model.EventLogReportPacket).FromBytes(payload)
 	priceInfoHash, err := priceReport.EventLog.Bls()
 	if err != nil {
 		return []byte{}, consts.ErrInternalError
@@ -31,6 +30,5 @@ func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		Signer:    signer,
 	}
 
-	broadcastPayload := broadcastPacket.Sia().Content
-	return broadcastPayload, nil
+	return broadcastPacket.Sia().Bytes(), nil
 }

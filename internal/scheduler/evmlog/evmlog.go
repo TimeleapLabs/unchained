@@ -1,6 +1,7 @@
 package evmlog
 
 import (
+	"context"
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
 )
 
@@ -10,7 +11,7 @@ type EvmLog struct {
 }
 
 func (e *EvmLog) Run() {
-	err := e.evmLogService.ProcessBlocks(e.chain)
+	err := e.evmLogService.ProcessBlocks(context.TODO(), e.chain)
 	if err != nil {
 		panic(err)
 	}

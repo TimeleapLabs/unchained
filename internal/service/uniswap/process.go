@@ -1,12 +1,14 @@
 package uniswap
 
 import (
+	"context"
+
 	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/KenshiTech/unchained/internal/model"
 )
 
-func (s *service) ProcessBlocks(chain string) error {
-	currBlockNumber, err := s.ethRPC.GetBlockNumber(chain)
+func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
+	currBlockNumber, err := s.ethRPC.GetBlockNumber(ctx, chain)
 	if err != nil {
 		s.ethRPC.RefreshRPC(chain)
 		return err
@@ -27,7 +29,7 @@ func (s *service) ProcessBlocks(chain string) error {
 			return nil
 		}
 
-		err = s.SyncBlocks(token, *key, currBlockNumber)
+		err = s.SyncBlocks(ctx, token, *key, currBlockNumber)
 		if err != nil {
 			return err
 		}

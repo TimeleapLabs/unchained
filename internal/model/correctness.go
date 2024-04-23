@@ -15,15 +15,15 @@ type CorrectnessReportPacket struct {
 	Signature [48]byte
 }
 
-func (c *CorrectnessReportPacket) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(c.Correctness.Sia()).
+func (c *CorrectnessReportPacket) Sia() sia.Sia {
+	return sia.New().
+		EmbedBytes(c.Correctness.Sia().Bytes()).
 		AddByteArray8(c.Signature[:])
 }
 
-func (c *CorrectnessReportPacket) DeSia(sia *sia.Sia) *CorrectnessReportPacket {
-	c.Correctness.DeSia(sia)
-	copy(c.Signature[:], sia.ReadByteArray8())
+func (c *CorrectnessReportPacket) FromBytes(payload []byte) *CorrectnessReportPacket {
+	c.Correctness.FromBytes(payload)
+	copy(c.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
 
 	return c
 }
@@ -36,17 +36,17 @@ type BroadcastCorrectnessPacket struct {
 	Signer    Signer
 }
 
-func (b *BroadcastCorrectnessPacket) Sia() *sia.Sia {
-	return new(sia.Sia).
-		EmbedSia(b.Info.Sia()).
+func (b *BroadcastCorrectnessPacket) Sia() sia.Sia {
+	return sia.New().
+		EmbedBytes(b.Info.Sia().Bytes()).
 		AddByteArray8(b.Signature[:]).
-		EmbedSia(b.Signer.Sia())
+		EmbedBytes(b.Signer.Sia().Bytes())
 }
 
-func (b *BroadcastCorrectnessPacket) DeSia(sia *sia.Sia) *BroadcastCorrectnessPacket {
-	b.Info.DeSia(sia)
-	copy(b.Signature[:], sia.ReadByteArray8())
-	b.Signer.DeSia(sia)
+func (b *BroadcastCorrectnessPacket) FromBytes(payload []byte) *BroadcastCorrectnessPacket {
+	b.Info.FromBytes(payload)
+	copy(b.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
+	b.Signer.FromBytes(payload)
 
 	return b
 }
@@ -63,25 +63,26 @@ type Correctness struct {
 	Correct      bool
 }
 
-func (c *Correctness) Sia() *sia.Sia {
-	return new(sia.Sia).
+func (c *Correctness) Sia() sia.Sia {
+	return sia.New().
 		AddUInt64(c.Timestamp).
 		AddByteArray8(c.Hash).
 		AddByteArray8(c.Topic[:]).
 		AddBool(c.Correct)
 }
 
-func (c *Correctness) DeSia(sia *sia.Sia) *Correctness {
-	c.Timestamp = sia.ReadUInt64()
-	copy(c.Hash, sia.ReadByteArray8())
-	copy(c.Topic[:], sia.ReadByteArray8())
-	c.Correct = sia.ReadBool()
+func (c *Correctness) FromBytes(payload []byte) *Correctness {
+	siaMessage := sia.NewFromBytes(payload)
+	c.Timestamp = siaMessage.ReadUInt64()
+	copy(c.Hash, siaMessage.ReadByteArray8())
+	copy(c.Topic[:], siaMessage.ReadByteArray8())
+	c.Correct = siaMessage.ReadBool()
 
 	return c
 }
 
 func (c *Correctness) Bls() (bls12381.G1Affine, error) {
-	hash, err := bls.Hash(c.Sia().Content)
+	hash, err := bls.Hash(c.Sia().Bytes())
 	if err != nil {
 		utils.Logger.Error("Can't hash bls: %v", err)
 		return bls12381.G1Affine{}, err

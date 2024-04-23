@@ -1,6 +1,7 @@
 package pos
 
 import (
+	"context"
 	"testing"
 
 	"github.com/KenshiTech/unchained/internal/crypto"
@@ -41,7 +42,7 @@ func (s *PosTestSuite) TestGetVotingPowerFromContract() {
 }
 
 func (s *PosTestSuite) TestGetVotingPowerOfPublicKey() {
-	_, err := s.service.GetVotingPowerOfPublicKey([96]byte{})
+	_, err := s.service.GetVotingPowerOfPublicKey(context.TODO(), [96]byte{})
 	s.NoError(err)
 }
 
@@ -50,6 +51,6 @@ func (s *PosTestSuite) TestVotingPowerToFloat() {
 	// s.NoError(err)
 }
 
-func TestPosTestSuite(t *testing.T) {
+func TestPosSuite(t *testing.T) {
 	suite.Run(t, new(PosTestSuite))
 }

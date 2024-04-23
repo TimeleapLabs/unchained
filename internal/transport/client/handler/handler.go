@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/model"
+	"context"
 )
 
 type Handler interface {
-	Challenge(message []byte) *model.ChallengePacket
-	CorrectnessReport(message []byte)
-	EventLog(message []byte)
-	PriceReport(message []byte)
+	Challenge(message []byte) []byte
+	CorrectnessReport(ctx context.Context, message []byte)
+	EventLog(ctx context.Context, message []byte)
+	PriceReport(ctx context.Context, message []byte)
 }

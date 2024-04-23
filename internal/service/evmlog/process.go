@@ -22,14 +22,14 @@ import (
 	"golang.org/x/text/language"
 )
 
-func (s *service) ProcessBlocks(chain string) error {
+func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 	for _, conf := range config.App.Plugins.EthLog.Events {
 		if conf.Chain != chain {
 			continue
 		}
 
 		// check if processing is needed
-		blockNumber, err := s.ethRPC.GetBlockNumber(chain)
+		blockNumber, err := s.ethRPC.GetBlockNumber(ctx, chain)
 		if err != nil {
 			s.ethRPC.RefreshRPC(chain)
 			return err
@@ -73,7 +73,7 @@ func (s *service) ProcessBlocks(chain string) error {
 		}
 
 		rpcClient := s.ethRPC.GetClient(conf.Chain)
-		logs, err := rpcClient.FilterLogs(context.Background(), query)
+		logs, err := rpcClient.FilterLogs(ctx, query)
 
 		if err != nil {
 			return err
@@ -162,7 +162,7 @@ func (s *service) ProcessBlocks(chain string) error {
 				Args:     args,
 			}
 
-			toHash := event.Sia().Content
+			toHash := event.Sia().Bytes()
 			signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, toHash)
 
 			if conf.Send {
@@ -171,6 +171,7 @@ func (s *service) ProcessBlocks(chain string) error {
 
 			if conf.Store {
 				err = s.RecordSignature(
+					ctx,
 					signature,
 					*crypto.Identity.ExportBlsSigner(),
 					hash,

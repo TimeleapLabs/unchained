@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/utils"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-func (h *consumer) CorrectnessReport(message []byte) {
-	packet := new(model.BroadcastCorrectnessPacket).DeSia(&sia.Sia{Content: message})
+func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
+	packet := new(model.BroadcastCorrectnessPacket).FromBytes(message)
 
 	correctnessHash, err := packet.Info.Bls()
 	if err != nil {
@@ -25,6 +26,7 @@ func (h *consumer) CorrectnessReport(message []byte) {
 	}
 
 	err = h.correctness.RecordSignature(
+		ctx,
 		signature,
 		packet.Signer,
 		correctnessHash,
@@ -36,4 +38,4 @@ func (h *consumer) CorrectnessReport(message []byte) {
 	}
 }
 
-func (w worker) CorrectnessReport(_ []byte) {}
+func (w worker) CorrectnessReport(_ context.Context, _ []byte) {}
