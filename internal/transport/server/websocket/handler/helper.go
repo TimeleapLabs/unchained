@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/constants/opcodes"
-	"github.com/KenshiTech/unchained/internal/log"
-	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
+	"github.com/TimeleapLabs/unchained/internal/constants/opcodes"
+	"github.com/TimeleapLabs/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 )
 

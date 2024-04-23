@@ -8,9 +8,9 @@ import (
 	"context"
 	"encoding/hex"
 
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/ent/correctnessreport"
+	"github.com/TimeleapLabs/unchained/internal/ent/signer"
 )
 
 // Topic is the resolver for the topic field.

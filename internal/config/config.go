@@ -5,9 +5,9 @@ import (
 
 	pureLog "log"
 
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/log"
 
-	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/TimeleapLabs/unchained/internal/constants"
 	"gopkg.in/yaml.v3"
 
 	"github.com/ilyakaznacheev/cleanenv"

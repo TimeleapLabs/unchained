@@ -1,8 +1,8 @@
 package gql
 
 import (
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/generated"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/generated"
 
 	"github.com/99designs/gqlgen/graphql"
 )

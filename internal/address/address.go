@@ -3,7 +3,7 @@ package address
 import (
 	"fmt"
 
-	"github.com/KenshiTech/unchained/internal/crypto/shake"
+	"github.com/TimeleapLabs/unchained/internal/crypto/shake"
 )
 
 var chars = "0123456789ABCDEFGHJKMNPQRSTUVXYZ"

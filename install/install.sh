@@ -61,7 +61,7 @@ echo "Operating System: $INF_OS"
 echo "CPU Architecture: $INF_CPU"
 
 # GitHub repository details
-REPO="KenshiTech/unchained"
+REPO="TimeleapLabs/unchained"
 GITHUB_API_URL="https://api.github.com/repos/$REPO/releases/latest"
 
 # Fetch the latest release tag

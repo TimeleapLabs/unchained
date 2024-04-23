@@ -10,10 +10,10 @@ import (
 	"math/big"
 
 	"entgo.io/contrib/entgql"
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/generated"
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/generated"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/types"
 )
 
 // Price is the resolver for the price field.

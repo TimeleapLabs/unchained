@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/internal/ent/predicate"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
+	"github.com/TimeleapLabs/unchained/internal/ent/correctnessreport"
+	"github.com/TimeleapLabs/unchained/internal/ent/predicate"
+	"github.com/TimeleapLabs/unchained/internal/ent/signer"
 )
 
 // CorrectnessReportQuery is the builder for querying CorrectnessReport entities.

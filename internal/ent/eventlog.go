@@ -9,9 +9,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/ent/eventlog"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/datasets"
+	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 )
 
 // EventLog is the model entity for the EventLog schema.

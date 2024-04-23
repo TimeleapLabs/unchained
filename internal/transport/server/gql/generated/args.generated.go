@@ -10,8 +10,8 @@ import (
 	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/types"
+	"github.com/TimeleapLabs/unchained/internal/datasets"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/types"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
@@ -212,13 +212,13 @@ func (ec *executionContext) _EventLogArg(ctx context.Context, sel ast.SelectionS
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx context.Context, v interface{}) (types.Bytes, error) {
+func (ec *executionContext) unmarshalNBytes2githubᚗcomᚋTimeleapLabsᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx context.Context, v interface{}) (types.Bytes, error) {
 	var res types.Bytes
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNBytes2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx context.Context, sel ast.SelectionSet, v types.Bytes) graphql.Marshaler {
+func (ec *executionContext) marshalNBytes2githubᚗcomᚋTimeleapLabsᚋunchainedᚋinternalᚋtransportᚋserverᚋgqlᚋtypesᚐBytes(ctx context.Context, sel ast.SelectionSet, v types.Bytes) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -228,11 +228,11 @@ func (ec *executionContext) marshalNBytes2githubᚗcomᚋKenshiTechᚋunchained�
 	return v
 }
 
-func (ec *executionContext) marshalNEventLogArg2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArg(ctx context.Context, sel ast.SelectionSet, v datasets.EventLogArg) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLogArg2githubᚗcomᚋTimeleapLabsᚋunchainedᚋinternalᚋdatasetsᚐEventLogArg(ctx context.Context, sel ast.SelectionSet, v datasets.EventLogArg) graphql.Marshaler {
 	return ec._EventLogArg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEventLogArg2ᚕgithubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArgᚄ(ctx context.Context, sel ast.SelectionSet, v []datasets.EventLogArg) graphql.Marshaler {
+func (ec *executionContext) marshalNEventLogArg2ᚕgithubᚗcomᚋTimeleapLabsᚋunchainedᚋinternalᚋdatasetsᚐEventLogArgᚄ(ctx context.Context, sel ast.SelectionSet, v []datasets.EventLogArg) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -256,7 +256,7 @@ func (ec *executionContext) marshalNEventLogArg2ᚕgithubᚗcomᚋKenshiTechᚋu
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEventLogArg2githubᚗcomᚋKenshiTechᚋunchainedᚋinternalᚋdatasetsᚐEventLogArg(ctx, sel, v[i])
+			ret[i] = ec.marshalNEventLogArg2githubᚗcomᚋTimeleapLabsᚋunchainedᚋinternalᚋdatasetsᚐEventLogArg(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

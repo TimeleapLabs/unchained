@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/KenshiTech/unchained/cmd/handler"
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/constants"
+	"github.com/TimeleapLabs/unchained/cmd/handler"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/constants"
 	"github.com/spf13/cobra"
 )
 

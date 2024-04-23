@@ -4,11 +4,11 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/internal/crypto"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/log"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

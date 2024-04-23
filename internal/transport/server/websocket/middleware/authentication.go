@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/KenshiTech/unchained/internal/constants"
-	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
+	"github.com/TimeleapLabs/unchained/internal/constants"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 )
 

@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/KenshiTech/unchained/internal/ent/assetprice"
-	"github.com/KenshiTech/unchained/internal/ent/predicate"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
+	"github.com/TimeleapLabs/unchained/internal/ent/assetprice"
+	"github.com/TimeleapLabs/unchained/internal/ent/predicate"
+	"github.com/TimeleapLabs/unchained/internal/ent/signer"
 )
 
 // AssetPriceQuery is the builder for querying AssetPrice entities.

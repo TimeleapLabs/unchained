@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/KenshiTech/unchained/internal/ent/assetprice"
-	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/internal/ent/eventlog"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
-	"github.com/KenshiTech/unchained/internal/ent/predicate"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
+	"github.com/TimeleapLabs/unchained/internal/ent/assetprice"
+	"github.com/TimeleapLabs/unchained/internal/ent/correctnessreport"
+	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/ent/predicate"
+	"github.com/TimeleapLabs/unchained/internal/ent/signer"
 )
 
 // AssetPriceWhereInput represents a where input for filtering AssetPrice queries.

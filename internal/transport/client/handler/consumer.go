@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/constants/opcodes"
-	"github.com/KenshiTech/unchained/internal/service/correctness"
-	"github.com/KenshiTech/unchained/internal/service/evmlog"
-	"github.com/KenshiTech/unchained/internal/service/uniswap"
-	"github.com/KenshiTech/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/constants/opcodes"
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
+	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 )
 
 type consumer struct {

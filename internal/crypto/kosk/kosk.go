@@ -3,9 +3,9 @@ package kosk
 import (
 	"crypto/rand"
 
-	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
 
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )

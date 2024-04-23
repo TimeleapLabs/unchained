@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"github.com/KenshiTech/unchained/internal/datasets"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/datasets"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 )
 
 // DataSet holds the schema definition for the DataSet entity.

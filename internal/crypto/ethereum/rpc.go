@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
-	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/config"
 
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/log"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"

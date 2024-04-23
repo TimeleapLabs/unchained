@@ -5,12 +5,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
 
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/constants"
-	"github.com/KenshiTech/unchained/internal/constants/opcodes"
-	"github.com/KenshiTech/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/constants"
+	"github.com/TimeleapLabs/unchained/internal/constants/opcodes"
+	"github.com/TimeleapLabs/unchained/internal/log"
 
 	"github.com/gorilla/websocket"
 )

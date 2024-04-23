@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum/contracts"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"

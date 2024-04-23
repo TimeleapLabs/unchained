@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/btcsuite/btcutil/base58"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	bls12381_fr "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
