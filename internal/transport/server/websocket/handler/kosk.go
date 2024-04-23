@@ -1,11 +1,10 @@
 package handler
 
 import (
+	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/middleware"
-
-	"github.com/KenshiTech/unchained/internal/consts"
 	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 )
@@ -23,6 +22,7 @@ func Kosk(conn *websocket.Conn, payload []byte) error {
 		return consts.ErrInvalidKosk
 	}
 
+	challenge.Passed = true
 	store.Challenges.Store(conn, *challenge)
 
 	return nil

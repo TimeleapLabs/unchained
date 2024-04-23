@@ -9,6 +9,7 @@ import (
 )
 
 func Send(conn *websocket.Conn, messageType int, opCode consts.OpCode, payload []byte) {
+	utils.Logger.Info("Sending message")
 	err := conn.WriteMessage(
 		messageType,
 		append(
@@ -28,9 +29,12 @@ func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte
 	for {
 		select {
 		case <-ctx.Done():
+			utils.Logger.Info("Closing connection")
 			close(ch)
 			return
 		case message := <-ch:
+			utils.Logger.Info("New message to broadcast")
+
 			err := conn.WriteMessage(websocket.BinaryMessage, message)
 			if err != nil {
 				utils.Logger.Error(err.Error())

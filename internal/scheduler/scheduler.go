@@ -4,11 +4,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/scheduler/evmlog"
-
 	"github.com/KenshiTech/unchained/internal/utils"
 
-	"github.com/KenshiTech/unchained/internal/scheduler/uniswap"
 	evmLogService "github.com/KenshiTech/unchained/internal/service/evmlog"
 	uniswapService "github.com/KenshiTech/unchained/internal/service/uniswap"
 
@@ -44,6 +41,7 @@ func New(options ...func(s *Scheduler)) *Scheduler {
 	return s
 }
 
+// WithEthLogs adds eth logs tasks to the scheduler.
 func WithEthLogs(evmLogService evmLogService.Service) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.EthLog == nil {
@@ -51,14 +49,12 @@ func WithEthLogs(evmLogService evmLogService.Service) func(s *Scheduler) {
 		}
 
 		for name, duration := range config.App.Plugins.EthLog.Schedule {
-			s.AddTask(duration, evmlog.New(
-				name,
-				evmLogService,
-			))
+			s.AddTask(duration, NewEvmLog(name, evmLogService))
 		}
 	}
 }
 
+// WithUniswapEvents adds uniswap events tasks to the scheduler.
 func WithUniswapEvents(uniswapService uniswapService.Service) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.Uniswap == nil {
@@ -66,14 +62,12 @@ func WithUniswapEvents(uniswapService uniswapService.Service) func(s *Scheduler)
 		}
 
 		for name, duration := range config.App.Plugins.Uniswap.Schedule {
-			s.AddTask(duration, uniswap.New(
-				name,
-				uniswapService,
-			))
+			s.AddTask(duration, NewUniswap(name, uniswapService))
 		}
 	}
 }
 
+// AddTask adds a new task to the scheduler.
 func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 	utils.Logger.
 		With("duration", duration).
@@ -90,6 +84,7 @@ func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 	}
 }
 
+// Start starts the scheduler.
 func (s *Scheduler) Start() {
 	s.scheduler.Start()
 

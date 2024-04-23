@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -28,6 +29,7 @@ func Publish(destinationTopic consts.Channels, operation consts.OpCode, message 
 
 	allSubTopics := getTopicsByPrefix(destinationTopic)
 
+	fmt.Println("allSubTopics", allSubTopics)
 	for _, subscribers := range allSubTopics {
 		for _, ch := range subscribers {
 			go func(ch chan []byte) {

@@ -21,6 +21,10 @@ func NewRPC(handler handler.Handler) {
 				ctx, cancel := context.WithTimeout(context.TODO(), time.Second*10)
 				defer cancel()
 
+				utils.Logger.
+					With("Op", consts.OpCode(payload[0])).
+					Info("Broker")
+
 				switch consts.OpCode(payload[0]) {
 				case consts.OpCodeError:
 					utils.Logger.
@@ -35,7 +39,6 @@ func NewRPC(handler handler.Handler) {
 				case consts.OpCodeKoskChallenge:
 					challenge := handler.Challenge(payload[1:])
 					conn.Send(consts.OpCodeKoskResult, challenge)
-
 				case consts.OpCodePriceReportBroadcast:
 					handler.PriceReport(ctx, payload[1:])
 

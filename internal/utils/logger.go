@@ -10,7 +10,7 @@ import (
 
 var Logger *slog.Logger
 
-// Start initializes the logger.
+// SetupLogger initializes the logger.
 func SetupLogger(logLevel string) {
 	levels := make(map[string]slog.Level)
 	levels["info"] = slog.LevelInfo

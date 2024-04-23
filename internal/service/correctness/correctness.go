@@ -58,6 +58,7 @@ type service struct {
 	supportedTopics         map[[64]byte]bool
 }
 
+// IsNewSigner checks if the signer's pub key is in the records signers or not
 func (s *service) IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool {
 	// TODO: This isn't efficient, we should use a map
 	for _, record := range records {

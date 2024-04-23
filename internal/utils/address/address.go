@@ -6,7 +6,16 @@ import (
 	"github.com/KenshiTech/unchained/internal/utils"
 )
 
-var chars = "0123456789ABCDEFGHJKMNPQRSTUVXYZ"
+const chars = "0123456789ABCDEFGHJKMNPQRSTUVXYZ"
+
+func Calculate(input []byte) string {
+	hash := utils.Shake(input)
+	address := ToBase32(hash[:20])
+	checksum := utils.Shake([]byte(address))
+	checkchars := []byte{chars[checksum[0]%32], chars[checksum[1]%32]}
+
+	return fmt.Sprintf("%s%s", address, checkchars)
+}
 
 func ToBase32(input []byte) string {
 	var output []byte
@@ -30,15 +39,6 @@ func ToBase32(input []byte) string {
 	}
 
 	return string(output)
-}
-
-func Calculate(input []byte) string {
-	hash := utils.Shake(input)
-	address := ToBase32(hash[:20])
-	checksum := utils.Shake([]byte(address))
-	checkchars := []byte{chars[checksum[0]%32], chars[checksum[1]%32]}
-
-	return fmt.Sprintf("%s%s", address, checkchars)
 }
 
 func CalculateHex(input []byte) (string, [20]byte) {

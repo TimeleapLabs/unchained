@@ -22,7 +22,6 @@ type Service interface {
 	GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error)
 	GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error)
 	GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byte) (*big.Int, error)
-	VotingPowerToFloat(power *big.Int) *big.Float
 }
 
 type service struct {
@@ -87,13 +86,6 @@ func (s *service) GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byt
 	return s.GetVotingPower(addrHex, big.NewInt(int64(block)))
 }
 
-func (s *service) VotingPowerToFloat(power *big.Int) *big.Float {
-	decimalPlaces := big.NewInt(1e18)
-	powerFloat := new(big.Float).SetInt(power)
-	powerFloat.Quo(powerFloat, new(big.Float).SetInt(decimalPlaces))
-	return powerFloat
-}
-
 func New(ethRPC ethereum.RPC) Service {
 	s := &service{
 		ethRPC:       ethRPC,
@@ -143,8 +135,8 @@ func New(ethRPC ethereum.RPC) Service {
 	}
 
 	utils.Logger.
-		With("Power", s.VotingPowerToFloat(power)).
-		With("Network", s.VotingPowerToFloat(total)).
+		With("Power", utils.BigIntToFloat(power)).
+		With("Network", utils.BigIntToFloat(total)).
 		Info("PoS")
 
 	chainID, err := s.posContract.GetChainId(nil)

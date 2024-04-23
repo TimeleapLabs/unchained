@@ -46,11 +46,6 @@ func (s *PosTestSuite) TestGetVotingPowerOfPublicKey() {
 	s.NoError(err)
 }
 
-func (s *PosTestSuite) TestVotingPowerToFloat() {
-	// := s.service.VotingPowerToFloat(nil)
-	// s.NoError(err)
-}
-
 func TestPosSuite(t *testing.T) {
 	suite.Run(t, new(PosTestSuite))
 }

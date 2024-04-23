@@ -19,19 +19,19 @@ func IsMessageValid(conn *websocket.Conn, message bls12381.G1Affine, signature [
 
 	signatureBls, err := bls.RecoverSignature(signature)
 	if err != nil {
-		utils.Logger.Error("Can't recover bls signature: %v", err)
+		utils.Logger.With("Err", err).Error("Can't recover bls signature")
 		return model.Signer{}, consts.ErrInternalError
 	}
 
 	pk, err := bls.RecoverPublicKey(signer.PublicKey)
 	if err != nil {
-		utils.Logger.Error("Can't recover bls pub-key: %v", err)
+		utils.Logger.With("Err", err).Error("Can't recover pub key pub-key")
 		return model.Signer{}, consts.ErrInternalError
 	}
 
 	ok, err = crypto.Identity.Bls.Verify(signatureBls, message, pk)
 	if err != nil {
-		utils.Logger.Error("Can't recover bls pub-key: %v", err)
+		utils.Logger.With("Err", err).Error("Can't verify bls")
 		return model.Signer{}, consts.ErrCantVerifyBls
 	}
 

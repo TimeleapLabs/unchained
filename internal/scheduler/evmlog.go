@@ -1,4 +1,4 @@
-package evmlog
+package scheduler
 
 import (
 	"context"
@@ -6,11 +6,13 @@ import (
 	"github.com/KenshiTech/unchained/internal/service/evmlog"
 )
 
+// EvmLog is a scheduler for EvmLog and keep task's dependencies
 type EvmLog struct {
 	chain         string
 	evmLogService evmlog.Service
 }
 
+// Run will trigger by the scheduler and process the EvmLog blocks
 func (e *EvmLog) Run() {
 	err := e.evmLogService.ProcessBlocks(context.TODO(), e.chain)
 	if err != nil {
@@ -18,7 +20,8 @@ func (e *EvmLog) Run() {
 	}
 }
 
-func New(
+// NewEvmLog will create a new EvmLog task
+func NewEvmLog(
 	chanName string,
 	evmLogService evmlog.Service,
 ) *EvmLog {
