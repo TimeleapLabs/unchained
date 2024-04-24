@@ -66,7 +66,6 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 				return err
 			}
 
-			privateKeyRegenerated = true
 		} else {
 			privateKey, err = ethCrypto.GenerateKey()
 
@@ -77,6 +76,8 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 
 				return err
 			}
+
+			privateKeyRegenerated = true
 		}
 
 		publicKey := privateKey.Public()
@@ -118,19 +119,11 @@ func WithBlsIdentity() func(machineIdentity *MachineIdentity) error {
 
 		config.App.Secret.SecretKey = hex.EncodeToString(machineIdentity.Bls.SecretKey.Bytes())
 		config.App.Secret.PublicKey = hex.EncodeToString(pkBytes[:])
-
-		addrStr := address.Calculate(pkBytes[:])
+		config.App.Secret.Address = address.Calculate(pkBytes[:])
 
 		log.Logger.
-			With("Address", addrStr).
+			With("Address", config.App.Secret.Address).
 			Info("Unchained identity initialized")
-
-		// TODO: Avoid recalculating this
-		config.App.Secret.PublicKey = hex.EncodeToString(pkBytes[:])
-
-		if config.App.Secret.Address != "" {
-			config.App.Secret.Address = addrStr
-		}
 
 		return nil
 	}
