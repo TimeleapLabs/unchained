@@ -7,7 +7,7 @@ podManagementPolicy: "Parallel"
 #podManagementPolicy: "OrderedReady"
 
 image:
-  repository: ghcr.io/kenshitech/unchained
+  repository: ghcr.io/timeleaplabs/unchained
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"

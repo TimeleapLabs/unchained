@@ -1,6 +1,6 @@
 services:
   #unchained_broker:
-  #  image: ghcr.io/kenshitech/unchained:latest
+  #  image: ghcr.io/timeleaplabs/unchained:latest
   #  container_name: unchained_broker
   #  hostname: unchained_broker
   #  volumes:
@@ -14,7 +14,7 @@ services:
   #  restart: always
 
   unchained_standalone:
-    image: ghcr.io/kenshitech/unchained:latest
+    image: ghcr.io/timeleaplabs/unchained:latest
     container_name: unchained_standalone
     hostname: unchained_standalone
     volumes:
@@ -64,7 +64,7 @@ services:
   #      condition: service_healthy
 
   unchained_worker:
-    image: ghcr.io/kenshitech/unchained:latest
+    image: ghcr.io/timeleaplabs/unchained:latest
     container_name: unchained_worker
     hostname: unchained_worker
     volumes:
@@ -77,7 +77,7 @@ services:
     restart: always
 
   #unchained_remote:
-  #  image: ghcr.io/kenshitech/unchained:latest
+  #  image: ghcr.io/timeleaplabs/unchained:latest
   #  container_name: unchained_remote
   #  hostname: unchained_remote
   #  volumes:
