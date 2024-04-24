@@ -67,7 +67,6 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "conf.ok")
 			handler.Send(conn, messageType, consts.OpCodeKoskChallenge, result)
 		case consts.OpCodePriceReport:
-			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("Price Report")
 			result, err := handler.PriceReport(conn, payload[1:])
 			if err != nil {
 				handler.SendError(conn, messageType, consts.OpCodeError, err)

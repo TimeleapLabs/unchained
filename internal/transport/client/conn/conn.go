@@ -54,7 +54,10 @@ func Reconnect(err error) {
 				With("Retry", i).
 				Info("Reconnecting to broker")
 
-			conn, _, err = websocket.DefaultDialer.Dial(config.App.Network.BrokerURI, nil)
+			conn, _, err = websocket.DefaultDialer.Dial(
+				fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion),
+				nil,
+			)
 			if err != nil {
 				utils.Logger.
 					With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
