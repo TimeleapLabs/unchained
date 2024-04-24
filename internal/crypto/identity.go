@@ -65,7 +65,6 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 
 				return err
 			}
-
 		} else {
 			privateKey, err = ethCrypto.GenerateKey()
 
