@@ -360,7 +360,6 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()
-
 		priceReport := model.PriceReportPacket{
 			PriceInfo: priceInfo,
 			Signature: compressedSignature,

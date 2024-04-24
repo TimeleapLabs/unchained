@@ -41,14 +41,4 @@ func init() {
 	root.PersistentFlags().StringVarP(&config.App.System.ConfigPath, "config", "c", "./conf.yaml", "Config file")
 	root.PersistentFlags().StringVarP(&config.App.System.SecretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
 	root.PersistentFlags().StringVarP(&config.App.System.ContextPath, "context", "x", "./context", "Context DB")
-
-	err := root.MarkPersistentFlagRequired("config")
-	if err != nil {
-		panic(err)
-	}
-
-	err = root.MarkPersistentFlagFilename("config", "yaml")
-	if err != nil {
-		panic(err)
-	}
 }

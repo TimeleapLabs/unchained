@@ -22,8 +22,10 @@ func (c *CorrectnessReportPacket) Sia() sia.Sia {
 }
 
 func (c *CorrectnessReportPacket) FromBytes(payload []byte) *CorrectnessReportPacket {
-	c.Correctness.FromBytes(payload)
-	copy(c.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
+	siaMessage := sia.NewFromBytes(payload)
+
+	c.Correctness.FromSia(siaMessage)
+	copy(c.Signature[:], siaMessage.ReadByteArray8())
 
 	return c
 }
@@ -44,9 +46,11 @@ func (b *BroadcastCorrectnessPacket) Sia() sia.Sia {
 }
 
 func (b *BroadcastCorrectnessPacket) FromBytes(payload []byte) *BroadcastCorrectnessPacket {
-	b.Info.FromBytes(payload)
-	copy(b.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
-	b.Signer.FromBytes(payload)
+	siaMessage := sia.NewFromBytes(payload)
+
+	b.Info.FromSia(siaMessage)
+	copy(b.Signature[:], siaMessage.ReadByteArray8())
+	b.Signer.FromSia(siaMessage)
 
 	return b
 }
@@ -73,10 +77,14 @@ func (c *Correctness) Sia() sia.Sia {
 
 func (c *Correctness) FromBytes(payload []byte) *Correctness {
 	siaMessage := sia.NewFromBytes(payload)
-	c.Timestamp = siaMessage.ReadUInt64()
-	copy(c.Hash, siaMessage.ReadByteArray8())
-	copy(c.Topic[:], siaMessage.ReadByteArray8())
-	c.Correct = siaMessage.ReadBool()
+	return c.FromSia(siaMessage)
+}
+
+func (c *Correctness) FromSia(sia sia.Sia) *Correctness {
+	c.Timestamp = sia.ReadUInt64()
+	copy(c.Hash, sia.ReadByteArray8())
+	copy(c.Topic[:], sia.ReadByteArray8())
+	c.Correct = sia.ReadBool()
 
 	return c
 }

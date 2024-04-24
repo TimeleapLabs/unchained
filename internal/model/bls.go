@@ -25,13 +25,17 @@ func (s *Signature) Sia() sia.Sia {
 
 func (s *Signature) FromBytes(payload []byte) *Signature {
 	siaMessage := sia.NewFromBytes(payload)
-	err := s.Signature.Unmarshal(siaMessage.ReadByteArray8())
+	return s.FromSia(siaMessage)
+}
+
+func (s *Signature) FromSia(sia sia.Sia) *Signature {
+	err := s.Signature.Unmarshal(sia.ReadByteArray8())
 
 	if err != nil {
 		s.Signature = bls12381.G1Affine{}
 	}
 
-	s.Signer.FromBytes(payload)
+	s.Signer.FromSia(sia)
 
 	return s
 }
@@ -46,10 +50,14 @@ func (s *Signer) Sia() sia.Sia {
 
 func (s *Signer) FromBytes(payload []byte) *Signer {
 	siaMessage := sia.NewFromBytes(payload)
-	s.Name = siaMessage.ReadString8()
-	s.EvmAddress = siaMessage.ReadString8()
-	copy(s.PublicKey[:], siaMessage.ReadByteArray8())
-	copy(s.ShortPublicKey[:], siaMessage.ReadByteArray8())
+	return s.FromSia(siaMessage)
+}
+
+func (s *Signer) FromSia(sia sia.Sia) *Signer {
+	s.Name = sia.ReadString8()
+	s.EvmAddress = sia.ReadString8()
+	copy(s.PublicKey[:], sia.ReadByteArray8())
+	copy(s.ShortPublicKey[:], sia.ReadByteArray8())
 
 	return s
 }

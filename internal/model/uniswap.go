@@ -19,22 +19,6 @@ type TokenKey struct {
 	Cross  string
 }
 
-type AssetKey struct {
-	Token TokenKey
-	Block uint64
-}
-
-type PriceInfo struct {
-	Asset AssetKey
-	Price big.Int
-}
-
-type BroadcastPricePacket struct {
-	Info      PriceInfo
-	Signature [48]byte
-	Signer    Signer
-}
-
 func (t *TokenKey) Sia() sia.Sia {
 	return sia.New().
 		AddString8(t.Name).
@@ -45,16 +29,20 @@ func (t *TokenKey) Sia() sia.Sia {
 		AddString8(t.Cross)
 }
 
-func (t *TokenKey) FromBytes(payload []byte) *TokenKey {
-	siaMessage := sia.NewFromBytes(payload)
-	t.Name = siaMessage.ReadString8()
-	t.Pair = siaMessage.ReadString8()
-	t.Chain = siaMessage.ReadString8()
-	t.Delta = siaMessage.ReadInt64()
-	t.Invert = siaMessage.ReadBool()
-	t.Cross = siaMessage.ReadString8()
+func (t *TokenKey) FromSia(sia sia.Sia) *TokenKey {
+	t.Name = sia.ReadString8()
+	t.Pair = sia.ReadString8()
+	t.Chain = sia.ReadString8()
+	t.Delta = sia.ReadInt64()
+	t.Invert = sia.ReadBool()
+	t.Cross = sia.ReadString8()
 
 	return t
+}
+
+type AssetKey struct {
+	Token TokenKey
+	Block uint64
 }
 
 func (a *AssetKey) Sia() sia.Sia {
@@ -63,11 +51,16 @@ func (a *AssetKey) Sia() sia.Sia {
 		AddUInt64(a.Block)
 }
 
-func (a *AssetKey) FromBytes(payload []byte) *AssetKey {
-	a.Token.FromBytes(payload)
-	a.Block = sia.NewFromBytes(payload).ReadUInt64()
+func (a *AssetKey) FromSia(sia sia.Sia) *AssetKey {
+	a.Token.FromSia(sia)
+	a.Block = sia.ReadUInt64()
 
 	return a
+}
+
+type PriceInfo struct {
+	Asset AssetKey
+	Price big.Int
 }
 
 func (p *PriceInfo) Sia() sia.Sia {
@@ -77,8 +70,13 @@ func (p *PriceInfo) Sia() sia.Sia {
 }
 
 func (p *PriceInfo) FromBytes(payload []byte) *PriceInfo {
-	p.Asset.FromBytes(payload)
-	p.Price = *sia.NewFromBytes(payload).ReadBigInt()
+	siaMessage := sia.NewFromBytes(payload)
+	return p.FromSia(siaMessage)
+}
+
+func (p *PriceInfo) FromSia(sia sia.Sia) *PriceInfo {
+	p.Asset.FromSia(sia)
+	p.Price = *sia.ReadBigInt()
 
 	return p
 }
@@ -93,6 +91,12 @@ func (p *PriceInfo) Bls() (bls12381.G1Affine, error) {
 	return hash, err
 }
 
+type BroadcastPricePacket struct {
+	Info      PriceInfo
+	Signature [48]byte
+	Signer    Signer
+}
+
 func (b *BroadcastPricePacket) Sia() sia.Sia {
 	return sia.New().
 		EmbedBytes(b.Info.Sia().Bytes()).
@@ -101,9 +105,10 @@ func (b *BroadcastPricePacket) Sia() sia.Sia {
 }
 
 func (b *BroadcastPricePacket) FromBytes(payload []byte) *BroadcastPricePacket {
-	b.Info.FromBytes(payload)
-	copy(b.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
-	b.Signer.FromBytes(payload)
+	siaMessage := sia.NewFromBytes(payload)
+	b.Info.FromSia(siaMessage)
+	copy(b.Signature[:], siaMessage.ReadByteArray8())
+	b.Signer.FromSia(siaMessage)
 
 	return b
 }

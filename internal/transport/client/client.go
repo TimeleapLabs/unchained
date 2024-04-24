@@ -21,10 +21,6 @@ func NewRPC(handler handler.Handler) {
 				ctx, cancel := context.WithTimeout(context.TODO(), time.Second*10)
 				defer cancel()
 
-				utils.Logger.
-					With("Op", consts.OpCode(payload[0])).
-					Info("Broker")
-
 				switch consts.OpCode(payload[0]) {
 				case consts.OpCodeError:
 					utils.Logger.

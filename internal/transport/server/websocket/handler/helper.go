@@ -9,7 +9,6 @@ import (
 )
 
 func Send(conn *websocket.Conn, messageType int, opCode consts.OpCode, payload []byte) {
-	utils.Logger.Info("Sending message")
 	err := conn.WriteMessage(
 		messageType,
 		append(

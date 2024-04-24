@@ -16,8 +16,13 @@ func (p *PriceReportPacket) Sia() sia.Sia {
 }
 
 func (p *PriceReportPacket) FromBytes(payload []byte) *PriceReportPacket {
-	p.PriceInfo.FromBytes(payload)
-	copy(p.Signature[:], sia.NewFromBytes(payload).ReadByteArray8())
+	siaMessage := sia.NewFromBytes(payload)
+	return p.FromSia(siaMessage)
+}
+
+func (p *PriceReportPacket) FromSia(sia sia.Sia) *PriceReportPacket {
+	p.PriceInfo.FromSia(sia)
+	copy(p.Signature[:], sia.ReadByteArray8())
 
 	return p
 }
