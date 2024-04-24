@@ -19,7 +19,7 @@ var conn *websocket.Conn
 var IsClosed bool
 var mu = new(sync.Mutex)
 
-// Start function create a new websocket connection to the broker
+// Start function create a new websocket connection to the broker.
 func Start() {
 	var err error
 
@@ -72,7 +72,7 @@ func Reconnect(err error) {
 	}
 }
 
-// Close function gracefully disconnect from the broker
+// Close function gracefully disconnect from the broker.
 func Close() {
 	if conn != nil && config.App.Network.BrokerURI != "" {
 		err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
@@ -92,7 +92,7 @@ func Close() {
 	}
 }
 
-// Read function consume from the broker's messages and push them into a channel
+// Read function consume from the broker's messages and push them into a channel.
 func Read() <-chan []byte {
 	out := make(chan []byte)
 
@@ -119,7 +119,6 @@ func Read() <-chan []byte {
 
 				Reconnect(err)
 				if IsClosed {
-					fmt.Println("ooops11")
 					break
 				}
 

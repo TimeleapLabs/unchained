@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"golang.org/x/crypto/sha3"
 	"math/big"
+
+	"golang.org/x/crypto/sha3"
 )
 
 func BigIntToFloat(power *big.Int) *big.Float {

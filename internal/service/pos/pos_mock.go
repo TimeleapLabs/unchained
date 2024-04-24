@@ -2,8 +2,9 @@ package pos
 
 import (
 	"context"
-	"github.com/stretchr/testify/mock"
 	"math/big"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type MockService struct {

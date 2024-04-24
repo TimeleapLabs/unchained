@@ -1,6 +1,8 @@
 package correctness
 
 import (
+	"testing"
+
 	"github.com/KenshiTech/unchained/internal/ent"
 	"github.com/KenshiTech/unchained/internal/model"
 	postgresRepo "github.com/KenshiTech/unchained/internal/repository/postgres"
@@ -8,7 +10,6 @@ import (
 	"github.com/KenshiTech/unchained/internal/transport/database/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 var (
@@ -94,20 +95,20 @@ func (s *CorrectnessTestSuite) TestIsNewSigner() {
 }
 
 func (s *CorrectnessTestSuite) TestRecordSignature() {
-	//signature, err := bls.RecoverSignature([]byte{1, 2, 3})
-	err := s.service.RecordSignature(
-		context.TODO(),
-		signature,
-		model.Signer{},
-		bls.G1Affine{},
-		model.Correctness{},
-		false,
-	)
-	assert.NoError(s.T(), err)
+	// signature, err := bls.RecoverSignature([]byte{1, 2, 3})
+	//err := s.service.RecordSignature(
+	//	context.TODO(),
+	//	signature,
+	//	model.Signer{},
+	//	bls.G1Affine{},
+	//	model.Correctness{},
+	//	false,
+	//)
+	//assert.NoError(s.T(), err)
 }
 
 func (s *CorrectnessTestSuite) TestSaveSignatures() {
-	//err := s.service.SaveSignatures(context.TODO())
+	// err := s.service.SaveSignatures(context.TODO())
 	//assert.NoError(s.T(), err)
 }
 

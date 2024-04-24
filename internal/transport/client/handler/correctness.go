@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/KenshiTech/unchained/internal/crypto/bls"
 	"github.com/KenshiTech/unchained/internal/model"
 	"github.com/KenshiTech/unchained/internal/utils"
