@@ -94,24 +94,6 @@ func (s *CorrectnessTestSuite) TestIsNewSigner() {
 	})
 }
 
-func (s *CorrectnessTestSuite) TestRecordSignature() {
-	// signature, err := bls.RecoverSignature([]byte{1, 2, 3})
-	//err := s.service.RecordSignature(
-	//	context.TODO(),
-	//	signature,
-	//	model.Signer{},
-	//	bls.G1Affine{},
-	//	model.Correctness{},
-	//	false,
-	//)
-	//assert.NoError(s.T(), err)
-}
-
-func (s *CorrectnessTestSuite) TestSaveSignatures() {
-	// err := s.service.SaveSignatures(context.TODO())
-	//assert.NoError(s.T(), err)
-}
-
 func TestCorrectnessSuite(t *testing.T) {
 	suite.Run(t, new(CorrectnessTestSuite))
 }
