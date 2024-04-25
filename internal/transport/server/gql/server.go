@@ -1,10 +1,9 @@
 package gql
 
 import (
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/transport/database"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"net/http"
-
-	"github.com/KenshiTech/unchained/internal/transport/database"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

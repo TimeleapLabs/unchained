@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
-	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/config"
 )
 
 func New(options ...func()) {

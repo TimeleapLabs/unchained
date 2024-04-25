@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/consts"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 

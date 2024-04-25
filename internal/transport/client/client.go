@@ -1,10 +1,10 @@
 package client
 
 import (
-	"github.com/KenshiTech/unchained/internal/consts"
-	"github.com/KenshiTech/unchained/internal/transport/client/conn"
-	"github.com/KenshiTech/unchained/internal/transport/client/handler"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 func NewRPC(handler handler.Handler) {

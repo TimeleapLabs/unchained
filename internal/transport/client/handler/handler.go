@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/crypto/kosk"
+	"github.com/TimeleapLabs/unchained/internal/crypto/kosk"
 )
 
 type Handler interface {

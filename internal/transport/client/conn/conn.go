@@ -2,16 +2,15 @@ package conn
 
 import (
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
 
-	"github.com/KenshiTech/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/config"
 
-	"github.com/KenshiTech/unchained/internal/crypto"
-
-	"github.com/KenshiTech/unchained/internal/config"
 	"github.com/gorilla/websocket"
 )
 

@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/KenshiTech/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/consts"
 
-	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 

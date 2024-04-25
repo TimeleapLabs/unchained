@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/consts"
-	"github.com/KenshiTech/unchained/internal/crypto"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/transport/server/websocket/middleware"
-	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )

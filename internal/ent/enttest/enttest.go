@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/ent"
 	// required by schema hooks.
-	_ "github.com/KenshiTech/unchained/internal/ent/runtime"
+	_ "github.com/TimeleapLabs/unchained/internal/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/KenshiTech/unchained/internal/ent/migrate"
+	"github.com/TimeleapLabs/unchained/internal/ent/migrate"
 )
 
 type (

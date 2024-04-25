@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"os"
 
-	"github.com/KenshiTech/unchained/cmd/handler"
-	"github.com/KenshiTech/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/cmd/handler"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/constants"
 	"github.com/spf13/cobra"
 )
 
@@ -40,14 +41,4 @@ func init() {
 	root.PersistentFlags().StringVarP(&config.App.System.ConfigPath, "config", "c", "./conf.yaml", "Config file")
 	root.PersistentFlags().StringVarP(&config.App.System.SecretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
 	root.PersistentFlags().StringVarP(&config.App.System.ContextPath, "context", "x", "./context", "Context DB")
-
-	err := root.MarkPersistentFlagRequired("config")
-	if err != nil {
-		panic(err)
-	}
-
-	err = root.MarkPersistentFlagFilename("config", "yaml")
-	if err != nil {
-		panic(err)
-	}
 }

@@ -1,4 +1,4 @@
-module github.com/KenshiTech/unchained
+module github.com/TimeleapLabs/unchained
 
 go 1.22.1
 

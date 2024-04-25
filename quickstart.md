@@ -25,7 +25,7 @@ You can setup a node using a docker deployment or local deployment:
 Running Unchained with Docker is straightforward. Make sure you
 [have Docker installed](https://docs.docker.com/engine/install/).
 Then, head over to the
-[Unchained release page](https://github.com/KenshiTech/unchained/releases)
+[Unchained release page](https://github.com/TimeleapLabs/unchained/releases)
 on GitHub, find the latest Docker release file (file name ends with
 `-docker.zip`), download it, and uncompress it.
 
@@ -155,7 +155,7 @@ locally, on a RaspberryPi, on a server, or on your computer/laptop.
 ### Prerequisites
 
 To run a Kenshi Unchained node, you need to download the latest release. Head over to the
-[Unchained release page](https://github.com/KenshiTech/unchained/releases)
+[Unchained release page](https://github.com/TimeleapLabs/unchained/releases)
 on GitHub, find the latest release corresponding to your architecture and OS and download it.
 
 On Unix-like operating systems, you'll first need to make the file executable:
@@ -166,7 +166,7 @@ chmod +x unchained.OS.ARCH
 
 #### Updates
 
-To get the latest update of Unchained, you can download the latest release on the [Unchained release page](https://github.com/KenshiTech/unchained/releases).
+To get the latest update of Unchained, you can download the latest release on the [Unchained release page](https://github.com/TimeleapLabs/unchained/releases).
 
 ### Postgres
 

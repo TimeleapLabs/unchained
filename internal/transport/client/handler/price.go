@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 

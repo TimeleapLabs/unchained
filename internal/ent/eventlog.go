@@ -5,13 +5,14 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/model"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/KenshiTech/unchained/internal/ent/eventlog"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/datasets"
+	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 )
 
 // EventLog is the model entity for the EventLog schema.

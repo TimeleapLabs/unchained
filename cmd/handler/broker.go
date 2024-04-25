@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/KenshiTech/unchained/internal/app"
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/app"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/spf13/cobra"
 )
 
