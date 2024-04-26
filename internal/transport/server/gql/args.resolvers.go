@@ -7,10 +7,10 @@ package gql
 import (
 	"context"
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/model"
 	"strings"
 
-	"github.com/KenshiTech/unchained/internal/transport/server/gql/generated"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/generated"
 )
 
 // Value is the resolver for the value field.

@@ -2,8 +2,7 @@ package scheduler
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/service/evmlog"
+	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 )
 
 // EvmLog is a scheduler for EvmLog and keep task's dependencies.

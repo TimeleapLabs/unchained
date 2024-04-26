@@ -2,16 +2,13 @@ package postgres
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils"
-
-	"github.com/KenshiTech/unchained/internal/consts"
-
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
-	"github.com/KenshiTech/unchained/internal/repository"
-	"github.com/KenshiTech/unchained/internal/transport/database"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/ent/signer"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	"github.com/TimeleapLabs/unchained/internal/transport/database"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 type signerRepo struct {

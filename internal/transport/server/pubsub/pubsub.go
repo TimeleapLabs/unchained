@@ -1,10 +1,9 @@
 package pubsub
 
 import (
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"strings"
 	"sync"
-
-	"github.com/KenshiTech/unchained/internal/consts"
 )
 
 var topics = make(map[consts.Channels][]chan []byte)

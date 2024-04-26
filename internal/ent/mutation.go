@@ -6,17 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/model"
 	"sync"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/KenshiTech/unchained/internal/ent/assetprice"
-	"github.com/KenshiTech/unchained/internal/ent/correctnessreport"
-	"github.com/KenshiTech/unchained/internal/ent/eventlog"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
-	"github.com/KenshiTech/unchained/internal/ent/predicate"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
+	"github.com/TimeleapLabs/unchained/internal/ent/assetprice"
+	"github.com/TimeleapLabs/unchained/internal/ent/correctnessreport"
+	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/ent/predicate"
+	"github.com/TimeleapLabs/unchained/internal/ent/signer"
 )
 
 const (

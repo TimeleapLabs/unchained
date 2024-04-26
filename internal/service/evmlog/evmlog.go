@@ -3,28 +3,25 @@ package evmlog
 import (
 	"context"
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"math/big"
 	"os"
 	"slices"
+	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
-
-	"github.com/KenshiTech/unchained/internal/consts"
-	"github.com/KenshiTech/unchained/internal/model"
-
-	"github.com/KenshiTech/unchained/internal/repository"
-
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
-	"github.com/KenshiTech/unchained/internal/transport/client/conn"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
@@ -61,6 +58,7 @@ type service struct {
 	consensus               *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
 	signatureCache          *lru.Cache[bls12381.G1Affine, []model.Signature]
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
+	signatureMutex          *sync.Mutex
 	supportedEvents         map[SupportKey]bool
 	lastSyncedBlock         map[config.Event]uint64
 	abiMap                  map[string]abi.ABI

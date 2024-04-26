@@ -1,8 +1,8 @@
 package evmlog
 
 import (
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
 func isNewSigner(signature model.Signature, records []*ent.EventLog) bool {

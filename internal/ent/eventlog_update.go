@@ -6,16 +6,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
-	"github.com/KenshiTech/unchained/internal/ent/eventlog"
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
-	"github.com/KenshiTech/unchained/internal/ent/predicate"
-	"github.com/KenshiTech/unchained/internal/ent/signer"
+	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/ent/predicate"
+	"github.com/TimeleapLabs/unchained/internal/ent/signer"
 )
 
 // EventLogUpdate is the builder for updating EventLog entities.

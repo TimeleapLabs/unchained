@@ -3,26 +3,23 @@ package correctness
 import (
 	"context"
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/utils/address"
 	"math/big"
 	"os"
+	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/service/pos"
-
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils/address"
-
-	"github.com/KenshiTech/unchained/internal/consts"
-
-	"github.com/KenshiTech/unchained/internal/repository"
-
-	"github.com/KenshiTech/unchained/internal/service/evmlog"
+	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/puzpuzpuz/xsync/v3"
 
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
@@ -55,6 +52,7 @@ type service struct {
 	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]]
 
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
+	signatureMutex          *sync.Mutex
 	supportedTopics         map[[64]byte]bool
 }
 
@@ -83,6 +81,9 @@ func (s *service) RecordSignature(
 			Debug("Token not supported")
 		return consts.ErrTopicNotSupported
 	}
+
+	s.signatureMutex.Lock()
+	defer s.signatureMutex.Unlock()
 
 	signatures, ok := s.signatureCache.Get(hash)
 	if !ok {
@@ -251,6 +252,7 @@ func (s *service) init() {
 	var err error
 
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
+	s.signatureMutex = new(sync.Mutex)
 	s.supportedTopics = make(map[[64]byte]bool)
 	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
 

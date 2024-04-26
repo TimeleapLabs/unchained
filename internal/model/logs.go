@@ -2,12 +2,12 @@ package model
 
 import (
 	"encoding/json"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 
-	"github.com/KenshiTech/unchained/internal/ent/helpers"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 

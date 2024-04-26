@@ -2,13 +2,10 @@ package postgres
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/utils"
-
-	"github.com/KenshiTech/unchained/internal/transport/database"
-
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/transport/database"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	// these imports are required for ent to work with postgres.
 	_ "github.com/jackc/pgx/v5/stdlib"

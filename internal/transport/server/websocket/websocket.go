@@ -3,14 +3,13 @@ package websocket
 import (
 	"context"
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"net/http"
 
-	"github.com/KenshiTech/unchained/internal/consts"
-	"github.com/KenshiTech/unchained/internal/transport/server/pubsub"
-	"github.com/KenshiTech/unchained/internal/utils"
-
-	"github.com/KenshiTech/unchained/internal/transport/server/websocket/handler"
-	"github.com/KenshiTech/unchained/internal/transport/server/websocket/store"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/handler"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 )
 

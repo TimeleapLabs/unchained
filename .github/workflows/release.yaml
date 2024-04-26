@@ -82,8 +82,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/kenshitech/unchained:${{ steps.docker-tag.outputs.docker-tag }}
-            ghcr.io/kenshitech/unchained:${{ github.ref_name }}
+            ghcr.io/timeleaplabs/unchained:${{ steps.docker-tag.outputs.docker-tag }}
+            ghcr.io/timeleaplabs/unchained:${{ github.ref_name }}
           build-args: |
             "UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}"
             "UNCHAINED_VERSION=${{ github.ref_name }}"

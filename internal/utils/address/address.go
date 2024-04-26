@@ -3,7 +3,7 @@ package address
 import (
 	"fmt"
 
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 const chars = "0123456789ABCDEFGHJKMNPQRSTUVXYZ"

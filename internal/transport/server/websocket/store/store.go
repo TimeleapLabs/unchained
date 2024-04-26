@@ -1,7 +1,8 @@
 package store
 
 import (
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/model"
+
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"
 )

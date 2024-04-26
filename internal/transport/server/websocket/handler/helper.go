@@ -2,9 +2,8 @@ package handler
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/consts"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
@@ -32,8 +31,6 @@ func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte
 			close(ch)
 			return
 		case message := <-ch:
-			utils.Logger.Info("New message to broadcast")
-
 			err := conn.WriteMessage(websocket.BinaryMessage, message)
 			if err != nil {
 				utils.Logger.Error(err.Error())

@@ -2,8 +2,7 @@ package database
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/ent"
 )
 
 type Database interface {

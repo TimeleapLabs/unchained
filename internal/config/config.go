@@ -3,9 +3,8 @@ package config
 import (
 	"os"
 
-	"github.com/KenshiTech/unchained/internal/utils"
-
-	"github.com/KenshiTech/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	pureLog "log"
 

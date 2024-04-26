@@ -1,10 +1,10 @@
 package model
 
 import (
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"math/big"
 
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"

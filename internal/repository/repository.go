@@ -2,10 +2,8 @@ package repository
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/model"
-
-	"github.com/KenshiTech/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
 // EvenetLog interface represents the methods that can be used to interact with the EventLog table in the database.

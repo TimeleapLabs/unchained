@@ -3,31 +3,25 @@ package uniswap
 import (
 	"context"
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/utils/address"
 	"math/big"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/KenshiTech/unchained/internal/service/pos"
-
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils/address"
-
-	"github.com/KenshiTech/unchained/internal/consts"
-
-	"github.com/KenshiTech/unchained/internal/repository"
-
-	"github.com/KenshiTech/unchained/internal/crypto"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-
-	"github.com/KenshiTech/unchained/internal/utils"
-
-	"github.com/KenshiTech/unchained/internal/config"
-
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/service/evmlog"
-	"github.com/KenshiTech/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -69,6 +63,7 @@ type service struct {
 	consensus       *lru.Cache[model.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
 	signatureCache  *lru.Cache[bls12381.G1Affine, []model.Signature]
 	SupportedTokens map[model.TokenKey]bool
+	signatureMutex  sync.Mutex
 
 	twoOneNineTwo big.Int
 	tenEighteen   big.Int
@@ -84,6 +79,9 @@ func (s *service) checkAndCacheSignature(
 	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer model.Signer,
 	hash bls12381.G1Affine, totalVoted *big.Int,
 ) error {
+	s.signatureMutex.Lock()
+	defer s.signatureMutex.Unlock()
+
 	cached, _ := s.signatureCache.Get(hash)
 
 	packed := model.Signature{
@@ -448,6 +446,7 @@ func New(
 		consensus:       nil,
 		signatureCache:  nil,
 		SupportedTokens: map[model.TokenKey]bool{},
+		signatureMutex:  sync.Mutex{},
 		LastBlock:       *xsync.NewMapOf[model.TokenKey, uint64](),
 		PriceCache:      map[string]*lru.Cache[uint64, big.Int]{},
 		crossPrices:     map[string]big.Int{},

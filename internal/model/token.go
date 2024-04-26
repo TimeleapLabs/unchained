@@ -1,6 +1,6 @@
 package model
 
-import "github.com/KenshiTech/unchained/internal/config"
+import "github.com/TimeleapLabs/unchained/internal/config"
 
 type Token struct {
 	ID     *string  `mapstructure:"id"`

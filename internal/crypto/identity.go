@@ -3,14 +3,13 @@ package crypto
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/utils/address"
 
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils"
-	"github.com/KenshiTech/unchained/internal/utils/address"
-
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 )
@@ -69,8 +68,6 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 
 				return err
 			}
-
-			privateKeyRegenerated = true
 		} else {
 			privateKey, err = ethCrypto.GenerateKey()
 
@@ -81,11 +78,12 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 
 				return err
 			}
+
+			privateKeyRegenerated = true
 		}
 
 		publicKey := privateKey.Public()
 		publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-
 		if !ok {
 			utils.Logger.Error("Can't assert type: publicKey is not of type *ecdsa.PublicKey")
 			return err
@@ -122,19 +120,11 @@ func WithBlsIdentity() func(machineIdentity *MachineIdentity) error {
 
 		config.App.Secret.SecretKey = hex.EncodeToString(machineIdentity.Bls.SecretKey.Bytes())
 		config.App.Secret.PublicKey = hex.EncodeToString(pkBytes[:])
-
-		addrStr := address.Calculate(pkBytes[:])
+		config.App.Secret.Address = address.Calculate(pkBytes[:])
 
 		utils.Logger.
-			With("Address", addrStr).
+			With("Address", config.App.Secret.Address).
 			Info("Unchained identity initialized")
-
-		// TODO: Avoid recalculating this
-		config.App.Secret.PublicKey = hex.EncodeToString(pkBytes[:])
-
-		if config.App.Secret.Address != "" {
-			config.App.Secret.Address = addrStr
-		}
 
 		return nil
 	}

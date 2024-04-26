@@ -2,10 +2,9 @@ package handler
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/crypto/bls"
-	"github.com/KenshiTech/unchained/internal/model"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 func (h *consumer) EventLog(ctx context.Context, message []byte) {

@@ -2,9 +2,8 @@ package uniswap
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/config"
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
 func (s *service) ProcessBlocks(ctx context.Context, chain string) error {

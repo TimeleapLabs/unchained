@@ -2,8 +2,7 @@ package scheduler
 
 import (
 	"context"
-
-	"github.com/KenshiTech/unchained/internal/service/uniswap"
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap"
 )
 
 // Uniswap is a scheduler for Uniswap and keep task's dependencies.

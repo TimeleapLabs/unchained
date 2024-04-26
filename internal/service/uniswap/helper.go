@@ -1,8 +1,8 @@
 package uniswap
 
 import (
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
 func IsNewSigner(signature model.Signature, records []*ent.AssetPrice) bool {
