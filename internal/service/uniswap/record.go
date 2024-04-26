@@ -3,11 +3,12 @@ package uniswap
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"
-	"math/big"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/puzpuzpuz/xsync/v3"

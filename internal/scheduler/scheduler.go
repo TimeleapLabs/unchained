@@ -1,13 +1,14 @@
 package scheduler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/utils"
 	"os"
 	"time"
 
+	"github.com/TimeleapLabs/unchained/internal/utils"
+
+	"github.com/TimeleapLabs/unchained/internal/config"
 	evmLogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
-	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/go-co-op/gocron/v2"
 )
 

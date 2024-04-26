@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"

@@ -2,6 +2,7 @@ package ethereum
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"

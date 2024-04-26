@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/ent"
 	"github.com/TimeleapLabs/unchained/internal/model"
 )

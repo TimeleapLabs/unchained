@@ -2,11 +2,12 @@ package evmlog
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"
-	"math/big"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 )
@@ -50,6 +51,9 @@ func (s *service) RecordSignature(
 			return consts.ErrDataTooOld
 		}
 	}
+
+	s.signatureMutex.Lock()
+	defer s.signatureMutex.Unlock()
 
 	key := EventKey{
 		Chain:    info.Chain,

@@ -2,6 +2,7 @@ package uniswap
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/model"
 )

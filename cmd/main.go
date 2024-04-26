@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/TimeleapLabs/unchained/cmd/handler"
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // root represents the root command of application.

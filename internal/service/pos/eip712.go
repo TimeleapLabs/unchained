@@ -2,8 +2,9 @@ package pos
 
 import (
 	"context"
-	"github.com/TimeleapLabs/unchained/internal/utils"
 	"math/big"
+
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"

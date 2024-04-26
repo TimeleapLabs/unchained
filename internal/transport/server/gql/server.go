@@ -1,9 +1,10 @@
 package gql
 
 import (
+	"net/http"
+
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

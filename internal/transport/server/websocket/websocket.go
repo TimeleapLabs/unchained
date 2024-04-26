@@ -3,10 +3,11 @@ package websocket
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"net/http"
 
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/handler"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"

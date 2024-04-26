@@ -1,9 +1,10 @@
 package model
 
 import (
+	"math/big"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"math/big"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 

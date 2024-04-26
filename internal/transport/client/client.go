@@ -2,11 +2,12 @@ package client
 
 import (
 	"context"
+	"time"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"time"
 )
 
 func NewRPC(handler handler.Handler) {

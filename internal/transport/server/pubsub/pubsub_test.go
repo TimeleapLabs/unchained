@@ -3,7 +3,7 @@ package pubsub
 import (
 	"testing"
 
-	"github.com/KenshiTech/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/consts"
 )
 
 func TestSubscribeDirectly(t *testing.T) {

@@ -2,10 +2,11 @@ package conn
 
 import (
 	"fmt"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/utils"
 	"sync"
 	"time"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 

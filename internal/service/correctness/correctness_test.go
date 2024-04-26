@@ -3,11 +3,11 @@ package correctness
 import (
 	"testing"
 
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/model"
-	postgresRepo "github.com/KenshiTech/unchained/internal/repository/postgres"
-	"github.com/KenshiTech/unchained/internal/service/pos"
-	"github.com/KenshiTech/unchained/internal/transport/database/mock"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/transport/database/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )

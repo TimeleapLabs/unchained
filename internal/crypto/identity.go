@@ -3,6 +3,7 @@ package crypto
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"

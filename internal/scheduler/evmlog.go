@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 )
 

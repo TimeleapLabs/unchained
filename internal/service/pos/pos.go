@@ -2,6 +2,8 @@ package pos
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
@@ -10,7 +12,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"
 	"github.com/puzpuzpuz/xsync/v3"
-	"math/big"
 )
 
 type Service interface {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/KenshiTech/unchained/internal/crypto"
-	"github.com/KenshiTech/unchained/internal/crypto/ethereum"
-	"github.com/KenshiTech/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/stretchr/testify/suite"
 )
 

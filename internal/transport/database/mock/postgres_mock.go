@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/KenshiTech/unchained/internal/ent"
-	"github.com/KenshiTech/unchained/internal/transport/database"
+	"github.com/TimeleapLabs/unchained/internal/ent"
+	"github.com/TimeleapLabs/unchained/internal/transport/database"
 
 	"github.com/peterldowns/pgtestdb"
 )

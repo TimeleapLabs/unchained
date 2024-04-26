@@ -3,15 +3,16 @@ package correctness
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"os"
+	"sync"
+	"time"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"
-	"math/big"
-	"os"
-	"sync"
-	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/puzpuzpuz/xsync/v3"

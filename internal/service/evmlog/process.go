@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/utils"
 	"math/big"
 	"sort"
 	"strings"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"

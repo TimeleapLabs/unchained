@@ -3,16 +3,17 @@ package uniswap
 import (
 	"context"
 	"fmt"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/repository"
-	"github.com/TimeleapLabs/unchained/internal/service/pos"
-	"github.com/TimeleapLabs/unchained/internal/utils/address"
 	"math/big"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/utils/address"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"

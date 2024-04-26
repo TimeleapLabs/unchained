@@ -3,16 +3,17 @@ package evmlog
 import (
 	"context"
 	"fmt"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/repository"
-	"github.com/TimeleapLabs/unchained/internal/service/pos"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"math/big"
 	"os"
 	"slices"
 	"sync"
 	"time"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 
@@ -209,6 +210,7 @@ func New(
 		signerRepo:   signerRepo,
 		persistence:  persistence,
 
+		signatureMutex:  new(sync.Mutex),
 		lastSyncedBlock: map[config.Event]uint64{},
 		supportedEvents: make(map[SupportKey]bool),
 		abiMap:          map[string]abi.ABI{},
