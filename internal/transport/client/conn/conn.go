@@ -38,13 +38,13 @@ func Start() {
 		panic(err)
 	}
 
-	Send(consts.OpCodeHello, crypto.Identity.ExportBlsSigner().Sia().Bytes())
+	Send(consts.OpCodeHello, crypto.Identity.ExportEvmSigner().Sia().Bytes())
 }
 
 func Reconnect(err error) {
 	if websocket.IsUnexpectedCloseError(err) {
 		Close()
-		hello := crypto.Identity.ExportBlsSigner().Sia().Bytes()
+		hello := crypto.Identity.ExportEvmSigner().Sia().Bytes()
 
 		for i := 1; i < 6; i++ {
 			time.Sleep(time.Duration(i) * 3 * time.Second)

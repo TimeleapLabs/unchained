@@ -174,7 +174,7 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 				err = s.RecordSignature(
 					ctx,
 					signature,
-					*crypto.Identity.ExportBlsSigner(),
+					*crypto.Identity.ExportEvmSigner(),
 					hash,
 					event,
 					false,

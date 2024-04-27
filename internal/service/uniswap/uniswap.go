@@ -371,7 +371,7 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 		err = s.RecordSignature(
 			ctx,
 			signature,
-			*crypto.Identity.ExportBlsSigner(),
+			*crypto.Identity.ExportEvmSigner(),
 			hash,
 			priceInfo,
 			false,
