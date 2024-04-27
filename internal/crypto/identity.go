@@ -42,8 +42,8 @@ func InitMachineIdentity(options ...Option) {
 	}
 }
 
-// ExportBlsSigner returns EVM signer from machine identity.
-func (i *MachineIdentity) ExportBlsSigner() *model.Signer {
+// ExportEvmSigner returns EVM signer from machine identity.
+func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
 	return &model.Signer{
 		Name:           config.App.System.Name,
 		EvmAddress:     Identity.Eth.Address,
