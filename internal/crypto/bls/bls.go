@@ -6,18 +6,6 @@ import (
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 )
 
-func FastVerify(
-	signature bls12381.G1Affine,
-	g2Gen bls12381.G2Affine,
-	invertedHashedMessage bls12381.G1Affine,
-	publicKey bls12381.G2Affine) (bool, error) {
-	ok, pairingError := bls12381.PairingCheck(
-		[]bls12381.G1Affine{signature, invertedHashedMessage},
-		[]bls12381.G2Affine{g2Gen, publicKey})
-
-	return ok, pairingError
-}
-
 func Hash(message []byte) (bls12381.G1Affine, error) {
 	dst := []byte("UNCHAINED")
 	return bls12381.HashToG1(message, dst)

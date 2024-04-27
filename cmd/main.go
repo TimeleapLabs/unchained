@@ -6,7 +6,7 @@ import (
 
 	"github.com/TimeleapLabs/unchained/cmd/handler"
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/constants"
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +17,7 @@ var root = &cobra.Command{
 	Long:  `Unchained is the universal data validation and processing protocol`,
 	Run: func(_ *cobra.Command, _ []string) {
 		if config.App.System.PrintVersion {
-			fmt.Println(constants.Version)
+			fmt.Println(consts.Version)
 		} else {
 			os.Exit(1)
 		}

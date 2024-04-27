@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/TimeleapLabs/unchained/internal/app"
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var consumer = &cobra.Command{
 			panic(err)
 		}
 
-		log.Start(config.App.System.Log)
+		utils.SetupLogger(config.App.System.Log)
 		app.Consumer()
 	},
 }

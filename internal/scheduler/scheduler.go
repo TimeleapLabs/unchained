@@ -4,16 +4,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-
-	"github.com/TimeleapLabs/unchained/internal/persistence"
-	"github.com/TimeleapLabs/unchained/internal/scheduler/uniswap"
-	evmLogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
-	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/log"
-	"github.com/TimeleapLabs/unchained/internal/scheduler/logs"
+	evmLogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
+	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -34,7 +29,7 @@ func New(options ...func(s *Scheduler)) *Scheduler {
 	var err error
 	s.scheduler, err = gocron.NewScheduler()
 	if err != nil {
-		log.Logger.Error("Failed to create token scheduler.")
+		utils.Logger.Error("Failed to create token scheduler.")
 		os.Exit(1)
 	}
 
@@ -45,45 +40,35 @@ func New(options ...func(s *Scheduler)) *Scheduler {
 	return s
 }
 
-func WithEthLogs(
-	evmLogService *evmLogService.Service,
-	ethRPC *ethereum.Repository,
-	persistence *persistence.BadgerRepository,
-) func(s *Scheduler) {
+// WithEthLogs adds eth logs tasks to the scheduler.
+func WithEthLogs(evmLogService evmLogService.Service) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.EthLog == nil {
 			return
 		}
 
 		for name, duration := range config.App.Plugins.EthLog.Schedule {
-			s.AddTask(duration, logs.New(
-				name, config.App.Plugins.EthLog.Events,
-				evmLogService, ethRPC, persistence,
-			))
+			s.AddTask(duration, NewEvmLog(name, evmLogService))
 		}
 	}
 }
 
-func WithUniswapEvents(
-	uniswapService *uniswapService.Service,
-	ethRPC *ethereum.Repository,
-) func(s *Scheduler) {
+// WithUniswapEvents adds uniswap events tasks to the scheduler.
+func WithUniswapEvents(uniswapService uniswapService.Service) func(s *Scheduler) {
 	return func(s *Scheduler) {
 		if config.App.Plugins.Uniswap == nil {
 			return
 		}
 
 		for name, duration := range config.App.Plugins.Uniswap.Schedule {
-			s.AddTask(duration, uniswap.New(
-				name, config.App.Plugins.Uniswap.Tokens,
-				uniswapService, ethRPC,
-			))
+			s.AddTask(duration, NewUniswap(name, uniswapService))
 		}
 	}
 }
 
+// AddTask adds a new task to the scheduler.
 func (s *Scheduler) AddTask(duration time.Duration, task Task) {
-	log.Logger.
+	utils.Logger.
 		With("duration", duration).
 		Info("New UniSwap task scheduled")
 
@@ -93,11 +78,12 @@ func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
-		log.Logger.Error("Failed to schedule task")
+		utils.Logger.Error("Failed to schedule task")
 		os.Exit(1)
 	}
 }
 
+// Start starts the scheduler.
 func (s *Scheduler) Start() {
 	s.scheduler.Start()
 

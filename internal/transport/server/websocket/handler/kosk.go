@@ -1,34 +1,29 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/constants"
-	"github.com/TimeleapLabs/unchained/internal/crypto/kosk"
-	"github.com/TimeleapLabs/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 func Kosk(conn *websocket.Conn, payload []byte) error {
-	challenge := new(kosk.Challenge).DeSia(&sia.Sia{Content: payload})
+	challenge := new(model.ChallengePacket).FromBytes(payload)
 
-	signer, ok := store.Signers.Load(conn)
-	if !ok {
-		return constants.ErrMissingHello
-	}
-
-	var err error
-	challenge.Passed, err = kosk.VerifyChallenge(challenge.Random, signer.PublicKey, challenge.Signature)
-
+	hash, err := bls.Hash(challenge.Random[:])
 	if err != nil {
-		return constants.ErrInvalidKosk
+		return err
 	}
 
-	if !challenge.Passed {
-		log.Logger.Error("challenge is Passed")
-		return constants.ErrInvalidKosk
+	_, err = middleware.IsMessageValid(conn, hash, challenge.Signature)
+	if err != nil {
+		return consts.ErrInvalidKosk
 	}
 
+	challenge.Passed = true
 	store.Challenges.Store(conn, *challenge)
+
 	return nil
 }

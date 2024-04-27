@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/crypto/kosk"
+	"context"
 )
 
 type Handler interface {
-	Challenge(message []byte) *kosk.Challenge
-	CorrectnessReport(message []byte)
-	EventLog(message []byte)
-	PriceReport(message []byte)
+	Challenge(message []byte) []byte
+	CorrectnessReport(ctx context.Context, message []byte)
+	EventLog(ctx context.Context, message []byte)
+	PriceReport(ctx context.Context, message []byte)
 }

@@ -1,28 +1,29 @@
 package app
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/constants"
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/db"
-	"github.com/TimeleapLabs/unchained/internal/log"
-	"github.com/TimeleapLabs/unchained/internal/pos"
+	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
 	correctnessService "github.com/TimeleapLabs/unchained/internal/service/correctness"
 	evmlogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
 	"github.com/TimeleapLabs/unchained/internal/transport/client"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
+	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
 	"github.com/TimeleapLabs/unchained/internal/transport/server"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/gql"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 // Consumer starts the Unchained consumer and contains its DI.
 func Consumer() {
-	log.Logger.
+	utils.Logger.
 		With("Mode", "Consumer").
-		With("Version", constants.Version).
-		With("Protocol", constants.ProtocolVersion).
+		With("Version", consts.Version).
+		With("Protocol", consts.ProtocolVersion).
 		Info("Running Unchained")
 
 	crypto.InitMachineIdentity(
@@ -32,11 +33,16 @@ func Consumer() {
 
 	ethRPC := ethereum.New()
 	pos := pos.New(ethRPC)
-	db.Start()
+	db := postgres.New()
 
-	correctnessService := correctnessService.New(ethRPC, pos)
-	evmLogService := evmlogService.New(ethRPC, pos)
-	uniswapService := uniswapService.New(ethRPC, pos)
+	eventLogRepo := postgresRepo.NewEventLog(db)
+	signerRepo := postgresRepo.NewSigner(db)
+	assetPrice := postgresRepo.NewAssetPrice(db)
+	correctnessRepo := postgresRepo.NewCorrectness(db)
+
+	correctnessService := correctnessService.New(pos, signerRepo, correctnessRepo)
+	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, nil)
+	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
 
 	conn.Start()
 
@@ -44,6 +50,6 @@ func Consumer() {
 	client.NewRPC(handler)
 
 	server.New(
-		gql.WithGraphQL(),
+		gql.WithGraphQL(db),
 	)
 }

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/TimeleapLabs/unchained/internal/utils"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/log"
 )
 
 func New(options ...func()) {
@@ -13,7 +14,7 @@ func New(options ...func()) {
 		option()
 	}
 
-	log.Logger.
+	utils.Logger.
 		With("Bind", fmt.Sprintf("http://%s", config.App.Network.Bind)).
 		Info("Starting a HTTP server")
 

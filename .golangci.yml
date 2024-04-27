@@ -130,6 +130,7 @@ linters:
     - ineffassign
     - staticcheck
     - typecheck
+    - dupl
     - unused
     - asasalint
     - asciicheck
@@ -203,16 +204,16 @@ issues:
         - funlen
         - forbidigo
         - gochecknoinits
-    - path: "ent"
+    - path: ".generated.go"
       linters:
-        - gomnd
-        - forbidigo
-    - path: "config"
+        - typecheck
+    - path: "_mock.go"
       linters:
-        - gomnd
+        - staticcheck
     - path: "_test\\.go"
       linters:
         - bodyclose
+        - exhaustive
         - funlen
         - goconst
         - gocognit

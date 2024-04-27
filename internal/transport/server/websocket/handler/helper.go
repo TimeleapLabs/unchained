@@ -1,13 +1,14 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/constants/opcodes"
-	"github.com/TimeleapLabs/unchained/internal/log"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
+	"context"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
-func Send(conn *websocket.Conn, messageType int, opCode opcodes.OpCode, payload []byte) {
+func Send(conn *websocket.Conn, messageType int, opCode consts.OpCode, payload []byte) {
 	err := conn.WriteMessage(
 		messageType,
 		append(
@@ -15,33 +16,31 @@ func Send(conn *websocket.Conn, messageType int, opCode opcodes.OpCode, payload 
 			payload...),
 	)
 	if err != nil {
-		log.Logger.With("Error", err).Error("Can't send packet")
+		utils.Logger.With("Error", err).Error("Can't send packet")
 	}
 }
 
-func SendMessage(conn *websocket.Conn, messageType int, opCode opcodes.OpCode, message string) {
+func SendMessage(conn *websocket.Conn, messageType int, opCode consts.OpCode, message string) {
 	Send(conn, messageType, opCode, []byte(message))
 }
 
-func BroadcastPayload(opCode opcodes.OpCode, message []byte) {
-	store.Consumers.Range(func(consumer *websocket.Conn, _ bool) bool {
-		mu, ok := store.BroadcastMutex.Load(consumer)
-		if ok {
-			mu.Lock()
-			defer mu.Unlock()
-			err := consumer.WriteMessage(websocket.BinaryMessage, append(
-				[]byte{byte(opCode)},
-				message...,
-			))
+func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte) {
+	for {
+		select {
+		case <-ctx.Done():
+			utils.Logger.Info("Closing connection")
+			close(ch)
+			return
+		case message := <-ch:
+			err := conn.WriteMessage(websocket.BinaryMessage, message)
 			if err != nil {
-				log.Logger.Error(err.Error())
+				utils.Logger.Error(err.Error())
 			}
 		}
-		return true
-	})
+	}
 }
 
-func SendError(conn *websocket.Conn, messageType int, opCode opcodes.OpCode, err error) {
+func SendError(conn *websocket.Conn, messageType int, opCode consts.OpCode, err error) {
 	SendMessage(conn, messageType, opCode, err.Error())
 }
 
@@ -50,11 +49,11 @@ func Close(conn *websocket.Conn) {
 		websocket.CloseMessage,
 		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	if err != nil {
-		log.Logger.With("Error", err).Error("Connection closed")
+		utils.Logger.With("Error", err).Error("Connection closed")
 	}
 
 	err = conn.Close()
 	if err != nil {
-		log.Logger.With("Error", err).Error("Can't close connection")
+		utils.Logger.With("Error", err).Error("Can't close connection")
 	}
 }

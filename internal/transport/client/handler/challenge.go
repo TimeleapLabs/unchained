@@ -3,24 +3,23 @@ package handler
 import (
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/crypto/kosk"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
-func (h *consumer) Challenge(message []byte) *kosk.Challenge {
-	challenge := new(kosk.Challenge).DeSia(&sia.Sia{Content: message})
+func (h *consumer) Challenge(message []byte) []byte {
+	challenge := new(model.ChallengePacket).FromBytes(message)
 
 	signature, _ := bls.Sign(*crypto.Identity.Bls.SecretKey, challenge.Random[:])
 	challenge.Signature = signature.Bytes()
 
-	return challenge
+	return challenge.Sia().Bytes()
 }
 
-func (w worker) Challenge(message []byte) *kosk.Challenge {
-	challenge := new(kosk.Challenge).DeSia(&sia.Sia{Content: message})
+func (w worker) Challenge(message []byte) []byte {
+	challenge := new(model.ChallengePacket).FromBytes(message)
 
 	signature, _ := bls.Sign(*crypto.Identity.Bls.SecretKey, challenge.Random[:])
 	challenge.Signature = signature.Bytes()
 
-	return challenge
+	return challenge.Sia().Bytes()
 }
