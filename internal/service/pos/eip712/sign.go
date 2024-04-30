@@ -24,7 +24,7 @@ func (s *Signer) bytesToUnchainedSignature(signature []byte) *contracts.Unchaine
 	}
 }
 
-func (s *Signer) signEip712Message(evmSigner *ethereum.EvmSigner, data *apitypes.TypedData) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) signEip712Message(evmSigner *ethereum.Signer, data *apitypes.TypedData) (*contracts.UnchainedStakingSignature, error) {
 	domainSeparator, err := data.HashStruct("EIP712Domain", data.Domain.Map())
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (s *Signer) signEip712Message(evmSigner *ethereum.EvmSigner, data *apitypes
 	return s.bytesToUnchainedSignature(signature), nil
 }
 
-func (s *Signer) SignTransferRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712Transfer) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) SignTransferRequest(evmSigner *ethereum.Signer, request *contracts.UnchainedStakingEIP712Transfer) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "Transfer",
@@ -68,7 +68,7 @@ func (s *Signer) SignTransferRequest(evmSigner *ethereum.EvmSigner, request *con
 	return s.signEip712Message(evmSigner, data)
 }
 
-func (s *Signer) SignSetParamsRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetParams) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) SignSetParamsRequest(evmSigner *ethereum.Signer, request *contracts.UnchainedStakingEIP712SetParams) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "SetParams",
@@ -87,7 +87,7 @@ func (s *Signer) SignSetParamsRequest(evmSigner *ethereum.EvmSigner, request *co
 	return s.signEip712Message(evmSigner, data)
 }
 
-func (s *Signer) SignSetNftPriceRequest(evmSigner *ethereum.EvmSigner, request *contracts.UnchainedStakingEIP712SetNftPrice) (*contracts.UnchainedStakingSignature, error) {
+func (s *Signer) SignSetNftPriceRequest(evmSigner *ethereum.Signer, request *contracts.UnchainedStakingEIP712SetNftPrice) (*contracts.UnchainedStakingSignature, error) {
 	data := &apitypes.TypedData{
 		Types:       Types,
 		PrimaryType: "SetNftPrice",

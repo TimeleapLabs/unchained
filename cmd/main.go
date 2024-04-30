@@ -39,5 +39,6 @@ func init() {
 	root.Flags().BoolVarP(&config.App.System.PrintVersion, "version", "v", false, "Print the Unchained version number and die")
 	root.PersistentFlags().StringVarP(&config.App.System.ConfigPath, "config", "c", "./conf.yaml", "Config file")
 	root.PersistentFlags().StringVarP(&config.App.System.SecretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
+	root.PersistentFlags().BoolVarP(&config.App.System.AllowGenerateSecrets, "allow-generate-secrets", "g", false, "Allow to generate secrets file if not exists")
 	root.PersistentFlags().StringVarP(&config.App.System.ContextPath, "context", "x", "./context", "Context DB")
 }
