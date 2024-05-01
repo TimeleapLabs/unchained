@@ -3,8 +3,9 @@ package bls
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/TimeleapLabs/unchained/internal/utils/address"
 	"math/big"
+
+	"github.com/TimeleapLabs/unchained/internal/utils/address"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/btcsuite/btcutil/base58"
