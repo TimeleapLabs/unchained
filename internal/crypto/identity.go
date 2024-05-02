@@ -1,24 +1,17 @@
 package crypto
 
 import (
-	"crypto/ecdsa"
-	"encoding/hex"
-
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/utils"
-	"github.com/TimeleapLabs/unchained/internal/utils/address"
-
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	ethCrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 // MachineIdentity holds machine identity and provide and manage keys.
 type MachineIdentity struct {
 	Bls *bls.Signer
-	Eth *ethereum.EvmSigner
+	Eth *ethereum.Signer
 }
 
 // Identity is a global variable that holds machine identity.
@@ -36,9 +29,11 @@ func InitMachineIdentity(options ...Option) {
 		}
 	}
 
-	err := config.App.Secret.Save()
-	if err != nil {
-		panic(err)
+	if config.App.System.AllowGenerateSecrets {
+		err := config.App.Secret.Save()
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -55,55 +50,8 @@ func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
 // WithEvmSigner initialize and will add Evm keys to machine identity.
 func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
-		var privateKey *ecdsa.PrivateKey
-		var err error
-		var privateKeyRegenerated bool
-
-		if config.App.Secret.EvmPrivateKey != "" {
-			privateKey, err = ethCrypto.HexToECDSA(config.App.Secret.EvmPrivateKey)
-
-			if err != nil {
-				utils.Logger.
-					With("Error", err).
-					Error("Can't decode EVM private key")
-
-				return err
-			}
-		} else {
-			privateKey, err = ethCrypto.GenerateKey()
-
-			if err != nil {
-				utils.Logger.
-					With("Error", err).
-					Error("Can't generate EVM private key")
-
-				return err
-			}
-
-			privateKeyRegenerated = true
-		}
-
-		publicKey := privateKey.Public()
-		publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-		if !ok {
-			utils.Logger.Error("Can't assert type: publicKey is not of type *ecdsa.PublicKey")
-			return err
-		}
-
-		ethAddress := ethCrypto.PubkeyToAddress(*publicKeyECDSA).Hex()
-
-		machineIdentity.Eth = &ethereum.EvmSigner{
-			PublicKey:  publicKeyECDSA,
-			PrivateKey: privateKey,
-			Address:    ethAddress,
-		}
-
-		if privateKeyRegenerated || config.App.Secret.EvmAddress == "" {
-			privateKeyBytes := ethCrypto.FromECDSA(machineIdentity.Eth.PrivateKey)
-
-			config.App.Secret.EvmPrivateKey = hexutil.Encode(privateKeyBytes)[2:]
-			config.App.Secret.EvmAddress = machineIdentity.Eth.Address
-		}
+		machineIdentity.Eth = ethereum.NewIdentity()
+		machineIdentity.Eth.WriteConfigs()
 
 		utils.Logger.
 			With("Address", machineIdentity.Eth.Address).
@@ -117,14 +65,10 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 func WithBlsIdentity() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
 		machineIdentity.Bls = bls.NewIdentity()
-		pkBytes := machineIdentity.Bls.PublicKey.Bytes()
-
-		config.App.Secret.SecretKey = hex.EncodeToString(machineIdentity.Bls.SecretKey.Bytes())
-		config.App.Secret.PublicKey = hex.EncodeToString(pkBytes[:])
-		config.App.Secret.Address = address.Calculate(pkBytes[:])
+		machineIdentity.Bls.WriteConfigs()
 
 		utils.Logger.
-			With("Address", config.App.Secret.Address).
+			With("Address", machineIdentity.Bls.ShortPublicKey.String()).
 			Info("Unchained identity initialized")
 
 		return nil
