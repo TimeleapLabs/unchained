@@ -39,7 +39,7 @@ type SaveSignatureArgs struct {
 type Service interface {
 	IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+		ctx context.Context, signature []byte, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
 	) error
 	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
 }
@@ -74,7 +74,7 @@ func (s *service) IsNewSigner(signature model.Signature, records []*ent.Correctn
 // TODO: How should we handle older records?
 // Possible Solution: Add a not after timestamp to the document.
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+	ctx context.Context, signature []byte, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
 ) error {
 	if supported := s.supportedTopics[info.Topic]; !supported {
 		utils.Logger.
@@ -168,10 +168,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return consts.ErrSignatureNotfound
 	}
 
-	var newSigners []model.Signer
-	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
-
 	for i := range signatures {
 		signature := signatures[i]
 		keys = append(keys, signature.Signer.PublicKey[:])
@@ -182,11 +179,10 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return err
 	}
 
+	var newSigners []model.Signer
+	var newSignatures [][]byte
 	// Select the new signers and signatures
-
-	for i := range signatures {
-		signature := signatures[i]
-
+	for _, signature := range signatures {
 		if !s.IsNewSigner(signature, currentRecords) {
 			continue
 		}
@@ -207,31 +203,21 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return err
 	}
 
-	var aggregate bls12381.G1Affine
-
 	for _, record := range currentRecords {
 		if record.Correct == args.Info.Correct {
-			currentSignature, err := bls.RecoverSignature([48]byte(record.Signature))
-
-			if err != nil {
-				return err
-			}
-
-			newSignatures = append(newSignatures, currentSignature)
+			newSignatures = append(newSignatures, record.Signature)
 			break
 		}
 	}
 
-	aggregate, err = bls.AggregateSignatures(newSignatures)
+	aggregatedSignature, err := bls.AggregateSignatures(newSignatures)
 	if err != nil {
 		return consts.ErrCantAggregateSignatures
 	}
 
-	signatureBytes := aggregate.Bytes()
-
 	err = s.correctnessRepo.Upsert(ctx, model.Correctness{
 		SignersCount: uint64(len(signatures)),
-		Signature:    signatureBytes[:],
+		Signature:    aggregatedSignature,
 		Consensus:    args.Consensus,
 		Voted:        *args.Voted,
 		SignerIDs:    signerIDs,

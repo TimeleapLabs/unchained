@@ -8,13 +8,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/dgraph-io/badger/v4"
 	goEthereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -164,7 +165,15 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 			}
 
 			toHash := event.Sia().Bytes()
-			signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, toHash)
+			signature, err := s.signer.Sign(toHash)
+			if err != nil {
+				panic(err)
+			}
+
+			hashedMessage, err := bls.Hash(signature)
+			if err != nil {
+				panic(err)
+			}
 
 			if conf.Send {
 				s.SendPriceReport(signature, event)
@@ -175,7 +184,7 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 					ctx,
 					signature,
 					*crypto.Identity.ExportEvmSigner(),
-					hash,
+					hashedMessage,
 					event,
 					false,
 					true,

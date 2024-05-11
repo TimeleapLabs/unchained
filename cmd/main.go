@@ -24,6 +24,7 @@ var root = &cobra.Command{
 	},
 }
 
+// Unchained entrypoint
 func main() {
 	handler.WithBrokerCmd(root)
 	handler.WithConsumerCmd(root)
@@ -35,6 +36,7 @@ func main() {
 	}
 }
 
+// init loads global CLI flags
 func init() {
 	root.Flags().BoolVarP(&config.App.System.PrintVersion, "version", "v", false, "Print the Unchained version number and die")
 	root.PersistentFlags().StringVarP(&config.App.System.ConfigPath, "config", "c", "./conf.yaml", "Config file")

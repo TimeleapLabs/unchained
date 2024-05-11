@@ -28,4 +28,5 @@ var (
 	ErrDuplicateSignature      = errors.New("duplicate signature")
 	ErrCrossPriceIsNotZero     = errors.New("cross price is not zero")
 	ErrAlreadySynced           = errors.New("already synced")
+	ErrSignerIsNotReady        = errors.New("signer is not ready yet")
 )

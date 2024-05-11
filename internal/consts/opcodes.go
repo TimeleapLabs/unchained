@@ -2,6 +2,7 @@ package consts
 
 // TODO: Should we have a Data opcode instead of PriceReport & EventLog?
 
+// OpCode represent all packet types which is used by networks participants.
 type OpCode byte
 
 const (

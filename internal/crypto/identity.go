@@ -1,17 +1,26 @@
 package crypto
 
 import (
+	"encoding/hex"
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/unchained/internal/crypto/tss"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/utils"
 )
+
+// Signer represents a Signing method.
+type Signer interface {
+	Sign(data []byte) ([]byte, error)
+	Verify(signature []byte, hashedMessage []byte, publicKey []byte) (bool, error)
+	WriteConfigs()
+}
 
 // MachineIdentity holds machine identity and provide and manage keys.
 type MachineIdentity struct {
-	Bls *bls.Signer
-	Eth *ethereum.Signer
+	Bls Signer
+	Eth Signer
+	Tss Signer
 }
 
 // Identity is a global variable that holds machine identity.
@@ -39,37 +48,44 @@ func InitMachineIdentity(options ...Option) {
 
 // ExportEvmSigner returns EVM signer from machine identity.
 func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
+	blsPublicKey, err := hex.DecodeString(config.App.Secret.PublicKey)
+	if err != nil {
+		panic(err)
+	}
+
 	return &model.Signer{
 		Name:           config.App.System.Name,
-		EvmAddress:     Identity.Eth.Address,
-		PublicKey:      Identity.Bls.PublicKey.Bytes(),
-		ShortPublicKey: Identity.Bls.ShortPublicKey.Bytes(),
+		EvmAddress:     config.App.Secret.EvmAddress,
+		PublicKey:      [96]byte(blsPublicKey),
+		ShortPublicKey: config.App.Secret.ShortPublicKey,
 	}
 }
 
-// WithEvmSigner initialize and will add Evm keys to machine identity.
+// WithEvmSigner initialize and will add Evm identity to machine identity.
 func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
 		machineIdentity.Eth = ethereum.NewIdentity()
 		machineIdentity.Eth.WriteConfigs()
 
-		utils.Logger.
-			With("Address", machineIdentity.Eth.Address).
-			Info("EVM identity initialized")
+		return nil
+	}
+}
+
+// WithTssSigner initialize and will add Tss identity to machine identity.
+func WithTssSigner(signers []string, minThreshold int) func(machineIdentity *MachineIdentity) error {
+	return func(machineIdentity *MachineIdentity) error {
+		machineIdentity.Tss = tss.NewIdentity(signers, minThreshold)
+		//machineIdentity.Tss.WriteConfigs()
 
 		return nil
 	}
 }
 
-// WithBlsIdentity initialize and will add Bls keys to machine identity.
+// WithBlsIdentity initialize and will add Bls identity to machine identity.
 func WithBlsIdentity() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
 		machineIdentity.Bls = bls.NewIdentity()
 		machineIdentity.Bls.WriteConfigs()
-
-		utils.Logger.
-			With("Address", machineIdentity.Bls.ShortPublicKey.String()).
-			Info("Unchained identity initialized")
 
 		return nil
 	}

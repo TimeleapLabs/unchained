@@ -41,16 +41,16 @@ var DebouncedSaveSignatures func(key model.AssetKey, arg SaveSignatureArgs)
 
 type Service interface {
 	checkAndCacheSignature(
-		reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer model.Signer,
+		reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature []byte, signer model.Signer,
 		hash bls12381.G1Affine, totalVoted *big.Int,
 	) error
-	saveSignatures(ctx context.Context, args SaveSignatureArgs) error
+	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
 	GetBlockNumber(ctx context.Context, network string) (*uint64, error)
 	GetPriceAtBlockFromPair(network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool) (*big.Int, error)
 	SyncBlocks(ctx context.Context, token model.Token, key model.TokenKey, latest uint64) error
 	TokenKey(token model.Token) *model.TokenKey
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+		ctx context.Context, signature []byte, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
 	) error
 	ProcessBlocks(ctx context.Context, chain string) error
 }
@@ -77,7 +77,7 @@ type service struct {
 }
 
 func (s *service) checkAndCacheSignature(
-	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer model.Signer,
+	reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature []byte, signer model.Signer,
 	hash bls12381.G1Affine, totalVoted *big.Int,
 ) error {
 	s.signatureMutex.Lock()
@@ -113,7 +113,7 @@ type SaveSignatureArgs struct {
 	Voted     *big.Int
 }
 
-func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) error {
+func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	utils.Logger.
 		With("Block", args.Info.Asset.Block).
 		With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
@@ -129,7 +129,7 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	}
 
 	var newSigners []model.Signer
-	var newSignatures []bls12381.G1Affine
+	var newSignatures [][]byte
 	var keys [][]byte
 
 	currentRecords, err := s.assetPriceRepo.Find(
@@ -141,8 +141,7 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return err
 	}
 
-	for i := range signatures {
-		signature := signatures[i]
+	for _, signature := range signatures {
 		keys = append(keys, signature.Signer.PublicKey[:])
 
 		if !IsNewSigner(signature, currentRecords) {
@@ -172,28 +171,14 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return err
 	}
 
-	var aggregate bls12381.G1Affine
-
 	for _, record := range currentRecords {
 		if record.Price.Cmp(&args.Info.Price) == 0 {
-			currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
-
-			if err != nil {
-				utils.Logger.
-					With("Block", args.Info.Asset.Block).
-					With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
-					With("Error", err).
-					Debug("Failed to recover signature")
-				return consts.ErrCantRecoverSignature
-			}
-
-			newSignatures = append(newSignatures, currentAggregate)
+			newSignatures = append(newSignatures, record.Signature)
 			break
 		}
 	}
 
-	aggregate, err = bls.AggregateSignatures(newSignatures)
-
+	aggregatedSignature, err := bls.AggregateSignatures(newSignatures)
 	if err != nil {
 		utils.Logger.
 			With("Block", args.Info.Asset.Block).
@@ -201,8 +186,6 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 			Debug("Filed to aggregate signatures")
 		return consts.ErrCantAggregateSignatures
 	}
-
-	signatureBytes := aggregate.Bytes()
 
 	// TODO: Handle cases where signerIDs need to be removed
 	err = s.assetPriceRepo.Upsert(ctx, model.AssetPrice{
@@ -212,12 +195,11 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		Block:        args.Info.Asset.Block,
 		Price:        args.Info.Price,
 		SignersCount: uint64(len(signatures)),
-		Signature:    signatureBytes[:],
+		Signature:    aggregatedSignature,
 		Consensus:    args.Consensus,
 		Voted:        *args.Voted,
 		SignerIDs:    signerIDs,
 	})
-
 	if err != nil {
 		utils.Logger.
 			With("Block", args.Info.Asset.Block).
@@ -355,13 +337,20 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 		},
 	}
 
-	signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, priceInfo.Sia().Bytes())
+	signedData, err := crypto.Identity.Bls.Sign(priceInfo.Sia().Bytes())
+	if err != nil {
+		panic(err)
+	}
+
+	hashedMessage, err := bls.Hash(signedData)
+	if err != nil {
+		panic(err)
+	}
 
 	if token.Send && !conn.IsClosed {
-		compressedSignature := signature.Bytes()
 		priceReport := model.PriceReportPacket{
 			PriceInfo: priceInfo,
-			Signature: compressedSignature,
+			Signature: [48]byte(signedData),
 		}
 
 		conn.Send(consts.OpCodePriceReport, priceReport.Sia().Bytes())
@@ -370,9 +359,9 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 	if token.Store {
 		err = s.RecordSignature(
 			ctx,
-			signature,
+			signedData,
 			*crypto.Identity.ExportEvmSigner(),
-			hash,
+			hashedMessage,
 			priceInfo,
 			false,
 			true,
@@ -454,7 +443,7 @@ func New(
 		crossTokens:     map[string]model.TokenKey{},
 	}
 
-	DebouncedSaveSignatures = utils.Debounce[model.AssetKey, SaveSignatureArgs](5*time.Second, s.saveSignatures)
+	DebouncedSaveSignatures = utils.Debounce[model.AssetKey, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
 
 	s.twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
 	s.tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)

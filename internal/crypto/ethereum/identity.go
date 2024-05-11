@@ -6,7 +6,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	ethCrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // Signer represents an Ethereum identity.
@@ -16,11 +16,29 @@ type Signer struct {
 	Address    string
 }
 
+func (s *Signer) Verify(signature []byte, hashedMessage []byte, publicKey []byte) (bool, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 // WriteConfigs writes the secret key, public key and address to the global config object.
 func (s *Signer) WriteConfigs() {
-	privateKeyBytes := ethCrypto.FromECDSA(s.PrivateKey)
+	privateKeyBytes := crypto.FromECDSA(s.PrivateKey)
 	config.App.Secret.EvmPrivateKey = hexutil.Encode(privateKeyBytes)[2:]
 	config.App.Secret.EvmAddress = s.Address
+}
+
+func (s *Signer) Sign(data []byte) ([]byte, error) {
+	signature, err := crypto.Sign(data, s.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if signature[64] < 27 {
+		signature[64] += 27
+	}
+
+	return signature, nil
 }
 
 // NewIdentity creates a new Ethereum identity.
@@ -33,7 +51,7 @@ func NewIdentity() *Signer {
 	}
 
 	if config.App.Secret.EvmPrivateKey != "" {
-		privateKey, err = ethCrypto.HexToECDSA(config.App.Secret.EvmPrivateKey)
+		privateKey, err = crypto.HexToECDSA(config.App.Secret.EvmPrivateKey)
 		if err != nil {
 			utils.Logger.
 				With("Error", err).
@@ -42,7 +60,7 @@ func NewIdentity() *Signer {
 			panic(err)
 		}
 	} else {
-		privateKey, err = ethCrypto.GenerateKey()
+		privateKey, err = crypto.GenerateKey()
 		if err != nil {
 			utils.Logger.
 				With("Error", err).
@@ -60,8 +78,12 @@ func NewIdentity() *Signer {
 	s := &Signer{
 		PublicKey:  publicKeyECDSA,
 		PrivateKey: privateKey,
-		Address:    ethCrypto.PubkeyToAddress(*publicKeyECDSA).Hex(),
+		Address:    crypto.PubkeyToAddress(*publicKeyECDSA).Hex(),
 	}
+
+	utils.Logger.
+		With("Address", s.Address).
+		Info("EVM identity initialized")
 
 	return s
 }

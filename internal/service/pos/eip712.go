@@ -6,7 +6,6 @@ import (
 
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
-	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
@@ -32,7 +31,7 @@ func (s *service) Slash(ctx context.Context, address [20]byte, to common.Address
 		NftIds: nftIDs,
 	}
 
-	signature, err := s.eip712Signer.SignTransferRequest(crypto.Identity.Eth, &transfer)
+	signature, err := s.eip712Signer.SignTransferRequest(&transfer)
 
 	if err != nil {
 		utils.Logger.

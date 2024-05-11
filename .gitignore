@@ -21,3 +21,4 @@ internal/bin
 bin
 **/conf.*.private
 .idea
+/demo.go

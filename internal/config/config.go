@@ -13,9 +13,13 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+// App holds global configs of application.
 var App Config
+
+// SecretFilePath holds the path of secret file.
 var SecretFilePath string
 
+// Load function read config and secret file and override them if env variable provided.
 func Load(configPath, secretPath string) error {
 	if configPath == "" {
 		configPath = "./config.yaml"
@@ -45,6 +49,7 @@ func Load(configPath, secretPath string) error {
 	return nil
 }
 
+// Save function write app's secret values to secret file.
 func (s *Secret) Save() error {
 	yamlData, err := yaml.Marshal(&s)
 	if err != nil {

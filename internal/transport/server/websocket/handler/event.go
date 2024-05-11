@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
@@ -14,12 +13,8 @@ func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	}
 
 	priceReport := new(model.EventLogReportPacket).FromBytes(payload)
-	priceInfoHash, err := priceReport.EventLog.Bls()
-	if err != nil {
-		return []byte{}, consts.ErrInternalError
-	}
 
-	signer, err := middleware.IsMessageValid(conn, priceInfoHash, priceReport.Signature)
+	signer, err := middleware.IsMessageValid(conn, priceReport.EventLog.Sia().Bytes(), priceReport.Signature)
 	if err != nil {
 		return []byte{}, err
 	}

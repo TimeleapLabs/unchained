@@ -34,6 +34,9 @@ func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error
 		AddSignerIDs(data.SignerIDs...).
 		OnConflictColumns("block", "chain", "asset", "pair").
 		UpdateNewValues().
+		Update(func(u *ent.AssetPriceUpsert) {
+			u.Add("voted", 1)
+		}).
 		Exec(ctx)
 
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 )
 
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+	ctx context.Context, signature []byte, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
 ) error {
 	supportKey := SupportKey{
 		Chain:   info.Chain,

@@ -1,5 +1,6 @@
 package consts
 
+// Channels represent all channels which can be subscribed by consumers.
 type Channels string
 
 const (

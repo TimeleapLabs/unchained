@@ -17,7 +17,7 @@ import (
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+	ctx context.Context, signature []byte, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
 ) error {
 	if supported := s.SupportedTokens[info.Asset.Token]; !supported {
 		utils.Logger.
@@ -89,7 +89,7 @@ func (s *service) RecordSignature(
 	}
 
 	if !debounce {
-		err = s.saveSignatures(ctx, saveArgs)
+		err = s.SaveSignatures(ctx, saveArgs)
 		if err != nil {
 			return err
 		}

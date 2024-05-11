@@ -3,9 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 func (h *consumer) EventLog(ctx context.Context, message []byte) {
@@ -16,18 +14,9 @@ func (h *consumer) EventLog(ctx context.Context, message []byte) {
 		return
 	}
 
-	signature, err := bls.RecoverSignature(packet.Signature)
-	if err != nil {
-		utils.Logger.
-			With("Error", err).
-			Error("Failed to recover packet signature")
-
-		return
-	}
-
 	err = h.evmlog.RecordSignature(
 		ctx,
-		signature,
+		packet.Signature[:],
 		packet.Signer,
 		eventLogHash,
 		packet.Info,

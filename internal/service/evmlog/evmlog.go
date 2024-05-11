@@ -2,12 +2,13 @@ package evmlog
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 	"os"
 	"slices"
 	"sync"
 	"time"
+
+	"github.com/TimeleapLabs/unchained/internal/crypto"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
@@ -42,15 +43,16 @@ type SaveSignatureArgs struct {
 type Service interface {
 	GetBlockNumber(ctx context.Context, network string) (*uint64, error)
 	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
-	SendPriceReport(signature bls12381.G1Affine, event model.EventLog)
+	SendPriceReport(signature []byte, event model.EventLog)
 	ProcessBlocks(ctx context.Context, chain string) error
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+		ctx context.Context, signature []byte, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
 	) error
 }
 
 type service struct {
 	ethRPC       ethereum.RPC
+	signer       crypto.Signer
 	pos          pos.Service
 	eventLogRepo repository.EventLog
 	signerRepo   repository.Signer
@@ -83,7 +85,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	}
 
 	var newSigners []model.Signer
-	var newSignatures []bls12381.G1Affine
+	var newSignatures [][]byte
 	var keys [][]byte
 
 	currentRecords, err := s.eventLogRepo.Find(ctx, args.Info.Block, args.Info.TxHash[:], args.Info.LogIndex)
@@ -91,8 +93,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return err
 	}
 
-	for i := range signatures {
-		signature := signatures[i]
+	for _, signature := range signatures {
 		keys = append(keys, signature.Signer.PublicKey[:])
 
 		if !isNewSigner(signature, currentRecords) {
@@ -104,18 +105,14 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	}
 
 	err = s.signerRepo.CreateSigners(ctx, newSigners)
-
 	if err != nil {
 		return err
 	}
 
 	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
-
 	if err != nil {
 		return err
 	}
-
-	var aggregate bls12381.G1Affine
 
 	sortedCurrentArgs := make([]model.EventLogArg, len(args.Info.Args))
 	copy(sortedCurrentArgs, args.Info.Args)
@@ -145,39 +142,22 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 			continue
 		}
 
-		currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
-
-		if err != nil {
-			utils.Logger.
-				With("Block", args.Info.Block).
-				With("Transaction", fmt.Sprintf("%x", args.Info.TxHash)).
-				With("Index", args.Info.LogIndex).
-				With("Event", args.Info.Event).
-				With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
-				With("Error", err).
-				Debug("Failed to recover signature")
-			return consts.ErrCantRecoverSignature
-		}
-
-		newSignatures = append(newSignatures, currentAggregate)
+		newSignatures = append(newSignatures, record.Signature)
 		break
 	}
 
-	aggregate, err = bls.AggregateSignatures(newSignatures)
-
+	aggregatedSignature, err := bls.AggregateSignatures(newSignatures)
 	if err != nil {
 		return consts.ErrCantAggregateSignatures
 	}
 
-	signatureBytes := aggregate.Bytes()
-
 	args.Info.SignersCount = uint64(len(signatures))
 	args.Info.SignerIDs = signerIDs
 	args.Info.Consensus = args.Consensus
-	args.Info.Signature = signatureBytes[:]
+	args.Info.Signature = aggregatedSignature
 	args.Info.Voted = &helpers.BigInt{Int: *args.Voted}
-	err = s.eventLogRepo.Upsert(ctx, args.Info)
 
+	err = s.eventLogRepo.Upsert(ctx, args.Info)
 	if err != nil {
 		return err
 	}
@@ -185,12 +165,10 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	return nil
 }
 
-func (s *service) SendPriceReport(signature bls12381.G1Affine, event model.EventLog) {
-	compressedSignature := signature.Bytes()
-
+func (s *service) SendPriceReport(signature []byte, event model.EventLog) {
 	priceReport := model.EventLogReportPacket{
 		EventLog:  event,
-		Signature: compressedSignature,
+		Signature: [48]byte(signature),
 	}
 
 	conn.Send(consts.OpCodeEventLog, priceReport.Sia().Bytes())

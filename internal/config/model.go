@@ -16,27 +16,32 @@ type System struct {
 	PrintVersion         bool
 }
 
+// RPC struct represent a RPC configs.
 type RPC struct {
 	Name  string   `yaml:"name"`
 	Nodes []string `yaml:"nodes"`
 }
 
+// Uniswap struct represent all task's detail of its plugin.
 type Uniswap struct {
 	Schedule map[string]time.Duration `yaml:"schedule"`
 	Tokens   []Token                  `yaml:"tokens"`
 }
 
+// EthLog struct represent all task's detail of its plugin.
 type EthLog struct {
 	Schedule map[string]time.Duration `yaml:"schedule"`
 	Events   []Event                  `yaml:"events"`
 }
 
+// Plugins struct holds all applications plugin configs.
 type Plugins struct {
 	EthLog      *EthLog  `yaml:"logs"`
 	Uniswap     *Uniswap `yaml:"uniswap"`
 	Correctness []string `yaml:"correctness"`
 }
 
+// Event struct represent all events in EthLog plugin.
 type Event struct {
 	Name          string  `yaml:"name"`
 	Chain         string  `yaml:"chain"`
@@ -50,6 +55,7 @@ type Event struct {
 	Send          bool    `yaml:"send"`
 }
 
+// Token struct represent all info about a token in plugin.
 type Token struct {
 	Name   string `yaml:"name"`
 	Pair   string `yaml:"pair"`
@@ -61,12 +67,14 @@ type Token struct {
 	Store  bool   `yaml:"store"`
 }
 
+// ProofOfStake struct holds information about POS contract of application.
 type ProofOfStake struct {
 	Chain   string `env:"POS_CHAIN"   env-default:"arbitrumSepolia"                            yaml:"chain"`
 	Address string `env:"POS_ADDRESS" env-default:"0x965e364987356785b7E89e2Fe7B70f5E5107332d" yaml:"address"`
 	Base    int64  `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
 }
 
+// Network struct holds all application network configuration.
 type Network struct {
 	Bind              string        `env:"BIND"               env-default:"0.0.0.0:9123"                    yaml:"bind"`
 	BrokerURI         string        `env:"BROKER_URI"         env-default:"wss://shinobi.brokers.kenshi.io" yaml:"brokerUri"`
@@ -74,6 +82,7 @@ type Network struct {
 	BrokerTimeout     time.Duration `env:"BROKER_TIMEOUT"     env-default:"3s"                              yaml:"brokerTimeout"`
 }
 
+// Postgres struct holds all configs to connect to a pg instance.
 type Postgres struct {
 	URL string `env:"DATABASE_URL" yaml:"url"`
 }
@@ -85,6 +94,8 @@ type Secret struct {
 	SecretKey     string `env:"SECRET_KEY"      yaml:"secretKey"`
 	PublicKey     string `env:"PUBLIC_KEY"      yaml:"publicKey"`
 	EvmPrivateKey string `env:"EVM_PRIVATE_KEY" yaml:"evmPrivateKey"`
+
+	ShortPublicKey [48]byte
 }
 
 // Config struct is the main configuration struct of application.

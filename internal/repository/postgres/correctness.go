@@ -53,6 +53,9 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 		AddSignerIDs(data.SignerIDs...).
 		OnConflictColumns("topic", "hash").
 		UpdateNewValues().
+		Update(func(u *ent.CorrectnessReportUpsert) {
+			u.Add("voted", 1)
+		}).
 		Exec(ctx)
 
 	if err != nil {
