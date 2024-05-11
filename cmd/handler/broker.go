@@ -28,7 +28,7 @@ func WithBrokerCmd(cmd *cobra.Command) {
 	cmd.AddCommand(broker)
 }
 
-// init loads CLI flags of broker command.
+// init loads CLI flags of broker command
 func init() {
 	broker.Flags().StringP(
 		"broker",

@@ -16,7 +16,7 @@ type Signer struct {
 	Address    string
 }
 
-func (s *Signer) Verify(_ []byte, _ []byte, _ []byte) (bool, error) {
+func (s *Signer) Verify(signature []byte, hashedMessage []byte, publicKey []byte) (bool, error) {
 	// TODO implement me
 	panic("implement me")
 }
