@@ -1,12 +1,13 @@
 package tss
 
 import (
+	"math/big"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/bnb-chain/tss-lib/common"
 	"github.com/bnb-chain/tss-lib/ecdsa/signing"
 	"github.com/bnb-chain/tss-lib/tss"
-	"math/big"
 )
 
 // MessageSigner represents state of signing of a message.
@@ -48,7 +49,7 @@ func (s *DistributedSigner) NewSigning(signers []*DistributedSigner, data []byte
 	return signer, nil
 }
 
-// Acknowledge function will confirm an acceptance from other signers
+// Acknowledge function will confirm an acceptance from other signers.
 func (s *MessageSigner) Acknowledge(msg tss.Message) error {
 	if s.party.PartyID() == msg.GetFrom() {
 		return nil

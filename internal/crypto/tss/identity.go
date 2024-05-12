@@ -21,18 +21,18 @@ type DistributedSigner struct {
 	numberOfPeers   int
 }
 
-// Verify function will check message signature to be valid
+// Verify function will check message signature to be valid.
 func (s *DistributedSigner) Verify(_ []byte, _ []byte, _ []byte) (bool, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-// WriteConfigs will write identity keys to a persistent storage
+// WriteConfigs will write identity keys to a persistent storage.
 func (s *DistributedSigner) WriteConfigs() {
 	// nothing to do!
 }
 
-// Update function will update the identity key about other parties
+// Update function will update the identity key about other parties.
 func (s *DistributedSigner) Update(msg tss.Message) error {
 	if s.keyParty.PartyID() == msg.GetFrom() {
 		return nil

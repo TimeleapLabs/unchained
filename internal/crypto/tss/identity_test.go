@@ -108,7 +108,7 @@ signing:
 					}
 
 					go func(signer *MessageSigner, msg tss.Message) {
-						err := signer.AckSignature(msg)
+						err := signer.Acknowledge(msg)
 						if err != nil {
 							utils.Logger.Error(err.Error())
 						}
@@ -120,7 +120,7 @@ signing:
 				}
 
 				go func(signer *MessageSigner, msg tss.Message) {
-					err := signer.AckSignature(msg)
+					err := signer.Acknowledge(msg)
 					if err != nil {
 						utils.Logger.Error(err.Error())
 					}
