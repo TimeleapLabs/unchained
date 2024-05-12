@@ -35,10 +35,10 @@ func (s *TssIdentityTestSuite) SetupTest() {
 	}
 
 	outCh := make(chan tss.Message, len(signers))
-	wg := make(chan struct{})
+	done := make(chan struct{})
 
 	for i := 0; i < numOfSigners; i++ {
-		party := NewIdentity(i, signers, outCh, wg, minNumOfSigners)
+		party := NewIdentity(i, signers, outCh, done, minNumOfSigners)
 		s.parties = append(s.parties, party)
 	}
 
@@ -74,7 +74,7 @@ keygen:
 				}()
 			}
 
-		case <-wg:
+		case <-done:
 			wait++
 			if wait == numOfSigners {
 				break keygen
