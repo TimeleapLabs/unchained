@@ -1,18 +1,20 @@
 package tss
 
 import (
+	"math/big"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/bnb-chain/tss-lib/common"
 	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	"github.com/bnb-chain/tss-lib/ecdsa/signing"
 	"github.com/bnb-chain/tss-lib/tss"
-	"math/big"
 )
 
 // Signer represents a TSS identity.
-type Signer struct {
+type DistributedSigner struct {
 	ctx             *tss.PeerContext
+	partyIDs        tss.UnSortedPartyIDs
 	PartyID         *tss.PartyID
 	keyParty        *keygen.LocalParty
 	localPartySaved *keygen.LocalPartySaveData
@@ -25,35 +27,46 @@ type MessageSigner struct {
 	party *signing.LocalParty
 }
 
-func (s *Signer) Verify(signature []byte, hashedMessage []byte, publicKey []byte) (bool, error) {
-	//TODO implement me
+func (s *DistributedSigner) Verify(_ []byte, _ []byte, _ []byte) (bool, error) {
+	// TODO implement me
 	panic("implement me")
 }
 
-func (s *Signer) WriteConfigs() {
-	//TODO implement me
+func (s *DistributedSigner) WriteConfigs() {
+	// TODO implement me
 	panic("implement me")
 }
 
 // NewSigning will sign a data with tss secret and return signed data.
-func (s *Signer) NewSigning(data []byte, out chan tss.Message, end chan<- common.SignatureData) (*MessageSigner, error) {
+func (s *DistributedSigner) NewSigning(signers []*DistributedSigner, data []byte, out chan tss.Message, end chan<- common.SignatureData) (*MessageSigner, error) {
 	if !s.localPartySaved.ValidateWithProof() {
 		return &MessageSigner{}, consts.ErrSignerIsNotReady
 	}
 
 	dataBig := new(big.Int).SetBytes(data)
 
-	params := tss.NewParameters(tss.S256(), s.ctx, s.PartyID, s.numberOfPeers, s.minThreshold)
+	partyIDs := make(tss.UnSortedPartyIDs, len(signers))
+	for i, signer := range signers {
+		partyIDs[i] = signer.PartyID
+	}
+
+	sortedPartyIDs := tss.SortPartyIDs(partyIDs)
+
+	ctx := tss.NewPeerContext(sortedPartyIDs)
+
+	params := tss.NewParameters(tss.S256(), ctx, s.PartyID, s.numberOfPeers, s.minThreshold)
 	signer := &MessageSigner{
 		party: signing.NewLocalParty(dataBig, params, *s.localPartySaved, out, end).(*signing.LocalParty),
 	}
 
-	go func(signer *MessageSigner) {
-		err := signer.party.Start()
+	go func(signer *signing.LocalParty) {
+		err := signer.Start()
 		if err != nil {
 			panic(err)
 		}
-	}(signer)
+
+		utils.Logger.With("ID", signer.PartyID().Moniker).Info("New Tss signer started")
+	}(signer.party)
 
 	return signer, nil
 }
@@ -75,16 +88,20 @@ func (s *MessageSigner) AckSignature(msg tss.Message) error {
 		return err
 	}
 
-	isOK, err := s.party.Update(pMsg)
-	if err != nil && !isOK {
-		utils.Logger.Error(err.Error())
+	isOK, tssErr := s.party.Update(pMsg)
+	if tssErr != nil {
+		utils.Logger.Error(tssErr.Error())
 		return err
+	}
+
+	if !isOK {
+		return consts.ErrInternalError
 	}
 
 	return nil
 }
 
-func (s *Signer) Update(msg tss.Message) error {
+func (s *DistributedSigner) Update(msg tss.Message) error {
 	if s.keyParty.PartyID() == msg.GetFrom() {
 		return nil
 	}
@@ -101,57 +118,63 @@ func (s *Signer) Update(msg tss.Message) error {
 		return err
 	}
 
-	isOK, err := s.keyParty.Update(pMsg)
-	if err != nil && !isOK {
-		utils.Logger.Error(err.Error())
+	isOK, tssErr := s.keyParty.Update(pMsg)
+	if tssErr != nil {
+		utils.Logger.Error(tssErr.Error())
 		return err
+	}
+
+	if !isOK {
+		return consts.ErrInternalError
 	}
 
 	return nil
 }
 
 // NewIdentity creates a new BLS identity.
-func NewIdentity(signerID int, signers []string, outCh chan tss.Message, done chan struct{}, minThreshold int) *Signer {
+func NewIdentity(signerID int, signers []string, outCh chan tss.Message, done chan struct{}, minThreshold int) *DistributedSigner {
 	partyIDs := make(tss.UnSortedPartyIDs, len(signers))
 	for i, signer := range signers {
 		party := tss.NewPartyID(signer, signer, big.NewInt(int64(i+1)))
 		partyIDs[i] = party
 	}
 
-	signer := &Signer{
+	signer := &DistributedSigner{
 		minThreshold:  minThreshold,
 		numberOfPeers: len(signers),
 		//rawPartyID:    signers[signerID],
-		PartyID: partyIDs[signerID],
-		result:  make(chan keygen.LocalPartySaveData, len(signers)),
+		partyIDs: partyIDs,
+		PartyID:  partyIDs[signerID],
+		result:   make(chan keygen.LocalPartySaveData, len(signers)),
 	}
 
 	sortedPartyIDs := tss.SortPartyIDs(partyIDs)
 
 	signer.ctx = tss.NewPeerContext(sortedPartyIDs)
 
-	signer.keyParty = keygen.NewLocalParty(
+	var isOk bool
+	signer.keyParty, isOk = keygen.NewLocalParty(
 		tss.NewParameters(tss.S256(), signer.ctx, sortedPartyIDs[signerID], len(signers), minThreshold),
 		outCh,
 		signer.result,
 	).(*keygen.LocalParty)
 
-	go func(signer *Signer) {
+	if !isOk {
+		panic(consts.ErrInternalError)
+	}
+
+	go func(signer *DistributedSigner) {
 		err := signer.keyParty.Start()
 		if err != nil {
 			panic(err)
 		}
 		utils.Logger.With("ID", signer.PartyID.Moniker).Info("New Tss party started")
 
-		for {
-			select {
-			case save := <-signer.result:
-				signer.localPartySaved = &save
-				done <- struct{}{}
-				break
-			}
+		for save := range signer.result {
+			localPartySaved := save
+			signer.localPartySaved = &localPartySaved
+			done <- struct{}{}
 		}
-
 	}(signer)
 
 	return signer

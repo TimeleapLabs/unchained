@@ -33,7 +33,7 @@ func WithWorkerCmd(cmd *cobra.Command) {
 	cmd.AddCommand(worker)
 }
 
-// init loads CLI flags of worker command
+// init loads CLI flags of worker command.
 func init() {
 	worker.Flags().StringP(
 		"broker",

@@ -34,7 +34,7 @@ func WithConsumerCmd(cmd *cobra.Command) {
 	cmd.AddCommand(consumer)
 }
 
-// init loads CLI flags of consumer command
+// init loads CLI flags of consumer command.
 func init() {
 	consumer.Flags().StringP(
 		"broker",

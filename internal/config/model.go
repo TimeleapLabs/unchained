@@ -95,7 +95,7 @@ type Secret struct {
 	PublicKey     string `env:"PUBLIC_KEY"      yaml:"publicKey"`
 	EvmPrivateKey string `env:"EVM_PRIVATE_KEY" yaml:"evmPrivateKey"`
 
-	ShortPublicKey [48]byte
+	ShortPublicKey [48]byte `yaml:"-"`
 }
 
 // Config struct is the main configuration struct of application.

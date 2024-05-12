@@ -2,12 +2,13 @@ package tss
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/bnb-chain/tss-lib/common"
 	"github.com/bnb-chain/tss-lib/tss"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 const (
@@ -16,14 +17,14 @@ const (
 )
 
 var (
-	testData       = []byte("HELLO hello")
-	secondTestData = []byte("HELLO hello 2")
-	signers        = []string{}
+	testData = []byte("HELLO hello")
+
+	signers = []string{}
 )
 
 type TssIdentityTestSuite struct {
 	suite.Suite
-	parties []*Signer
+	parties []*DistributedSigner
 }
 
 func (s *TssIdentityTestSuite) SetupTest() {
@@ -49,19 +50,28 @@ keygen:
 			dest := msg.GetTo()
 
 			if dest == nil { // broadcast!
-				for _, P := range s.parties {
-					if P.PartyID.Index == msg.GetFrom().Index {
+				for _, p := range s.parties {
+					if p.PartyID.Index == msg.GetFrom().Index {
 						continue
 					}
 
-					go P.Update(msg)
+					go func(signer *DistributedSigner) {
+						err := signer.Update(msg)
+						if err != nil {
+							utils.Logger.Error(err.Error())
+						}
+					}(p)
 				}
 			} else { // point-to-point!
 				if dest[0].Index == msg.GetFrom().Index {
-					fmt.Printf("party %d tried to send a message to itself (%d)", dest[0].Index, msg.GetFrom().Index)
 					return
 				}
-				go s.parties[dest[0].Index].Update(msg)
+				go func() {
+					err := s.parties[dest[0].Index].Update(msg)
+					if err != nil {
+						utils.Logger.Error(err.Error())
+					}
+				}()
 			}
 
 		case <-wg:
@@ -74,50 +84,55 @@ keygen:
 }
 
 func (s *TssIdentityTestSuite) TestSign() {
-	outCh := make(chan tss.Message, len(s.parties))
-	endCh := make(chan common.SignatureData, len(s.parties))
-	msgSigners := []*MessageSigner{}
+	outCh := make(chan tss.Message, minNumOfSigners+1)
+	endCh := make(chan common.SignatureData, minNumOfSigners+1)
+	msgSigners := make([]*MessageSigner, 0, minNumOfSigners+1)
 
-	for i := 0; i < numOfSigners; i++ {
-		go func() {
-			signer, err := s.parties[i].NewSigning(testData, outCh, endCh)
-			assert.NoError(s.T(), err)
+	for i := 0; i < minNumOfSigners+1; i++ {
+		signer, err := s.parties[i].NewSigning(s.parties[:minNumOfSigners+1], testData, outCh, endCh)
+		assert.NoError(s.T(), err)
 
-			msgSigners = append(msgSigners, signer)
-		}()
+		msgSigners = append(msgSigners, signer)
 	}
 
-	//	wait := 0
-	//signing:
+	wait := 0
+signing:
 	for {
 		select {
 		case msg := <-outCh:
 			dest := msg.GetTo()
 			if dest == nil {
-				for _, P := range msgSigners {
-					if P.party.PartyID().Index == msg.GetFrom().Index {
+				for _, p := range msgSigners {
+					if p.party.PartyID().Index == msg.GetFrom().Index {
 						continue
 					}
 
-					go P.AckSignature(msg)
+					go func(signer *MessageSigner, msg tss.Message) {
+						err := signer.AckSignature(msg)
+						if err != nil {
+							utils.Logger.Error(err.Error())
+						}
+					}(p, msg)
 				}
 			} else {
 				if dest[0].Index == msg.GetFrom().Index {
 					common.Logger.Fatalf("party %d tried to send a message to itself (%d)", dest[0].Index, msg.GetFrom().Index)
 				}
 
-				go msgSigners[dest[0].Index].AckSignature(msg)
+				go func(signer *MessageSigner, msg tss.Message) {
+					err := signer.AckSignature(msg)
+					if err != nil {
+						utils.Logger.Error(err.Error())
+					}
+				}(msgSigners[dest[0].Index], msg)
 			}
 		case <-endCh:
-			fmt.Println("end")
+			wait++
+			if wait == numOfSigners-1 {
+				break signing
+			}
 		}
 	}
-
-	//s.Run("Should verify the message correctly", func() {
-	//	isVerified, err := s.identity.Verify()
-	//	assert.NoError(s.T(), err)
-	//	assert.True(s.T(), isVerified)
-	//})
 }
 
 func TestTssIdentitySuite(t *testing.T) {

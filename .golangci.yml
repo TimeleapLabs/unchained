@@ -49,6 +49,8 @@ linters-settings:
       - "^google.golang.org/protobuf/.+Options$"
       - "^gopkg.in/yaml.v3.Node$"
 
+  nestif:
+    min-complexity: 8
   funlen:
     # should be decreased to 30
     lines: 200
