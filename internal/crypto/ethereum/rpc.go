@@ -32,7 +32,13 @@ type repository struct {
 }
 
 func (r *repository) GetClient(chain string) *ethclient.Client {
-	return r.clients[chain]
+	client, isFound := r.clients[chain]
+	if !isFound {
+		utils.Logger.With("Network", chain).Error("Client not found")
+		return nil
+	}
+
+	return client
 }
 
 func (r *repository) refreshRPCWithRetries(network string, retries int) bool {
@@ -71,7 +77,12 @@ func (r *repository) GetNewStakingContract(network string, address string, refre
 		r.RefreshRPC(network)
 	}
 
-	return contracts.NewUnchainedStaking(common.HexToAddress(address), r.clients[network])
+	client := r.GetClient(network)
+	if client == nil {
+		return nil, consts.ErrClientNotFound
+	}
+
+	return contracts.NewUnchainedStaking(common.HexToAddress(address), client)
 }
 
 func (r *repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
@@ -79,15 +90,18 @@ func (r *repository) GetNewUniV3Contract(network string, address string, refresh
 		r.RefreshRPC(network)
 	}
 
-	return contracts.NewUniV3(common.HexToAddress(address), r.clients[network])
+	client := r.GetClient(network)
+	if client == nil {
+		return nil, consts.ErrClientNotFound
+	}
+
+	return contracts.NewUniV3(common.HexToAddress(address), client)
 }
 
 // GetBlockNumber returns the most recent block number.
 func (r *repository) GetBlockNumber(ctx context.Context, network string) (uint64, error) {
-	client, ok := r.clients[network]
-
-	if !ok {
-		utils.Logger.With("Network", network).Error("Client not found")
+	client := r.GetClient(network)
+	if client == nil {
 		return 0, consts.ErrClientNotFound
 	}
 
@@ -98,7 +112,7 @@ func New() RPC {
 	r := &repository{
 		list:    map[string][]string{},
 		index:   map[string]int{},
-		clients: map[string]*ethclient.Client{},
+		clients: make(map[string]*ethclient.Client),
 		mutex:   new(sync.Mutex),
 	}
 
