@@ -32,8 +32,8 @@ type repository struct {
 }
 
 func (r *repository) GetClient(chain string) *ethclient.Client {
-	client, isExist := r.clients[chain]
-	if !isExist {
+	client, isFound := r.clients[chain]
+	if !isFound {
 		utils.Logger.With("Network", chain).Error("Client not found")
 		return nil
 	}
