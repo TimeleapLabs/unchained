@@ -2,7 +2,6 @@ package frost
 
 import (
 	"errors"
-
 	"github.com/bytemare/crypto"
 	"github.com/bytemare/frost"
 	"github.com/bytemare/frost/dkg"
@@ -21,13 +20,8 @@ type DistributedSigner struct {
 }
 
 // Update function will update the identity key about other parties.
-func (s *DistributedSigner) Update(msg []byte) ([][]byte, error) {
-	round1Data, err := s.DecodeRoundOneMessage(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	s.accumulatedMessages = append(s.accumulatedMessages, round1Data)
+func (s *DistributedSigner) Update(msg *dkg.Round1Data) ([]*dkg.Round2Data, error) {
+	s.accumulatedMessages = append(s.accumulatedMessages, msg)
 
 	if len(s.accumulatedMessages) != s.signerCount {
 		return nil, nil
@@ -42,16 +36,10 @@ func (s *DistributedSigner) Update(msg []byte) ([][]byte, error) {
 		return nil, errors.New("number of accept messages is not correct")
 	}
 
-	return EncodeRoundTwoMessages(round2Data), nil
+	return round2Data, nil
 }
 
-// Finalize function will confirm the identity key about other parties updates.
-func (s *DistributedSigner) Finalize(msgByte []byte) error {
-	msg, err := s.DecodeRoundTwoMessage(msgByte)
-	if err != nil {
-		return err
-	}
-
+func (s *DistributedSigner) Finalize(msg *dkg.Round2Data) error {
 	if msg.ReceiverIdentifier.Equal(s.currentParticipant.Identifier) == 0 {
 		return nil
 	}
@@ -62,6 +50,8 @@ func (s *DistributedSigner) Finalize(msgByte []byte) error {
 		return nil
 	}
 
+	// This will, for each participant, return their secret key (which is a share of the global secret signing key),
+	// the corresponding verification key, and the global public key.
 	participantsSecretKey, _, groupPublicKeyGeneratedInDKG, err := s.currentParticipant.Finalize(
 		s.accumulatedMessages,
 		s.ackMessages,
@@ -78,7 +68,7 @@ func (s *DistributedSigner) Finalize(msgByte []byte) error {
 }
 
 // NewIdentity creates a new Frost identity.
-func NewIdentity(id int, signerCount int, minSigningCount int) ([]byte, *DistributedSigner) {
+func NewIdentity(ID int, signerCount int, minSigningCount int) (*dkg.Round1Data, *DistributedSigner) {
 	signer := DistributedSigner{
 		accumulatedMessages: make([]*dkg.Round1Data, 0, signerCount),
 		config:              frost.Ristretto255.Configuration(),
@@ -86,7 +76,7 @@ func NewIdentity(id int, signerCount int, minSigningCount int) ([]byte, *Distrib
 		minSigningCount:     minSigningCount,
 	}
 
-	signer.ID = signer.config.IDFromInt(id)
+	signer.ID = signer.config.IDFromInt(ID)
 	signer.currentParticipant = dkg.NewParticipant(
 		signer.config.Ciphersuite,
 		signer.ID,
@@ -99,5 +89,7 @@ func NewIdentity(id int, signerCount int, minSigningCount int) ([]byte, *Distrib
 		panic("this is just a test, and it failed")
 	}
 
-	return EncodeRoundOneMessage(round1Data), &signer
+	//signer.accumulatedMessages = append(signer.accumulatedMessages, round1Data)
+
+	return round1Data, &signer
 }
