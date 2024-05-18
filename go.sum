@@ -39,6 +39,10 @@ entgo.io/contrib v0.4.6-0.20240215171353-eff33e4dca0b h1:jJwnBBJavk5NfJNyg8fvEVp
 entgo.io/contrib v0.4.6-0.20240215171353-eff33e4dca0b/go.mod h1:q8dXQCmzqpSlVdT2bWDydjgznGcy3y4zmsYmVFC9V/U=
 entgo.io/ent v0.13.1 h1:uD8QwN1h6SNphdCCzmkMN3feSUzNnVvV/WIkHKMbzOE=
 entgo.io/ent v0.13.1/go.mod h1:qCEmo+biw3ccBn9OyL4ZK5dfpwg++l1Gxwac5B1206A=
+filippo.io/edwards25519 v1.0.0 h1:0wAIcmJUqRdI8IJ/3eGi5/HwXZWPujYXXlkrQogz0Ek=
+filippo.io/edwards25519 v1.0.0/go.mod h1:N1IkdkCkiLB6tki+MYJoSx2JTY9NUlxZE7eHn5EwJns=
+filippo.io/nistec v0.0.2 h1:/NIXTUimcHIh0E2DsYucHlICvUisgj28/XEnKSEptUs=
+filippo.io/nistec v0.0.2/go.mod h1:84fxC9mi+MhC2AERXI4LSa8cmSVOzrFikg6hZ4IfCyw=
 github.com/99designs/gqlgen v0.17.45 h1:bH0AH67vIJo8JKNKPJP+pOPpQhZeuVRQLf53dKIpDik=
 github.com/99designs/gqlgen v0.17.45/go.mod h1:Bas0XQ+Jiu/Xm5E33jC8sES3G+iC2esHBMXcq0fUPs0=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
@@ -109,6 +113,18 @@ github.com/btcsuite/goleveldb v0.0.0-20160330041536-7834afc9e8cd/go.mod h1:F+uVa
 github.com/btcsuite/snappy-go v0.0.0-20151229074030-0bdef8d06723/go.mod h1:8woku9dyThutzjeg+3xrA5iCpBRH8XEEg3lh6TiUghc=
 github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtEyQwv5/p4Mg4C0fgbePVuGr935/5ddU9Z3TmDRY=
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
+github.com/bytemare/crypto v0.5.2 h1:ogvfY5mmtrPc5Uhwq4mUEUDnTVig+UEF8gwnNAPaNbU=
+github.com/bytemare/crypto v0.5.2/go.mod h1:kkx4ciRQFWcjMauezZo9SHw4YmqSTolWkfOVVTOXgAY=
+github.com/bytemare/frost v0.0.0-20231127024126-bc6f7874b253 h1:A7oFaTUn27NTS1quGJDBWz5wE4moUxGUD/5lcvDfGhg=
+github.com/bytemare/frost v0.0.0-20231127024126-bc6f7874b253/go.mod h1:oqP0GP7rnoE2B276HqEFhrv1vR3/Zwfwf2QlRKcHLOA=
+github.com/bytemare/hash v0.1.5 h1:VW+X1YQ2b3chjRFHkRUnO42uclsQjXimdBCPOgIobR4=
+github.com/bytemare/hash v0.1.5/go.mod h1:+QmWXTky/2b63ngqM5IYezGydn9UTFDhpX7mLYwYxCA=
+github.com/bytemare/hash2curve v0.2.2 h1:zaGx6Z4/N4Pl9B7aGNtpbZ09vu1NNJGoJRRtHHl8oTw=
+github.com/bytemare/hash2curve v0.2.2/go.mod h1:Wma3DmJdn8kqiK9j120hkWvC3tQVKS1PyA8ZzyG23BI=
+github.com/bytemare/secp256k1 v0.1.0 h1:kjVJ06GAHSa+EJ7Rz1LdVgE0DQWdvUT77tmcGf7epXQ=
+github.com/bytemare/secp256k1 v0.1.0/go.mod h1:hzquMsr3GXhVcqL9qFX7GGjmcT5dlQldKrArd7tcXHE=
+github.com/bytemare/secret-sharing v0.1.0 h1:p+5TQw40/JnSMUgSe0OdvUACo9xZuiQDL/eLRPjPd50=
+github.com/bytemare/secret-sharing v0.1.0/go.mod h1:NKTAXEhsxrVi2Yr5BCKFP9uhPWDtBStAPbyqLghFG4I=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/cp v0.1.0 h1:SE+dxFebS7Iik5LK0tsi1k9ZCxEaFX4AjQmoyA+1dJk=
 github.com/cespare/cp v0.1.0/go.mod h1:SOGHArjBr4JWaSDEVpWpo/hNg6RoKrls6Oh40hiwW+s=
@@ -320,6 +336,8 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORR
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/gorilla/websocket v1.5.1 h1:gmztn0JnHVt9JZquRuzLw3g4wouNVzKL15iLr/zn/QY=
 github.com/gorilla/websocket v1.5.1/go.mod h1:x3kM2JMyaluk02fnUJpQuwD2dCS5NDG2ZHL0uE0tcaY=
+github.com/gtank/ristretto255 v0.1.2 h1:JEqUCPA1NvLq5DwYtuzigd7ss8fwbYay9fi4/5uMzcc=
+github.com/gtank/ristretto255 v0.1.2/go.mod h1:Ph5OpO6c7xKUGROZfWVLiJf9icMDwUeIvY4OmlYW69o=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
@@ -417,8 +435,6 @@ github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
 github.com/labstack/echo/v4 v4.1.11/go.mod h1:i541M3Fj6f76NZtHSj7TXnyM8n2gaodfvfxNnFqi74g=
 github.com/labstack/gommon v0.3.0/go.mod h1:MULnywXg0yavhxWKc+lOruYdAhDwPK9wf0OL7NoOu+k=
-github.com/lastingasset/tss-lib v0.0.0-20221022151431-0bdbdcdfba56 h1:AaQnzJFRrI3NbWkHHN5v7KGS2n2hm7SuL81QdGRBmlQ=
-github.com/lastingasset/tss-lib v0.0.0-20221022151431-0bdbdcdfba56/go.mod h1:4ZSo/Of0YmsxTaksO94Y/PcHP5kW3l9j0K95hTqVpi4=
 github.com/leanovate/gopter v0.2.9 h1:fQjYxZaynp97ozCzfOyOuAGOU4aU/z37zf/tOujFk7c=
 github.com/leanovate/gopter v0.2.9/go.mod h1:U2L/78B+KVFIx2VmW6onHJQzXtFb+p5y3y2Sh+Jxxv8=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=

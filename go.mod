@@ -8,6 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.17.45
 	github.com/bnb-chain/tss-lib v1.3.5
 	github.com/btcsuite/btcutil v1.0.2
+	github.com/bytemare/frost v0.0.0-20231127024126-bc6f7874b253
 	github.com/consensys/gnark-crypto v0.12.1
 	github.com/dgraph-io/badger/v4 v4.2.0
 	github.com/ethereum/go-ethereum v1.13.14
@@ -17,12 +18,10 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.5.5
-	github.com/lastingasset/tss-lib v0.0.0-20221022151431-0bdbdcdfba56
 	github.com/lib/pq v1.10.9
 	github.com/lmittmann/tint v1.0.4
 	github.com/mattn/go-colorable v0.1.13
 	github.com/peterldowns/pgtestdb v0.0.14
-	github.com/pkg/errors v0.9.1
 	github.com/pouya-eghbali/go-sia/v2 v2.1.0
 	github.com/puzpuzpuz/xsync/v3 v3.1.0
 	github.com/spf13/cobra v1.8.0
@@ -36,6 +35,8 @@ require (
 
 require (
 	ariga.io/atlas v0.20.0 // indirect
+	filippo.io/edwards25519 v1.0.0 // indirect
+	filippo.io/nistec v0.0.2 // indirect
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -48,6 +49,11 @@ require (
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/btcsuite/btcd v0.20.1-beta // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
+	github.com/bytemare/crypto v0.5.2 // indirect
+	github.com/bytemare/hash v0.1.5 // indirect
+	github.com/bytemare/hash2curve v0.2.2 // indirect
+	github.com/bytemare/secp256k1 v0.1.0 // indirect
+	github.com/bytemare/secret-sharing v0.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cockroachdb/errors v1.8.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
@@ -82,6 +88,7 @@ require (
 	github.com/google/flatbuffers v24.3.7+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gtank/ristretto255 v0.1.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-bexpr v0.1.10 // indirect
 	github.com/hashicorp/hcl/v2 v2.20.0 // indirect
@@ -110,6 +117,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/otiai10/primes v0.0.0-20180210170552-f6d2a1ba97c4 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.12.0 // indirect
 	github.com/prometheus/client_model v0.2.1-0.20210607210712-147c58e9608a // indirect

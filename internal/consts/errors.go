@@ -29,4 +29,6 @@ var (
 	ErrCrossPriceIsNotZero     = errors.New("cross price is not zero")
 	ErrAlreadySynced           = errors.New("already synced")
 	ErrSignerIsNotReady        = errors.New("signer is not ready yet")
+	ErrCantSign                = errors.New("cant sign message")
+	ErrCantVerify              = errors.New("cant verify message")
 )
