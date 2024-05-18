@@ -1,13 +1,14 @@
 package frost
 
 import (
+	"math/rand"
+	"testing"
+
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/bytemare/frost"
 	"github.com/bytemare/frost/dkg"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"math/rand"
-	"testing"
 )
 
 const (

@@ -6,7 +6,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/crypto/tss"
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
@@ -21,7 +20,6 @@ type Signer interface {
 type MachineIdentity struct {
 	Bls Signer
 	Eth Signer
-	Tss *tss.DistributedSigner
 }
 
 // Identity is a global variable that holds machine identity.

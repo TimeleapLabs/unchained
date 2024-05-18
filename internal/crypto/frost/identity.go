@@ -2,6 +2,7 @@ package frost
 
 import (
 	"errors"
+
 	"github.com/bytemare/crypto"
 	"github.com/bytemare/frost"
 	"github.com/bytemare/frost/dkg"
@@ -68,7 +69,7 @@ func (s *DistributedSigner) Finalize(msg *dkg.Round2Data) error {
 }
 
 // NewIdentity creates a new Frost identity.
-func NewIdentity(ID int, signerCount int, minSigningCount int) (*dkg.Round1Data, *DistributedSigner) {
+func NewIdentity(id int, signerCount int, minSigningCount int) (*dkg.Round1Data, *DistributedSigner) {
 	signer := DistributedSigner{
 		accumulatedMessages: make([]*dkg.Round1Data, 0, signerCount),
 		config:              frost.Ristretto255.Configuration(),
@@ -76,7 +77,7 @@ func NewIdentity(ID int, signerCount int, minSigningCount int) (*dkg.Round1Data,
 		minSigningCount:     minSigningCount,
 	}
 
-	signer.ID = signer.config.IDFromInt(ID)
+	signer.ID = signer.config.IDFromInt(id)
 	signer.currentParticipant = dkg.NewParticipant(
 		signer.config.Ciphersuite,
 		signer.ID,
@@ -89,7 +90,7 @@ func NewIdentity(ID int, signerCount int, minSigningCount int) (*dkg.Round1Data,
 		panic("this is just a test, and it failed")
 	}
 
-	//signer.accumulatedMessages = append(signer.accumulatedMessages, round1Data)
+	// signer.accumulatedMessages = append(signer.accumulatedMessages, round1Data)
 
 	return round1Data, &signer
 }

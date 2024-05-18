@@ -2,6 +2,7 @@ package frost
 
 import (
 	"errors"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/bytemare/frost"
