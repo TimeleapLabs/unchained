@@ -26,7 +26,15 @@ func Broker() {
 	ethRPC := ethereum.New()
 	pos.New(ethRPC)
 
+	//frostService := frost.New()
+
+	//scheduler := scheduler.New(
+	//	scheduler.WithFrostEvents(frostService),
+	//)
+
 	server.New(
 		websocket.WithWebsocket(),
 	)
+
+	//scheduler.Start()
 }

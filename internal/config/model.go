@@ -34,10 +34,16 @@ type EthLog struct {
 	Events   []Event                  `yaml:"events"`
 }
 
+// Frost struct represent all task detail of its plugin.
+type Frost struct {
+	Schedule time.Duration `yaml:"schedule"`
+}
+
 // Plugins struct holds all applications plugin configs.
 type Plugins struct {
 	EthLog      *EthLog  `yaml:"logs"`
 	Uniswap     *Uniswap `yaml:"uniswap"`
+	Frost       *Frost   `yaml:"frost"`
 	Correctness []string `yaml:"correctness"`
 }
 

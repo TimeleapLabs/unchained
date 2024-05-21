@@ -40,6 +40,7 @@ func (s *DistributedSigner) Update(msg *dkg.Round1Data) ([]*dkg.Round2Data, erro
 	return round2Data, nil
 }
 
+// Finalize function will confirm the identity key about other parties updates.
 func (s *DistributedSigner) Finalize(msg *dkg.Round2Data) error {
 	if msg.ReceiverIdentifier.Equal(s.currentParticipant.Identifier) == 0 {
 		return nil
@@ -51,8 +52,6 @@ func (s *DistributedSigner) Finalize(msg *dkg.Round2Data) error {
 		return nil
 	}
 
-	// This will, for each participant, return their secret key (which is a share of the global secret signing key),
-	// the corresponding verification key, and the global public key.
 	participantsSecretKey, _, groupPublicKeyGeneratedInDKG, err := s.currentParticipant.Finalize(
 		s.accumulatedMessages,
 		s.ackMessages,
@@ -89,8 +88,6 @@ func NewIdentity(id int, signerCount int, minSigningCount int) (*dkg.Round1Data,
 	if round1Data.SenderIdentifier.Equal(signer.ID) != 1 {
 		panic("this is just a test, and it failed")
 	}
-
-	// signer.accumulatedMessages = append(signer.accumulatedMessages, round1Data)
 
 	return round1Data, &signer
 }

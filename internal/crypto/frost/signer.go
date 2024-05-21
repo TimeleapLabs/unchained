@@ -2,7 +2,6 @@ package frost
 
 import (
 	"errors"
-
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/bytemare/frost"
@@ -16,17 +15,18 @@ type MessageSigner struct {
 	participant *frost.Participant
 }
 
-func (s *MessageSigner) Confirm(commitment *frost.Commitment) error {
+// Confirm function will set other parties confirms.
+func (s *MessageSigner) Confirm(commitment *frost.Commitment) (*frost.SignatureShare, error) {
 	s.commitments = append(s.commitments, commitment)
 
 	if len(s.commitments.Participants()) < s.partySize {
-		return nil
+		return nil, nil
 	}
 
 	signatureShare, err := s.participant.Sign(s.data, s.commitments)
 	if err != nil {
 		utils.Logger.With("err", err).Error("cant sign message")
-		return consts.ErrCantSign
+		return nil, consts.ErrCantSign
 	}
 
 	if !s.participant.VerifySignatureShare(
@@ -36,12 +36,19 @@ func (s *MessageSigner) Confirm(commitment *frost.Commitment) error {
 		s.commitments,
 		s.data,
 	) {
-		return consts.ErrCantVerify
+		return nil, consts.ErrCantVerify
 	}
 
-	return nil
+	return signatureShare, nil
 }
 
+func (s *MessageSigner) AggregateSignatures(signatureShares []*frost.SignatureShare) ([]byte, error) {
+	signature := s.participant.Aggregate(s.commitments, s.data, signatureShares)
+
+	return signature.Encode(), nil
+}
+
+// NewSigner create a new signing state for a message.
 func (s *DistributedSigner) NewSigner(data []byte) (*MessageSigner, *frost.Commitment, error) {
 	if s.finalParticipant == nil {
 		return nil, nil, consts.ErrSignerIsNotReady

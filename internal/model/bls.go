@@ -4,6 +4,8 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
+type Signers []Signer
+
 type Signer struct {
 	Name           string
 	EvmAddress     string
@@ -33,6 +35,25 @@ func (s *Signature) FromSia(sia sia.Sia) *Signature {
 
 	return s
 }
+
+func (s Signers) Sia() sia.Sia {
+	return new(sia.ArraySia[Signer]).
+		AddArray8(s, func(s *sia.ArraySia[Signer], item Signer) {
+			s.EmbedBytes(item.Sia().Bytes())
+		})
+}
+
+//func (s Signers) FromBytes(payload []byte) Signers {
+//	signers := Signers{}
+//
+//	siaArray := sia.ArraySia[Signer]{
+//		sia.NewFromBytes(payload),
+//	}
+//
+//	ReadArray8(func(s *sia.ArraySia[Signer]) Signer {
+//		signers = append(signers, Signer)
+//	})
+//}
 
 func (s *Signer) Sia() sia.Sia {
 	return sia.New().

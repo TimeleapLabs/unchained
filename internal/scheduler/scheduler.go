@@ -4,6 +4,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/TimeleapLabs/unchained/internal/service/frost"
+
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
@@ -63,6 +65,16 @@ func WithUniswapEvents(uniswapService uniswapService.Service) func(s *Scheduler)
 		for name, duration := range config.App.Plugins.Uniswap.Schedule {
 			s.AddTask(duration, NewUniswap(name, uniswapService))
 		}
+	}
+}
+
+// WithFrostEvents adds frost sync event task to the scheduler.
+func WithFrostEvents(frostService frost.Service) func(s *Scheduler) {
+	return func(s *Scheduler) {
+		if config.App.Plugins.Frost == nil {
+			return
+		}
+		s.AddTask(config.App.Plugins.Frost.Schedule, NewFrostSync(frostService))
 	}
 }
 

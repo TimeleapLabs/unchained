@@ -9,4 +9,6 @@ type Handler interface {
 	CorrectnessReport(ctx context.Context, message []byte)
 	EventLog(ctx context.Context, message []byte)
 	PriceReport(ctx context.Context, message []byte)
+
+	InitFrostSigner(ctx context.Context, message []byte)
 }
