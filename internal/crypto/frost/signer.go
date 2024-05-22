@@ -2,6 +2,7 @@ package frost
 
 import (
 	"errors"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/bytemare/frost"
@@ -13,6 +14,7 @@ type MessageSigner struct {
 	data        []byte
 	commitments frost.CommitmentList
 	participant *frost.Participant
+	commitment  *frost.Commitment
 }
 
 // Confirm function will set other parties confirms.
@@ -30,8 +32,8 @@ func (s *MessageSigner) Confirm(commitment *frost.Commitment) (*frost.SignatureS
 	}
 
 	if !s.participant.VerifySignatureShare(
-		commitment,
-		s.participant.GroupPublicKey,
+		s.commitment,
+		s.participant.PublicKey,
 		signatureShare.SignatureShare,
 		s.commitments,
 		s.data,
@@ -54,16 +56,17 @@ func (s *DistributedSigner) NewSigner(data []byte) (*MessageSigner, *frost.Commi
 		return nil, nil, consts.ErrSignerIsNotReady
 	}
 
-	signer := &MessageSigner{
-		partySize:   s.signerCount,
-		data:        data,
-		commitments: make(frost.CommitmentList, 0, s.signerCount),
-		participant: s.finalParticipant,
-	}
-
 	commitment := s.finalParticipant.Commit()
 	if commitment.Identifier.Equal(s.finalParticipant.KeyShare.Identifier) != 1 {
 		return nil, nil, errors.New("identifier is not correct")
+	}
+
+	signer := &MessageSigner{
+		partySize:   s.minSigningCount,
+		data:        data,
+		commitments: make(frost.CommitmentList, 0, s.signerCount),
+		participant: s.finalParticipant,
+		commitment:  commitment,
 	}
 
 	return signer, commitment, nil

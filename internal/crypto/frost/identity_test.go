@@ -1,7 +1,6 @@
 package frost
 
 import (
-	"math/rand"
 	"testing"
 
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -12,8 +11,8 @@ import (
 )
 
 const (
-	numOfSigners    = 4
-	minNumOfSigners = 2
+	numOfSigners    = 100
+	minNumOfSigners = 51
 )
 
 var (
@@ -31,7 +30,7 @@ func (s *FrostIdentityTestSuite) SetupTest() {
 	utils.SetupLogger("info")
 
 	for i := 0; i < numOfSigners; i++ {
-		signers = append(signers, rand.Intn(9999))
+		signers = append(signers, i+1)
 	}
 
 	r1Messages := []*dkg.Round1Data{}
@@ -71,12 +70,32 @@ func (s *FrostIdentityTestSuite) TestSign() {
 		signers = append(signers, signer)
 	}
 
+	signatureShares := make([]*frost.SignatureShare, 0, minNumOfSigners)
+
 	for i := 0; i < minNumOfSigners; i++ {
 		for j := 0; j < minNumOfSigners; j++ {
-			err := signers[i].Confirm(commits[j])
+			signature, err := signers[i].Confirm(commits[j])
 			assert.NoError(s.T(), err)
+			if signature != nil {
+				signatureShares = append(signatureShares, signature)
+			}
 		}
 	}
+
+	signature := signers[0].participant.Aggregate(
+		signers[0].commitments,
+		testData,
+		signatureShares,
+	)
+
+	ok := frost.Verify(
+		frost.Ristretto255.Configuration().Ciphersuite,
+		testData,
+		signature,
+		signers[0].participant.GroupPublicKey,
+	)
+
+	assert.True(s.T(), ok)
 }
 
 func TestFrostIdentitySuite(t *testing.T) {
