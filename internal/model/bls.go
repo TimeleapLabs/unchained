@@ -43,7 +43,7 @@ func (s Signers) Sia() sia.Sia {
 		})
 }
 
-//func (s Signers) FromBytes(payload []byte) Signers {
+// func (s Signers) FromBytes(payload []byte) Signers {
 //	signers := Signers{}
 //
 //	siaArray := sia.ArraySia[Signer]{

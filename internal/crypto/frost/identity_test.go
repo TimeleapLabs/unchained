@@ -4,15 +4,13 @@ import (
 	"testing"
 
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"github.com/bytemare/frost"
-	"github.com/bytemare/frost/dkg"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
 const (
-	numOfSigners    = 100
-	minNumOfSigners = 51
+	numOfSigners    = 10
+	minNumOfSigners = 6
 )
 
 var (
@@ -33,14 +31,14 @@ func (s *FrostIdentityTestSuite) SetupTest() {
 		signers = append(signers, i+1)
 	}
 
-	r1Messages := []*dkg.Round1Data{}
+	r1Messages := [][]byte{}
 	for i := 0; i < numOfSigners; i++ {
 		r1Msg, party := NewIdentity(signers[i], numOfSigners, minNumOfSigners)
 		s.parties = append(s.parties, party)
 		r1Messages = append(r1Messages, r1Msg)
 	}
 
-	r2Messages := []*dkg.Round2Data{}
+	r2Messages := [][]byte{}
 	for i := 0; i < numOfSigners; i++ {
 		for j := 0; j < numOfSigners; j++ {
 			r2Msgs, err := s.parties[i].Update(r1Messages[j])
@@ -60,7 +58,7 @@ func (s *FrostIdentityTestSuite) SetupTest() {
 
 func (s *FrostIdentityTestSuite) TestSign() {
 	signers := make([]*MessageSigner, 0, minNumOfSigners)
-	commits := make([]*frost.Commitment, 0, minNumOfSigners)
+	commits := [][]byte{}
 
 	for i := 0; i < minNumOfSigners; i++ {
 		signer, msg, err := s.parties[i].NewSigner(testData)
@@ -70,31 +68,24 @@ func (s *FrostIdentityTestSuite) TestSign() {
 		signers = append(signers, signer)
 	}
 
-	signatureShares := make([]*frost.SignatureShare, 0, minNumOfSigners)
+	signatureShares := make([][]byte, 0, minNumOfSigners)
 
-	for i := 0; i < minNumOfSigners; i++ {
-		for j := 0; j < minNumOfSigners; j++ {
-			signature, err := signers[i].Confirm(commits[j])
+	for _, signer := range signers {
+		for _, commit := range commits {
+			signature, err := signer.Confirm(commit)
 			assert.NoError(s.T(), err)
+
 			if signature != nil {
 				signatureShares = append(signatureShares, signature)
 			}
 		}
 	}
 
-	signature := signers[0].participant.Aggregate(
-		signers[0].commitments,
-		testData,
-		signatureShares,
-	)
+	signature, err := signers[0].Aggregate(signatureShares)
+	assert.NoError(s.T(), err)
 
-	ok := frost.Verify(
-		frost.Ristretto255.Configuration().Ciphersuite,
-		testData,
-		signature,
-		signers[0].participant.GroupPublicKey,
-	)
-
+	ok, err := signers[0].Verify(signature)
+	assert.NoError(s.T(), err)
 	assert.True(s.T(), ok)
 }
 

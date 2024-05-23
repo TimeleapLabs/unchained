@@ -30,5 +30,6 @@ var (
 	ErrAlreadySynced           = errors.New("already synced")
 	ErrSignerIsNotReady        = errors.New("signer is not ready yet")
 	ErrCantSign                = errors.New("cant sign message")
+	ErrCantDecode              = errors.New("cant decode message")
 	ErrCantVerify              = errors.New("cant verify message")
 )

@@ -21,8 +21,13 @@ type DistributedSigner struct {
 }
 
 // Update function will update the identity key about other parties.
-func (s *DistributedSigner) Update(msg *dkg.Round1Data) ([]*dkg.Round2Data, error) {
-	s.accumulatedMessages = append(s.accumulatedMessages, msg)
+func (s *DistributedSigner) Update(msg []byte) ([][]byte, error) {
+	round1Data, err := s.DecodeRoundOneMessage(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	s.accumulatedMessages = append(s.accumulatedMessages, round1Data)
 
 	if len(s.accumulatedMessages) != s.signerCount {
 		return nil, nil
@@ -37,11 +42,16 @@ func (s *DistributedSigner) Update(msg *dkg.Round1Data) ([]*dkg.Round2Data, erro
 		return nil, errors.New("number of accept messages is not correct")
 	}
 
-	return round2Data, nil
+	return EncodeRoundTwoMessages(round2Data), nil
 }
 
 // Finalize function will confirm the identity key about other parties updates.
-func (s *DistributedSigner) Finalize(msg *dkg.Round2Data) error {
+func (s *DistributedSigner) Finalize(msgByte []byte) error {
+	msg, err := s.DecodeRoundTwoMessage(msgByte)
+	if err != nil {
+		return err
+	}
+
 	if msg.ReceiverIdentifier.Equal(s.currentParticipant.Identifier) == 0 {
 		return nil
 	}
@@ -68,7 +78,7 @@ func (s *DistributedSigner) Finalize(msg *dkg.Round2Data) error {
 }
 
 // NewIdentity creates a new Frost identity.
-func NewIdentity(id int, signerCount int, minSigningCount int) (*dkg.Round1Data, *DistributedSigner) {
+func NewIdentity(id int, signerCount int, minSigningCount int) ([]byte, *DistributedSigner) {
 	signer := DistributedSigner{
 		accumulatedMessages: make([]*dkg.Round1Data, 0, signerCount),
 		config:              frost.Ristretto255.Configuration(),
@@ -89,5 +99,5 @@ func NewIdentity(id int, signerCount int, minSigningCount int) (*dkg.Round1Data,
 		panic("this is just a test, and it failed")
 	}
 
-	return round1Data, &signer
+	return EncodeRoundOneMessage(round1Data), &signer
 }

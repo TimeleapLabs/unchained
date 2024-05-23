@@ -2,6 +2,7 @@ package frost
 
 import (
 	"encoding/json"
+
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
