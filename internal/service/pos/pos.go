@@ -36,12 +36,12 @@ type service struct {
 
 func (s *service) GetTotalVotingPower() (*big.Int, error) {
 	return new(big.Int).Mul(big.NewInt(5e10), big.NewInt(1e18)), nil
-	//return s.posContract.GetTotalVotingPower(nil)
+	// return s.posContract.GetTotalVotingPower(nil)
 }
 
 func (s *service) GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error) {
 	stake, err := s.posContract.GetStake(nil, address)
-	//votingPower, err := s.posContract.GetVotingPower(nil, address)
+	// votingPower, err := s.posContract.GetVotingPower(nil, address)
 	if err != nil {
 		return stake.Amount, err
 	}

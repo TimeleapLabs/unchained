@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -29,4 +30,9 @@ func (m *MockService) GetVotingPower(address [20]byte, block *big.Int) (*big.Int
 func (m *MockService) GetVotingPowerOfPublicKey(_ context.Context, pkBytes [96]byte) (*big.Int, error) {
 	args := m.Called(pkBytes)
 	return big.NewInt(int64(args.Int(0))), args.Error(1)
+}
+
+func (m *MockService) GetSchnorrSigners(_ context.Context) ([]common.Address, error) {
+	args := m.Called()
+	return args.Get(0).([]common.Address), args.Error(1)
 }
