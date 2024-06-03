@@ -22,8 +22,8 @@ func (m mockRPC) GetClient(_ string) *ethclient.Client {
 
 func (m mockRPC) RefreshRPC(_ string) {}
 
-func (m mockRPC) GetNewStakingContract(_ string, address string, _ bool) (*contracts.UnchainedStaking, error) {
-	return contracts.NewUnchainedStaking(
+func (m mockRPC) GetNewStakingContract(_ string, address string, _ bool) (*contracts.ProofOfStake, error) {
+	return contracts.NewProofOfStake(
 		common.HexToAddress(address),
 		m.backend,
 	)

@@ -11,6 +11,8 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/service/pos/eip712"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/puzpuzpuz/xsync/v3"
 )
 
@@ -18,12 +20,14 @@ type Service interface {
 	GetTotalVotingPower() (*big.Int, error)
 	GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error)
 	GetVotingPower(address [20]byte, block *big.Int) (*big.Int, error)
+	GetVotingPowerOfEvm(ctx context.Context, evmAddress string) (*big.Int, error)
 	GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byte) (*big.Int, error)
+	GetSchnorrSigners(ctx context.Context) ([]common.Address, error)
 }
 
 type service struct {
 	ethRPC       ethereum.RPC
-	posContract  *contracts.UnchainedStaking
+	posContract  *contracts.ProofOfStake
 	votingPowers *xsync.MapOf[[20]byte, *big.Int]
 	lastUpdated  *xsync.MapOf[[20]byte, *big.Int]
 	base         *big.Int
@@ -31,19 +35,21 @@ type service struct {
 }
 
 func (s *service) GetTotalVotingPower() (*big.Int, error) {
-	return s.posContract.GetTotalVotingPower(nil)
+	return new(big.Int).Mul(big.NewInt(5e10), big.NewInt(1e18)), nil
+	//return s.posContract.GetTotalVotingPower(nil)
 }
 
 func (s *service) GetVotingPowerFromContract(address [20]byte, block *big.Int) (*big.Int, error) {
-	votingPower, err := s.posContract.GetVotingPower(nil, address)
+	stake, err := s.posContract.GetStake(nil, address)
+	//votingPower, err := s.posContract.GetVotingPower(nil, address)
 	if err != nil {
-		return votingPower, err
+		return stake.Amount, err
 	}
 
-	s.votingPowers.Store(address, votingPower)
+	s.votingPowers.Store(address, stake.Amount)
 	s.lastUpdated.Store(address, block)
 
-	return votingPower, nil
+	return stake.Amount, nil
 }
 
 func (s *service) minBase(power *big.Int) *big.Int {
@@ -72,6 +78,19 @@ func (s *service) GetVotingPower(address [20]byte, block *big.Int) (*big.Int, er
 	}
 
 	return s.base, nil
+}
+
+func (s *service) GetVotingPowerOfEvm(ctx context.Context, evmAddress string) (*big.Int, error) {
+	block, err := s.ethRPC.GetBlockNumber(ctx, config.App.ProofOfStake.Chain)
+	if err != nil {
+		return nil, err
+	}
+	address := common.HexToAddress(evmAddress)
+	return s.GetVotingPower(address, big.NewInt(int64(block)))
+}
+
+func (s *service) GetSchnorrSigners(ctx context.Context) ([]common.Address, error) {
+	return s.posContract.GetValidators(&bind.CallOpts{Context: ctx})
 }
 
 func (s *service) GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byte) (*big.Int, error) {
@@ -136,15 +155,16 @@ func New(ethRPC ethereum.RPC) Service {
 		With("Network", utils.BigIntToFloat(total)).
 		Info("PoS")
 
-	chainID, err := s.posContract.GetChainId(nil)
-	if err != nil {
-		utils.Logger.
-			With("Error", err).
-			Error("Failed to get chain ID")
+	// chainID, err := s.posContract.GetChainId(nil)
+	// if err != nil {
+	// 	utils.Logger.
+	// 		With("Error", err).
+	// 		Error("Failed to get chain ID")
 
-		panic(err)
-	}
+	// 	panic(err)
+	// }
 
+	chainID := big.NewInt(421614)
 	s.eip712Signer = eip712.New(chainID, config.App.ProofOfStake.Address)
 
 	return s
