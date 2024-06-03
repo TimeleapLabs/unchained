@@ -27,8 +27,8 @@ func (m *MockService) GetVotingPower(address [20]byte, block *big.Int) (*big.Int
 	return big.NewInt(int64(args.Int(0))), args.Error(1)
 }
 
-func (m *MockService) GetVotingPowerOfEvm(address [20]byte, block *big.Int) (*big.Int, error) {
-	args := m.Called(address, block)
+func (m *MockService) GetVotingPowerOfEvm(ctx context.Context, evmAddress string) (*big.Int, error) {
+	args := m.Called(ctx, evmAddress)
 	return big.NewInt(int64(args.Int(0))), args.Error(1)
 }
 
