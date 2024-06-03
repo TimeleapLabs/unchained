@@ -1,14 +1,13 @@
 package eip712
 
 import (
+	"fmt"
 	"math/big"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/crypto"
-
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 
 	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 )
 
@@ -16,87 +15,32 @@ type Signer struct {
 	domain apitypes.TypedDataDomain
 }
 
-func (s *Signer) SignTransferRequest(request *contracts.UnchainedStakingEIP712Transfer) (*contracts.UnchainedStakingSignature, error) {
-	data := &apitypes.TypedData{
-		Types:       Types,
-		PrimaryType: "Transfer",
-		Domain:      s.domain,
-		Message: map[string]interface{}{
-			"signer": config.App.Secret.EvmAddress,
-			"from":   request.From,
-			"to":     request.To,
-			"amount": request.Amount,
-			"nftIds": request.NftIds,
-			"nonces": request.Nonces,
-		},
-	}
-
-	dataBytes, err := TypedDataToByte(data)
+// TODO: Rewrite to use Schnorr signature scheme
+func (s *Signer) SignEip712Message(evmSigner *ethereum.Signer, data *apitypes.TypedData) ([]byte, error) {
+	domainSeparator, err := data.HashStruct("EIP712Domain", data.Domain.Map())
 	if err != nil {
 		return nil, err
 	}
 
-	signedData, err := crypto.Identity.Eth.Sign(dataBytes)
+	typedDataHash, err := data.HashStruct(data.PrimaryType, data.Message)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewUnchainedSignatureFromBytes(signedData), nil
-}
+	message := []byte(fmt.Sprintf("\x19\x01%s%s", string(domainSeparator), string(typedDataHash)))
+	messageHash := crypto.Keccak256(message)
 
-func (s *Signer) SignSetParamsRequest(request *contracts.UnchainedStakingEIP712SetParams) (*contracts.UnchainedStakingSignature, error) {
-	data := &apitypes.TypedData{
-		Types:       Types,
-		PrimaryType: "SetParams",
-		Domain:      s.domain,
-		Message: map[string]interface{}{
-			"requester":  config.App.Secret.EvmAddress,
-			"token":      request.Token,
-			"nft":        request.Nft,
-			"nftTracker": request.NftTracker,
-			"threshold":  request.Threshold,
-			"expiration": request.Expiration,
-			"nonce":      request.Nonce,
-		},
-	}
-
-	dataBytes, err := TypedDataToByte(data)
+	// This should be replaced with Schnorr signature scheme
+	signature, err := crypto.Sign(messageHash, evmSigner.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	signedData, err := crypto.Identity.Eth.Sign(dataBytes)
-	if err != nil {
-		return nil, err
+	if signature[64] < 27 {
+		signature[64] += 27
 	}
 
-	return NewUnchainedSignatureFromBytes(signedData), nil
-}
-
-func (s *Signer) SignSetNftPriceRequest(request *contracts.UnchainedStakingEIP712SetNftPrice) (*contracts.UnchainedStakingSignature, error) {
-	data := &apitypes.TypedData{
-		Types:       Types,
-		PrimaryType: "SetNftPrice",
-		Domain:      s.domain,
-		Message: map[string]interface{}{
-			"requester": config.App.Secret.EvmAddress,
-			"nftId":     request.NftId,
-			"price":     request.Price,
-			"nonce":     request.Nonce,
-		},
-	}
-
-	dataBytes, err := TypedDataToByte(data)
-	if err != nil {
-		return nil, err
-	}
-
-	signedData, err := crypto.Identity.Eth.Sign(dataBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewUnchainedSignatureFromBytes(signedData), nil
+	return signature, nil
 }
 
 func New(chainID *big.Int, verifyingContract string) *Signer {

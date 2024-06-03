@@ -19,7 +19,7 @@ import (
 type RPC interface {
 	RefreshRPC(network string)
 	GetClient(network string) *ethclient.Client
-	GetNewStakingContract(network string, address string, refresh bool) (*contracts.UnchainedStaking, error)
+	GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error)
 	GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error)
 	GetBlockNumber(ctx context.Context, network string) (uint64, error)
 }
@@ -72,7 +72,7 @@ func (r *repository) RefreshRPC(network string) {
 	r.refreshRPCWithRetries(network, len(r.list))
 }
 
-func (r *repository) GetNewStakingContract(network string, address string, refresh bool) (*contracts.UnchainedStaking, error) {
+func (r *repository) GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error) {
 	if refresh {
 		r.RefreshRPC(network)
 	}
@@ -82,7 +82,7 @@ func (r *repository) GetNewStakingContract(network string, address string, refre
 		return nil, consts.ErrClientNotFound
 	}
 
-	return contracts.NewUnchainedStaking(common.HexToAddress(address), client)
+	return contracts.NewProofOfStake(common.HexToAddress(address), client)
 }
 
 func (r *repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {

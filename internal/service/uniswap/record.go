@@ -58,7 +58,7 @@ func (s *service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(ctx, signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
 		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
