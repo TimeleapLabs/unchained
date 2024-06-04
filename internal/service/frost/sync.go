@@ -1,32 +1,22 @@
 package frost
 
 import (
-	"encoding/json"
-
-	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
-
-	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
-	"github.com/TimeleapLabs/unchained/internal/utils"
-	"github.com/gorilla/websocket"
 )
 
-// PushSigners starts calculating of Frost signers by sending signers list to the Broker.
-func (s *service) PushSigners() error {
-	signers := []model.Signer{}
-	store.Signers.Range(func(_ *websocket.Conn, value model.Signer) bool {
-		signers = append(signers, value)
-		return true
-	})
-
-	signersBytes, err := json.Marshal(signers)
-	if err != nil {
-		utils.Logger.With("Error", err).Error("Cant marshal signers list")
-		return consts.ErrInternalError
-	}
-
-	pubsub.Publish(consts.ChannelFrostSignerList, consts.OpCodeSendSignerList, signersBytes)
+// SyncFrost starts calculating of Frost signers by sending signers list to the Broker.
+func (s *service) SyncFrost() error {
+	// signers := []model.Signer{}
+	// store.Signers.Range(func(_ *websocket.Conn, value model.Signer) bool {
+	//	signers = append(signers, value)
+	//	return true
+	// })
+	//
+	// signersBytes, err := json.Marshal(signers)
+	//if err != nil {
+	//	utils.Logger.With("Error", err).Error("Cant marshal signers list")
+	//	return consts.ErrInternalError
+	//}
 
 	return nil
 }

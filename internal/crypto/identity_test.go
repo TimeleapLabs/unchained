@@ -28,5 +28,6 @@ func TestEvmSignerWithGeneratePrivateKey(t *testing.T) {
 	InitMachineIdentity(
 		WithEvmSigner(),
 	)
+
 	assert.NotEmpty(t, config.App.Secret.EvmPrivateKey)
 }

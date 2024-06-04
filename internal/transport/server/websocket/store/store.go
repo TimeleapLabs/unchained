@@ -8,4 +8,11 @@ import (
 )
 
 var Challenges = xsync.NewMapOf[*websocket.Conn, model.ChallengePacket]()
-var Signers = xsync.NewMapOf[*websocket.Conn, model.Signer]()
+
+type ClientRepository interface {
+	Set(conn *websocket.Conn, signer model.Signer)
+	Remove(conn *websocket.Conn)
+	Get(conn *websocket.Conn) (model.Signer, bool)
+	GetAll() []model.Signer
+	GetByPublicKey(publicKey [96]byte) (*websocket.Conn, bool)
+}

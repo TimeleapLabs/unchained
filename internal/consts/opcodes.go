@@ -24,5 +24,5 @@ const (
 	OpCodeCorrectnessReport          OpCode = 10
 	OpCodeCorrectnessReportBroadcast OpCode = 11
 
-	OpCodeSendSignerList OpCode = 12
+	OpCodeAskIfFrostSigner OpCode = 12
 )

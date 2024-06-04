@@ -11,7 +11,7 @@ type FrostSync struct {
 
 // Run will trigger by the scheduler and process the Frost sync.
 func (e *FrostSync) Run() {
-	err := e.frostService.PushSigners()
+	err := e.frostService.SyncFrost()
 	if err != nil {
 		panic(err)
 	}

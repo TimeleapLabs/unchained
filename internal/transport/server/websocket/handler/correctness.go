@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
+func (h Handler) CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
 		return []byte{}, err
@@ -14,7 +14,7 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 
 	correctness := new(model.CorrectnessReportPacket).FromBytes(payload)
 
-	signer, err := middleware.IsMessageValid(conn, correctness.Correctness.Sia().Bytes(), correctness.Signature)
+	signer, err := h.middleware.IsMessageValid(conn, correctness.Correctness.Sia().Bytes(), correctness.Signature)
 	if err != nil {
 		return []byte{}, err
 	}

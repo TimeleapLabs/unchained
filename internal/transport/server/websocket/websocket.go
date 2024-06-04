@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -16,100 +18,115 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
-func WithWebsocket() func() {
+func WithWebsocket(
+	signerRepository store.ClientRepository,
+) func() {
 	return func() {
 		utils.Logger.Info("Starting a websocket server")
 
 		versionedRoot := fmt.Sprintf("/%s", consts.ProtocolVersion)
-		http.HandleFunc(versionedRoot, multiplexer)
+		http.HandleFunc(
+			versionedRoot,
+			multiplexer(
+				signerRepository,
+				handler.NewHandler(
+					middleware.New(signerRepository),
+					signerRepository,
+				),
+			))
 	}
 }
 
-func multiplexer(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		utils.Logger.Error("Can't upgrade the HTTP connection: %v", err)
-		return
-	}
-
-	ctx, cancel := context.WithCancel(context.TODO())
-
-	defer store.Signers.Delete(conn)
-	defer store.Challenges.Delete(conn)
-	defer cancel()
-
-	for {
-		messageType, payload, err := conn.ReadMessage()
+func multiplexer(
+	signerRepository store.ClientRepository,
+	serverHandler *handler.Handler,
+) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			utils.Logger.Error("Can't read message: %v", err)
-
-			err := conn.Close()
-			if err != nil {
-				utils.Logger.Error("Can't close connection: %v", err)
-			}
-
-			break
+			utils.Logger.Error("Can't upgrade the HTTP connection: %v", err)
+			return
 		}
 
-		if len(payload) == 0 {
-			continue
-		}
+		ctx, cancel := context.WithCancel(context.TODO())
 
-		switch consts.OpCode(payload[0]) {
-		case consts.OpCodeHello:
-			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
-			result, err := handler.Hello(conn, payload[1:])
+		defer signerRepository.Remove(conn)
+		defer store.Challenges.Delete(conn)
+		defer cancel()
+
+		for {
+			messageType, payload, err := conn.ReadMessage()
 			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
+				utils.Logger.Error("Can't read message: %v", err)
+
+				err := conn.Close()
+				if err != nil {
+					utils.Logger.Error("Can't close connection: %v", err)
+				}
+
+				break
+			}
+
+			if len(payload) == 0 {
 				continue
 			}
 
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "conf.ok")
-			handler.Send(conn, messageType, consts.OpCodeKoskChallenge, result)
-		case consts.OpCodePriceReport:
-			result, err := handler.PriceReport(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
+			switch consts.OpCode(payload[0]) {
+			case consts.OpCodeHello:
+				utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
+				result, err := serverHandler.Hello(conn, payload[1:])
+				if err != nil {
+					handler.SendError(conn, messageType, consts.OpCodeError, err)
+					continue
+				}
+
+				handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "conf.ok")
+				handler.Send(conn, messageType, consts.OpCodeKoskChallenge, result)
+			case consts.OpCodePriceReport:
+				result, err := serverHandler.PriceReport(conn, payload[1:])
+				if err != nil {
+					handler.SendError(conn, messageType, consts.OpCodeError, err)
+					continue
+				}
+
+				pubsub.Publish(consts.ChannelPriceReport, consts.OpCodePriceReportBroadcast, result)
+				handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			case consts.OpCodeEventLog:
+				result, err := serverHandler.EventLog(conn, payload[1:])
+				if err != nil {
+					handler.SendError(conn, messageType, consts.OpCodeError, err)
+					continue
+				}
+
+				pubsub.Publish(consts.ChannelEventLog, consts.OpCodeEventLogBroadcast, result)
+				handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			case consts.OpCodeCorrectnessReport:
+				result, err := serverHandler.CorrectnessRecord(conn, payload[1:])
+				if err != nil {
+					handler.SendError(conn, messageType, consts.OpCodeError, err)
+					continue
+				}
+
+				pubsub.Publish(consts.ChannelCorrectnessReport, consts.OpCodeCorrectnessReportBroadcast, result)
+				handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			case consts.OpCodeKoskResult:
+				err := serverHandler.Kosk(conn, payload[1:])
+				if err != nil {
+					handler.SendError(conn, messageType, consts.OpCodeError, err)
+					continue
+				}
+
+				handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "kosk.ok")
+			case consts.OpCodeRegisterConsumer:
+				utils.Logger.
+					With("IP", conn.RemoteAddr().String()).
+					With("Channel", string(payload[1:])).
+					Info("New Consumer registered")
+
+				go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
+			default:
+				handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 			}
-
-			pubsub.Publish(consts.ChannelPriceReport, consts.OpCodePriceReportBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
-		case consts.OpCodeEventLog:
-			result, err := handler.EventLog(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelEventLog, consts.OpCodeEventLogBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
-		case consts.OpCodeCorrectnessReport:
-			result, err := handler.CorrectnessRecord(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelCorrectnessReport, consts.OpCodeCorrectnessReportBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
-		case consts.OpCodeKoskResult:
-			err := handler.Kosk(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "kosk.ok")
-		case consts.OpCodeRegisterConsumer:
-			utils.Logger.
-				With("IP", conn.RemoteAddr().String()).
-				With("Channel", string(payload[1:])).
-				Info("New Consumer registered")
-
-			go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
-		default:
-			handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}
 	}
 }

@@ -9,8 +9,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func IsMessageValid(conn *websocket.Conn, message []byte, signature [48]byte) (model.Signer, error) {
-	signer, ok := store.Signers.Load(conn)
+type Middleware struct {
+	signerRepository store.ClientRepository
+}
+
+func (m Middleware) IsMessageValid(conn *websocket.Conn, message []byte, signature [48]byte) (model.Signer, error) {
+	signer, ok := m.signerRepository.Get(conn)
 	if !ok {
 		return model.Signer{}, consts.ErrMissingHello
 	}
@@ -26,4 +30,10 @@ func IsMessageValid(conn *websocket.Conn, message []byte, signature [48]byte) (m
 	}
 
 	return signer, nil
+}
+
+func New(signerRepository store.ClientRepository) Middleware {
+	return Middleware{
+		signerRepository: signerRepository,
+	}
 }

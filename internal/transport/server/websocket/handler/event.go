@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
+func (h Handler) EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
 		return []byte{}, err
@@ -14,7 +14,7 @@ func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 
 	priceReport := new(model.EventLogReportPacket).FromBytes(payload)
 
-	signer, err := middleware.IsMessageValid(conn, priceReport.EventLog.Sia().Bytes(), priceReport.Signature)
+	signer, err := h.middleware.IsMessageValid(conn, priceReport.EventLog.Sia().Bytes(), priceReport.Signature)
 	if err != nil {
 		return []byte{}, err
 	}

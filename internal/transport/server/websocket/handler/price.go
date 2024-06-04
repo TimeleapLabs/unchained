@@ -7,7 +7,7 @@ import (
 )
 
 // PriceReport check signature of message and return price info.
-func PriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
+func (h Handler) PriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
 		return []byte{}, err
@@ -15,7 +15,7 @@ func PriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 
 	priceReport := new(model.PriceReportPacket).FromBytes(payload)
 
-	signer, err := middleware.IsMessageValid(conn, priceReport.PriceInfo.Sia().Bytes(), priceReport.Signature)
+	signer, err := h.middleware.IsMessageValid(conn, priceReport.PriceInfo.Sia().Bytes(), priceReport.Signature)
 	if err != nil {
 		return []byte{}, err
 	}

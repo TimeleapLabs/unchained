@@ -86,7 +86,7 @@ func NewIdentity(ID int, signerCount int, minSigningCount int) (*dkg.Round1Data,
 
 	round1Data := signer.currentParticipant.Init()
 	if round1Data.SenderIdentifier.Equal(signer.ID) != 1 {
-		panic("this is just a test, and it failed")
+		panic("sender identifier is not correct")
 	}
 
 	//signer.accumulatedMessages = append(signer.accumulatedMessages, round1Data)

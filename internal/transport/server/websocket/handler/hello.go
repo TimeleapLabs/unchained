@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
+func (h Handler) Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	signer := new(model.Signer).FromBytes(payload)
 
 	if signer.Name == "" {
@@ -16,15 +16,12 @@ func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		return []byte{}, consts.ErrInvalidConfig
 	}
 
-	store.Signers.Range(func(conn *websocket.Conn, signerInMap model.Signer) bool {
-		publicKeyInUse := signerInMap.PublicKey == signer.PublicKey
-		if publicKeyInUse {
-			Close(conn)
-		}
-		return !publicKeyInUse
-	})
+	preConn, preConnExist := h.clientRepository.GetByPublicKey(signer.PublicKey)
+	if preConnExist {
+		Close(preConn)
+	}
 
-	store.Signers.Store(conn, *signer)
+	h.clientRepository.Set(conn, *signer)
 
 	// Start KOSK verification
 	challenge := model.ChallengePacket{Random: utils.NewChallenge()}

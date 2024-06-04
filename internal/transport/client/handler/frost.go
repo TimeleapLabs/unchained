@@ -4,12 +4,17 @@ import (
 	"context"
 )
 
-func (h *consumer) InitFrostSigner(ctx context.Context, message []byte) {
+func (h *consumer) AskIfFrostSigner(ctx context.Context, message []byte) {
 	// packet := new([]model.Signer).FromBytes(message)
 
 }
 
-func (w worker) InitFrostSigner(ctx context.Context, message []byte) {
+func (w worker) AskIfFrostSigner(ctx context.Context, message []byte) {
+	err := w.frostService.InitSigner()
+	if err != nil {
+		return
+	}
+
 	// packet := new(model.Signers).FromBytes(message)
 	// TODO implement me
 	panic("implement me")

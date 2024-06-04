@@ -5,8 +5,10 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/transport/database/redis"
 	"github.com/TimeleapLabs/unchained/internal/transport/server"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
@@ -26,15 +28,12 @@ func Broker() {
 	ethRPC := ethereum.New()
 	pos.New(ethRPC)
 
-	// frostService := frost.New()
+	redisIns := redis.New()
 
-	// scheduler := scheduler.New(
-	//	scheduler.WithFrostEvents(frostService),
-	//)
+	nativeSignerRepo := store.New()
+	redisSignerRepo := store.NewRedisStore(redisIns, nativeSignerRepo)
 
 	server.New(
-		websocket.WithWebsocket(),
+		websocket.WithWebsocket(redisSignerRepo),
 	)
-
-	// scheduler.Start()
 }

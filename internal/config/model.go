@@ -93,6 +93,11 @@ type Postgres struct {
 	URL string `env:"DATABASE_URL" yaml:"url"`
 }
 
+// Redis struct holds all configs to connect to a redis instance.
+type Redis struct {
+	Dsn string `env:"REDIS_DSN" yaml:"dsn"`
+}
+
 // Secret struct hold the secret keys of the application and loaded from secret.yaml.
 type Secret struct {
 	Address       string `env:"ADDRESS"         yaml:"address"`
@@ -110,6 +115,7 @@ type Config struct {
 	Network      Network      `yaml:"network"`
 	RPC          []RPC        `yaml:"rpc"`
 	Postgres     Postgres     `yaml:"postgres"`
+	Redis        Redis        `yaml:"redis"`
 	ProofOfStake ProofOfStake `yaml:"pos"`
 	Plugins      Plugins      `yaml:"plugins"`
 	Secret       Secret       `yaml:"secret"`

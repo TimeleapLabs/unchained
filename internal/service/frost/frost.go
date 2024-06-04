@@ -1,7 +1,7 @@
 package frost
 
 type Service interface {
-	PushSigners() error
+	InitSigner() error
 }
 
 type service struct {
