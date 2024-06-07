@@ -10,5 +10,6 @@ type Handler interface {
 	EventLog(ctx context.Context, message []byte)
 	PriceReport(ctx context.Context, message []byte)
 
-	AskIfFrostSigner(ctx context.Context, message []byte)
+	ConfirmFrostHandshake(ctx context.Context, message []byte)
+	StoreOnlineFrostParty(ctx context.Context, message []byte)
 }

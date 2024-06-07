@@ -1,6 +1,8 @@
 package multisig
 
 import (
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/taurusgroup/multi-party-sig/pkg/party"
 	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
 	"github.com/taurusgroup/multi-party-sig/protocols/frost"
@@ -17,14 +19,23 @@ type DistributedSigner struct {
 	Config     *frost.TaprootConfig
 }
 
+// ConfirmFromBytes function will set other parties confirms from byte array.
+func (d *DistributedSigner) ConfirmFromBytes(msgBytes []byte) (bool, error) {
+	msg := &protocol.Message{}
+	err := msg.UnmarshalBinary(msgBytes)
+	if err != nil {
+		utils.Logger.With("err", err).Error("cant unmarshal message")
+		return false, consts.ErrCantDecode
+	}
+
+	return d.Confirm(msg)
+}
+
 // Confirm function will set other parties confirms.
 func (d *DistributedSigner) Confirm(msg *protocol.Message) (bool, error) {
-	// msg := &protocol.Message{}
-	// err := msg.UnmarshalBinary(msgByte)
-	// if err != nil {
-	//	utils.Logger.With("err", err).Error("cant unmarshal message")
-	//	return consts.ErrCantDecode
-	//}
+	if !msg.IsFor(d.ID) {
+		return false, consts.ErrInvalidSignature
+	}
 
 	d.ackHandler.Accept(msg)
 
@@ -37,7 +48,12 @@ func (d *DistributedSigner) Confirm(msg *protocol.Message) (bool, error) {
 		return false, err
 	}
 
-	d.Config = result.(*frost.TaprootConfig)
+	var ok bool
+	d.Config, ok = result.(*frost.TaprootConfig)
+	if !ok {
+		utils.Logger.Error("Can't get TaprootConfig")
+		return false, consts.ErrInternalError
+	}
 
 	return true, nil
 }

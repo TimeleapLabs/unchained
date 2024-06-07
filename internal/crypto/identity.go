@@ -3,10 +3,11 @@ package crypto
 import (
 	"encoding/hex"
 
+	"github.com/TimeleapLabs/unchained/internal/crypto/multisig"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/crypto/tss"
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
@@ -19,9 +20,9 @@ type Signer interface {
 
 // MachineIdentity holds machine identity and provide and manage keys.
 type MachineIdentity struct {
-	Bls Signer
-	Eth Signer
-	Tss *tss.DistributedSigner
+	Bls   Signer
+	Eth   Signer
+	Frost *multisig.DistributedSigner
 }
 
 // Identity is a global variable that holds machine identity.

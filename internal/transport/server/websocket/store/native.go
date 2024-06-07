@@ -7,7 +7,7 @@ import (
 )
 
 type NativeStore struct {
-	signers xsync.MapOf[*websocket.Conn, model.Signer]
+	signers *xsync.MapOf[*websocket.Conn, model.Signer]
 }
 
 func (n *NativeStore) GetByPublicKey(publicKey [96]byte) (*websocket.Conn, bool) {
@@ -47,5 +47,7 @@ func (n *NativeStore) Get(conn *websocket.Conn) (model.Signer, bool) {
 }
 
 func New() ClientRepository {
-	return &NativeStore{}
+	return &NativeStore{
+		signers: xsync.NewMapOf[*websocket.Conn, model.Signer](),
+	}
 }

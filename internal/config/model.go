@@ -37,6 +37,7 @@ type EthLog struct {
 // Frost struct represent all task detail of its plugin.
 type Frost struct {
 	Schedule time.Duration `yaml:"schedule"`
+	Session  string        `yaml:"session"`
 }
 
 // Plugins struct holds all applications plugin configs.
@@ -76,7 +77,7 @@ type Token struct {
 // ProofOfStake struct holds information about POS contract of application.
 type ProofOfStake struct {
 	Chain   string `env:"POS_CHAIN"   env-default:"arbitrumSepolia"                            yaml:"chain"`
-	Address string `env:"POS_ADDRESS" env-default:"0x965e364987356785b7E89e2Fe7B70f5E5107332d" yaml:"address"`
+	Address string `env:"POS_ADDRESS" env-default:"0x54550AAfe0df642fbcAde11174250542D0d5FE54" yaml:"address"`
 	Base    int64  `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
 }
 

@@ -31,6 +31,7 @@ func Worker() {
 	)
 
 	ethRPC := ethereum.New()
+
 	pos := pos.New(ethRPC)
 
 	eventLogRepo := postgres.NewEventLog(nil)
@@ -40,7 +41,7 @@ func Worker() {
 	badger := evmlogService.NewBadger(config.App.System.ContextPath)
 	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, badger)
 	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
-	frostService := frost.New()
+	frostService := frost.New(pos)
 
 	scheduler := scheduler.New(
 		scheduler.WithEthLogs(evmLogService),

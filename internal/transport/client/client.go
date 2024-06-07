@@ -45,6 +45,12 @@ func NewRPC(handler handler.Handler) {
 				case consts.OpCodeCorrectnessReportBroadcast:
 					handler.CorrectnessReport(ctx, payload[1:])
 
+				case consts.OpCodeFrostSignerHandshake:
+					handler.ConfirmFrostHandshake(ctx, payload[1:])
+
+				case consts.OpcodeFrostSignerIsReady:
+					handler.StoreOnlineFrostParty(ctx, payload[1:])
+
 				default:
 					utils.Logger.
 						With("Code", payload[0]).

@@ -44,22 +44,22 @@ func (d *DistributedSigner) NewSigner(data []byte) (*MessageSigner, <-chan *prot
 	}, handler.Listen(), nil
 }
 
-func decodeMessages(in <-chan *protocol.Message) <-chan []byte {
-	out := make(chan []byte)
-
-	go func() {
-		for msg := range in {
-			msgByte, err := msg.MarshalBinary()
-			if err != nil {
-				utils.Logger.With("err", err).Error("cant marshal message")
-				continue
-			}
-
-			out <- msgByte
-		}
-
-		close(out)
-	}()
-
-	return out
-}
+// func decodeMessages(in <-chan *protocol.Message) <-chan []byte {
+//	out := make(chan []byte)
+//
+//	go func() {
+//		for msg := range in {
+//			msgByte, err := msg.MarshalBinary()
+//			if err != nil {
+//				utils.Logger.With("err", err).Error("cant marshal message")
+//				continue
+//			}
+//
+//			out <- msgByte
+//		}
+//
+//		close(out)
+//	}()
+//
+//	return out
+//}

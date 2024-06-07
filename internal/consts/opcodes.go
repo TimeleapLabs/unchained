@@ -24,5 +24,6 @@ const (
 	OpCodeCorrectnessReport          OpCode = 10
 	OpCodeCorrectnessReportBroadcast OpCode = 11
 
-	OpCodeAskIfFrostSigner OpCode = 12
+	OpCodeFrostSignerHandshake OpCode = 12
+	OpcodeFrostSignerIsReady   OpCode = 13
 )

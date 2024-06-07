@@ -4,18 +4,17 @@ import (
 	"context"
 )
 
-func (h *consumer) AskIfFrostSigner(ctx context.Context, message []byte) {
-	// packet := new([]model.Signer).FromBytes(message)
+func (h *consumer) ConfirmFrostHandshake(_ context.Context, _ []byte) {}
 
-}
-
-func (w worker) AskIfFrostSigner(ctx context.Context, message []byte) {
-	err := w.frostService.InitSigner()
+func (w worker) ConfirmFrostHandshake(ctx context.Context, message []byte) {
+	err := w.frostService.ConfirmHandshake(ctx, message)
 	if err != nil {
 		return
 	}
-
-	// packet := new(model.Signers).FromBytes(message)
-	// TODO implement me
-	panic("implement me")
 }
+
+func (h *consumer) StoreOnlineFrostParty(_ context.Context, _ []byte) {
+
+}
+
+func (w worker) StoreOnlineFrostParty(_ context.Context, _ []byte) {}

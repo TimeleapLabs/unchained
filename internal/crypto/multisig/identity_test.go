@@ -18,7 +18,6 @@ const (
 
 var (
 	sessionID = "sessionID"
-	testData  = []byte("HELLO hello")
 )
 
 type MultiSigIdentityTestSuite struct {
@@ -44,7 +43,7 @@ func (s *MultiSigIdentityTestSuite) SetupTest() {
 	wg := sync.WaitGroup{}
 	for _, channel := range channels {
 		wg.Add(1)
-		go func() {
+		go func(channel <-chan *protocol.Message) {
 			for msg := range channel {
 				if msg.Broadcast {
 					for _, p := range s.parties {
@@ -68,7 +67,7 @@ func (s *MultiSigIdentityTestSuite) SetupTest() {
 					}
 				}
 			}
-		}()
+		}(channel)
 	}
 
 	wg.Wait()

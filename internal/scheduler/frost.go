@@ -1,7 +1,10 @@
 package scheduler
 
 import (
+	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/service/frost"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 // FrostSync is a scheduler for syncing signer of Frost and keep task's dependencies.
@@ -11,7 +14,9 @@ type FrostSync struct {
 
 // Run will trigger by the scheduler and process the Frost sync.
 func (e *FrostSync) Run() {
-	err := e.frostService.SyncFrost()
+	utils.Logger.Info("Start synchronizing frost signers")
+	ctx := context.TODO()
+	err := e.frostService.SyncSigners(ctx)
 	if err != nil {
 		panic(err)
 	}

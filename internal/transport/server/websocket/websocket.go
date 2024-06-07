@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
+
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -124,6 +126,18 @@ func multiplexer(
 					Info("New Consumer registered")
 
 				go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
+			case consts.OpCodeFrostSignerHandshake:
+				msg := &protocol.Message{}
+				err = msg.UnmarshalBinary(payload[1:])
+				if err != nil {
+					handler.SendError(conn, messageType, consts.OpCodeError, err)
+					continue
+				}
+
+				pubsub.Publish(consts.ChannelFrostSigner, consts.OpCodeFrostSignerHandshake, payload[1:])
+			case consts.OpcodeFrostSignerIsReady:
+				pubsub.Publish(consts.ChannelFrostSigner, consts.OpcodeFrostSignerIsReady, payload[1:])
+
 			default:
 				handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 			}

@@ -1,31 +1,57 @@
 package frost
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/model"
+	"context"
+
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/crypto/multisig"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
 )
 
-// SyncFrost starts calculating of Frost signers by sending signers list to the Broker.
-func (s *service) SyncFrost() error {
-	// signers := []model.Signer{}
-	// store.Signers.Range(func(_ *websocket.Conn, value model.Signer) bool {
-	//	signers = append(signers, value)
-	//	return true
-	// })
-	//
-	// signersBytes, err := json.Marshal(signers)
-	//if err != nil {
-	//	utils.Logger.With("Error", err).Error("Cant marshal signers list")
-	//	return consts.ErrInternalError
-	//}
+// SyncSigners starts calculating of Frost signers by sending signers list to the Broker.
+func (s *service) SyncSigners(ctx context.Context) error {
+	addresses, err := s.pos.GetSchnorrSigners(ctx)
+	if err != nil {
+		utils.Logger.With("Error", err).Error("Cant get signers list")
+		return err
+	}
+
+	minSignerCount := (len(addresses) / 2) + 1
+
+	var handshakeMessageCh <-chan *protocol.Message
+	crypto.Identity.Frost, handshakeMessageCh = multisig.NewIdentity(
+		config.App.Plugins.Frost.Session,
+		crypto.Identity.ExportEvmSigner().EvmAddress,
+		addressArrayToStringArray(addresses),
+		minSignerCount,
+	)
+
+	go s.CoordinateHandshake(handshakeMessageCh)
 
 	return nil
 }
 
-// SyncSigners Get list of signers and check power of voting them and generate a new list (if there is difference) of signers which have power.
-func (s *service) SyncSigners(signers []model.Signer) error {
-	// TODO: get power of list items and delete no power ones.
+func (s *service) CoordinateHandshake(ch <-chan *protocol.Message) {
+	for msg := range ch {
+		msgBytes, err := msg.MarshalBinary()
+		if err != nil {
+			utils.Logger.With("Error", err).Error("Cant marshal handshake message")
+		}
 
-	// TODO: check the final list with previous one, and replace it if it have difference
+		conn.Send(consts.OpCodeFrostSignerHandshake, msgBytes)
+	}
+}
 
-	return nil
+func addressArrayToStringArray(addresses []common.Address) []string {
+	strAddresses := make([]string, 0, len(addresses))
+	for _, address := range addresses {
+		strAddresses = append(strAddresses, address.String())
+	}
+
+	return strAddresses
 }
