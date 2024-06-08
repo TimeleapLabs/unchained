@@ -7,10 +7,15 @@ import (
 )
 
 type SignerRepository interface {
+	SetSignerIsAlive(evmAddress string)
 }
 
 type NativeStore struct {
 	signers *xsync.MapOf[string, time.Time]
+}
+
+func (n NativeStore) SetSignerIsAlive(evmAddress string) {
+	n.signers.Store(evmAddress, time.Now())
 }
 
 func New() SignerRepository {

@@ -36,8 +36,9 @@ type EthLog struct {
 
 // Frost struct represent all task detail of its plugin.
 type Frost struct {
-	Schedule time.Duration `yaml:"schedule"`
-	Session  string        `yaml:"session"`
+	Schedule  time.Duration `yaml:"schedule"`
+	Heartbeat time.Duration `yaml:"heartbeat"`
+	Session   string        `yaml:"session"`
 }
 
 // Plugins struct holds all applications plugin configs.

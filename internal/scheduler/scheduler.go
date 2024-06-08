@@ -75,6 +75,7 @@ func WithFrostEvents(frostService frost.Service) func(s *Scheduler) {
 			return
 		}
 		s.AddTask(config.App.Plugins.Frost.Schedule, NewFrostSync(frostService))
+		s.AddTask(config.App.Plugins.Frost.Schedule, NewFrostReadiness())
 	}
 }
 

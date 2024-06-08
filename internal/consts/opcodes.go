@@ -26,4 +26,5 @@ const (
 
 	OpCodeFrostSignerHandshake OpCode = 12
 	OpcodeFrostSignerIsReady   OpCode = 13
+	OpCodeFrostSignerHeartBeat OpCode = 14
 )

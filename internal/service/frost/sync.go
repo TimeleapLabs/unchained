@@ -22,6 +22,7 @@ func (s *service) SyncSigners(ctx context.Context) error {
 	}
 
 	minSignerCount := (len(addresses) / 2) + 1
+	s.currentSigners = addresses
 
 	var handshakeMessageCh <-chan *protocol.Message
 	crypto.Identity.Frost, handshakeMessageCh = multisig.NewIdentity(

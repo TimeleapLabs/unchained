@@ -3,6 +3,8 @@ package frost
 import (
 	"context"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
@@ -18,8 +20,7 @@ type Service interface {
 type service struct {
 	pos pos.Service
 
-	// reserveSigners []bool
-	// currentSigners []bool
+	currentSigners []common.Address
 }
 
 func (s *service) ConfirmHandshake(_ context.Context, message []byte) error {
