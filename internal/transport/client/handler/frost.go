@@ -2,22 +2,31 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-func (h *postgresConsumer) ConfirmFrostHandshake(_ context.Context, _ []byte) {}
-func (h *schnorrConsumer) ConfirmFrostHandshake(_ context.Context, _ []byte)  {}
+func (h *consumer) ConfirmFrostHandshake(_ context.Context, _ []byte) {}
 
-func (w worker) ConfirmFrostHandshake(ctx context.Context, message []byte) {
+func (w *worker) ConfirmFrostHandshake(ctx context.Context, message []byte) {
 	err := w.frostService.ConfirmHandshake(ctx, message)
 	if err != nil {
 		return
 	}
 }
 
-func (h *postgresConsumer) StoreOnlineFrostParty(_ context.Context, _ []byte) {}
+func (h *consumer) InitFrostIdentity(ctx context.Context, message []byte) {}
+func (w *worker) InitFrostIdentity(ctx context.Context, message []byte) {
+	utils.Logger.Info("Start init frost identity")
+	onlineSigners := []string{}
 
-func (h *schnorrConsumer) StoreOnlineFrostParty(_ context.Context, evmAddressBytes []byte) {
-	h.signerRepository.SetSignerIsAlive(string(evmAddressBytes))
+	err := json.Unmarshal(message, &onlineSigners)
+	if err != nil {
+		return
+	}
+
+	err = w.frostService.SyncSigners(ctx, onlineSigners)
+	if err != nil {
+		return
+	}
 }
-
-func (w worker) StoreOnlineFrostParty(_ context.Context, _ []byte) {}

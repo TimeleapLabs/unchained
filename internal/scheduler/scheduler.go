@@ -75,6 +75,14 @@ func WithFrostEvents(frostService frost.Service) func(s *Scheduler) {
 			return
 		}
 		s.AddTask(config.App.Plugins.Frost.Schedule, NewFrostSync(frostService))
+	}
+}
+
+func WithFrostHeartbeat() func(s *Scheduler) {
+	return func(s *Scheduler) {
+		if config.App.Plugins.Frost == nil {
+			return
+		}
 		s.AddTask(config.App.Plugins.Frost.Heartbeat, NewFrostReadiness())
 	}
 }
@@ -97,8 +105,10 @@ func (s *Scheduler) AddTask(duration time.Duration, task Task) {
 }
 
 // Start starts the scheduler.
-func (s *Scheduler) Start() {
+func (s *Scheduler) Start(block bool) {
 	s.scheduler.Start()
 
-	select {}
+	if block {
+		select {}
+	}
 }

@@ -2,26 +2,51 @@ package frost
 
 import (
 	"context"
-
+	"encoding/json"
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/multisig"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
+	"time"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
 )
 
+func (s *service) SendOnlineSigners(ctx context.Context) error {
+	onlineSigners := []string{}
+	store.OnlineFrostParties.Range(func(key string, value time.Time) bool {
+		onlineSigners = append(onlineSigners, key)
+
+		return false
+	})
+
+	onlineSignersBytes, err := json.Marshal(onlineSigners)
+	if err != nil {
+		utils.Logger.With("Error", err).Error("Cant marshal online signers list")
+		return consts.ErrInternalError
+	}
+
+	pubsub.Publish(consts.ChannelFrostSigner, consts.OpcodeFrostSignerOnlines, onlineSignersBytes)
+
+	return nil
+}
+
 // SyncSigners starts calculating of Frost signers by sending signers list to the Broker.
-func (s *service) SyncSigners(ctx context.Context) error {
+func (s *service) SyncSigners(ctx context.Context, onlineSigners []string) error {
 	addresses, err := s.pos.GetSchnorrSigners(ctx)
 	if err != nil {
 		utils.Logger.With("Error", err).Error("Cant get signers list")
 		return err
 	}
 
-	minSignerCount := (len(addresses) / 2) + 1
+	addresses = FilterOnlineSigners(addresses, onlineSigners)
+
+	minSignerCount := (len(addresses) / 100) * 65
 	s.currentSigners = addresses
 
 	var handshakeMessageCh <-chan *protocol.Message

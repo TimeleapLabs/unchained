@@ -18,6 +18,7 @@ func (h Handler) Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 
 	preConn, preConnExist := h.clientRepository.GetByPublicKey(signer.PublicKey)
 	if preConnExist {
+		h.clientRepository.Remove(preConn)
 		Close(preConn)
 	}
 

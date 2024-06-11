@@ -6,7 +6,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
-func (h *postgresConsumer) PriceReport(ctx context.Context, message []byte) {
+func (h *consumer) PriceReport(ctx context.Context, message []byte) {
 	packet := new(model.BroadcastPricePacket).FromBytes(message)
 
 	priceInfoHash, err := packet.Info.Bls()
@@ -28,6 +28,4 @@ func (h *postgresConsumer) PriceReport(ctx context.Context, message []byte) {
 	}
 }
 
-func (h *schnorrConsumer) PriceReport(_ context.Context, _ []byte) {}
-
-func (w worker) PriceReport(_ context.Context, _ []byte) {}
+func (w *worker) PriceReport(_ context.Context, _ []byte) {}

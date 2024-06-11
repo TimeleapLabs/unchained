@@ -12,22 +12,14 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/transport/client"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/store"
 	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
 	"github.com/TimeleapLabs/unchained/internal/transport/server"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/gql"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-type JobType string
-
-const (
-	PostgresConsumer JobType = "postgres"
-	SchnorrConsumer  JobType = "schnorr"
-)
-
 // Consumer starts the Unchained consumer and contains its DI.
-func Consumer(jobType JobType) {
+func Consumer() {
 	utils.Logger.
 		With("Mode", "Consumer").
 		With("Version", consts.Version).
@@ -39,36 +31,34 @@ func Consumer(jobType JobType) {
 		crypto.WithBlsIdentity(),
 	)
 
-	if jobType == PostgresConsumer {
-		ethRPC := ethereum.New()
-		pos := pos.New(ethRPC)
-		db := postgres.New()
+	ethRPC := ethereum.New()
+	pos := pos.New(ethRPC)
+	db := postgres.New()
 
-		eventLogRepo := postgresRepo.NewEventLog(db)
-		signerRepo := postgresRepo.NewSigner(db)
-		assetPrice := postgresRepo.NewAssetPrice(db)
-		correctnessRepo := postgresRepo.NewCorrectness(db)
+	eventLogRepo := postgresRepo.NewEventLog(db)
+	signerRepo := postgresRepo.NewSigner(db)
+	assetPrice := postgresRepo.NewAssetPrice(db)
+	correctnessRepo := postgresRepo.NewCorrectness(db)
 
-		correctnessService := correctnessService.New(pos, signerRepo, correctnessRepo)
-		evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, nil)
-		uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
+	correctnessService := correctnessService.New(pos, signerRepo, correctnessRepo)
+	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, nil)
+	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
 
-		conn.Start()
+	conn.Start()
 
-		handler := handler.NewPostgresConsumerHandler(correctnessService, uniswapService, evmLogService)
-		client.NewRPC(handler)
+	client.NewRPC(
+		handler.NewConsumerHandler(correctnessService, uniswapService, evmLogService),
+	)
 
-		server.New(
-			gql.WithGraphQL(db),
-		)
-	} else {
-		signerRepo := store.New()
+	server.New(
+		gql.WithGraphQL(db),
+	)
 
-		conn.Start()
+	//signerRepo := store.New()
 
-		handler := handler.NewSchnorrConsumerHandler(signerRepo)
-		client.NewRPC(handler)
+	//client.NewRPC(
+	//	handler.NewSchnorrConsumerHandler(signerRepo),
+	//)
+	//
 
-		select {}
-	}
 }

@@ -46,7 +46,7 @@ func Worker() {
 	scheduler := scheduler.New(
 		scheduler.WithEthLogs(evmLogService),
 		scheduler.WithUniswapEvents(uniswapService),
-		scheduler.WithFrostEvents(frostService),
+		scheduler.WithFrostHeartbeat(),
 	)
 
 	conn.Start()
@@ -54,5 +54,5 @@ func Worker() {
 	handler := handler.NewWorkerHandler(frostService)
 	client.NewRPC(handler)
 
-	scheduler.Start()
+	scheduler.Start(true)
 }

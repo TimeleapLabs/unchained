@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
 
@@ -40,8 +41,7 @@ func WithWebsocket(
 }
 
 func multiplexer(
-	signerRepository store.ClientRepository,
-	serverHandler *handler.Handler,
+	signerRepository store.ClientRepository, serverHandler *handler.Handler,
 ) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
@@ -137,6 +137,9 @@ func multiplexer(
 				pubsub.Publish(consts.ChannelFrostSigner, consts.OpCodeFrostSignerHandshake, payload[1:])
 			case consts.OpcodeFrostSignerIsReady:
 				pubsub.Publish(consts.ChannelFrostSigner, consts.OpcodeFrostSignerIsReady, payload[1:])
+
+			case consts.OpCodeFrostSignerHeartBeat:
+				store.OnlineFrostParties.Store(conn.RemoteAddr().String(), time.Now())
 
 			default:
 				handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)

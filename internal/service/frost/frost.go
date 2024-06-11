@@ -13,7 +13,8 @@ import (
 )
 
 type Service interface {
-	SyncSigners(ctx context.Context) error
+	SendOnlineSigners(ctx context.Context) error
+	SyncSigners(ctx context.Context, onlineSigners []string) error
 	ConfirmHandshake(ctx context.Context, message []byte) error
 }
 

@@ -48,9 +48,8 @@ func NewRPC(handler handler.Handler) {
 				case consts.OpCodeFrostSignerHandshake:
 					handler.ConfirmFrostHandshake(ctx, payload[1:])
 
-				case consts.OpcodeFrostSignerIsReady:
-					handler.StoreOnlineFrostParty(ctx, payload[1:])
-
+				case consts.OpcodeFrostSignerOnlines:
+					handler.InitFrostIdentity(ctx, payload[1:])
 				default:
 					utils.Logger.
 						With("Code", payload[0]).

@@ -6,7 +6,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
-func (h *postgresConsumer) EventLog(ctx context.Context, message []byte) {
+func (h *consumer) EventLog(ctx context.Context, message []byte) {
 	packet := new(model.BroadcastEventPacket).FromBytes(message)
 
 	eventLogHash, err := packet.Info.Bls()
@@ -28,6 +28,4 @@ func (h *postgresConsumer) EventLog(ctx context.Context, message []byte) {
 	}
 }
 
-func (h *schnorrConsumer) EventLog(_ context.Context, _ []byte) {}
-
-func (w worker) EventLog(_ context.Context, _ []byte) {}
+func (w *worker) EventLog(_ context.Context, _ []byte) {}

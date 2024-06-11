@@ -29,7 +29,7 @@ func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte
 		select {
 		case <-ctx.Done():
 			utils.Logger.Info("Closing connection")
-			close(ch)
+			//close(ch)
 			return
 		case message := <-ch:
 			err := conn.WriteMessage(websocket.BinaryMessage, message)

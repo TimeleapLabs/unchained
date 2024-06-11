@@ -6,7 +6,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
-func (h *postgresConsumer) CorrectnessReport(ctx context.Context, message []byte) {
+func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 	packet := new(model.BroadcastCorrectnessPacket).FromBytes(message)
 
 	correctnessHash, err := packet.Info.Bls()
@@ -27,6 +27,4 @@ func (h *postgresConsumer) CorrectnessReport(ctx context.Context, message []byte
 	}
 }
 
-func (h *schnorrConsumer) CorrectnessReport(_ context.Context, _ []byte) {}
-
-func (w worker) CorrectnessReport(_ context.Context, _ []byte) {}
+func (w *worker) CorrectnessReport(_ context.Context, _ []byte) {}

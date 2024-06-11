@@ -7,5 +7,5 @@ const (
 	ChannelPriceReport       Channels = "unchained:price_report"
 	ChannelEventLog          Channels = "unchained:event_log"
 	ChannelCorrectnessReport Channels = "unchained:correctness_report"
-	ChannelFrostSigner       Channels = "unchained:frost:handshake"
+	ChannelFrostSigner       Channels = "unchained:frost"
 )

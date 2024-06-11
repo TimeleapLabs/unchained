@@ -8,7 +8,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 
 	"github.com/TimeleapLabs/unchained/internal/service/frost"
-	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 // FrostSync is a scheduler for syncing signer of Frost and keep task's dependencies.
@@ -21,16 +20,19 @@ type FrostReadiness struct {
 
 // Run will trigger by the scheduler and process the Frost sync.
 func (e *FrostSync) Run() {
-	utils.Logger.Info("Start synchronizing frost signers")
 	ctx := context.TODO()
-	err := e.frostService.SyncSigners(ctx)
+	err := e.frostService.SendOnlineSigners(ctx)
 	if err != nil {
 		panic(err)
 	}
 }
 
-// RunHeartbeatSender will trigger by the scheduler and send heartbeat to show workers readiness.
+// Run will trigger by the scheduler and send heartbeat to show workers readiness.
 func (e *FrostReadiness) Run() {
+	if conn.IsClosed {
+		return
+	}
+
 	conn.SendMessage(consts.OpCodeFrostSignerHeartBeat, crypto.Identity.ExportEvmSigner().EvmAddress)
 }
 

@@ -41,3 +41,15 @@ func (m *MockService) GetSchnorrSigners(_ context.Context) ([]common.Address, er
 	args := m.Called()
 	return args.Get(0).([]common.Address), args.Error(1)
 }
+
+func NewMock() *MockService {
+	pos := &MockService{}
+
+	pos.On("GetSchnorrSigners", mock.Anything).Return([]common.Address{
+		common.HexToAddress("0x1"),
+		common.HexToAddress("0x2"),
+		common.HexToAddress("0x3"),
+	}, nil)
+
+	return pos
+}
