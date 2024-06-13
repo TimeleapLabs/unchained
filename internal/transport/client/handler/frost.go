@@ -3,15 +3,22 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/crypto"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 func (h *consumer) ConfirmFrostHandshake(_ context.Context, _ []byte) {}
 
 func (w *worker) ConfirmFrostHandshake(ctx context.Context, message []byte) {
-	err := w.frostService.ConfirmHandshake(ctx, message)
+	isReady, err := w.frostService.ConfirmHandshake(ctx, message)
 	if err != nil {
 		return
+	}
+
+	if isReady {
+		conn.SendMessage(consts.OpcodeFrostSignerIsReady, crypto.Identity.ExportEvmSigner().EvmAddress)
 	}
 }
 
@@ -25,8 +32,10 @@ func (w *worker) InitFrostIdentity(ctx context.Context, message []byte) {
 		return
 	}
 
-	err = w.frostService.SyncSigners(ctx, onlineSigners)
+	handshakeChannel, err := w.frostService.SyncSigners(ctx, onlineSigners)
 	if err != nil {
 		return
 	}
+
+	w.frostService.CoordinateHandshake(handshakeChannel)
 }

@@ -3,8 +3,6 @@ package crypto
 import (
 	"encoding/hex"
 
-	"github.com/TimeleapLabs/unchained/internal/crypto/multisig"
-
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
@@ -20,9 +18,8 @@ type Signer interface {
 
 // MachineIdentity holds machine identity and provide and manage keys.
 type MachineIdentity struct {
-	Bls   Signer
-	Eth   Signer
-	Frost *multisig.DistributedSigner
+	Bls Signer
+	Eth Signer
 }
 
 // Identity is a global variable that holds machine identity.
@@ -72,19 +69,6 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 		return nil
 	}
 }
-
-// WithTssSigner initialize and will add Tss identity to machine identity.
-// func WithTssSigner(signers []string, minThreshold int) func(machineIdentity *MachineIdentity) error {
-//	return func(machineIdentity *MachineIdentity) error {
-//		machineIdentity.Tss = tss.NewIdentity(
-//			signers,
-//			minThreshold,
-//		)
-//		//machineIdentity.Tss.WriteConfigs()
-//
-//		return nil
-//	}
-//}
 
 // WithBlsIdentity initialize and will add Bls identity to machine identity.
 func WithBlsIdentity() func(machineIdentity *MachineIdentity) error {

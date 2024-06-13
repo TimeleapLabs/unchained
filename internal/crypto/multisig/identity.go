@@ -15,6 +15,7 @@ type DistributedSigner struct {
 	ID         party.ID
 	sessionID  string
 	Signers    []party.ID
+	numOfAcks  int
 	ackHandler *protocol.MultiHandler
 	Config     *frost.TaprootConfig
 }
@@ -33,7 +34,7 @@ func (d *DistributedSigner) ConfirmFromBytes(msgBytes []byte) (bool, error) {
 
 // Confirm function will set other parties confirms.
 func (d *DistributedSigner) Confirm(msg *protocol.Message) (bool, error) {
-	if !msg.IsFor(d.ID) {
+	if !msg.IsFor(d.ID) && !msg.Broadcast {
 		return false, consts.ErrInvalidSignature
 	}
 
@@ -42,6 +43,9 @@ func (d *DistributedSigner) Confirm(msg *protocol.Message) (bool, error) {
 	result, err := d.ackHandler.Result()
 	if err != nil {
 		if err.Error() == "protocol: not finished" {
+			//d.numOfAcks++
+			//fmt.Println(d.ID, "Acks:", d.numOfAcks)
+
 			return false, nil
 		}
 
@@ -69,6 +73,7 @@ func NewIdentity(sessionID, id string, signers []string, minSigningCount int) (*
 	}
 
 	return &DistributedSigner{
+		ID:              party.ID(id),
 		sessionID:       sessionID,
 		Signers:         signersIDs,
 		minSigningCount: minSigningCount,

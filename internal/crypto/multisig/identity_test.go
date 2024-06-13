@@ -18,6 +18,7 @@ const (
 
 var (
 	sessionID = "sessionID"
+	testData  = "hello world!"
 )
 
 type MultiSigIdentityTestSuite struct {
@@ -45,24 +46,13 @@ func (s *MultiSigIdentityTestSuite) SetupTest() {
 		wg.Add(1)
 		go func(channel <-chan *protocol.Message) {
 			for msg := range channel {
-				if msg.Broadcast {
-					for _, p := range s.parties {
+				for _, p := range s.parties {
+					if msg.Broadcast || msg.IsFor(p.ID) {
 						isReady, err := p.Confirm(msg)
 						assert.NoError(s.T(), err)
+
 						if isReady {
-							s.T().Log("Confirmed!")
 							wg.Done()
-						}
-					}
-				} else {
-					for _, p := range s.parties {
-						if msg.IsFor(p.ID) {
-							isReady, err := p.Confirm(msg)
-							assert.NoError(s.T(), err)
-							if isReady {
-								s.T().Log("Confirmed!")
-								wg.Done()
-							}
 						}
 					}
 				}
@@ -74,38 +64,37 @@ func (s *MultiSigIdentityTestSuite) SetupTest() {
 }
 
 func (s *MultiSigIdentityTestSuite) TestSign() {
-	// signers := []*MessageSigner{}
+	signers := []*MessageSigner{}
+	channels := []<-chan *protocol.Message{}
 
-	// for _, party := range s.parties {
-	//	signer, msgCh, err := party.NewSigner(testData)
-	//	assert.NoError(s.T(), err)
-	//
-	//	signers = append(signers, signer)
-	//
-	//	go func() {
-	//		for msg := range msgCh {
-	//			if msg.Broadcast {
-	//				for _, v := range s.parties {
-	//					err = v.Confirm(msg)
-	//					assert.NoError(s.T(), err)
-	//					if err == nil {
-	//						s.T().Log("Confirmed!")
-	//					}
-	//				}
-	//			} else {
-	//				for _, v := range s.parties {
-	//					if msg.IsFor(v.ID) {
-	//						err = v.Confirm(msg)
-	//						assert.NoError(s.T(), err)
-	//						if err == nil {
-	//							s.T().Log("Confirmed!")
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}()
-	//}
+	for _, party := range s.parties {
+		signer, msgCh, err := party.NewSigner([]byte(testData))
+		assert.NoError(s.T(), err)
+
+		signers = append(signers, signer)
+		channels = append(channels, msgCh)
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	for _, channel := range channels {
+		go func(channel <-chan *protocol.Message) {
+			for msg := range channel {
+				for _, p := range signers {
+					if msg.Broadcast || msg.IsFor(p.ID) {
+						isReady, err := p.Confirm(msg)
+						assert.NoError(s.T(), err)
+
+						if isReady {
+							wg.Done()
+						}
+					}
+				}
+			}
+		}(channel)
+	}
+
+	wg.Wait()
 }
 
 func TestMultiSigIdentitySuite(t *testing.T) {

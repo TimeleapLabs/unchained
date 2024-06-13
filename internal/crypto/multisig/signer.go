@@ -3,27 +3,48 @@ package multisig
 import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/taurusgroup/multi-party-sig/pkg/party"
 	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
 	"github.com/taurusgroup/multi-party-sig/protocols/frost"
 )
 
 // MessageSigner represents state of signing of a message.
 type MessageSigner struct {
+	ID         party.ID
 	ackHandler *protocol.MultiHandler
 }
 
-// Confirm function will set other parties confirms.
-func (s *MessageSigner) Confirm(msgByte []byte) error {
+// ConfirmFromBytes function will set other parties confirms from byte array.
+func (s *MessageSigner) ConfirmFromBytes(msgByte []byte) (bool, error) {
 	msg := &protocol.Message{}
 	err := msg.UnmarshalBinary(msgByte)
 	if err != nil {
 		utils.Logger.With("err", err).Error("cant unmarshal message")
-		return consts.ErrCantDecode
+		return false, consts.ErrCantDecode
 	}
 
+	return s.Confirm(msg)
+}
+
+// Confirm function will set other parties confirms.
+func (s *MessageSigner) Confirm(msg *protocol.Message) (bool, error) {
 	s.ackHandler.Accept(msg)
 
-	return nil
+	_, err := s.ackHandler.Result()
+	if err != nil {
+		if err.Error() == "protocol: not finished" {
+			//d.numOfAcks++
+			//fmt.Println(d.ID, "Acks:", d.numOfAcks)
+
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	//signature := result.(taproot.Signature)
+
+	return true, nil
 }
 
 func (d *DistributedSigner) NewSigner(data []byte) (*MessageSigner, <-chan *protocol.Message, error) {
@@ -40,6 +61,7 @@ func (d *DistributedSigner) NewSigner(data []byte) (*MessageSigner, <-chan *prot
 	}
 
 	return &MessageSigner{
+		ID:         d.ID,
 		ackHandler: handler,
 	}, handler.Listen(), nil
 }

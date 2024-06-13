@@ -9,6 +9,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
+	"math"
 	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -17,6 +18,7 @@ import (
 	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
 )
 
+// SendOnlineSigners sends online signers list to the Workers.
 func (s *service) SendOnlineSigners(ctx context.Context) error {
 	onlineSigners := []string{}
 	store.OnlineFrostParties.Range(func(key string, value time.Time) bool {
@@ -37,29 +39,27 @@ func (s *service) SendOnlineSigners(ctx context.Context) error {
 }
 
 // SyncSigners starts calculating of Frost signers by sending signers list to the Broker.
-func (s *service) SyncSigners(ctx context.Context, onlineSigners []string) error {
+func (s *service) SyncSigners(ctx context.Context, onlineSigners []string) (<-chan *protocol.Message, error) {
 	addresses, err := s.pos.GetSchnorrSigners(ctx)
 	if err != nil {
 		utils.Logger.With("Error", err).Error("Cant get signers list")
-		return err
+		return nil, err
 	}
 
 	addresses = FilterOnlineSigners(addresses, onlineSigners)
 
-	minSignerCount := (len(addresses) / 100) * 65
+	minSignerCount := math.Round(0.65 * float64(len(addresses)))
 	s.currentSigners = addresses
-
 	var handshakeMessageCh <-chan *protocol.Message
-	crypto.Identity.Frost, handshakeMessageCh = multisig.NewIdentity(
+
+	s.frost, handshakeMessageCh = multisig.NewIdentity(
 		config.App.Plugins.Frost.Session,
 		crypto.Identity.ExportEvmSigner().EvmAddress,
 		addressArrayToStringArray(addresses),
-		minSignerCount,
+		int(minSignerCount),
 	)
 
-	go s.CoordinateHandshake(handshakeMessageCh)
-
-	return nil
+	return handshakeMessageCh, nil
 }
 
 func (s *service) CoordinateHandshake(ch <-chan *protocol.Message) {
