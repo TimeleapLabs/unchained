@@ -15,7 +15,6 @@ type DistributedSigner struct {
 	ID         party.ID
 	sessionID  string
 	Signers    []party.ID
-	numOfAcks  int
 	ackHandler *protocol.MultiHandler
 	Config     *frost.TaprootConfig
 }
@@ -43,8 +42,8 @@ func (d *DistributedSigner) Confirm(msg *protocol.Message) (bool, error) {
 	result, err := d.ackHandler.Result()
 	if err != nil {
 		if err.Error() == "protocol: not finished" {
-			//d.numOfAcks++
-			//fmt.Println(d.ID, "Acks:", d.numOfAcks)
+			// d.numOfAcks++
+			// fmt.Println(d.ID, "Acks:", d.numOfAcks)
 
 			return false, nil
 		}

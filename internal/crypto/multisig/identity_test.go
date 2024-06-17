@@ -82,10 +82,10 @@ func (s *MultiSigIdentityTestSuite) TestSign() {
 			for msg := range channel {
 				for _, p := range signers {
 					if msg.Broadcast || msg.IsFor(p.ID) {
-						isReady, err := p.Confirm(msg)
+						signature, err := p.Confirm(msg)
 						assert.NoError(s.T(), err)
 
-						if isReady {
+						if signature != nil {
 							wg.Done()
 						}
 					}

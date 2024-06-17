@@ -1,8 +1,9 @@
 package store
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"time"
+
+	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"

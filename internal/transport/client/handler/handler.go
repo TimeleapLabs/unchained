@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/correctness"
@@ -19,6 +20,7 @@ type Handler interface {
 
 	ConfirmFrostHandshake(ctx context.Context, message []byte)
 	InitFrostIdentity(ctx context.Context, message []byte)
+	RequestToSign(ctx context.Context, message []byte)
 }
 
 type worker struct {

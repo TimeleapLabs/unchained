@@ -5,6 +5,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/taurusgroup/multi-party-sig/pkg/party"
 	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
+	"github.com/taurusgroup/multi-party-sig/pkg/taproot"
 	"github.com/taurusgroup/multi-party-sig/protocols/frost"
 )
 
@@ -15,36 +16,36 @@ type MessageSigner struct {
 }
 
 // ConfirmFromBytes function will set other parties confirms from byte array.
-func (s *MessageSigner) ConfirmFromBytes(msgByte []byte) (bool, error) {
+func (s *MessageSigner) ConfirmFromBytes(msgByte []byte) ([]byte, error) {
 	msg := &protocol.Message{}
 	err := msg.UnmarshalBinary(msgByte)
 	if err != nil {
 		utils.Logger.With("err", err).Error("cant unmarshal message")
-		return false, consts.ErrCantDecode
+		return nil, consts.ErrCantDecode
 	}
 
 	return s.Confirm(msg)
 }
 
 // Confirm function will set other parties confirms.
-func (s *MessageSigner) Confirm(msg *protocol.Message) (bool, error) {
+func (s *MessageSigner) Confirm(msg *protocol.Message) ([]byte, error) {
 	s.ackHandler.Accept(msg)
 
-	_, err := s.ackHandler.Result()
+	result, err := s.ackHandler.Result()
 	if err != nil {
 		if err.Error() == "protocol: not finished" {
-			//d.numOfAcks++
-			//fmt.Println(d.ID, "Acks:", d.numOfAcks)
-
-			return false, nil
+			return nil, nil
 		}
 
-		return false, err
+		return nil, err
 	}
 
-	//signature := result.(taproot.Signature)
-
-	return true, nil
+	signature, ok := result.(taproot.Signature)
+	if !ok {
+		utils.Logger.Error("Can't get signature")
+		return nil, consts.ErrInternalError
+	}
+	return signature, nil
 }
 
 func (d *DistributedSigner) NewSigner(data []byte) (*MessageSigner, <-chan *protocol.Message, error) {

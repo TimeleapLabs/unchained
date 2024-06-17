@@ -29,10 +29,10 @@ func Broker() {
 	ethRPC := ethereum.New()
 	pos := pos.New(ethRPC)
 
-	//redisIns := redis.New()
+	// redisIns := redis.New()
 
 	nativeSignerRepo := store.New()
-	//redisSignerRepo := store.NewRedisStore(redisIns, nativeSignerRepo)
+	// redisSignerRepo := store.NewRedisStore(redisIns, nativeSignerRepo)
 
 	frostService := frost.New(pos)
 

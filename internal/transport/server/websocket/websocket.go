@@ -141,6 +141,9 @@ func multiplexer(
 			case consts.OpCodeFrostSignerHeartBeat:
 				store.OnlineFrostParties.Store(conn.RemoteAddr().String(), time.Now())
 
+			case consts.OpCodeFrostRequestSign:
+				pubsub.Publish(consts.ChannelFrostSigner, consts.OpCodeFrostRequestSign, payload[1:])
+
 			default:
 				handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 			}

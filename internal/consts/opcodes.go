@@ -28,4 +28,8 @@ const (
 	OpcodeFrostSignerIsReady   OpCode = 13
 	OpCodeFrostSignerHeartBeat OpCode = 14
 	OpcodeFrostSignerOnlines   OpCode = 15
+
+	OpCodeFrostRequestSign        OpCode = 16
+	OpCodeFrostConfirmMessageSign OpCode = 17
+	OpCodeFrostMessageIsReady     OpCode = 18
 )

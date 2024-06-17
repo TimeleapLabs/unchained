@@ -3,14 +3,15 @@ package frost
 import (
 	"context"
 	"encoding/json"
+	"math"
+	"time"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/multisig"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
-	"math"
-	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -19,7 +20,7 @@ import (
 )
 
 // SendOnlineSigners sends online signers list to the Workers.
-func (s *service) SendOnlineSigners(ctx context.Context) error {
+func (s *service) SendOnlineSigners(_ context.Context) error {
 	onlineSigners := []string{}
 	store.OnlineFrostParties.Range(func(key string, value time.Time) bool {
 		onlineSigners = append(onlineSigners, key)

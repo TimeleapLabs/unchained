@@ -14,7 +14,7 @@ type PosTestSuite struct {
 }
 
 func (s *PosTestSuite) SetupTest() {
-	s.service = NewMock()
+	s.service = NewMock([]string{"0x1", "0x2", "0x3"})
 }
 
 func (s *PosTestSuite) TestGetTotalVotingPower() {

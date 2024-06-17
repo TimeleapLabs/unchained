@@ -54,11 +54,10 @@ func Consumer() {
 		gql.WithGraphQL(db),
 	)
 
-	//signerRepo := store.New()
+	// signerRepo := store.New()
 
-	//client.NewRPC(
+	// client.NewRPC(
 	//	handler.NewSchnorrConsumerHandler(signerRepo),
 	//)
 	//
-
 }

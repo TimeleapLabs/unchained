@@ -50,6 +50,10 @@ func NewRPC(handler handler.Handler) {
 
 				case consts.OpcodeFrostSignerOnlines:
 					handler.InitFrostIdentity(ctx, payload[1:])
+
+				case consts.OpCodeFrostRequestSign:
+					handler.RequestToSign(ctx, payload[1:])
+
 				default:
 					utils.Logger.
 						With("Code", payload[0]).

@@ -2,9 +2,12 @@ package frost
 
 import (
 	"context"
+	"crypto/sha1" // #nosec
 	"errors"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto/multisig"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/taurusgroup/multi-party-sig/pkg/protocol"
 
@@ -19,7 +22,11 @@ type Service interface {
 	CoordinateHandshake(ch <-chan *protocol.Message)
 	ConfirmHandshake(ctx context.Context, message []byte) (bool, error)
 	ConfirmHandshakeRaw(ctx context.Context, message *protocol.Message) (bool, error)
-	SignData(ctx context.Context, data []byte) ([]byte, error)
+
+	RequestToSign(data []byte)
+	SignData(ctx context.Context, data []byte) ([]byte, <-chan *protocol.Message, error)
+	CoordinateSignData(hashOfMessage []byte, msgCh <-chan *protocol.Message)
+	ConfirmSignedData(data []byte) ([]byte, error)
 }
 
 type service struct {
@@ -27,14 +34,56 @@ type service struct {
 
 	frost *multisig.DistributedSigner
 
-	currentSigners []common.Address
+	currentSigners  []common.Address
+	signingMessages *utils.TTLMap
 }
 
-func (s *service) SignData(ctx context.Context, data []byte) ([]byte, error) {
+func (s *service) RequestToSign(data []byte) {
+	conn.Send(consts.OpCodeFrostRequestSign, data)
+}
+
+func (s *service) SignData(ctx context.Context, data []byte) ([]byte, <-chan *protocol.Message, error) {
 	signer, msgCh, err := s.frost.NewSigner(data)
 	if err != nil {
-
+		return nil, nil, err
 	}
+
+	hasher := sha1.New() // #nosec
+	hasher.Write(data)
+	hashOfMessage := hasher.Sum(nil)
+	s.signingMessages.Set(ctx, string(hashOfMessage), signer)
+
+	return hashOfMessage, msgCh, nil
+}
+
+func (s *service) CoordinateSignData(hashOfMessage []byte, msgCh <-chan *protocol.Message) {
+	for msg := range msgCh {
+		msgBytes, err := msg.MarshalBinary()
+		if err != nil {
+			utils.Logger.With("Error", err).Error("Can't marshal message")
+			return
+		}
+
+		conn.Send(consts.OpCodeFrostConfirmMessageSign, append(hashOfMessage, msgBytes...))
+	}
+}
+
+func (s *service) ConfirmSignedData(data []byte) ([]byte, error) {
+	hashOfMessage := data[:20]
+	signatureBytes := data[20:]
+	signer, isExist := s.signingMessages.Get(string(hashOfMessage))
+	if !isExist {
+		utils.Logger.With("Error", "").Error("Can't get signer")
+		return nil, consts.ErrSignerIsNotReady
+	}
+
+	signature, err := signer.(*multisig.MessageSigner).ConfirmFromBytes(signatureBytes)
+	if err != nil {
+		utils.Logger.With("Error", err).Error("Can't confirm signed message")
+		return nil, err
+	}
+
+	return signature, nil
 }
 
 func (s *service) ConfirmHandshakeRaw(_ context.Context, message *protocol.Message) (bool, error) {
@@ -59,6 +108,7 @@ func (s *service) ConfirmHandshake(_ context.Context, message []byte) (bool, err
 
 func New(pos pos.Service) Service {
 	return &service{
-		pos: pos,
+		pos:             pos,
+		signingMessages: utils.NewDataStore(),
 	}
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
@@ -22,7 +23,7 @@ func (w *worker) ConfirmFrostHandshake(ctx context.Context, message []byte) {
 	}
 }
 
-func (h *consumer) InitFrostIdentity(ctx context.Context, message []byte) {}
+func (h *consumer) InitFrostIdentity(_ context.Context, _ []byte) {}
 func (w *worker) InitFrostIdentity(ctx context.Context, message []byte) {
 	utils.Logger.Info("Start init frost identity")
 	onlineSigners := []string{}
@@ -38,4 +39,9 @@ func (w *worker) InitFrostIdentity(ctx context.Context, message []byte) {
 	}
 
 	w.frostService.CoordinateHandshake(handshakeChannel)
+}
+
+func (h *consumer) RequestToSign(_ context.Context, _ []byte) {}
+func (w *worker) RequestToSign(_ context.Context, message []byte) {
+	w.frostService.RequestToSign(message)
 }

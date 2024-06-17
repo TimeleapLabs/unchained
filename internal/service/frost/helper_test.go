@@ -1,9 +1,10 @@
 package frost
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func TestFilterOnlineSigners(t *testing.T) {
