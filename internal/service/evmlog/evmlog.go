@@ -110,7 +110,6 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	}
 
 	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
-
 	if err != nil {
 		return err
 	}
