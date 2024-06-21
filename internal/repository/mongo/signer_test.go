@@ -1,6 +1,11 @@
 package mongo
 
 import (
+	"context"
+	"log"
+	"runtime"
+	"testing"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
@@ -8,9 +13,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/stretchr/testify/suite"
 	"github.com/tryvium-travels/memongo"
-	"log"
-	"runtime"
-	"testing"
 )
 
 var sampleSigner = model.Signer{}
@@ -46,7 +48,7 @@ func (s *SignerRepositoryTestSuite) SetupTest() {
 }
 
 func (s *SignerRepositoryTestSuite) TestUpsert() {
-	err := s.repo.CreateSigners(nil, []model.Signer{sampleSigner})
+	err := s.repo.CreateSigners(context.TODO(), []model.Signer{sampleSigner})
 	s.Require().NoError(err)
 }
 

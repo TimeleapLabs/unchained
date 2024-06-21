@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/TimeleapLabs/unchained/internal/ent"

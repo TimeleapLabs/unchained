@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
 	"github.com/TimeleapLabs/unchained/internal/utils"

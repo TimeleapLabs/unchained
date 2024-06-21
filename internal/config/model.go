@@ -75,7 +75,7 @@ type Network struct {
 }
 
 type Mongo struct {
-	URL      string `env:"Mongo_URL" yaml:"url"`
+	URL      string `env:"Mongo_URL"      yaml:"url"`
 	Database string `env:"Mongo_Database" yaml:"database"`
 }
 

@@ -33,8 +33,8 @@ func Consumer() {
 
 	ethRPC := ethereum.New()
 	pos := pos.New(ethRPC)
-	db := postgres.New()
 
+	db := postgres.New()
 	eventLogRepo := postgresRepo.NewEventLog(db)
 	signerRepo := postgresRepo.NewSigner(db)
 	assetPrice := postgresRepo.NewAssetPrice(db)

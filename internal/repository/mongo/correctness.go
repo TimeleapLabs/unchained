@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/ent"
@@ -20,8 +20,6 @@ type CorrectnessRepo struct {
 }
 
 func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]*ent.CorrectnessReport, error) {
-	currentRecords := []*ent.CorrectnessReport{}
-
 	cursor, err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
@@ -37,18 +35,9 @@ func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, ti
 		return nil, consts.ErrInternalError
 	}
 
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx) {
-		var result ent.CorrectnessReport
-		err := cursor.Decode(&result)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		currentRecords = append(currentRecords, &result)
-	}
-	if err := cursor.Err(); err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch asset price records from database")
+	currentRecords, err := CursorToList[*ent.CorrectnessReport](ctx, cursor)
+	if err != nil {
+		utils.Logger.With("err", err).Error("Cant fetch correctness reports from database")
 		return nil, consts.ErrInternalError
 	}
 

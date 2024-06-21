@@ -1,6 +1,12 @@
 package mongo
 
 import (
+	"log"
+	"runtime"
+	"testing"
+
+	"golang.org/x/net/context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
@@ -8,9 +14,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/stretchr/testify/suite"
 	"github.com/tryvium-travels/memongo"
-	"log"
-	"runtime"
-	"testing"
 )
 
 var sampleEventLog = model.EventLog{
@@ -59,15 +62,15 @@ func (s *EventLogRepositoryTestSuite) SetupTest() {
 }
 
 func (s *EventLogRepositoryTestSuite) TestUpsert() {
-	err := s.repo.Upsert(nil, sampleEventLog)
+	err := s.repo.Upsert(context.TODO(), sampleEventLog)
 	s.NoError(err)
 }
 
 func (s *EventLogRepositoryTestSuite) TestFind() {
-	err := s.repo.Upsert(nil, sampleEventLog)
+	err := s.repo.Upsert(context.TODO(), sampleEventLog)
 	s.NoError(err)
 
-	result, err := s.repo.Find(nil, sampleEventLog.Block, sampleEventLog.TxHash[:], sampleEventLog.LogIndex)
+	result, err := s.repo.Find(context.TODO(), sampleEventLog.Block, sampleEventLog.TxHash[:], sampleEventLog.LogIndex)
 	s.NoError(err)
 	s.Len(result, 1)
 }
