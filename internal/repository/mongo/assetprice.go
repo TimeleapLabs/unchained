@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
