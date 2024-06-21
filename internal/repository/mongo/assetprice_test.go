@@ -2,6 +2,11 @@ package mongo
 
 import (
 	"context"
+	"log"
+	"math/big"
+	"runtime"
+	"testing"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
@@ -9,10 +14,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/stretchr/testify/suite"
 	"github.com/tryvium-travels/memongo"
-	"log"
-	"math/big"
-	"runtime"
-	"testing"
 )
 
 var SampleAssetPrice = model.AssetPrice{

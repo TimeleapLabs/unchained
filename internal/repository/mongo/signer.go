@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/ent"
@@ -11,7 +12,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 type signerRepo struct {
@@ -19,7 +19,6 @@ type signerRepo struct {
 }
 
 func (s signerRepo) CreateSigners(ctx context.Context, signers []model.Signer) error {
-
 	for _, singer := range signers {
 		opt := options.Update().SetUpsert(true)
 
@@ -72,7 +71,8 @@ func (s signerRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]in
 		var result ent.Signer
 		err := cursor.Decode(&result)
 		if err != nil {
-			log.Fatal(err)
+			utils.Logger.With("err", err).Error("Cant decode signer record")
+			return nil, err
 		}
 
 		ids = append(ids, result.ID)

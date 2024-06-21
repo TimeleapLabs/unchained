@@ -1,6 +1,12 @@
 package mongo
 
 import (
+	"context"
+	"log"
+	"math/big"
+	"runtime"
+	"testing"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
@@ -8,10 +14,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/stretchr/testify/suite"
 	"github.com/tryvium-travels/memongo"
-	"log"
-	"math/big"
-	"runtime"
-	"testing"
 )
 
 var sampleCorrectness = model.Correctness{
@@ -57,15 +59,15 @@ func (s *CorrectnessRepositoryTestSuite) SetupTest() {
 }
 
 func (s *CorrectnessRepositoryTestSuite) TestUpsert() {
-	err := s.repo.Upsert(nil, sampleCorrectness)
+	err := s.repo.Upsert(context.TODO(), sampleCorrectness)
 	s.NoError(err)
 }
 
 func (s *CorrectnessRepositoryTestSuite) TestFind() {
-	err := s.repo.Upsert(nil, sampleCorrectness)
+	err := s.repo.Upsert(context.TODO(), sampleCorrectness)
 	s.NoError(err)
 
-	result, err := s.repo.Find(nil, sampleCorrectness.Hash, sampleCorrectness.Topic[:], sampleCorrectness.Timestamp)
+	result, err := s.repo.Find(context.TODO(), sampleCorrectness.Hash, sampleCorrectness.Topic[:], sampleCorrectness.Timestamp)
 	s.NoError(err)
 	s.Len(result, 1)
 }

@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/ent"
@@ -20,8 +20,6 @@ type EventLogRepo struct {
 }
 
 func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]*ent.EventLog, error) {
-	currentRecords := []*ent.EventLog{}
-
 	cursor, err := r.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
@@ -37,17 +35,8 @@ func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index
 		return nil, consts.ErrInternalError
 	}
 
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx) {
-		var result ent.EventLog
-		err := cursor.Decode(&result)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		currentRecords = append(currentRecords, &result)
-	}
-	if err := cursor.Err(); err != nil {
+	currentRecords, err := CursorToList[*ent.EventLog](ctx, cursor)
+	if err != nil {
 		utils.Logger.With("err", err).Error("Cant fetch event log records from database")
 		return nil, consts.ErrInternalError
 	}

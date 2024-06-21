@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/ent"
@@ -80,7 +80,8 @@ func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, na
 		var result ent.AssetPrice
 		err := cursor.Decode(&result)
 		if err != nil {
-			log.Fatal(err)
+			utils.Logger.With("err", err).Error("Cant decode signer record")
+			return nil, err
 		}
 
 		currentRecords = append(currentRecords, &result)
