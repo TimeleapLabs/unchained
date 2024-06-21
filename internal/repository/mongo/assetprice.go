@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -75,7 +76,12 @@ func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, na
 		return nil, consts.ErrInternalError
 	}
 
-	defer cursor.Close(ctx)
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			utils.Logger.With("err", err).Error("Cant close cursor")
+		}
+	}(cursor, ctx)
 	for cursor.Next(ctx) {
 		var result ent.AssetPrice
 		err := cursor.Decode(&result)

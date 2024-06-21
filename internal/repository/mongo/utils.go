@@ -9,7 +9,12 @@ import (
 )
 
 func CursorToList[T any](ctx context.Context, cursor *mongo.Cursor) ([]T, error) {
-	defer cursor.Close(ctx)
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			utils.Logger.With("err", err).Error("Cant close cursor")
+		}
+	}(cursor, ctx)
 
 	result := []T{}
 	for cursor.Next(ctx) {

@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -66,7 +67,12 @@ func (s signerRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]in
 	}
 
 	ids := []int{}
-	defer cursor.Close(ctx)
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			utils.Logger.With("err", err).Error("Cant close cursor")
+		}
+	}(cursor, ctx)
 	for cursor.Next(ctx) {
 		var result ent.Signer
 		err := cursor.Decode(&result)
