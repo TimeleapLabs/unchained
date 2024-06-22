@@ -1,24 +1,12 @@
 package bls
 
 import (
-	"math/big"
-
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 )
 
 func Hash(message []byte) (bls12381.G1Affine, error) {
 	dst := []byte("UNCHAINED")
 	return bls12381.HashToG1(message, dst)
-}
-
-func Sign(secretKey big.Int, message []byte) (bls12381.G1Affine, bls12381.G1Affine) {
-	hashedMessage, err := Hash(message)
-	if err != nil {
-		panic(err)
-	}
-	signature := new(bls12381.G1Affine).ScalarMultiplication(&hashedMessage, &secretKey)
-
-	return *signature, hashedMessage
 }
 
 func RecoverSignature(bytes [48]byte) (bls12381.G1Affine, error) {

@@ -355,7 +355,7 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 		},
 	}
 
-	signature, hash := bls.Sign(*crypto.Identity.Bls.SecretKey, priceInfo.Sia().Bytes())
+	signature, hash := crypto.Identity.Bls.Sign(priceInfo.Sia().Bytes())
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()

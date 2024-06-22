@@ -2,14 +2,13 @@ package handler
 
 import (
 	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
 func (h *consumer) Challenge(message []byte) []byte {
 	challenge := new(model.ChallengePacket).FromBytes(message)
 
-	signature, _ := bls.Sign(*crypto.Identity.Bls.SecretKey, challenge.Random[:])
+	signature, _ := crypto.Identity.Bls.Sign(challenge.Random[:])
 	challenge.Signature = signature.Bytes()
 
 	return challenge.Sia().Bytes()
@@ -18,7 +17,7 @@ func (h *consumer) Challenge(message []byte) []byte {
 func (w worker) Challenge(message []byte) []byte {
 	challenge := new(model.ChallengePacket).FromBytes(message)
 
-	signature, _ := bls.Sign(*crypto.Identity.Bls.SecretKey, challenge.Random[:])
+	signature, _ := crypto.Identity.Bls.Sign(challenge.Random[:])
 	challenge.Signature = signature.Bytes()
 
 	return challenge.Sia().Bytes()
