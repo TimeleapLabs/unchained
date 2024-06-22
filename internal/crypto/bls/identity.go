@@ -73,6 +73,17 @@ func NewIdentity() *Signer {
 	return s
 }
 
+// Sign signs a message with the identities secret key.
+func (s *Signer) Sign(message []byte) (bls12381.G1Affine, bls12381.G1Affine) {
+	hashedMessage, err := Hash(message)
+	if err != nil {
+		panic(err)
+	}
+	signature := new(bls12381.G1Affine).ScalarMultiplication(&hashedMessage, s.SecretKey)
+
+	return *signature, hashedMessage
+}
+
 // Verify verifies the signature of a message belongs to the public key.
 func (s *Signer) Verify(
 	signature bls12381.G1Affine, hashedMessage bls12381.G1Affine, publicKey bls12381.G2Affine,
