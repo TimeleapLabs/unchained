@@ -1,40 +1,31 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
 )
 
 // CorrectnessRecord is a handler for correctness report.
-func CorrectnessRecord(conn *websocket.Conn, payload []byte) {
+func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
-		SendError(conn, consts.OpCodeError, err)
-		return
+		return []byte{}, err
 	}
 
-	correctness := new(model.CorrectnessReportPacket).FromBytes(payload)
-	correctnessHash, err := correctness.Correctness.Bls()
-	if err != nil {
-		SendError(conn, consts.OpCodeError, consts.ErrInternalError)
-		return
-	}
+	correctness := new(packet.CorrectnessReportPacket).FromBytes(payload)
+	correctnessHash := correctness.Correctness.Bls()
 
 	signer, err := middleware.IsMessageValid(conn, correctnessHash, correctness.Signature)
 	if err != nil {
-		SendError(conn, consts.OpCodeError, err)
-		return
+		return []byte{}, err
 	}
 
-	broadcastPacket := model.BroadcastCorrectnessPacket{
+	broadcastPacket := packet.BroadcastCorrectnessPacket{
 		Info:      correctness.Correctness,
 		Signature: correctness.Signature,
 		Signer:    signer,
 	}
 
-	pubsub.Publish(consts.ChannelCorrectnessReport, consts.OpCodeCorrectnessReportBroadcast, broadcastPacket.Sia().Bytes())
-	SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
+	return broadcastPacket.Sia().Bytes(), nil
 }

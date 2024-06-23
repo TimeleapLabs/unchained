@@ -2,39 +2,34 @@ package handler
 
 import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
 )
 
 // EventLog handles the event log packet from the client.
-func EventLog(conn *websocket.Conn, payload []byte) {
+func EventLog(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
-		SendError(conn, consts.OpCodeError, err)
-		return
+		return []byte{}, err
 	}
 
-	priceReport := new(model.EventLogReportPacket).FromBytes(payload)
+	priceReport := new(packet.EventLogReportPacket).FromBytes(payload)
 	priceInfoHash, err := priceReport.EventLog.Bls()
 	if err != nil {
-		SendError(conn, consts.OpCodeError, consts.ErrInternalError)
-		return
+		return []byte{}, consts.ErrInternalError
 	}
 
 	signer, err := middleware.IsMessageValid(conn, priceInfoHash, priceReport.Signature)
 	if err != nil {
-		SendError(conn, consts.OpCodeError, err)
-		return
+		return []byte{}, err
 	}
 
-	broadcastPacket := model.BroadcastEventPacket{
+	broadcastPacket := packet.BroadcastEventPacket{
 		Info:      priceReport.EventLog,
 		Signature: priceReport.Signature,
 		Signer:    signer,
 	}
 
-	pubsub.Publish(consts.ChannelEventLog, consts.OpCodeEventLogBroadcast, broadcastPacket.Sia().Bytes())
-	SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
+	return broadcastPacket.Sia().Bytes(), nil
 }
