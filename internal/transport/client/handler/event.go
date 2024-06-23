@@ -3,13 +3,14 @@ package handler
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 func (h *consumer) EventLog(ctx context.Context, message []byte) {
-	packet := new(model.BroadcastEventPacket).FromBytes(message)
+	packet := new(packet.BroadcastEventPacket).FromBytes(message)
 
 	eventLogHash, err := packet.Info.Bls()
 	if err != nil {

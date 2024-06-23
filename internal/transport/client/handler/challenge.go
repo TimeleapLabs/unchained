@@ -2,11 +2,11 @@ package handler
 
 import (
 	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 )
 
 func (h *consumer) Challenge(message []byte) []byte {
-	challenge := new(model.ChallengePacket).FromBytes(message)
+	challenge := new(packet.ChallengePacket).FromBytes(message)
 
 	signature, _ := crypto.Identity.Bls.Sign(challenge.Random[:])
 	challenge.Signature = signature.Bytes()
@@ -15,7 +15,7 @@ func (h *consumer) Challenge(message []byte) []byte {
 }
 
 func (w worker) Challenge(message []byte) []byte {
-	challenge := new(model.ChallengePacket).FromBytes(message)
+	challenge := new(packet.ChallengePacket).FromBytes(message)
 
 	signature, _ := crypto.Identity.Bls.Sign(challenge.Random[:])
 	challenge.Signature = signature.Bytes()
