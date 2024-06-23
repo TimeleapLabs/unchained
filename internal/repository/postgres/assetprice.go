@@ -2,11 +2,11 @@ package postgres
 
 import (
 	"context"
+	"time"
+
+	"gorm.io/gorm/clause"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/ent"
-	"github.com/TimeleapLabs/unchained/internal/ent/assetprice"
-	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
@@ -20,21 +20,17 @@ type AssetPriceRepo struct {
 func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error {
 	err := a.client.
 		GetConnection().
-		AssetPrice.
-		Create().
-		SetPair(data.Pair).
-		SetAsset(data.Name).
-		SetChain(data.Chain).
-		SetBlock(data.Block).
-		SetPrice(&helpers.BigInt{Int: data.Price}).
-		SetSignersCount(data.SignersCount).
-		SetSignature(data.Signature).
-		SetConsensus(data.Consensus).
-		SetVoted(&helpers.BigInt{Int: data.Voted}).
-		AddSignerIDs(data.SignerIDs...).
-		OnConflictColumns("block", "chain", "asset", "pair").
-		UpdateNewValues().
-		Exec(ctx)
+		WithContext(ctx).
+		Table("asset_price").
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "block"}, {Name: "chain"}, {Name: "asset"}, {Name: "pair"}},
+			UpdateAll: true,
+		}).
+		Create(&model.DataFrame{
+			Hash:      data.Hash(),
+			Timestamp: time.Now(),
+			Data:      data,
+		})
 
 	if err != nil {
 		utils.Logger.With("err", err).Error("Cant upsert asset price record in database")
@@ -44,19 +40,18 @@ func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error
 	return nil
 }
 
-func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, name string, pair string) ([]*ent.AssetPrice, error) {
-	currentRecords, err := a.client.
+func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, name string, pair string) ([]model.AssetPrice, error) {
+	currentRecords := []model.AssetPrice{}
+	err := a.client.
 		GetConnection().
-		AssetPrice.
-		Query().
-		Where(
-			assetprice.Block(block),
-			assetprice.Chain(chain),
-			assetprice.Asset(name),
-			assetprice.Pair(pair),
-		).
-		WithSigners().
-		All(ctx)
+		WithContext(ctx).
+		Table("asset_price").
+		Where("block", block).
+		Where("chain", chain).
+		Where("name", name).
+		Where("pair", pair).
+		Preload("Signer").
+		Find(&currentRecords)
 
 	if err != nil {
 		utils.Logger.With("err", err).Error("Cant fetch asset price records from database")

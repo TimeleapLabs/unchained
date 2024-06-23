@@ -11,51 +11,6 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-type CorrectnessReportPacket struct {
-	Correctness
-	Signature [48]byte
-}
-
-func (c *CorrectnessReportPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(c.Correctness.Sia().Bytes()).
-		AddByteArray8(c.Signature[:])
-}
-
-func (c *CorrectnessReportPacket) FromBytes(payload []byte) *CorrectnessReportPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	c.Correctness.FromSia(siaMessage)
-	copy(c.Signature[:], siaMessage.ReadByteArray8())
-
-	return c
-}
-
-//////
-
-type BroadcastCorrectnessPacket struct {
-	Info      Correctness
-	Signature [48]byte
-	Signer    Signer
-}
-
-func (b *BroadcastCorrectnessPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(b.Info.Sia().Bytes()).
-		AddByteArray8(b.Signature[:]).
-		EmbedBytes(b.Signer.Sia().Bytes())
-}
-
-func (b *BroadcastCorrectnessPacket) FromBytes(payload []byte) *BroadcastCorrectnessPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	b.Info.FromSia(siaMessage)
-	copy(b.Signature[:], siaMessage.ReadByteArray8())
-	b.Signer.FromSia(siaMessage)
-
-	return b
-}
-
 type Correctness struct {
 	SignersCount uint64
 	Signature    []byte
@@ -66,6 +21,8 @@ type Correctness struct {
 	Hash         []byte
 	Topic        [64]byte
 	Correct      bool
+
+	Signers []Signer
 }
 
 func (c *Correctness) Sia() sia.Sia {
@@ -90,12 +47,12 @@ func (c *Correctness) FromSia(sia sia.Sia) *Correctness {
 	return c
 }
 
-func (c *Correctness) Bls() (bls12381.G1Affine, error) {
+func (c *Correctness) Bls() bls12381.G1Affine {
 	hash, err := bls.Hash(c.Sia().Bytes())
 	if err != nil {
 		utils.Logger.Error("Can't hash bls: %v", err)
-		return bls12381.G1Affine{}, err
+		return bls12381.G1Affine{}
 	}
 
-	return hash, err
+	return hash
 }

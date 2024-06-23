@@ -3,10 +3,10 @@ package database
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/ent"
+	"gorm.io/gorm"
 )
 
 type Database interface {
-	GetConnection() *ent.Client
+	GetConnection() *gorm.DB
 	HealthCheck(ctx context.Context) bool
 }

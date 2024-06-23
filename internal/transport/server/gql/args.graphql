@@ -1,7 +1,0 @@
-scalar BigInt
-scalar Bytes
-
-type EventLogArg {
-  name: String!
-  value: String!
-}
