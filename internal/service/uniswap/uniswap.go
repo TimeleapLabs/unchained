@@ -9,6 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap/types"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
@@ -19,7 +23,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/ent"
 	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -37,7 +40,7 @@ const (
 	SizeOfPriceCacheLru = 128
 )
 
-var DebouncedSaveSignatures func(key model.AssetKey, arg SaveSignatureArgs)
+var DebouncedSaveSignatures func(key types.AssetKey, arg SaveSignatureArgs)
 
 type Service interface {
 	checkAndCacheSignature(
@@ -47,10 +50,10 @@ type Service interface {
 	saveSignatures(ctx context.Context, args SaveSignatureArgs) error
 	GetBlockNumber(ctx context.Context, network string) (*uint64, error)
 	GetPriceAtBlockFromPair(network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool) (*big.Int, error)
-	SyncBlocks(ctx context.Context, token model.Token, key model.TokenKey, latest uint64) error
-	TokenKey(token model.Token) *model.TokenKey
+	SyncBlocks(ctx context.Context, token types.Token, key types.TokenKey, latest uint64) error
+	TokenKey(token types.Token) *types.TokenKey
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info types.PriceInfo, debounce bool, historical bool,
 	) error
 	ProcessBlocks(ctx context.Context, chain string) error
 }
@@ -61,18 +64,18 @@ type service struct {
 	signerRepo     repository.Signer
 	assetPriceRepo repository.AssetPrice
 
-	consensus       *lru.Cache[model.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
-	signatureCache  *lru.Cache[bls12381.G1Affine, []model.Signature]
-	SupportedTokens map[model.TokenKey]bool
+	consensus       *lru.Cache[types.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
+	signatureCache  *lru.Cache[bls12381.G1Affine, []correctness.Signature]
+	SupportedTokens map[types.TokenKey]bool
 	signatureMutex  sync.Mutex
 
 	twoOneNineTwo big.Int
 	tenEighteen   big.Int
 	tenEighteenF  big.Float
-	LastBlock     xsync.MapOf[model.TokenKey, uint64]
+	LastBlock     xsync.MapOf[types.TokenKey, uint64]
 	PriceCache    map[string]*lru.Cache[uint64, big.Int]
 	crossPrices   map[string]big.Int
-	crossTokens   map[string]model.TokenKey
+	crossTokens   map[string]types.TokenKey
 	LastPrice     big.Int
 }
 
@@ -85,7 +88,7 @@ func (s *service) checkAndCacheSignature(
 
 	cached, _ := s.signatureCache.Get(hash)
 
-	packed := model.Signature{
+	packed := correctness.Signature{
 		Signature: signature,
 		Signer:    signer,
 	}
@@ -107,7 +110,7 @@ func (s *service) checkAndCacheSignature(
 }
 
 type SaveSignatureArgs struct {
-	Info      model.PriceInfo
+	Info      types.PriceInfo
 	Hash      bls12381.G1Affine
 	Consensus bool
 	Voted     *big.Int
@@ -137,7 +140,7 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		args.Info.Asset.Block, args.Info.Asset.Token.Chain, args.Info.Asset.Token.Name, args.Info.Asset.Token.Pair,
 	)
 
-	if err != nil && !ent.IsNotFound(err) {
+	if err != nil {
 		return err
 	}
 
@@ -163,7 +166,6 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	}
 
 	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
-
 	if err != nil {
 		utils.Logger.
 			With("Block", args.Info.Asset.Block).
@@ -177,7 +179,6 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	for _, record := range currentRecords {
 		if record.Price.Cmp(&args.Info.Price) == 0 {
 			currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
-
 			if err != nil {
 				utils.Logger.
 					With("Block", args.Info.Asset.Block).
@@ -290,7 +291,7 @@ func (s *service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inve
 	return &price
 }
 
-func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.Caser, key *model.TokenKey, blockInx uint64) error {
+func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.Caser, key *types.TokenKey, blockInx uint64) error {
 	lastSynced, ok := s.LastBlock.Load(*key)
 
 	if ok && blockInx <= lastSynced {
@@ -347,9 +348,9 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 
 	key = s.TokenKey(token)
 
-	priceInfo := model.PriceInfo{
+	priceInfo := types.PriceInfo{
 		Price: *price,
-		Asset: model.AssetKey{
+		Asset: types.AssetKey{
 			Block: blockInx,
 			Token: *key,
 		},
@@ -359,7 +360,7 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()
-		priceReport := model.PriceReportPacket{
+		priceReport := packet.PriceReportPacket{
 			PriceInfo: priceInfo,
 			Signature: compressedSignature,
 		}
@@ -388,7 +389,7 @@ func (s *service) syncBlock(ctx context.Context, token model.Token, caser cases.
 	return nil
 }
 
-func (s *service) SyncBlocks(ctx context.Context, token model.Token, key model.TokenKey, latest uint64) error {
+func (s *service) SyncBlocks(ctx context.Context, token types.Token, key types.TokenKey, latest uint64) error {
 	block, ok := s.LastBlock.Load(key)
 	if !ok {
 		return consts.ErrCantLoadLastBlock
@@ -406,21 +407,21 @@ func (s *service) SyncBlocks(ctx context.Context, token model.Token, key model.T
 	return nil
 }
 
-func (s *service) TokenKey(token model.Token) *model.TokenKey {
-	var cross []model.TokenKey
+func (s *service) TokenKey(token types.Token) *types.TokenKey {
+	var cross []types.TokenKey
 
 	for _, id := range token.Cross {
 		cross = append(cross, s.crossTokens[id])
 	}
 
-	toHash := new(sia.ArraySia[model.TokenKey]).
-		AddArray8(cross, func(s *sia.ArraySia[model.TokenKey], item model.TokenKey) {
+	toHash := new(sia.ArraySia[types.TokenKey]).
+		AddArray8(cross, func(s *sia.ArraySia[types.TokenKey], item types.TokenKey) {
 			s.EmbedBytes(item.Sia().Bytes())
 		}).Bytes()
 
 	hash := utils.Shake(toHash)
 
-	key := model.TokenKey{
+	key := types.TokenKey{
 		Name:   strings.ToLower(token.Name),
 		Pair:   strings.ToLower(token.Pair),
 		Chain:  strings.ToLower(token.Chain),
@@ -446,15 +447,15 @@ func New(
 
 		consensus:       nil,
 		signatureCache:  nil,
-		SupportedTokens: map[model.TokenKey]bool{},
+		SupportedTokens: map[types.TokenKey]bool{},
 		signatureMutex:  sync.Mutex{},
-		LastBlock:       *xsync.NewMapOf[model.TokenKey, uint64](),
+		LastBlock:       *xsync.NewMapOf[types.TokenKey, uint64](),
 		PriceCache:      map[string]*lru.Cache[uint64, big.Int]{},
 		crossPrices:     map[string]big.Int{},
-		crossTokens:     map[string]model.TokenKey{},
+		crossTokens:     map[string]types.TokenKey{},
 	}
 
-	DebouncedSaveSignatures = utils.Debounce[model.AssetKey, SaveSignatureArgs](5*time.Second, s.saveSignatures)
+	DebouncedSaveSignatures = utils.Debounce[types.AssetKey, SaveSignatureArgs](5*time.Second, s.saveSignatures)
 
 	s.twoOneNineTwo.Exp(big.NewInt(2), big.NewInt(192), nil)
 	s.tenEighteen.Exp(big.NewInt(10), big.NewInt(18), nil)
@@ -462,7 +463,7 @@ func New(
 
 	if config.App.Plugins.Uniswap != nil {
 		for _, t := range config.App.Plugins.Uniswap.Tokens {
-			token := model.NewTokenFromCfg(t)
+			token := types.NewTokenFromCfg(t)
 
 			key := s.TokenKey(token)
 			s.SupportedTokens[*key] = true
@@ -470,7 +471,7 @@ func New(
 	}
 
 	for _, t := range config.App.Plugins.Uniswap.Tokens {
-		token := model.NewTokenFromCfg(t)
+		token := types.NewTokenFromCfg(t)
 		var err error
 		s.PriceCache[strings.ToLower(token.Pair)], err = lru.New[uint64, big.Int](SizeOfPriceCacheLru)
 
@@ -481,14 +482,14 @@ func New(
 	}
 
 	var err error
-	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](evmlog.LruSize)
+	s.signatureCache, err = lru.New[bls12381.G1Affine, []correctness.Signature](evmlog.LruSize)
 	if err != nil {
 		utils.Logger.Error("Failed to create token price signature cache.")
 		os.Exit(1)
 	}
 
 	// TODO: This is vulnerable to flood attacks
-	s.consensus, err = lru.New[model.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]](evmlog.LruSize)
+	s.consensus, err = lru.New[types.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]](evmlog.LruSize)
 	if err != nil {
 		utils.Logger.Error("Failed to create token price consensus cache.")
 		os.Exit(1)

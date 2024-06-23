@@ -1,14 +1,14 @@
 package evmlog
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/ent"
 	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
 )
 
-func isNewSigner(signature model.Signature, records []*ent.EventLog) bool {
+func isNewSigner(signature correctness.Signature, records []model.EventLog) bool {
 	for _, record := range records {
-		for _, signer := range record.Edges.Signers {
-			if signature.Signer.PublicKey == [96]byte(signer.Key) {
+		for _, signer := range record.Signers {
+			if signature.Signer.PublicKey == signer.PublicKey {
 				return false
 			}
 		}

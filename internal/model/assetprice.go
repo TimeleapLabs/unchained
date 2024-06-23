@@ -1,6 +1,10 @@
 package model
 
-import "math/big"
+import (
+	"bytes"
+	"encoding/gob"
+	"math/big"
+)
 
 type AssetPrice struct {
 	Pair         string
@@ -13,4 +17,14 @@ type AssetPrice struct {
 	Consensus    bool
 	Voted        big.Int
 	SignerIDs    []int
+	Signers      []Signer
+}
+
+func (a AssetPrice) Hash() []byte {
+	var b bytes.Buffer
+	err := gob.NewEncoder(&b).Encode(a)
+	if err != nil {
+		return nil
+	}
+	return b.Bytes()
 }

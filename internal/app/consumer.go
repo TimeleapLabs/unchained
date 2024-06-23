@@ -13,8 +13,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
 	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
-	"github.com/TimeleapLabs/unchained/internal/transport/server"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/gql"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
@@ -49,7 +47,5 @@ func Consumer() {
 	handler := handler.NewConsumerHandler(correctnessService, uniswapService, evmLogService)
 	client.NewRPC(handler)
 
-	server.New(
-		gql.WithGraphQL(db),
-	)
+	select {}
 }

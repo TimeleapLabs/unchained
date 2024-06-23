@@ -4,6 +4,8 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -88,7 +90,7 @@ func (s *service) RecordSignature(
 
 	cached, _ := s.signatureCache.Get(hash)
 
-	packed := model.Signature{
+	packed := correctness.Signature{
 		Signature: signature,
 		Signer:    signer,
 	}
