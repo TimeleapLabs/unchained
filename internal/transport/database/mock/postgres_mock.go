@@ -4,7 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/ent"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
 
 	"github.com/peterldowns/pgtestdb"
@@ -12,10 +15,10 @@ import (
 
 type mockConnection struct {
 	t  *testing.T
-	db *ent.Client
+	db *gorm.DB
 }
 
-func (m *mockConnection) GetConnection() *ent.Client {
+func (m *mockConnection) GetConnection() *gorm.DB {
 	if m.db != nil {
 		return m.db
 	}
@@ -34,7 +37,13 @@ func (m *mockConnection) GetConnection() *ent.Client {
 	)
 
 	var err error
-	m.db, err = ent.Open("postgres", "postgresql://postgres:password@127.0.0.1:5433/unchained?sslmode=disable")
+	m.db, err = gorm.Open(
+		postgres.Open("postgresql://postgres:password@127.0.0.1:5433/unchained?sslmode=disable"),
+		&gorm.Config{
+			Logger:         logger.Default.LogMode(logger.Warn),
+			TranslateError: true,
+		},
+	)
 	if err != nil {
 		panic(err)
 	}

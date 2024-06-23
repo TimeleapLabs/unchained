@@ -267,7 +267,7 @@ where you saved the above configuration file:
 unchained.OS.ARCH worker
 ```
 
-**Note: If you are running the node for the first time, Unchained needs to have permission to generating a random secret key (You can pass this permission with -g flag) . This key will be saved to the `secrets.yaml` file and it is your responsibility to keep this file safe. If the app can't find the secret file location and doesn't have permission to generate it, it leads to panic and exits the app with an error **
+**Note: If you are running the node for the first time, Unchained needs to have permission to generating a random secret key (You can pass this permission with -a flag) . This key will be saved to the `secrets.yaml` file and it is your responsibility to keep this file safe. If the app can't find the secret file location and doesn't have permission to generate it, it leads to panic and exits the app with an error **
 
 ## Help
 

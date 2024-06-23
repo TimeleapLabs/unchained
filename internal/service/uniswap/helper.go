@@ -1,14 +1,14 @@
 package uniswap
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/ent"
 	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
 )
 
-func IsNewSigner(signature model.Signature, records []*ent.AssetPrice) bool {
+func IsNewSigner(signature correctness.Signature, records []model.AssetPrice) bool {
 	for _, record := range records {
-		for _, signer := range record.Edges.Signers {
-			if signature.Signer.PublicKey == [96]byte(signer.Key) {
+		for _, signer := range record.Signers {
+			if signature.Signer.PublicKey == signer.PublicKey {
 				return false
 			}
 		}

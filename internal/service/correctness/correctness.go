@@ -14,12 +14,10 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"
 
-	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/puzpuzpuz/xsync/v3"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/ent"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -37,7 +35,7 @@ type SaveSignatureArgs struct {
 }
 
 type Service interface {
-	IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool
+	IsNewSigner(signature Signature, records []model.Correctness) bool
 	RecordSignature(
 		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
 	) error
@@ -49,7 +47,7 @@ type service struct {
 	signerRepo      repository.Signer
 	correctnessRepo repository.CorrectnessReport
 
-	signatureCache *lru.Cache[bls12381.G1Affine, []model.Signature]
+	signatureCache *lru.Cache[bls12381.G1Affine, []Signature]
 	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]]
 
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
@@ -58,11 +56,11 @@ type service struct {
 }
 
 // IsNewSigner checks if the signer's pub key is in the records signers or not.
-func (s *service) IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool {
+func (s *service) IsNewSigner(signature Signature, records []model.Correctness) bool {
 	// TODO: This isn't efficient, we should use a map
 	for _, record := range records {
-		for _, signer := range record.Edges.Signers {
-			if signature.Signer.PublicKey == [96]byte(signer.Key) {
+		for _, signer := range record.Signers {
+			if signature.Signer.PublicKey == signer.PublicKey {
 				return false
 			}
 		}
@@ -88,7 +86,7 @@ func (s *service) RecordSignature(
 
 	signatures, ok := s.signatureCache.Get(hash)
 	if !ok {
-		signatures = make([]model.Signature, 0)
+		signatures = make([]Signature, 0)
 	}
 
 	// Check for duplicates
@@ -98,7 +96,7 @@ func (s *service) RecordSignature(
 		}
 	}
 
-	packed := model.Signature{
+	packed := Signature{
 		Signature: signature,
 		Signer:    signer,
 	}
@@ -120,7 +118,7 @@ func (s *service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(ctx, signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
 		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -178,7 +176,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	}
 
 	currentRecords, err := s.correctnessRepo.Find(ctx, args.Info.Hash, args.Info.Topic[:], args.Info.Timestamp)
-	if err != nil && !ent.IsNotFound(err) {
+	if err != nil {
 		return err
 	}
 
@@ -255,7 +253,7 @@ func (s *service) init() {
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
 	s.signatureMutex = new(sync.Mutex)
 	s.supportedTopics = make(map[[64]byte]bool)
-	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
+	s.signatureCache, err = lru.New[bls12381.G1Affine, []Signature](LruSize)
 
 	if err != nil {
 		panic(err)
@@ -279,7 +277,7 @@ func New(
 	}
 
 	var err error
-	c.consensus, err = lru.New[Key, xsync.MapOf[bls12381.G1Affine, big.Int]](evmlog.LruSize)
+	c.consensus, err = lru.New[Key, xsync.MapOf[bls12381.G1Affine, big.Int]](LruSize)
 	if err != nil {
 		utils.Logger.
 			Error("Failed to create correctness consensus cache.")

@@ -2,57 +2,15 @@ package model
 
 import (
 	"encoding/json"
+	"math/big"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
-
-type EventLogReportPacket struct {
-	EventLog
-	Signature [48]byte
-}
-
-func (e *EventLogReportPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(e.EventLog.Sia().Bytes()).
-		AddByteArray8(e.Signature[:])
-}
-
-func (e *EventLogReportPacket) FromBytes(payload []byte) *EventLogReportPacket {
-	siaMessage := sia.NewFromBytes(payload)
-	e.EventLog.FromSia(siaMessage)
-	copy(e.Signature[:], siaMessage.ReadByteArray8())
-
-	return e
-}
-
-type BroadcastEventPacket struct {
-	Info      EventLog
-	Signature [48]byte
-	Signer    Signer
-}
-
-func (b *BroadcastEventPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(b.Info.Sia().Bytes()).
-		AddByteArray8(b.Signature[:]).
-		EmbedBytes(b.Signer.Sia().Bytes())
-}
-
-func (b *BroadcastEventPacket) FromBytes(payload []byte) *BroadcastEventPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	b.Info.FromSia(siaMessage)
-	copy(b.Signature[:], siaMessage.ReadByteArray8())
-	b.Signer.FromSia(siaMessage)
-
-	return b
-}
 
 type EventLogArg struct {
 	Name  string `json:"Name"`
@@ -72,8 +30,9 @@ type EventLog struct {
 	Consensus    bool
 	SignersCount uint64
 	SignerIDs    []int
+	Signers      []Signer
 	Signature    []byte
-	Voted        *helpers.BigInt
+	Voted        *big.Int
 }
 
 func (e *EventLog) Sia() sia.Sia {

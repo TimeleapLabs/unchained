@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap/types"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -17,7 +19,7 @@ import (
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info types.PriceInfo, debounce bool, historical bool,
 ) error {
 	if supported := s.SupportedTokens[info.Asset.Token]; !supported {
 		utils.Logger.
@@ -58,7 +60,7 @@ func (s *service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(ctx, signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
 		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).

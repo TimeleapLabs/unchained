@@ -4,6 +4,8 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -65,7 +67,7 @@ func (s *service) RecordSignature(
 		s.consensus.Add(key, make(map[bls12381.G1Affine]big.Int))
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(ctx, signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
 		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
@@ -88,7 +90,7 @@ func (s *service) RecordSignature(
 
 	cached, _ := s.signatureCache.Get(hash)
 
-	packed := model.Signature{
+	packed := correctness.Signature{
 		Signature: signature,
 		Signer:    signer,
 	}

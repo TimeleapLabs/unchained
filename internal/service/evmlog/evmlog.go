@@ -9,6 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
@@ -19,8 +22,6 @@ import (
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/ent"
-	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
@@ -57,7 +58,7 @@ type service struct {
 	persistence  *Badger
 
 	consensus               *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
-	signatureCache          *lru.Cache[bls12381.G1Affine, []model.Signature]
+	signatureCache          *lru.Cache[bls12381.G1Affine, []correctness.Signature]
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 	signatureMutex          *sync.Mutex
 	supportedEvents         map[SupportKey]bool
@@ -87,7 +88,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	var keys [][]byte
 
 	currentRecords, err := s.eventLogRepo.Find(ctx, args.Info.Block, args.Info.TxHash[:], args.Info.LogIndex)
-	if err != nil && !ent.IsNotFound(err) {
+	if err != nil {
 		return err
 	}
 
@@ -174,7 +175,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	args.Info.SignerIDs = signerIDs
 	args.Info.Consensus = args.Consensus
 	args.Info.Signature = signatureBytes[:]
-	args.Info.Voted = &helpers.BigInt{Int: *args.Voted}
+	args.Info.Voted = args.Voted
 	err = s.eventLogRepo.Upsert(ctx, args.Info)
 
 	if err != nil {
@@ -187,7 +188,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 func (s *service) SendPriceReport(signature bls12381.G1Affine, event model.EventLog) {
 	compressedSignature := signature.Bytes()
 
-	priceReport := model.EventLogReportPacket{
+	priceReport := packet.EventLogReportPacket{
 		EventLog:  event,
 		Signature: compressedSignature,
 	}
@@ -218,7 +219,7 @@ func New(
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
 
 	var err error
-	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
+	s.signatureCache, err = lru.New[bls12381.G1Affine, []correctness.Signature](LruSize)
 	if err != nil {
 		panic(err)
 	}
