@@ -7,7 +7,6 @@ import (
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/ent"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
