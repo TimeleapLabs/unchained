@@ -58,8 +58,8 @@ func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error
 	return nil
 }
 
-func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, name string, pair string) ([]*ent.AssetPrice, error) {
-	currentRecords := []*ent.AssetPrice{}
+func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, name string, pair string) ([]model.AssetPrice, error) {
+	currentRecords := []model.AssetPrice{}
 	cursor, err := a.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
@@ -83,14 +83,14 @@ func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, na
 		}
 	}(cursor, ctx)
 	for cursor.Next(ctx) {
-		var result ent.AssetPrice
+		var result model.AssetPrice
 		err := cursor.Decode(&result)
 		if err != nil {
 			utils.Logger.With("err", err).Error("Cant decode signer record")
 			return nil, err
 		}
 
-		currentRecords = append(currentRecords, &result)
+		currentRecords = append(currentRecords, result)
 	}
 	if err := cursor.Err(); err != nil {
 		utils.Logger.With("err", err).Error("Cant fetch asset price records from database")

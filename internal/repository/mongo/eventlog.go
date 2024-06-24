@@ -18,7 +18,7 @@ type EventLogRepo struct {
 	client database.MongoDatabase
 }
 
-func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]*ent.EventLog, error) {
+func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]model.EventLog, error) {
 	cursor, err := r.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
@@ -34,7 +34,7 @@ func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index
 		return nil, consts.ErrInternalError
 	}
 
-	currentRecords, err := CursorToList[*ent.EventLog](ctx, cursor)
+	currentRecords, err := CursorToList[model.EventLog](ctx, cursor)
 	if err != nil {
 		utils.Logger.With("err", err).Error("Cant fetch event log records from database")
 		return nil, consts.ErrInternalError

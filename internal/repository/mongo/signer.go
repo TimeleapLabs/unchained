@@ -74,14 +74,14 @@ func (s signerRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]in
 		}
 	}(cursor, ctx)
 	for cursor.Next(ctx) {
-		var result ent.Signer
+		var result model.Signer
 		err := cursor.Decode(&result)
 		if err != nil {
 			utils.Logger.With("err", err).Error("Cant decode signer record")
 			return nil, err
 		}
 
-		ids = append(ids, result.ID)
+		ids = append(ids, int(result.ID))
 	}
 	if err := cursor.Err(); err != nil {
 		utils.Logger.With("err", err).Error("Cant fetch asset price records from database")

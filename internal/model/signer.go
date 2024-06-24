@@ -2,9 +2,11 @@ package model
 
 import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	"gorm.io/gorm"
 )
 
 type Signer struct {
+	gorm.Model
 	Name           string
 	EvmAddress     string
 	PublicKey      [96]byte
