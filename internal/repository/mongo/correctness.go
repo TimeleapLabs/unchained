@@ -18,7 +18,7 @@ type CorrectnessRepo struct {
 	client database.MongoDatabase
 }
 
-func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]*ent.CorrectnessReport, error) {
+func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Correctness, error) {
 	cursor, err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
@@ -34,7 +34,7 @@ func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, ti
 		return nil, consts.ErrInternalError
 	}
 
-	currentRecords, err := CursorToList[*ent.CorrectnessReport](ctx, cursor)
+	currentRecords, err := CursorToList[model.Correctness](ctx, cursor)
 	if err != nil {
 		utils.Logger.With("err", err).Error("Cant fetch correctness reports from database")
 		return nil, consts.ErrInternalError

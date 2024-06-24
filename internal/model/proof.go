@@ -1,8 +1,14 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Proof struct {
+	gorm.Model
+
 	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
 	Signature [48]byte  `bson:"signature" json:"signature"`
