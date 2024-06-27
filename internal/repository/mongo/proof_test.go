@@ -20,7 +20,7 @@ var sampleSigner = model.Signer{}
 type SignerRepositoryTestSuite struct {
 	suite.Suite
 	dbServer *memongo.Server
-	repo     repository.Signer
+	repo     repository.Proof
 }
 
 func (s *SignerRepositoryTestSuite) SetupTest() {
@@ -44,11 +44,11 @@ func (s *SignerRepositoryTestSuite) SetupTest() {
 	config.App.Mongo.URL = s.dbServer.URI()
 	config.App.Mongo.Database = memongo.RandomDatabase()
 	db := mongo.New()
-	s.repo = NewSigner(db)
+	s.repo = NewProof(db)
 }
 
 func (s *SignerRepositoryTestSuite) TestUpsert() {
-	err := s.repo.CreateSigners(context.TODO(), []model.Signer{sampleSigner})
+	err := s.repo.CreateProof(context.TODO(), [48]byte{}, []model.Signer{sampleSigner})
 	s.Require().NoError(err)
 }
 

@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -56,29 +57,31 @@ func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
 			"index":       data.LogIndex,
 		}, bson.M{
 			"$set": bson.M{
-				"chain":         data.Chain,
-				"address":       data.Address,
-				"event":         data.Event,
-				"signers_count": data.SignersCount,
-				"signature":     data.Signature,
-				"args":          data.Args,
-				"consensus":     data.Consensus,
-				"voted":         data.Voted,
-				"signer_ids":    data.SignerIDs,
+				"data.chain":         data.Chain,
+				"data.address":       data.Address,
+				"data.event":         data.Event,
+				"data.signers_count": data.SignersCount,
+				"data.signature":     data.Signature,
+				"data.args":          data.Args,
+				"data.consensus":     data.Consensus,
+				"data.voted":         data.Voted,
 			},
 			"$setOnInsert": bson.M{
-				"block":         data.Block,
-				"chain":         data.Chain,
-				"address":       data.Address,
-				"event":         data.Event,
-				"index":         data.LogIndex,
-				"transaction":   data.TxHash[:],
-				"signers_count": data.SignersCount,
-				"signature":     data.Signature,
-				"args":          data.Args,
-				"consensus":     data.Consensus,
-				"voted":         data.Voted,
-				"signer_ids":    data.SignerIDs,
+				"hash":      data.Bls().Bytes(),
+				"timestamp": time.Now(),
+				"data": bson.M{
+					"block":         data.Block,
+					"chain":         data.Chain,
+					"address":       data.Address,
+					"event":         data.Event,
+					"index":         data.LogIndex,
+					"transaction":   data.TxHash[:],
+					"signers_count": data.SignersCount,
+					"signature":     data.Signature,
+					"args":          data.Args,
+					"consensus":     data.Consensus,
+					"voted":         data.Voted,
+				},
 			},
 		}, opt)
 

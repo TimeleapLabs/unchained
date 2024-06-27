@@ -15,50 +15,34 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type signerRepo struct {
+type proofRepo struct {
 	client database.MongoDatabase
 }
 
-func (s signerRepo) CreateSigners(ctx context.Context, signers []model.Signer) error {
-	for _, singer := range signers {
-		opt := options.Update().SetUpsert(true)
+func (s proofRepo) CreateProof(ctx context.Context, signature [48]byte, signers []model.Signer) error {
+	proof := model.NewProof(signers, signature[:])
 
-		_, err := s.client.
-			GetConnection().
-			Database(config.App.Mongo.Database).
-			Collection("signer").
-			UpdateOne(ctx,
-				bson.M{
-					"shortkey": singer.ShortPublicKey[:],
-				}, bson.M{
-					"$set": bson.M{
-						"name":   singer.Name,
-						"evm":    singer.EvmAddress,
-						"key":    singer.PublicKey[:],
-						"points": bson.M{"$inc": 1},
-					}, "$setOnInsert": bson.M{
-						"shortkey": singer.ShortPublicKey[:],
-					},
-				},
-				opt,
-			)
-		if err != nil {
-			utils.Logger.With("err", err).Error("Cant create signers in database")
-			return consts.ErrInternalError
-		}
+	_, err := s.client.
+		GetConnection().
+		Database(config.App.Mongo.Database).
+		Collection("signer").
+		InsertOne(ctx, proof)
+	if err != nil {
+		utils.Logger.With("err", err).Error("Cant create signers in database")
+		return consts.ErrInternalError
 	}
 
 	return nil
 }
 
-func (s signerRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
+func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
 	opt := options.Find().SetProjection(bson.M{"_id": 1})
 	cursor, err := s.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
 		Collection("signer").
 		Find(ctx, bson.M{
-			"key": bson.M{"$in": keys},
+			"data.key": bson.M{"$in": keys},
 		}, opt)
 
 	if err != nil {
@@ -91,8 +75,8 @@ func (s signerRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]in
 	return ids, nil
 }
 
-func NewSigner(client database.MongoDatabase) repository.Signer {
-	return &signerRepo{
+func NewProof(client database.MongoDatabase) repository.Proof {
+	return &proofRepo{
 		client: client,
 	}
 }

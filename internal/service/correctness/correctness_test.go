@@ -7,7 +7,6 @@ import (
 	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	"github.com/TimeleapLabs/unchained/internal/transport/database/mock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -38,59 +37,6 @@ func (s *CorrectnessTestSuite) SetupTest() {
 	correctnessRepo := postgresRepo.NewCorrectness(db)
 
 	s.service = New(posService, signerRepo, correctnessRepo)
-}
-
-func (s *CorrectnessTestSuite) TestIsNewSigner() {
-	s.Run("Check if new signer with empty values", func() {
-		isSigner := s.service.IsNewSigner(Signature{}, []model.Correctness{})
-		assert.False(s.T(), isSigner)
-	})
-
-	s.Run("Check when sign is new signer", func() {
-		signers := make([]byte, 96)
-		for i := 1; i < 4; i++ {
-			signers[i] = byte(i)
-		}
-
-		isSigner := s.service.IsNewSigner(
-			SignerOne,
-			[]model.Correctness{
-				//{
-				//	Edges: ent.CorrectnessReportEdges{
-				//		Signers: []*ent.Signer{
-				//			{
-				//				Key: signers,
-				//			},
-				//		},
-				//	},
-				// },
-			},
-		)
-		assert.True(s.T(), isSigner)
-	})
-
-	s.Run("Check when sign is not new signer", func() {
-		signers := make([]byte, 96)
-		for i := 2; i < 4; i++ {
-			signers[i] = byte(i)
-		}
-
-		isSigner := s.service.IsNewSigner(
-			SignerTwo,
-			[]model.Correctness{
-				{
-					//Edges: ent.CorrectnessReportEdges{
-					//	Signers: []*ent.Signer{
-					//		{
-					//			Key: signers,
-					//		},
-					//	},
-					// },
-				},
-			},
-		)
-		assert.True(s.T(), isSigner)
-	})
 }
 
 func TestCorrectnessSuite(t *testing.T) {

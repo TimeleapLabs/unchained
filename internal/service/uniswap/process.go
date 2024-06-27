@@ -21,7 +21,7 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 		}
 
 		// TODO: this can be cached
-		key := s.TokenKey(token)
+		key := types.NewTokenKey(token.GetCrossTokenKeys(s.crossTokens), token)
 		tokenLastBlock, exists := s.LastBlock.Load(*key)
 
 		if !exists {

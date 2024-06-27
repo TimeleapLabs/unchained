@@ -26,7 +26,6 @@ var SampleAssetPrice = model.AssetPrice{
 	Signature:    nil,
 	Consensus:    false,
 	Voted:        *big.NewInt(1000),
-	SignerIDs:    nil,
 }
 
 type AssetPriceRepositoryTestSuite struct {

@@ -18,35 +18,38 @@ type EventLogRepo struct {
 }
 
 func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]model.EventLog, error) {
-	currentRecords := []model.EventLog{}
-	err := r.client.
+	currentRecords := []model.EventLogDataFrame{}
+	tx := r.client.
 		GetConnection().
 		WithContext(ctx).
-		Table("event_log").
 		Where("block", block).
 		Where("transaction", hash).
 		Where("index", index).
 		Preload("Signers").
 		Find(&currentRecords)
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch event log records from database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant fetch event log records from database")
 		return nil, consts.ErrInternalError
 	}
 
-	return currentRecords, nil
+	results := []model.EventLog{}
+	for _, record := range currentRecords {
+		results = append(results, record.Data)
+	}
+
+	return results, nil
 }
 
 func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
 	err := r.client.
 		GetConnection().
 		WithContext(ctx).
-		Table("event_log").
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "block"}, {Name: "transaction"}, {Name: "index"}},
 			UpdateAll: true,
 		}).
-		Create(&model.DataFrame{
+		Create(&model.EventLogDataFrame{
 			Hash:      nil,
 			Timestamp: time.Now(),
 			Data:      data,

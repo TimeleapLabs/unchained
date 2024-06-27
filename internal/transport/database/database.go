@@ -10,6 +10,7 @@ import (
 
 type Database interface {
 	GetConnection() *gorm.DB
+	Migrate()
 	HealthCheck(ctx context.Context) bool
 }
 

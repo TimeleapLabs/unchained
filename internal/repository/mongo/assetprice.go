@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -28,25 +29,28 @@ func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error
 		Database(config.App.Mongo.Database).
 		Collection("assetprice").
 		UpdateOne(ctx, bson.M{
-			"block": data.Block,
-			"chain": data.Chain,
-			"asset": data.Name,
-			"pair":  data.Pair,
+			"data.block": data.Block,
+			"data.chain": data.Chain,
+			"data.asset": data.Name,
+			"data.pair":  data.Pair,
 		}, bson.M{
 			"$set": bson.M{
-				"name":          data.Name,
-				"price":         data.Price,
-				"signers_count": data.SignersCount,
-				"signature":     data.Signature,
-				"consensus":     data.Consensus,
-				"voted":         data.Voted,
-				"signer_ids":    data.SignerIDs,
+				"data.name":          data.Name,
+				"data.price":         data.Price,
+				"data.signers_count": data.SignersCount,
+				"data.signature":     data.Signature,
+				"data.consensus":     data.Consensus,
+				"data.voted":         data.Voted,
 			},
 			"$setOnInsert": bson.M{
-				"pair":  data.Pair,
-				"chain": data.Chain,
-				"block": data.Block,
-				"asset": data.Name,
+				"hash":      data.Bls().Bytes(),
+				"timestamp": time.Now(),
+				"data": bson.M{
+					"pair":  data.Pair,
+					"chain": data.Chain,
+					"block": data.Block,
+					"asset": data.Name,
+				},
 			},
 		}, opt)
 

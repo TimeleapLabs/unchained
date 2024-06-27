@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -55,24 +56,26 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 			"topic": data.Topic[:],
 		}, bson.M{
 			"$set": bson.M{
-				"correct":       data.Correct,
-				"signers_count": data.SignersCount,
-				"signature":     data.Signature,
-				"timestamp":     data.Timestamp,
-				"consensus":     data.Consensus,
-				"voted":         data.Voted,
-				"signer_ids":    data.SignerIDs,
+				"data.correct":       data.Correct,
+				"data.signers_count": data.SignersCount,
+				"data.signature":     data.Signature,
+				"data.timestamp":     data.Timestamp,
+				"data.consensus":     data.Consensus,
+				"data.voted":         data.Voted,
 			},
 			"$setOnInsert": bson.M{
-				"correct":       data.Correct,
-				"signers_count": data.SignersCount,
-				"signature":     data.Signature,
-				"hash":          data.Hash,
-				"timestamp":     data.Timestamp,
-				"topic":         data.Topic[:],
-				"consensus":     data.Consensus,
-				"voted":         data.Voted,
-				"signer_ids":    data.SignerIDs,
+				"hash":      data.Bls().Bytes(),
+				"timestamp": time.Now(),
+				"data": bson.M{
+					"correct":       data.Correct,
+					"signers_count": data.SignersCount,
+					"signature":     data.Signature,
+					"hash":          data.Hash,
+					"timestamp":     data.Timestamp,
+					"topic":         data.Topic[:],
+					"consensus":     data.Consensus,
+					"voted":         data.Voted,
+				},
 			},
 		}, opt)
 
