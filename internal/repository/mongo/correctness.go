@@ -53,7 +53,7 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 		Collection("correctnessreport").
 		UpdateOne(ctx, bson.M{
 			"hash":  data.Hash,
-			"topic": data.Topic[:],
+			"topic": data.Topic,
 		}, bson.M{
 			"$set": bson.M{
 				"data.correct":       data.Correct,
@@ -72,7 +72,7 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 					"signature":     data.Signature,
 					"hash":          data.Hash,
 					"timestamp":     data.Timestamp,
-					"topic":         data.Topic[:],
+					"topic":         data.Topic,
 					"consensus":     data.Consensus,
 					"voted":         data.Voted,
 				},

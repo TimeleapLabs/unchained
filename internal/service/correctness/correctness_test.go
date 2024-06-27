@@ -33,7 +33,7 @@ func (s *CorrectnessTestSuite) SetupTest() {
 
 	posService := new(pos.MockService)
 
-	signerRepo := postgresRepo.NewSigner(db)
+	signerRepo := postgresRepo.NewProof(db)
 	correctnessRepo := postgresRepo.NewCorrectness(db)
 
 	s.service = New(posService, signerRepo, correctnessRepo)

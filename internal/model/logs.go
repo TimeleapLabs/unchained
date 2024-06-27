@@ -2,10 +2,11 @@ package model
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 
@@ -19,12 +20,12 @@ type EventLogArg struct {
 }
 
 type EventLogDataFrame struct {
-	ID    uint               `gorm:"primarykey" bson:"-"`
+	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
 	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Data      EventLog  `bson:"data"      gorm:"type:jsonb"  json:"data"`
+	Data      EventLog  `bson:"data"      gorm:"type:jsonb" json:"data"`
 }
 
 type EventLog struct {

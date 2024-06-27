@@ -3,7 +3,6 @@ package mongo
 import (
 	"context"
 	"log"
-	"math/big"
 	"runtime"
 	"testing"
 
@@ -20,10 +19,10 @@ var sampleCorrectness = model.Correctness{
 	SignersCount: 100,
 	Signature:    nil,
 	Consensus:    false,
-	Voted:        *big.NewInt(1000),
+	Voted:        1000,
 	Timestamp:    999,
 	Hash:         nil,
-	Topic:        [64]byte{},
+	Topic:        []byte{},
 	Correct:      false,
 }
 
@@ -66,7 +65,7 @@ func (s *CorrectnessRepositoryTestSuite) TestFind() {
 	err := s.repo.Upsert(context.TODO(), sampleCorrectness)
 	s.NoError(err)
 
-	result, err := s.repo.Find(context.TODO(), sampleCorrectness.Hash, sampleCorrectness.Topic[:], sampleCorrectness.Timestamp)
+	result, err := s.repo.Find(context.TODO(), sampleCorrectness.Hash, sampleCorrectness.Topic, sampleCorrectness.Timestamp)
 	s.NoError(err)
 	s.Len(result, 1)
 }

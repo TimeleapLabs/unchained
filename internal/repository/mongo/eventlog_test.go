@@ -27,7 +27,7 @@ var sampleEventLog = model.EventLog{
 	Consensus:    false,
 	SignersCount: 100,
 	Signature:    nil,
-	Voted:        nil,
+	Voted:        0,
 }
 
 type EventLogRepositoryTestSuite struct {

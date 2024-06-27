@@ -13,7 +13,7 @@ import (
 type Signers []Signer
 
 type Signer struct {
-	ID    uint               `gorm:"primarykey" bson:"-"`
+	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
 	Name           string

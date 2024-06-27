@@ -18,6 +18,8 @@ type mockConnection struct {
 	db *gorm.DB
 }
 
+func (m *mockConnection) Migrate() {}
+
 func (m *mockConnection) GetConnection() *gorm.DB {
 	if m.db != nil {
 		return m.db

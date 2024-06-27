@@ -1,21 +1,22 @@
 package model
 
 import (
+	"time"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 )
 
 type AssetPriceDataFrame struct {
-	ID    uint               `gorm:"primarykey" bson:"-"`
+	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
 	Hash      []byte     `bson:"hash"      json:"hash"`
 	Timestamp time.Time  `bson:"timestamp" json:"timestamp"`
-	Data      AssetPrice `bson:"data"      gorm:"type:jsonb"  json:"data"`
+	Data      AssetPrice `bson:"data"      gorm:"type:jsonb" json:"data"`
 }
 
 type AssetPrice struct {

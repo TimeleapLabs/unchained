@@ -149,7 +149,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return consts.ErrSignatureNotfound
 	}
 
-	currentRecords, err := s.correctnessRepo.Find(ctx, args.Info.Hash, args.Info.Topic[:], args.Info.Timestamp)
+	currentRecords, err := s.correctnessRepo.Find(ctx, args.Info.Hash, args.Info.Topic, args.Info.Timestamp)
 	if err != nil {
 		return err
 	}

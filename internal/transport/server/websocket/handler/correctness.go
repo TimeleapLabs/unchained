@@ -13,9 +13,8 @@ func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	}
 
 	correctness := new(packet.CorrectnessReportPacket).FromBytes(payload)
-	correctnessHash := correctness.Correctness.Bls()
 
-	signer, err := middleware.IsMessageValid(conn, correctnessHash, correctness.Signature)
+	signer, err := middleware.IsMessageValid(conn, *correctness.Correctness.Bls(), correctness.Signature)
 	if err != nil {
 		return []byte{}, err
 	}

@@ -40,9 +40,6 @@ func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, ti
 }
 
 func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) error {
-	dataBls := data.Bls()
-	dataBlsHash := (&dataBls).Marshal()
-
 	err := c.client.
 		GetConnection().
 		WithContext(ctx).
@@ -51,7 +48,7 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 			UpdateAll: true,
 		}).
 		Create(&model.CorrectnessDataFrame{
-			Hash:      dataBlsHash,
+			Hash:      data.Bls().Marshal(),
 			Timestamp: time.Now(),
 			Data:      data,
 		})
