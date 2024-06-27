@@ -17,22 +17,26 @@ type CorrectnessRepo struct {
 }
 
 func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Correctness, error) {
-	currentRecords := []model.Correctness{}
-	err := c.client.
+	currentRecords := []model.CorrectnessDataFrame{}
+	tx := c.client.
 		GetConnection().
 		WithContext(ctx).
-		Table("correctness").
 		Where("hash", hash).
 		Where("topic", topic).
 		Where("timestamp", timestamp).
 		Find(&currentRecords)
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch correctness reports from database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant fetch correctness reports from database")
 		return nil, consts.ErrInternalError
 	}
 
-	return currentRecords, nil
+	results := []model.Correctness{}
+	for _, record := range currentRecords {
+		results = append(results, record.Data)
+	}
+
+	return results, nil
 }
 
 func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) error {
@@ -42,12 +46,11 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 	err := c.client.
 		GetConnection().
 		WithContext(ctx).
-		Table("correctness").
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "topic"}, {Name: "hash"}},
+			Columns:   []clause.Column{{Name: "data.topic"}, {Name: "data.hash"}},
 			UpdateAll: true,
 		}).
-		Create(&model.DataFrame{
+		Create(&model.CorrectnessDataFrame{
 			Hash:      dataBlsHash,
 			Timestamp: time.Now(),
 			Data:      data,

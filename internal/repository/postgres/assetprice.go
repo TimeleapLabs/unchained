@@ -18,16 +18,17 @@ type AssetPriceRepo struct {
 }
 
 func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error {
+	dataHash := data.Bls().Bytes()
+
 	err := a.client.
 		GetConnection().
 		WithContext(ctx).
-		Table("asset_price").
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "block"}, {Name: "chain"}, {Name: "asset"}, {Name: "pair"}},
+			Columns:   []clause.Column{{Name: "data.block"}, {Name: "data.chain"}, {Name: "data.asset"}, {Name: "data.pair"}},
 			UpdateAll: true,
 		}).
-		Create(&model.DataFrame{
-			Hash:      data.Hash(),
+		Create(&model.AssetPriceDataFrame{
+			Hash:      dataHash[:],
 			Timestamp: time.Now(),
 			Data:      data,
 		})
@@ -41,24 +42,29 @@ func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error
 }
 
 func (a AssetPriceRepo) Find(ctx context.Context, block uint64, chain string, name string, pair string) ([]model.AssetPrice, error) {
-	currentRecords := []model.AssetPrice{}
-	err := a.client.
+	currentRecords := []model.AssetPriceDataFrame{}
+	tx := a.client.
 		GetConnection().
 		WithContext(ctx).
-		Table("asset_price").
-		Where("block", block).
-		Where("chain", chain).
-		Where("name", name).
-		Where("pair", pair).
-		Preload("Signer").
+		Where(model.AssetPriceDataFrame{Data: model.AssetPrice{
+			Pair:  pair,
+			Name:  name,
+			Chain: chain,
+			Block: block,
+		}}).
 		Find(&currentRecords)
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch asset price records from database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant fetch asset price records from database")
 		return nil, consts.ErrInternalError
 	}
 
-	return currentRecords, nil
+	results := []model.AssetPrice{}
+	for _, record := range currentRecords {
+		results = append(results, record.Data)
+	}
+
+	return results, nil
 }
 
 func NewAssetPrice(client database.Database) repository.AssetPrice {

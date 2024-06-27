@@ -26,7 +26,6 @@ var sampleEventLog = model.EventLog{
 	Args:         nil,
 	Consensus:    false,
 	SignersCount: 100,
-	SignerIDs:    nil,
 	Signature:    nil,
 	Voted:        nil,
 }

@@ -1,17 +1,59 @@
 package model
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
-	"gorm.io/gorm"
+	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 type Proof struct {
-	gorm.Model
+	ID    uint               `gorm:"primarykey" bson:"-"`
+	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
 	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Signature [48]byte  `bson:"signature" json:"signature"`
-	Signers   []Signer  `bson:"signers"   json:"signers"`
-	// list of signers (relations in Postgres, and an array in Mongo)
+	Signature []byte    `bson:"signature" json:"signature"`
+
+	Signers []Signer `bson:"signers"   json:"signers" gorm:"many2many:proof_signers;"`
+}
+
+func (p *Proof) Sia() sia.Sia {
+	signers := sia.NewSiaArray[Signer]().AddArray64(p.Signers, func(s *sia.ArraySia[Signer], item Signer) {
+		s.EmbedBytes(item.Sia().Bytes())
+	})
+
+	return sia.New().
+		AddByteArray8(p.Hash).
+		AddInt64(p.Timestamp.Unix()).
+		AddByteArray8(p.Signature[:]).
+		AddByteArray64(signers.Bytes())
+}
+
+func (p *Proof) FromBytes(payload []byte) *Proof {
+	siaMessage := sia.NewFromBytes(payload)
+	return p.FromSia(siaMessage)
+}
+
+func (p *Proof) FromSia(siaObj sia.Sia) *Proof {
+	signers := sia.NewArrayFromBytes[Signer](siaObj.ReadByteArray64()).ReadArray64(func(s *sia.ArraySia[Signer]) Signer {
+		signer := Signer{}
+		signer.FromBytes(s.ReadByteArray64())
+		return signer
+	})
+
+	p.Hash = siaObj.ReadByteArray8()
+	p.Timestamp = time.Unix(siaObj.ReadInt64(), 0)
+	copy(p.Signature[:], siaObj.ReadByteArray8())
+	p.Signers = signers
+	return p
+}
+
+func NewProof(signers []Signer, signature []byte) *Proof {
+	return &Proof{
+		Hash:      Signers(signers).Bls(),
+		Timestamp: time.Now(),
+		Signature: signature,
+		Signers:   signers,
+	}
 }

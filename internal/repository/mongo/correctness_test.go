@@ -21,7 +21,6 @@ var sampleCorrectness = model.Correctness{
 	Signature:    nil,
 	Consensus:    false,
 	Voted:        *big.NewInt(1000),
-	SignerIDs:    nil,
 	Timestamp:    999,
 	Hash:         nil,
 	Topic:        [64]byte{},

@@ -29,7 +29,6 @@ import (
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	lru "github.com/hashicorp/golang-lru/v2"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 	"github.com/puzpuzpuz/xsync/v3"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -42,6 +41,13 @@ const (
 
 var DebouncedSaveSignatures func(key types.AssetKey, arg SaveSignatureArgs)
 
+type SaveSignatureArgs struct {
+	Info      types.PriceInfo
+	Hash      bls12381.G1Affine
+	Consensus bool
+	Voted     *big.Int
+}
+
 type Service interface {
 	checkAndCacheSignature(
 		reportedValues *xsync.MapOf[bls12381.G1Affine, big.Int], signature bls12381.G1Affine, signer model.Signer,
@@ -51,7 +57,6 @@ type Service interface {
 	GetBlockNumber(ctx context.Context, network string) (*uint64, error)
 	GetPriceAtBlockFromPair(network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool) (*big.Int, error)
 	SyncBlocks(ctx context.Context, token types.Token, key types.TokenKey, latest uint64) error
-	TokenKey(token types.Token) *types.TokenKey
 	RecordSignature(
 		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info types.PriceInfo, debounce bool, historical bool,
 	) error
@@ -61,7 +66,7 @@ type Service interface {
 type service struct {
 	ethRPC         ethereum.RPC
 	pos            pos.Service
-	signerRepo     repository.Signer
+	proofRepo      repository.Proof
 	assetPriceRepo repository.AssetPrice
 
 	consensus       *lru.Cache[types.AssetKey, xsync.MapOf[bls12381.G1Affine, big.Int]]
@@ -88,11 +93,6 @@ func (s *service) checkAndCacheSignature(
 
 	cached, _ := s.signatureCache.Get(hash)
 
-	packed := correctness.Signature{
-		Signature: signature,
-		Signer:    signer,
-	}
-
 	for _, item := range cached {
 		if item.Signer.PublicKey == signer.PublicKey {
 			utils.Logger.
@@ -103,17 +103,13 @@ func (s *service) checkAndCacheSignature(
 	}
 
 	reportedValues.Store(hash, *totalVoted)
-	cached = append(cached, packed)
+	cached = append(cached, correctness.Signature{
+		Signature: signature,
+		Signer:    signer,
+	})
 	s.signatureCache.Add(hash, cached)
 
 	return nil
-}
-
-type SaveSignatureArgs struct {
-	Info      types.PriceInfo
-	Hash      bls12381.G1Affine
-	Consensus bool
-	Voted     *big.Int
 }
 
 func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) error {
@@ -131,53 +127,25 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return consts.ErrSignatureNotfound
 	}
 
-	var newSigners []model.Signer
-	var newSignatures []bls12381.G1Affine
-	var keys [][]byte
-
 	currentRecords, err := s.assetPriceRepo.Find(
-		ctx,
-		args.Info.Asset.Block, args.Info.Asset.Token.Chain, args.Info.Asset.Token.Name, args.Info.Asset.Token.Pair,
+		ctx, args.Info.Asset.Block, args.Info.Asset.Token.Chain, args.Info.Asset.Token.Name, args.Info.Asset.Token.Pair,
 	)
-
 	if err != nil {
 		return err
 	}
 
+	var newSigners []model.Signer
+	var newSignatures []bls12381.G1Affine
+
 	for i := range signatures {
 		signature := signatures[i]
-		keys = append(keys, signature.Signer.PublicKey[:])
-
-		if !IsNewSigner(signature, currentRecords) {
-			continue
-		}
 
 		newSignatures = append(newSignatures, signature.Signature)
 		newSigners = append(newSigners, signature.Signer)
 	}
 
-	err = s.signerRepo.CreateSigners(ctx, newSigners)
-	if err != nil {
-		utils.Logger.
-			With("Block", args.Info.Asset.Block).
-			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
-			Debug("Failed to upsert token signers.")
-		return err
-	}
-
-	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
-	if err != nil {
-		utils.Logger.
-			With("Block", args.Info.Asset.Block).
-			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
-			Debug("Filed to upsert signers")
-		return err
-	}
-
-	var aggregate bls12381.G1Affine
-
 	for _, record := range currentRecords {
-		if record.Price.Cmp(&args.Info.Price) == 0 {
+		if record.Price == args.Info.Price.Int64() {
 			currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
 			if err != nil {
 				utils.Logger.
@@ -193,8 +161,7 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		}
 	}
 
-	aggregate, err = bls.AggregateSignatures(newSignatures)
-
+	aggregate, err := bls.AggregateSignatures(newSignatures)
 	if err != nil {
 		utils.Logger.
 			With("Block", args.Info.Asset.Block).
@@ -205,20 +172,28 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 
 	signatureBytes := aggregate.Bytes()
 
+	err = s.proofRepo.CreateProof(ctx, signatureBytes, newSigners)
+	if err != nil {
+		utils.Logger.
+			With("Block", args.Info.Asset.Block).
+			With("Hash", fmt.Sprintf("%x", args.Hash.Bytes())[:8]).
+			Debug("Failed to upsert token signers.")
+		return err
+	}
+
 	// TODO: Handle cases where signerIDs need to be removed
 	err = s.assetPriceRepo.Upsert(ctx, model.AssetPrice{
 		Pair:         strings.ToLower(args.Info.Asset.Token.Pair),
 		Name:         args.Info.Asset.Token.Name,
 		Chain:        args.Info.Asset.Token.Chain,
 		Block:        args.Info.Asset.Block,
-		Price:        args.Info.Price,
+		Price:        args.Info.Price.Int64(),
 		SignersCount: uint64(len(signatures)),
 		Signature:    signatureBytes[:],
 		Consensus:    args.Consensus,
-		Voted:        *args.Voted,
-		SignerIDs:    signerIDs,
+		Voted:        args.Voted.Int64(),
 	})
-
+	// @TODO: upsert proof
 	if err != nil {
 		utils.Logger.
 			With("Block", args.Info.Asset.Block).
@@ -232,7 +207,6 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 
 func (s *service) GetBlockNumber(ctx context.Context, network string) (*uint64, error) {
 	blockNumber, err := s.ethRPC.GetBlockNumber(ctx, network)
-
 	if err != nil {
 		s.ethRPC.RefreshRPC(network)
 		return nil, err
@@ -245,17 +219,12 @@ func (s *service) GetPriceAtBlockFromPair(
 	network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool,
 ) (*big.Int, error) {
 	pair, err := s.ethRPC.GetNewUniV3Contract(network, pairAddr, false)
-
 	if err != nil {
 		s.ethRPC.RefreshRPC(network)
 		return nil, err
 	}
 
-	data, err := pair.Slot0(
-		&bind.CallOpts{
-			BlockNumber: big.NewInt(int64(blockNumber)),
-		})
-
+	data, err := pair.Slot0(&bind.CallOpts{BlockNumber: big.NewInt(int64(blockNumber))})
 	if err != nil {
 		s.ethRPC.RefreshRPC(network)
 		return nil, err
@@ -293,7 +262,6 @@ func (s *service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inve
 
 func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.Caser, key *types.TokenKey, blockInx uint64) error {
 	lastSynced, ok := s.LastBlock.Load(*key)
-
 	if ok && blockInx <= lastSynced {
 		return consts.ErrDataTooOld
 	}
@@ -305,7 +273,6 @@ func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.
 		token.Delta,
 		token.Invert,
 	)
-
 	if err != nil {
 		utils.Logger.Error(
 			fmt.Sprintf("Failed to get token price from %s RPC.", token.Chain))
@@ -336,7 +303,6 @@ func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.
 	priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
 
 	lastSynced, ok = s.LastBlock.Load(*key)
-
 	if ok && blockInx <= lastSynced {
 		return consts.ErrDataTooOld
 	}
@@ -346,7 +312,7 @@ func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.
 		With("Price", priceStr).
 		Info(caser.String(token.Name))
 
-	key = s.TokenKey(token)
+	key = types.NewTokenKey(token.GetCrossTokenKeys(s.crossTokens), token)
 
 	priceInfo := types.PriceInfo{
 		Price: *price,
@@ -407,42 +373,13 @@ func (s *service) SyncBlocks(ctx context.Context, token types.Token, key types.T
 	return nil
 }
 
-func (s *service) TokenKey(token types.Token) *types.TokenKey {
-	var cross []types.TokenKey
-
-	for _, id := range token.Cross {
-		cross = append(cross, s.crossTokens[id])
-	}
-
-	toHash := new(sia.ArraySia[types.TokenKey]).
-		AddArray8(cross, func(s *sia.ArraySia[types.TokenKey], item types.TokenKey) {
-			s.EmbedBytes(item.Sia().Bytes())
-		}).Bytes()
-
-	hash := utils.Shake(toHash)
-
-	key := types.TokenKey{
-		Name:   strings.ToLower(token.Name),
-		Pair:   strings.ToLower(token.Pair),
-		Chain:  strings.ToLower(token.Chain),
-		Delta:  token.Delta,
-		Invert: token.Invert,
-		Cross:  string(hash),
-	}
-
-	return &key
-}
-
 func New(
-	ethRPC ethereum.RPC,
-	pos pos.Service,
-	signerRepo repository.Signer,
-	assetPriceRepo repository.AssetPrice,
+	ethRPC ethereum.RPC, pos pos.Service, proofRepo repository.Proof, assetPriceRepo repository.AssetPrice,
 ) Service {
 	s := service{
 		ethRPC:         ethRPC,
 		pos:            pos,
-		signerRepo:     signerRepo,
+		proofRepo:      proofRepo,
 		assetPriceRepo: assetPriceRepo,
 
 		consensus:       nil,
@@ -465,7 +402,7 @@ func New(
 		for _, t := range config.App.Plugins.Uniswap.Tokens {
 			token := types.NewTokenFromCfg(t)
 
-			key := s.TokenKey(token)
+			key := types.NewTokenKey(token.GetCrossTokenKeys(s.crossTokens), token)
 			s.SupportedTokens[*key] = true
 		}
 	}
