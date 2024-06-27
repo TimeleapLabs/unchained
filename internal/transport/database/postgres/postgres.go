@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"github.com/TimeleapLabs/unchained/internal/config"

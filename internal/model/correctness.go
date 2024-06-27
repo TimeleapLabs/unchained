@@ -1,10 +1,11 @@
 package model
 
 import (
+	"time"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 
@@ -12,12 +13,12 @@ import (
 )
 
 type CorrectnessDataFrame struct {
-	ID    uint               `gorm:"primarykey" bson:"-"`
+	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
 	Hash      []byte      `bson:"hash"      json:"hash"`
 	Timestamp time.Time   `bson:"timestamp" json:"timestamp"`
-	Data      Correctness `bson:"data"      gorm:"type:jsonb"  json:"data"`
+	Data      Correctness `bson:"data"      gorm:"type:jsonb" json:"data"`
 }
 
 type Correctness struct {
@@ -35,7 +36,7 @@ func (c *Correctness) Sia() sia.Sia {
 	return sia.New().
 		AddUInt64(c.Timestamp).
 		AddByteArray8(c.Hash).
-		AddByteArray8(c.Topic[:]).
+		AddByteArray8(c.Topic).
 		AddBool(c.Correct)
 }
 
@@ -47,7 +48,7 @@ func (c *Correctness) FromBytes(payload []byte) *Correctness {
 func (c *Correctness) FromSia(sia sia.Sia) *Correctness {
 	c.Timestamp = sia.ReadUInt64()
 	copy(c.Hash, sia.ReadByteArray8())
-	copy(c.Topic[:], sia.ReadByteArray8())
+	copy(c.Topic, sia.ReadByteArray8())
 	c.Correct = sia.ReadBool()
 
 	return c

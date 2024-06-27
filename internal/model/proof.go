@@ -1,21 +1,22 @@
 package model
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 type Proof struct {
-	ID    uint               `gorm:"primarykey" bson:"-"`
+	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
 	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
 	Signature []byte    `bson:"signature" json:"signature"`
 
-	Signers []Signer `bson:"signers"   json:"signers" gorm:"many2many:proof_signers;"`
+	Signers []Signer `bson:"signers" gorm:"many2many:proof_signers;" json:"signers"`
 }
 
 func (p *Proof) Sia() sia.Sia {
@@ -26,7 +27,7 @@ func (p *Proof) Sia() sia.Sia {
 	return sia.New().
 		AddByteArray8(p.Hash).
 		AddInt64(p.Timestamp.Unix()).
-		AddByteArray8(p.Signature[:]).
+		AddByteArray8(p.Signature).
 		AddByteArray64(signers.Bytes())
 }
 
@@ -44,7 +45,7 @@ func (p *Proof) FromSia(siaObj sia.Sia) *Proof {
 
 	p.Hash = siaObj.ReadByteArray8()
 	p.Timestamp = time.Unix(siaObj.ReadInt64(), 0)
-	copy(p.Signature[:], siaObj.ReadByteArray8())
+	copy(p.Signature, siaObj.ReadByteArray8())
 	p.Signers = signers
 	return p
 }

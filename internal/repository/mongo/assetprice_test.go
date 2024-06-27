@@ -3,7 +3,6 @@ package mongo
 import (
 	"context"
 	"log"
-	"math/big"
 	"runtime"
 	"testing"
 
@@ -21,11 +20,11 @@ var SampleAssetPrice = model.AssetPrice{
 	Name:         "USDT",
 	Chain:        "ETH",
 	Block:        999,
-	Price:        *big.NewInt(1000),
+	Price:        1000,
 	SignersCount: 10,
 	Signature:    nil,
 	Consensus:    false,
-	Voted:        *big.NewInt(1000),
+	Voted:        1000,
 }
 
 type AssetPriceRepositoryTestSuite struct {

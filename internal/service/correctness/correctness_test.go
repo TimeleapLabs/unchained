@@ -64,7 +64,7 @@ func (s *CorrectnessTestSuite) SetupTest() {
 	posService := new(pos.MockService)
 	posService.On("GetVotingPowerOfEvm", mock2.Anything, "12345").Return(10, nil)
 
-	signerRepo := postgresRepo.NewSigner(db)
+	signerRepo := postgresRepo.NewProof(db)
 	correctnessRepo := postgresRepo.NewCorrectness(db)
 
 	config.App.Plugins.Correctness = []string{"123"}
