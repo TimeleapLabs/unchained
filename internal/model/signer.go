@@ -1,13 +1,13 @@
 package model
 
 import (
+	"encoding/hex"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type Signers []Signer
@@ -16,32 +16,30 @@ type Signer struct {
 	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
-	Name           string
-	EvmAddress     string
-	PublicKey      [96]byte
-	ShortPublicKey [48]byte
-}
-
-func (s *Signer) BeforeCreate(tx *gorm.DB) error {
-	tx.Statement.AddClause(clause.OnConflict{
-		Columns: []clause.Column{{Name: "shortkey"}},
-		DoUpdates: clause.Assignments(map[string]interface{}{
-			"name":  "name",
-			"evm":   "evm",
-			"key":   "key",
-			"point": gorm.Expr("signer.point + 1"),
-		}),
-	})
-
-	return nil
+	Name           string `json:"name"`
+	EvmAddress     string `json:"evm_address"`
+	PublicKey      string `json:"public_key"`
+	ShortPublicKey string `json:"short_public_key"`
 }
 
 func (s *Signer) Sia() sia.Sia {
+	publicKeyBytes, err := hex.DecodeString(s.PublicKey)
+	if err != nil {
+		utils.Logger.Error("Can't decode public key: %v", err)
+		return sia.New()
+	}
+
+	shortPublicKey, err := hex.DecodeString(s.ShortPublicKey)
+	if err != nil {
+		utils.Logger.Error("Can't decode short public key: %v", err)
+		return sia.New()
+	}
+
 	return sia.New().
 		AddString8(s.Name).
 		AddString8(s.EvmAddress).
-		AddByteArray8(s.PublicKey[:]).
-		AddByteArray8(s.ShortPublicKey[:])
+		AddByteArray8(publicKeyBytes).
+		AddByteArray8(shortPublicKey)
 }
 
 func (s *Signer) FromBytes(payload []byte) *Signer {
@@ -52,8 +50,8 @@ func (s *Signer) FromBytes(payload []byte) *Signer {
 func (s *Signer) FromSia(sia sia.Sia) *Signer {
 	s.Name = sia.ReadString8()
 	s.EvmAddress = sia.ReadString8()
-	copy(s.PublicKey[:], sia.ReadByteArray8())
-	copy(s.ShortPublicKey[:], sia.ReadByteArray8())
+	s.PublicKey = hex.EncodeToString(sia.ReadByteArray8())
+	s.ShortPublicKey = hex.EncodeToString(sia.ReadByteArray8())
 
 	return s
 }

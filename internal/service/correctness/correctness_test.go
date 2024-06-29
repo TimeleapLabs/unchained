@@ -1,24 +1,26 @@
 package correctness
 
 import (
+	"encoding/hex"
 	"testing"
+
+	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
 
 	"github.com/TimeleapLabs/unchained/internal/model"
 	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
-	"github.com/TimeleapLabs/unchained/internal/transport/database/mock"
 	"github.com/stretchr/testify/suite"
 )
 
 var (
 	SignerOne = Signature{
 		Signer: model.Signer{
-			PublicKey: [96]byte{1, 2, 3},
+			PublicKey: hex.EncodeToString([]byte{1, 2, 3}),
 		},
 	}
 	SignerTwo = Signature{
 		Signer: model.Signer{
-			PublicKey: [96]byte{3, 2, 1},
+			PublicKey: hex.EncodeToString([]byte{3, 2, 1}),
 		},
 	}
 )
@@ -29,7 +31,7 @@ type CorrectnessTestSuite struct {
 }
 
 func (s *CorrectnessTestSuite) SetupTest() {
-	db := mock.New(s.T())
+	db := postgres.New()
 
 	posService := new(pos.MockService)
 

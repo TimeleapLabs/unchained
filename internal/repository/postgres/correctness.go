@@ -2,14 +2,16 @@ package postgres
 
 import (
 	"context"
+	"encoding/hex"
 	"time"
+
+	"gorm.io/gorm/clause"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"gorm.io/gorm/clause"
 )
 
 type CorrectnessRepo struct {
@@ -40,21 +42,21 @@ func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, ti
 }
 
 func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) error {
-	err := c.client.
+	tx := c.client.
 		GetConnection().
 		WithContext(ctx).
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "data.topic"}, {Name: "data.hash"}},
+			Columns:   []clause.Column{{Name: "topic"}, {Name: "hash"}},
 			UpdateAll: true,
 		}).
 		Create(&model.CorrectnessDataFrame{
-			Hash:      data.Bls().Marshal(),
+			Hash:      hex.EncodeToString(data.Bls().Marshal()),
 			Timestamp: time.Now(),
 			Data:      data,
 		})
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant upsert correctness report in database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant upsert correctness report in database")
 		return consts.ErrInternalError
 	}
 
