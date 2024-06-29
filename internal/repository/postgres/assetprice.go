@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/hex"
 	"time"
 
 	"gorm.io/gorm/clause"
@@ -20,21 +21,21 @@ type AssetPriceRepo struct {
 func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error {
 	dataHash := data.Bls().Bytes()
 
-	err := a.client.
+	tx := a.client.
 		GetConnection().
 		WithContext(ctx).
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "data.block"}, {Name: "data.chain"}, {Name: "data.asset"}, {Name: "data.pair"}},
+			Columns:   []clause.Column{{Name: "block"}, {Name: "chain"}, {Name: "name"}, {Name: "pair"}},
 			UpdateAll: true,
 		}).
 		Create(&model.AssetPriceDataFrame{
-			Hash:      dataHash[:],
+			Hash:      hex.EncodeToString(dataHash[:]),
 			Timestamp: time.Now(),
 			Data:      data,
 		})
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant upsert asset price record in database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant upsert asset price record in database")
 		return consts.ErrInternalError
 	}
 

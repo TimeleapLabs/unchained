@@ -17,13 +17,13 @@ type proofRepo struct {
 func (s proofRepo) CreateProof(ctx context.Context, signature [48]byte, signers []model.Signer) error {
 	proof := model.NewProof(signers, signature[:])
 
-	err := s.client.
+	tx := s.client.
 		GetConnection().
 		WithContext(ctx).
 		Create(&proof)
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant create signers in database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant create signers in database")
 		return consts.ErrInternalError
 	}
 

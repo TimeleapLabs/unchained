@@ -2,6 +2,7 @@ package uniswap
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"os"
@@ -95,8 +96,14 @@ func (s *service) checkAndCacheSignature(
 
 	for _, item := range cached {
 		if item.Signer.PublicKey == signer.PublicKey {
+			publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
+			if err != nil {
+				utils.Logger.Error("Can't decode public key: %v", err)
+				return err
+			}
+
 			utils.Logger.
-				With("Address", address.Calculate(signer.PublicKey[:])).
+				With("Address", address.Calculate(publicKeyBytes)).
 				Debug("Duplicated signature")
 			return fmt.Errorf("duplicated signature")
 		}

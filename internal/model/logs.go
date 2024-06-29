@@ -23,18 +23,18 @@ type EventLogDataFrame struct {
 	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
-	Hash      []byte    `bson:"hash"      json:"hash"`
+	Hash      string    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Data      EventLog  `bson:"data"      gorm:"type:jsonb" json:"data"`
+	Data      EventLog  `bson:"data"      gorm:"embedded"  json:"data"`
 }
 
 type EventLog struct {
 	LogIndex uint64
-	Block    uint64
+	Block    uint64 `gorm:"uniqueIndex:idx_block_tx_index"`
 	Address  string
 	Event    string
 	Chain    string
-	TxHash   [32]byte
+	TxHash   [32]byte      `gorm:"uniqueIndex:idx_block_tx_index"`
 	Args     []EventLogArg `gorm:"type:jsonb"`
 
 	Consensus    bool

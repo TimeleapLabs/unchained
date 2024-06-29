@@ -16,9 +16,9 @@ type CorrectnessDataFrame struct {
 	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
-	Hash      []byte      `bson:"hash"      json:"hash"`
+	Hash      string      `bson:"hash"      json:"hash"`
 	Timestamp time.Time   `bson:"timestamp" json:"timestamp"`
-	Data      Correctness `bson:"data"      gorm:"type:jsonb" json:"data"`
+	Data      Correctness `bson:"data"      gorm:"embedded"  json:"data"`
 }
 
 type Correctness struct {
@@ -27,8 +27,8 @@ type Correctness struct {
 	Consensus    bool
 	Voted        int64
 	Timestamp    uint64
-	Hash         []byte
-	Topic        []byte
+	Hash         []byte `gorm:"uniqueIndex:idx_topic_hash"`
+	Topic        []byte `gorm:"uniqueIndex:idx_topic_hash"`
 	Correct      bool
 }
 

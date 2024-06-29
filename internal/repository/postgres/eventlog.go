@@ -42,7 +42,7 @@ func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index
 }
 
 func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
-	err := r.client.
+	tx := r.client.
 		GetConnection().
 		WithContext(ctx).
 		Clauses(clause.OnConflict{
@@ -50,13 +50,13 @@ func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
 			UpdateAll: true,
 		}).
 		Create(&model.EventLogDataFrame{
-			Hash:      nil,
+			Hash:      "",
 			Timestamp: time.Now(),
 			Data:      data,
 		})
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant upsert event log record to database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant upsert event log record to database")
 		return consts.ErrInternalError
 	}
 
