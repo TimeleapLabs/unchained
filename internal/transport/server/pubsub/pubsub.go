@@ -37,6 +37,20 @@ func Publish(destinationTopic consts.Channels, operation consts.OpCode, message 
 	}
 }
 
+func Unsubscribe(topic string, ch chan []byte) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	for key, subscribers := range topics[consts.Channels(topic)] {
+		if subscribers == ch {
+			topics[consts.Channels(topic)] = append(topics[consts.Channels(topic)][:key], topics[consts.Channels(topic)][key+1:]...)
+			break
+		}
+	}
+
+	close(ch)
+}
+
 func Subscribe(topic string) chan []byte {
 	mu.Lock()
 	defer mu.Unlock()
