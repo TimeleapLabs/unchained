@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
