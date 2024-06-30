@@ -20,10 +20,10 @@ type AssetPriceDataFrame struct {
 }
 
 type AssetPrice struct {
-	Pair         string `json:"pair"  gorm:"uniqueIndex:idx_pair_name_chain_block"`
-	Name         string `json:"name" gorm:"uniqueIndex:idx_pair_name_chain_block"`
-	Chain        string `json:"chain" gorm:"uniqueIndex:idx_pair_name_chain_block"`
-	Block        uint64 `json:"block" gorm:"uniqueIndex:idx_pair_name_chain_block"`
+	Pair         string `gorm:"uniqueIndex:idx_pair_name_chain_block" json:"pair"`
+	Name         string `gorm:"uniqueIndex:idx_pair_name_chain_block" json:"name"`
+	Chain        string `gorm:"uniqueIndex:idx_pair_name_chain_block" json:"chain"`
+	Block        uint64 `gorm:"uniqueIndex:idx_pair_name_chain_block" json:"block"`
 	Price        int64  `json:"price"`
 	SignersCount uint64 `json:"signers_count"`
 	Signature    []byte `json:"signature"`
