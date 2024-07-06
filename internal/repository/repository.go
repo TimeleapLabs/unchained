@@ -6,16 +6,16 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
-// EvenetLog interface represents the methods that can be used to interact with the EventLog table in the database.
+// Proof interface represents the methods that can be used to interact with the Proof table in the database.
+type Proof interface {
+	CreateProof(ctx context.Context, signature [48]byte, signers []model.Signer) error
+	GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error)
+}
+
+// EventLog interface represents the methods that can be used to interact with the EventLog table in the database.
 type EventLog interface {
 	Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]model.EventLog, error)
 	Upsert(ctx context.Context, data model.EventLog) error
-}
-
-// Signer interface represents the methods that can be used to interact with the Signer table in the database.
-type Signer interface {
-	CreateSigners(ctx context.Context, signers []model.Signer) error
-	GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error)
 }
 
 // AssetPrice interface represents the methods that can be used to interact with the AssetPrice table in the database.

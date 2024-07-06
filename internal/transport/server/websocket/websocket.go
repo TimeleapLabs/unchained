@@ -107,7 +107,8 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 				With("Channel", string(payload[1:])).
 				Info("New Consumer registered")
 
-			go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
+			topic := string(payload[1:])
+			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
 		default:
 			handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}

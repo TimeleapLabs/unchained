@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
@@ -24,12 +26,12 @@ func SendMessage(conn *websocket.Conn, messageType int, opCode consts.OpCode, me
 	Send(conn, messageType, opCode, []byte(message))
 }
 
-func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte) {
+func BroadcastListener(ctx context.Context, conn *websocket.Conn, topic string, ch chan []byte) {
 	for {
 		select {
 		case <-ctx.Done():
 			utils.Logger.Info("Closing connection")
-			close(ch)
+			pubsub.Unsubscribe(topic, ch)
 			return
 		case message := <-ch:
 			err := conn.WriteMessage(websocket.BinaryMessage, message)

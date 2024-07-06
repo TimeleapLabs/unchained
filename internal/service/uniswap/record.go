@@ -2,6 +2,7 @@ package uniswap
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -62,8 +63,13 @@ func (s *service) RecordSignature(
 
 	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
+		publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
+		if err != nil {
+			utils.Logger.Error("Can't decode public key: %v", err)
+			return err
+		}
 		utils.Logger.
-			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Address", address.Calculate(publicKeyBytes)).
 			With("Error", err).
 			Error("Failed to get voting power")
 		return err

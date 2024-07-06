@@ -33,12 +33,12 @@ func Worker() {
 	pos := pos.New(ethRPC)
 
 	eventLogRepo := postgres.NewEventLog(nil)
-	signerRepo := postgres.NewSigner(nil)
+	proofRepo := postgres.NewProof(nil)
 	assetPrice := postgres.NewAssetPrice(nil)
 
 	badger := evmlogService.NewBadger(config.App.System.ContextPath)
-	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, badger)
-	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
+	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, proofRepo, badger)
+	uniswapService := uniswapService.New(ethRPC, pos, proofRepo, assetPrice)
 
 	scheduler := scheduler.New(
 		scheduler.WithEthLogs(evmLogService),

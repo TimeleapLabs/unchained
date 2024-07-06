@@ -3,17 +3,27 @@ package types
 import "github.com/TimeleapLabs/unchained/internal/config"
 
 type Token struct {
-	ID     *string  `mapstructure:"id"`
-	Chain  string   `mapstructure:"chain"`
-	Name   string   `mapstructure:"name"`
-	Pair   string   `mapstructure:"pair"`
-	Unit   string   `mapstructure:"unit"`
-	Symbol string   `mapstructure:"symbol"`
-	Delta  int64    `mapstructure:"delta"`
-	Invert bool     `mapstructure:"invert"`
-	Store  bool     `mapstructure:"store"`
-	Send   bool     `mapstructure:"send"`
-	Cross  []string `mapstructure:"cross"`
+	ID     *string  `json:"id"`
+	Chain  string   `json:"chain"`
+	Name   string   `json:"name"`
+	Pair   string   `json:"pair"`
+	Unit   string   `json:"unit"`
+	Symbol string   `json:"symbol"`
+	Delta  int64    `json:"delta"`
+	Invert bool     `json:"invert"`
+	Store  bool     `json:"store"`
+	Send   bool     `json:"send"`
+	Cross  []string `json:"cross"`
+}
+
+func (t Token) GetCrossTokenKeys(crossTokens map[string]TokenKey) TokenKeys {
+	var cross []TokenKey
+
+	for _, id := range t.Cross {
+		cross = append(cross, crossTokens[id])
+	}
+
+	return cross
 }
 
 func NewTokensFromCfg(input []config.Token) []Token {
