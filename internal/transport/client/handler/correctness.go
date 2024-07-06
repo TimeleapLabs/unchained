@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-
 	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
@@ -11,8 +10,6 @@ import (
 
 func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastCorrectnessPacket).FromBytes(message)
-
-	correctnessHash := packet.Info.Bls()
 
 	signature, err := bls.RecoverSignature(packet.Signature)
 	if err != nil {
@@ -27,7 +24,6 @@ func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 		ctx,
 		signature,
 		packet.Signer,
-		correctnessHash,
 		packet.Info,
 		true,
 	)

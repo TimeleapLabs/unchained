@@ -37,9 +37,8 @@ type SaveSignatureArgs struct {
 type Service interface {
 	IsNewSigner(signature Signature, records []model.Correctness) bool
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, info model.Correctness, debounce bool,
 	) error
-	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
 }
 
 type service struct {
@@ -72,7 +71,7 @@ func (s *service) IsNewSigner(signature Signature, records []model.Correctness) 
 // TODO: How should we handle older records?
 // Possible Solution: Add a not after timestamp to the document.
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, info model.Correctness, debounce bool,
 ) error {
 	if supported := s.supportedTopics[info.Topic]; !supported {
 		utils.Logger.
@@ -84,7 +83,7 @@ func (s *service) RecordSignature(
 	s.signatureMutex.Lock()
 	defer s.signatureMutex.Unlock()
 
-	signatures, ok := s.signatureCache.Get(hash)
+	signatures, ok := s.signatureCache.Get(info.Bls())
 	if !ok {
 		signatures = make([]Signature, 0)
 	}
@@ -113,7 +112,7 @@ func (s *service) RecordSignature(
 
 	reportedValues, _ := s.consensus.Get(key)
 	isMajority := true
-	voted, ok := reportedValues.Load(hash)
+	voted, ok := reportedValues.Load(info.Bls())
 	if !ok {
 		voted = *big.NewInt(0)
 	}
@@ -136,23 +135,23 @@ func (s *service) RecordSignature(
 		return isMajority
 	})
 
-	reportedValues.Store(hash, *totalVoted)
+	reportedValues.Store(info.Bls(), *totalVoted)
 	signatures = append(signatures, packed)
-	s.signatureCache.Add(hash, signatures)
+	s.signatureCache.Add(info.Bls(), signatures)
 
 	saveArgs := SaveSignatureArgs{
 		Info:      info,
-		Hash:      hash,
+		Hash:      info.Bls(),
 		Consensus: isMajority,
 		Voted:     totalVoted,
 	}
 
 	if debounce {
-		s.DebouncedSaveSignatures(hash, saveArgs)
+		s.DebouncedSaveSignatures(info.Bls(), saveArgs)
 		return nil
 	}
 
-	err = s.SaveSignatures(ctx, saveArgs)
+	err = s.saveSignatures(ctx, saveArgs)
 	if err != nil {
 		return err
 	}
@@ -160,7 +159,7 @@ func (s *service) RecordSignature(
 	return nil
 }
 
-func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) error {
+func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
 		return consts.ErrSignatureNotfound
@@ -250,9 +249,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 func (s *service) init() {
 	var err error
 
-	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
-	s.signatureMutex = new(sync.Mutex)
-	s.supportedTopics = make(map[[64]byte]bool)
+	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.saveSignatures)
 	s.signatureCache, err = lru.New[bls12381.G1Affine, []Signature](LruSize)
 
 	if err != nil {
@@ -269,6 +266,8 @@ func New(
 		pos:             pos,
 		signerRepo:      signerRepo,
 		correctnessRepo: correctnessRepo,
+		signatureMutex:  new(sync.Mutex),
+		supportedTopics: make(map[[64]byte]bool),
 	}
 	c.init()
 
