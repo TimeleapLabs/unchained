@@ -73,6 +73,20 @@ func NewIdentity() *Signer {
 	return s
 }
 
+func GenerateBlsKeyPair() (*big.Int, *bls12381.G2Affine, *bls12381.G1Affine) {
+	_, _, g1Aff, g2Aff := bls12381.Generators()
+
+	g2Order := bls12381_fr.Modulus()
+	sk, err := rand.Int(rand.Reader, g2Order)
+	if err != nil {
+		panic(err)
+	}
+
+	pk := new(bls12381.G2Affine).ScalarMultiplication(&g2Aff, sk)
+
+	return sk, pk, new(bls12381.G1Affine).ScalarMultiplication(&g1Aff, sk)
+}
+
 // Sign signs a message with the identities secret key.
 func (s *Signer) Sign(message []byte) (bls12381.G1Affine, bls12381.G1Affine) {
 	hashedMessage, err := Hash(message)
