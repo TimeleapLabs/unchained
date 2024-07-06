@@ -30,7 +30,7 @@ func (m *mockConnection) GetConnection() *gorm.DB {
 			User:       "postgres",
 			Password:   "password",
 			Host:       "localhost",
-			Port:       "5433",
+			Port:       "5432",
 			Options:    "sslmode=disable",
 		},
 		pgtestdb.NoopMigrator{},
@@ -38,7 +38,7 @@ func (m *mockConnection) GetConnection() *gorm.DB {
 
 	var err error
 	m.db, err = gorm.Open(
-		postgres.Open("postgresql://postgres:password@127.0.0.1:5433/unchained?sslmode=disable"),
+		postgres.Open("postgresql://postgres:password@127.0.0.1:5432/unchained?sslmode=disable"),
 		&gorm.Config{
 			Logger:         logger.Default.LogMode(logger.Warn),
 			TranslateError: true,
