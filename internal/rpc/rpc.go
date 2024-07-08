@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"golang.org/x/exp/rand"
@@ -55,10 +56,20 @@ func (r *RPC) GetWorkers(function string) []*websocket.Conn {
 
 func (r *RPC) GetRandomWorker(function string) *websocket.Conn {
 	workers := r.Workers[function]
-	if len(workers) == 0 {
+	available := make([]*websocket.Conn, 0, len(workers))
+
+	for _, worker := range workers {
+		if _, ok := store.Signers.Load(worker); ok {
+			available = append(available, worker)
+		}
+	}
+
+	if len(available) == 0 {
 		return nil
 	}
 
-	random := rand.Intn(len(workers))
-	return workers[random]
+	r.Workers[function] = available
+	random := rand.Intn(len(available))
+
+	return available[random]
 }
