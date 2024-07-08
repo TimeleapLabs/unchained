@@ -1,12 +1,16 @@
 package app
 
 import (
+	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 	"github.com/TimeleapLabs/unchained/internal/repository/postgres"
+	"github.com/TimeleapLabs/unchained/internal/rpc"
 	"github.com/TimeleapLabs/unchained/internal/scheduler"
+	"github.com/TimeleapLabs/unchained/internal/service/ai"
 	evmlogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
@@ -17,7 +21,7 @@ import (
 )
 
 // Worker starts the Unchained worker and contains its DI.
-func Worker() {
+func Worker(ctx context.Context, withAI bool) {
 	utils.Logger.
 		With("Mode", "Worker").
 		With("Version", consts.Version).
@@ -49,6 +53,15 @@ func Worker() {
 
 	handler := handler.NewWorkerHandler()
 	client.NewRPC(handler)
+
+	if withAI {
+		// Start AI server
+		ai.StartServer(ctx)
+		register := new(rpc.RegisterFunction)
+		register.Function = "Unchained.AI.TextToImage"
+		payload := register.Sia().Bytes()
+		conn.Send(consts.OpCodeRegisterRpcFunction, payload)
+	}
 
 	scheduler.Start()
 }

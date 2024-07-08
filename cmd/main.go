@@ -28,6 +28,7 @@ func main() {
 	handler.WithBrokerCmd(root)
 	handler.WithConsumerCmd(root)
 	handler.WithWorkerCmd(root)
+	handler.WithPluginCmd(root)
 
 	err := root.Execute()
 	if err != nil {
@@ -41,4 +42,5 @@ func init() {
 	root.PersistentFlags().StringVarP(&config.App.System.SecretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
 	root.PersistentFlags().BoolVarP(&config.App.System.AllowGenerateSecrets, "allow-generate-secrets", "a", false, "Allow to generate secrets file if not exists")
 	root.PersistentFlags().StringVarP(&config.App.System.ContextPath, "context", "x", "./context", "Context DB")
+	root.PersistentFlags().StringVarP(&config.App.System.Home, "home", "H", "./unchained", "Unchained Home")
 }

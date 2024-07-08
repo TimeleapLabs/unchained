@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/rpc"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
@@ -15,6 +16,7 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
+var unchainedRpc = rpc.New()
 
 func WithWebsocket() func() {
 	return func() {
@@ -26,6 +28,8 @@ func WithWebsocket() func() {
 }
 
 func multiplexer(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // remove this line in production
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		utils.Logger.Error("Can't upgrade the HTTP connection: %v", err)
@@ -108,6 +112,54 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 				Info("New Consumer registered")
 
 			go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
+
+		case consts.OpCodeRegisterRpcFunction:
+			request := new(rpc.RegisterFunction).
+				FromSiaBytes(payload[1:])
+
+			utils.Logger.
+				With("IP", conn.RemoteAddr().String()).
+				With("Function", request.Function).
+				Info("New Worker registered")
+
+			unchainedRpc.RegisterWorker(request.Function, conn)
+
+		case consts.OpCodeRpcRequest:
+			request := new(rpc.TextToImageRpcRequest).
+				FromSiaBytes(payload[1:])
+
+			utils.Logger.
+				With("IP", conn.RemoteAddr().String()).
+				With("ID", request.ID).
+				With("Function", request.Method).
+				Info("RPC Request")
+
+			unchainedRpc.RegisterTask(request.ID, conn)
+			worker := unchainedRpc.GetRandomWorker(request.Method)
+
+			if worker != nil {
+				utils.Logger.
+					With("IP", conn.RemoteAddr().String()).
+					With("Function", request.Method).
+					Info("RPC Request Sent to Worker")
+
+				handler.Send(worker, messageType, consts.OpCodeRpcRequest, payload[1:])
+			}
+
+		case consts.OpCodeRpcResponse:
+			response := new(rpc.TextToImageRpcResponse).
+				FromSiaBytes(payload[1:])
+
+			task := unchainedRpc.GetTask(response.ID)
+			if task != nil {
+				utils.Logger.
+					With("IP", conn.RemoteAddr().String()).
+					With("ID", response.ID).
+					Info("RPC Response")
+
+				handler.Send(task, messageType, consts.OpCodeRpcResponse, payload[1:])
+			}
+
 		default:
 			handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}

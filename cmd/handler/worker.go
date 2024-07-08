@@ -17,14 +17,19 @@ var worker = &cobra.Command{
 		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
 	},
 
-	Run: func(_ *cobra.Command, _ []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
 		if err != nil {
 			panic(err)
 		}
 
+		withAI, err := cmd.Flags().GetBool("with-ai")
+		if err != nil {
+			panic(err)
+		}
+
 		utils.SetupLogger(config.App.System.Log)
-		app.Worker()
+		app.Worker(cmd.Context(), withAI)
 	},
 }
 
@@ -39,5 +44,12 @@ func init() {
 		"b",
 		"wss://shinobi.brokers.kenshi.io",
 		"Unchained broker to connect to",
+	)
+
+	worker.Flags().BoolP(
+		"with-ai",
+		"e",
+		false,
+		"Enable AI plugins",
 	)
 }
