@@ -18,7 +18,7 @@ type CorrectnessRepo struct {
 	client database.Database
 }
 
-func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Correctness, error) {
+func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp time.Time) ([]model.Correctness, error) {
 	currentRecords := []model.CorrectnessDataFrame{}
 	tx := c.client.
 		GetConnection().

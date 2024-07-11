@@ -69,7 +69,7 @@ func (s *service) RecordSignature(
 	s.signatureMutex.Lock()
 	defer s.signatureMutex.Unlock()
 
-	signatures, ok := s.signatureCache.Get(info.Bls())
+	signatures, ok := s.signatureCache.Get(*info.Bls())
 	if !ok {
 		signatures = make([]Signature, 0)
 	}
@@ -92,7 +92,7 @@ func (s *service) RecordSignature(
 	}
 
 	reportedValues, _ := s.consensus.Get(key)
-	voted, ok := reportedValues.Load(info.Bls())
+	voted, ok := reportedValues.Load(*info.Bls())
 	if !ok {
 		voted = *big.NewInt(0)
 	}
@@ -122,22 +122,22 @@ func (s *service) RecordSignature(
 		return isMajority
 	})
 
-	reportedValues.Store(hash.Bls(), *totalVoted)
+	reportedValues.Store(*info.Bls(), *totalVoted)
 	signatures = append(signatures, Signature{
 		Signature: signature,
 		Signer:    signer,
 	})
-	s.signatureCache.Add(hash.Bls(), signatures)
+	s.signatureCache.Add(*info.Bls(), signatures)
 
 	saveArgs := SaveSignatureArgs{
 		Info:      info,
-		Hash:      info.Bls(),
+		Hash:      *info.Bls(),
 		Consensus: isMajority,
 		Voted:     totalVoted,
 	}
 
 	if debounce {
-		s.DebouncedSaveSignatures(info.Bls(), saveArgs)
+		s.DebouncedSaveSignatures(*info.Bls(), saveArgs)
 		return nil
 	}
 
@@ -155,7 +155,7 @@ func (s *service) saveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return consts.ErrSignatureNotfound
 	}
 
-	currentRecords, err := s.correctnessRepo.Find(ctx, args.Info.Hash, args.Info.Topic, args.Info.Timestamp)
+	currentRecords, err := s.correctnessRepo.Find(ctx, args.Info.Hash, args.Info.Topic, time.Unix(int64(args.Info.Timestamp), 0))
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func New(
 	}
 
 	var err error
-	c.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, c.SaveSignatures)
+	c.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, c.saveSignatures)
 	c.signatureMutex = new(sync.Mutex)
 	c.supportedTopics = make(map[[64]byte]bool)
 	c.signatureCache, err = lru.New[bls12381.G1Affine, []Signature](LruSize)

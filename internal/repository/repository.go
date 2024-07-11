@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
@@ -26,7 +27,7 @@ type AssetPrice interface {
 
 // CorrectnessReport interface represents the methods that can be used to interact with the CorrectnessReport table in the database.
 type CorrectnessReport interface {
-	Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Correctness, error)
+	Find(ctx context.Context, hash []byte, topic []byte, timestamp time.Time) ([]model.Correctness, error)
 	Upsert(ctx context.Context, data model.Correctness) error
 }
 
