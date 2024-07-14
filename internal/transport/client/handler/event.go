@@ -25,7 +25,6 @@ func (h *consumer) EventLog(ctx context.Context, message []byte) {
 		ctx,
 		signature,
 		packet.Signer,
-		*packet.Info.Bls(),
 		packet.Info,
 		true,
 		false,

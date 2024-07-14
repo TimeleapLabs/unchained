@@ -46,7 +46,7 @@ type Service interface {
 	SendPriceReport(signature bls12381.G1Affine, event model.EventLog)
 	ProcessBlocks(ctx context.Context, chain string) error
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, info model.EventLog, debounce bool, historical bool,
 	) error
 }
 

@@ -16,7 +16,7 @@ import (
 )
 
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, info model.EventLog, debounce bool, historical bool,
 ) error {
 	supportKey := SupportKey{
 		Chain:   info.Chain,
@@ -60,7 +60,7 @@ func (s *service) RecordSignature(
 
 	key := EventKey{
 		Chain:    info.Chain,
-		TxHash:   info.TxHash,
+		TxHash:   [32]byte(info.TxHash),
 		LogIndex: info.LogIndex,
 	}
 
@@ -84,7 +84,7 @@ func (s *service) RecordSignature(
 	}
 
 	reportedValues, _ := s.consensus.Get(key)
-	voted := reportedValues[hash]
+	voted := reportedValues[*info.Bls()]
 	totalVoted := new(big.Int).Add(votingPower, &voted)
 	isMajority := true
 
@@ -95,7 +95,7 @@ func (s *service) RecordSignature(
 		}
 	}
 
-	cached, _ := s.signatureCache.Get(hash)
+	cached, _ := s.signatureCache.Get(*info.Bls())
 
 	packed := correctness.Signature{
 		Signature: signature,
@@ -108,19 +108,19 @@ func (s *service) RecordSignature(
 		}
 	}
 
-	reportedValues[hash] = *totalVoted
+	reportedValues[*info.Bls()] = *totalVoted
 	cached = append(cached, packed)
-	s.signatureCache.Add(hash, cached)
+	s.signatureCache.Add(*info.Bls(), cached)
 
 	saveArgs := SaveSignatureArgs{
-		Hash:      hash,
+		Hash:      *info.Bls(),
 		Info:      info,
 		Consensus: isMajority,
 		Voted:     totalVoted,
 	}
 
 	if debounce {
-		s.DebouncedSaveSignatures(hash, saveArgs)
+		s.DebouncedSaveSignatures(*info.Bls(), saveArgs)
 		return nil
 	}
 

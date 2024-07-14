@@ -158,12 +158,12 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 				Address:  vLog.Address.Hex(),
 				Event:    conf.Event,
 				Chain:    conf.Chain,
-				TxHash:   vLog.TxHash,
+				TxHash:   vLog.TxHash.Bytes(),
 				Args:     args,
 			}
 
 			toHash := event.Sia().Bytes()
-			signature, hash := crypto.Identity.Bls.Sign(toHash)
+			signature, _ := crypto.Identity.Bls.Sign(toHash)
 
 			if conf.Send {
 				s.SendPriceReport(signature, event)
@@ -174,7 +174,6 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 					ctx,
 					signature,
 					*crypto.Identity.ExportEvmSigner(),
-					hash,
 					event,
 					false,
 					true,

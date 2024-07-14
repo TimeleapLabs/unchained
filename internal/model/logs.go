@@ -34,7 +34,7 @@ type EventLog struct {
 	Address  string
 	Event    string
 	Chain    string
-	TxHash   [32]byte      `gorm:"uniqueIndex:idx_block_tx_index"`
+	TxHash   []byte        `gorm:"uniqueIndex:idx_block_tx_index"`
 	Args     []EventLogArg `gorm:"type:jsonb"`
 
 	Consensus    bool

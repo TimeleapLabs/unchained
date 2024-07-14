@@ -129,6 +129,13 @@ func (s *CorrectnessTestSuite) TestRecordSignatures() {
 	})
 }
 
+func (s *CorrectnessTestSuite) TearDownSuite() {
+	s.T().Log("Stopping the pg server")
+	err := s.db.Stop()
+	s.Require().NoError(err)
+	os.RemoveAll(s.cacheDir)
+}
+
 func TestCorrectnessSuite(t *testing.T) {
 	suite.Run(t, new(CorrectnessTestSuite))
 }

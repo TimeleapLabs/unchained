@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/hex"
 	"time"
 
 	"gorm.io/gorm/clause"
@@ -22,10 +23,11 @@ func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index
 	tx := r.client.
 		GetConnection().
 		WithContext(ctx).
-		Where("block", block).
-		Where("transaction", hash).
-		Where("index", index).
-		Preload("Signers").
+		Where(model.EventLogDataFrame{Data: model.EventLog{
+			TxHash:   hash,
+			LogIndex: index,
+			Block:    block,
+		}}).
 		Find(&currentRecords)
 
 	if tx.Error != nil {
@@ -42,15 +44,17 @@ func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index
 }
 
 func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
+	dataHash := data.Bls().Bytes()
+
 	tx := r.client.
 		GetConnection().
 		WithContext(ctx).
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "block"}, {Name: "transaction"}, {Name: "index"}},
+			Columns:   []clause.Column{{Name: "block"}, {Name: "tx_hash"}},
 			UpdateAll: true,
 		}).
 		Create(&model.EventLogDataFrame{
-			Hash:      "",
+			Hash:      hex.EncodeToString(dataHash[:]),
 			Timestamp: time.Now(),
 			Data:      data,
 		})
