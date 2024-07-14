@@ -15,7 +15,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/dgraph-io/badger/v4"
-	goEthereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/text/cases"
@@ -66,18 +65,13 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 			toBlock = fromBlock + conf.Step
 		}
 
-		query := goEthereum.FilterQuery{
-			FromBlock: big.NewInt(int64(fromBlock)),
-			ToBlock:   big.NewInt(int64(toBlock)),
-			Addresses: []common.Address{contractAddress},
-		}
-
-		rpcClient := s.ethRPC.GetClient(conf.Chain)
-		logs, err := rpcClient.FilterLogs(ctx, query)
-
-		if err != nil {
-			return err
-		}
+		logs, err := s.ethRPC.GetLogs(
+			ctx,
+			chain,
+			big.NewInt(int64(fromBlock)),
+			big.NewInt(int64(toBlock)),
+			[]common.Address{contractAddress},
+		)
 
 		contractAbi := s.abiMap[conf.Abi]
 		caser := cases.Title(language.English, cases.NoLower)

@@ -2,22 +2,22 @@ package ethereum
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/core/types"
+	"math/big"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 type mockRPC struct {
 	backend *backends.SimulatedBackend
 }
 
-func (m mockRPC) GetClient(_ string) *ethclient.Client {
-	// TODO implement me
-	panic("implement me")
+func (m mockRPC) GetLogs(ctx context.Context, chain string, from, to *big.Int, addresses []common.Address) ([]types.Log, error) {
+	return []types.Log{}, nil
 }
 
 func (m mockRPC) RefreshRPC(_ string) {}

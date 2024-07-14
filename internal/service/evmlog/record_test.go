@@ -76,6 +76,7 @@ func (s *EvmLogTestSuite) SetupTest() {
 	s.ins.Migrate()
 
 	posService := new(pos.MockService)
+	posService.On("GetBlockNumber", mock2.Anything, "eth").Return(10, nil)
 	posService.On("GetVotingPowerOfEvm", mock2.Anything, "0x12345").Return(10, nil)
 
 	ethRPC := ethereum.NewMock()

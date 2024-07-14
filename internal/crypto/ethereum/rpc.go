@@ -2,6 +2,9 @@ package ethereum
 
 import (
 	"context"
+	goEthereum "github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/core/types"
+	"math/big"
 	"sync"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -18,10 +21,11 @@ import (
 
 type RPC interface {
 	RefreshRPC(network string)
-	GetClient(network string) *ethclient.Client
 	GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error)
 	GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error)
+
 	GetBlockNumber(ctx context.Context, network string) (uint64, error)
+	GetLogs(ctx context.Context, chain string, from, to *big.Int, addresses []common.Address) ([]types.Log, error)
 }
 
 type repository struct {
@@ -31,14 +35,23 @@ type repository struct {
 	mutex   *sync.Mutex
 }
 
-func (r *repository) GetClient(chain string) *ethclient.Client {
+func (r *repository) GetLogs(ctx context.Context, chain string, from, to *big.Int, addresses []common.Address) ([]types.Log, error) {
 	client, isFound := r.clients[chain]
 	if !isFound {
 		utils.Logger.With("Network", chain).Error("Client not found")
-		return nil
+		return nil, consts.ErrClientNotFound
 	}
 
-	return client
+	logs, err := client.FilterLogs(ctx, goEthereum.FilterQuery{
+		FromBlock: from,
+		ToBlock:   to,
+		Addresses: addresses,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return logs, nil
 }
 
 func (r *repository) refreshRPCWithRetries(network string, retries int) bool {
@@ -77,8 +90,9 @@ func (r *repository) GetNewStakingContract(network string, address string, refre
 		r.RefreshRPC(network)
 	}
 
-	client := r.GetClient(network)
-	if client == nil {
+	client, isFound := r.clients[network]
+	if !isFound {
+		utils.Logger.With("Network", network).Error("Client not found")
 		return nil, consts.ErrClientNotFound
 	}
 
@@ -90,8 +104,9 @@ func (r *repository) GetNewUniV3Contract(network string, address string, refresh
 		r.RefreshRPC(network)
 	}
 
-	client := r.GetClient(network)
-	if client == nil {
+	client, isFound := r.clients[network]
+	if !isFound {
+		utils.Logger.With("Network", network).Error("Client not found")
 		return nil, consts.ErrClientNotFound
 	}
 
@@ -100,8 +115,9 @@ func (r *repository) GetNewUniV3Contract(network string, address string, refresh
 
 // GetBlockNumber returns the most recent block number.
 func (r *repository) GetBlockNumber(ctx context.Context, network string) (uint64, error) {
-	client := r.GetClient(network)
-	if client == nil {
+	client, isFound := r.clients[network]
+	if !isFound {
+		utils.Logger.With("Network", network).Error("Client not found")
 		return 0, consts.ErrClientNotFound
 	}
 
