@@ -9,6 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TimeleapLabs/unchained/internal/service/correctness"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
@@ -19,8 +22,6 @@ import (
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/ent"
-	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
@@ -45,7 +46,7 @@ type Service interface {
 	SendPriceReport(signature bls12381.G1Affine, event model.EventLog)
 	ProcessBlocks(ctx context.Context, chain string) error
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.EventLog, debounce bool, historical bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, info model.EventLog, debounce bool, historical bool,
 	) error
 }
 
@@ -53,11 +54,11 @@ type service struct {
 	ethRPC       ethereum.RPC
 	pos          pos.Service
 	eventLogRepo repository.EventLog
-	signerRepo   repository.Signer
+	proofRepo    repository.Proof
 	persistence  *Badger
 
 	consensus               *lru.Cache[EventKey, map[bls12381.G1Affine]big.Int]
-	signatureCache          *lru.Cache[bls12381.G1Affine, []model.Signature]
+	signatureCache          *lru.Cache[bls12381.G1Affine, []correctness.Signature]
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 	signatureMutex          *sync.Mutex
 	supportedEvents         map[SupportKey]bool
@@ -84,38 +85,18 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 
 	var newSigners []model.Signer
 	var newSignatures []bls12381.G1Affine
-	var keys [][]byte
 
-	currentRecords, err := s.eventLogRepo.Find(ctx, args.Info.Block, args.Info.TxHash[:], args.Info.LogIndex)
-	if err != nil && !ent.IsNotFound(err) {
+	currentRecords, err := s.eventLogRepo.Find(ctx, args.Info.Block, args.Info.TxHash, args.Info.LogIndex)
+	if err != nil {
 		return err
 	}
 
 	for i := range signatures {
 		signature := signatures[i]
-		keys = append(keys, signature.Signer.PublicKey[:])
-
-		if !isNewSigner(signature, currentRecords) {
-			continue
-		}
 
 		newSignatures = append(newSignatures, signature.Signature)
 		newSigners = append(newSigners, signature.Signer)
 	}
-
-	err = s.signerRepo.CreateSigners(ctx, newSigners)
-
-	if err != nil {
-		return err
-	}
-
-	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
-
-	if err != nil {
-		return err
-	}
-
-	var aggregate bls12381.G1Affine
 
 	sortedCurrentArgs := make([]model.EventLogArg, len(args.Info.Args))
 	copy(sortedCurrentArgs, args.Info.Args)
@@ -146,7 +127,6 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		}
 
 		currentAggregate, err := bls.RecoverSignature([48]byte(record.Signature))
-
 		if err != nil {
 			utils.Logger.
 				With("Block", args.Info.Block).
@@ -163,21 +143,25 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		break
 	}
 
+	var aggregate bls12381.G1Affine
 	aggregate, err = bls.AggregateSignatures(newSignatures)
-
 	if err != nil {
 		return consts.ErrCantAggregateSignatures
 	}
 
 	signatureBytes := aggregate.Bytes()
 
+	err = s.proofRepo.CreateProof(ctx, signatureBytes, newSigners)
+	if err != nil {
+		return err
+	}
+
 	args.Info.SignersCount = uint64(len(signatures))
-	args.Info.SignerIDs = signerIDs
 	args.Info.Consensus = args.Consensus
 	args.Info.Signature = signatureBytes[:]
-	args.Info.Voted = &helpers.BigInt{Int: *args.Voted}
-	err = s.eventLogRepo.Upsert(ctx, args.Info)
+	args.Info.Voted = args.Voted.Int64()
 
+	err = s.eventLogRepo.Upsert(ctx, args.Info)
 	if err != nil {
 		return err
 	}
@@ -186,28 +170,22 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 }
 
 func (s *service) SendPriceReport(signature bls12381.G1Affine, event model.EventLog) {
-	compressedSignature := signature.Bytes()
-
-	priceReport := model.EventLogReportPacket{
+	priceReport := packet.EventLogReportPacket{
 		EventLog:  event,
-		Signature: compressedSignature,
+		Signature: signature.Bytes(),
 	}
 
 	conn.Send(consts.OpCodeEventLog, priceReport.Sia().Bytes())
 }
 
 func New(
-	ethRPC ethereum.RPC,
-	pos pos.Service,
-	eventLogRepo repository.EventLog,
-	signerRepo repository.Signer,
-	persistence *Badger,
+	ethRPC ethereum.RPC, pos pos.Service, eventLogRepo repository.EventLog, proofRepo repository.Proof, persistence *Badger,
 ) Service {
 	s := service{
 		ethRPC:       ethRPC,
 		pos:          pos,
 		eventLogRepo: eventLogRepo,
-		signerRepo:   signerRepo,
+		proofRepo:    proofRepo,
 		persistence:  persistence,
 
 		signatureMutex:  new(sync.Mutex),
@@ -219,7 +197,7 @@ func New(
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
 
 	var err error
-	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
+	s.signatureCache, err = lru.New[bls12381.G1Affine, []correctness.Signature](LruSize)
 	if err != nil {
 		panic(err)
 	}

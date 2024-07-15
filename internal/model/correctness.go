@@ -1,70 +1,34 @@
 package model
 
 import (
-	"math/big"
+	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-type CorrectnessReportPacket struct {
-	Correctness
-	Signature [48]byte
-}
+type CorrectnessDataFrame struct {
+	ID    uint               `bson:"-"             gorm:"primarykey"`
+	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
-func (c *CorrectnessReportPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(c.Correctness.Sia().Bytes()).
-		AddByteArray8(c.Signature[:])
-}
-
-func (c *CorrectnessReportPacket) FromBytes(payload []byte) *CorrectnessReportPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	c.Correctness.FromSia(siaMessage)
-	copy(c.Signature[:], siaMessage.ReadByteArray8())
-
-	return c
-}
-
-//////
-
-type BroadcastCorrectnessPacket struct {
-	Info      Correctness
-	Signature [48]byte
-	Signer    Signer
-}
-
-func (b *BroadcastCorrectnessPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(b.Info.Sia().Bytes()).
-		AddByteArray8(b.Signature[:]).
-		EmbedBytes(b.Signer.Sia().Bytes())
-}
-
-func (b *BroadcastCorrectnessPacket) FromBytes(payload []byte) *BroadcastCorrectnessPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	b.Info.FromSia(siaMessage)
-	copy(b.Signature[:], siaMessage.ReadByteArray8())
-	b.Signer.FromSia(siaMessage)
-
-	return b
+	Hash      string      `bson:"hash"      json:"hash"`
+	Timestamp time.Time   `bson:"timestamp" json:"timestamp"`
+	Data      Correctness `bson:"data"      gorm:"embedded"  json:"data"`
 }
 
 type Correctness struct {
 	SignersCount uint64
 	Signature    []byte
 	Consensus    bool
-	Voted        big.Int
-	SignerIDs    []int
+	Voted        int64
 	Timestamp    uint64
-	Hash         []byte
-	Topic        [64]byte
+	Hash         []byte `gorm:"uniqueIndex:idx_topic_hash"`
+	Topic        []byte `gorm:"uniqueIndex:idx_topic_hash"`
 	Correct      bool
 }
 
@@ -72,7 +36,7 @@ func (c *Correctness) Sia() sia.Sia {
 	return sia.New().
 		AddUInt64(c.Timestamp).
 		AddByteArray8(c.Hash).
-		AddByteArray8(c.Topic[:]).
+		AddByteArray8(c.Topic).
 		AddBool(c.Correct)
 }
 
@@ -84,18 +48,18 @@ func (c *Correctness) FromBytes(payload []byte) *Correctness {
 func (c *Correctness) FromSia(sia sia.Sia) *Correctness {
 	c.Timestamp = sia.ReadUInt64()
 	copy(c.Hash, sia.ReadByteArray8())
-	copy(c.Topic[:], sia.ReadByteArray8())
+	copy(c.Topic, sia.ReadByteArray8())
 	c.Correct = sia.ReadBool()
 
 	return c
 }
 
-func (c *Correctness) Bls() (bls12381.G1Affine, error) {
+func (c *Correctness) Bls() *bls12381.G1Affine {
 	hash, err := bls.Hash(c.Sia().Bytes())
 	if err != nil {
 		utils.Logger.Error("Can't hash bls: %v", err)
-		return bls12381.G1Affine{}, err
+		return &bls12381.G1Affine{}
 	}
 
-	return hash, err
+	return &hash
 }

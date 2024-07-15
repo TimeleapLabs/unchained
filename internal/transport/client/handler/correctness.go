@@ -3,18 +3,14 @@ package handler
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
 func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
-	packet := new(model.BroadcastCorrectnessPacket).FromBytes(message)
-
-	correctnessHash, err := packet.Info.Bls()
-	if err != nil {
-		return
-	}
+	packet := new(packet.BroadcastCorrectnessPacket).FromBytes(message)
 
 	signature, err := bls.RecoverSignature(packet.Signature)
 	if err != nil {
@@ -29,7 +25,6 @@ func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 		ctx,
 		signature,
 		packet.Signer,
-		correctnessHash,
 		packet.Info,
 		true,
 	)

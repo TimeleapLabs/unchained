@@ -15,7 +15,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/dgraph-io/badger/v4"
-	goEthereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/text/cases"
@@ -66,15 +65,13 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 			toBlock = fromBlock + conf.Step
 		}
 
-		query := goEthereum.FilterQuery{
-			FromBlock: big.NewInt(int64(fromBlock)),
-			ToBlock:   big.NewInt(int64(toBlock)),
-			Addresses: []common.Address{contractAddress},
-		}
-
-		rpcClient := s.ethRPC.GetClient(conf.Chain)
-		logs, err := rpcClient.FilterLogs(ctx, query)
-
+		logs, err := s.ethRPC.GetLogs(
+			ctx,
+			chain,
+			big.NewInt(int64(fromBlock)),
+			big.NewInt(int64(toBlock)),
+			[]common.Address{contractAddress},
+		)
 		if err != nil {
 			return err
 		}
@@ -158,12 +155,12 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 				Address:  vLog.Address.Hex(),
 				Event:    conf.Event,
 				Chain:    conf.Chain,
-				TxHash:   vLog.TxHash,
+				TxHash:   vLog.TxHash.Bytes(),
 				Args:     args,
 			}
 
 			toHash := event.Sia().Bytes()
-			signature, hash := crypto.Identity.Bls.Sign(toHash)
+			signature, _ := crypto.Identity.Bls.Sign(toHash)
 
 			if conf.Send {
 				s.SendPriceReport(signature, event)
@@ -174,7 +171,6 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 					ctx,
 					signature,
 					*crypto.Identity.ExportEvmSigner(),
-					hash,
 					event,
 					false,
 					true,

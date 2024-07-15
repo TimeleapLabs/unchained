@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
@@ -27,7 +28,7 @@ func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	store.Signers.Store(conn, *signer)
 
 	// Start KOSK verification
-	challenge := model.ChallengePacket{Random: utils.NewChallenge()}
+	challenge := packet.ChallengePacket{Random: utils.NewChallenge()}
 	store.Challenges.Store(conn, challenge)
 
 	return challenge.Sia().Bytes(), nil

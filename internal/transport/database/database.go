@@ -3,10 +3,18 @@ package database
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/ent"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	"gorm.io/gorm"
 )
 
 type Database interface {
-	GetConnection() *ent.Client
+	GetConnection() *gorm.DB
+	Migrate()
+	HealthCheck(ctx context.Context) bool
+}
+
+type MongoDatabase interface {
+	GetConnection() *mongo.Client
 	HealthCheck(ctx context.Context) bool
 }

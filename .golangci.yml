@@ -199,6 +199,9 @@ issues:
       linters: [ godot ]
     - source: "//noinspection"
       linters: [ gocritic ]
+    - path: "internal/transport/server/packet/*"
+      linters:
+        - dupl
     - path: "cmd"
       linters:
         - funlen

@@ -74,6 +74,11 @@ type Network struct {
 	BrokerTimeout     time.Duration `env:"BROKER_TIMEOUT"     env-default:"3s"                              yaml:"brokerTimeout"`
 }
 
+type Mongo struct {
+	URL      string `env:"Mongo_URL"      yaml:"url"`
+	Database string `env:"Mongo_Database" yaml:"database"`
+}
+
 type Postgres struct {
 	URL string `env:"DATABASE_URL" yaml:"url"`
 }
@@ -92,6 +97,7 @@ type Config struct {
 	System       System       `yaml:"system"`
 	Network      Network      `yaml:"network"`
 	RPC          []RPC        `yaml:"rpc"`
+	Mongo        Mongo        `yaml:"mongo"`
 	Postgres     Postgres     `yaml:"postgres"`
 	ProofOfStake ProofOfStake `yaml:"pos"`
 	Plugins      Plugins      `yaml:"plugins"`

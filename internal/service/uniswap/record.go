@@ -2,8 +2,11 @@ package uniswap
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
+
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap/types"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
@@ -17,7 +20,7 @@ import (
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, info types.PriceInfo, debounce bool, historical bool,
 ) error {
 	if supported := s.SupportedTokens[info.Asset.Token]; !supported {
 		utils.Logger.
@@ -53,15 +56,20 @@ func (s *service) RecordSignature(
 
 	reportedValues, _ := s.consensus.Get(info.Asset)
 	isMajority := true
-	voted, ok := reportedValues.Load(hash)
+	voted, ok := reportedValues.Load(info.Bls())
 	if !ok {
 		voted = *big.NewInt(0)
 	}
 
 	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
+		publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
+		if err != nil {
+			utils.Logger.Error("Can't decode public key: %v", err)
+			return err
+		}
 		utils.Logger.
-			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Address", address.Calculate(publicKeyBytes)).
 			With("Error", err).
 			Error("Failed to get voting power")
 		return err
@@ -76,13 +84,13 @@ func (s *service) RecordSignature(
 		return isMajority
 	})
 
-	err = s.checkAndCacheSignature(&reportedValues, signature, signer, hash, totalVoted)
+	err = s.checkAndCacheSignature(&reportedValues, signature, signer, info.Bls(), totalVoted)
 	if err != nil {
 		return err
 	}
 
 	saveArgs := SaveSignatureArgs{
-		Hash:      hash,
+		Hash:      info.Bls(),
 		Info:      info,
 		Voted:     totalVoted,
 		Consensus: isMajority,
@@ -117,8 +125,9 @@ func (s *service) RecordSignature(
 		return true
 	})
 
+	infoBls := info.Bls()
 	reportLog.
-		With("Majority", fmt.Sprintf("%x", hash.Bytes())[:8]).
+		With("Majority", infoBls.String()).
 		Debug("Values")
 
 	DebouncedSaveSignatures(info.Asset, saveArgs)
