@@ -32,12 +32,12 @@ func (p *PriceInfo) FromSia(sia sia.Sia) *PriceInfo {
 	return p
 }
 
-func (p *PriceInfo) Bls() (bls12381.G1Affine, error) {
+func (p *PriceInfo) Bls() bls12381.G1Affine {
 	hash, err := bls.Hash(p.Sia().Bytes())
 	if err != nil {
 		utils.Logger.With("err", err).Error("Can't hash bls")
-		return bls12381.G1Affine{}, err
+		return bls12381.G1Affine{}
 	}
 
-	return hash, err
+	return hash
 }

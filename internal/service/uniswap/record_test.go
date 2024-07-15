@@ -1,4 +1,4 @@
-package evmlog
+package uniswap
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap/types"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
 	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -17,9 +18,8 @@ import (
 	"github.com/google/uuid"
 	mock2 "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"math/big"
 	"os"
-	"path"
-	"runtime"
 	"testing"
 )
 
@@ -31,22 +31,23 @@ var (
 		ShortPublicKey: "0x123",
 	}
 
-	sampleEventLog = model.EventLog{
-		LogIndex:     1,
-		Block:        1,
-		Address:      "0x12345",
-		Event:        "event",
-		Chain:        "eth",
-		TxHash:       make([]byte, 32),
-		Args:         nil,
-		Consensus:    false,
-		SignersCount: 0,
-		Signature:    nil,
-		Voted:        0,
+	samplePriceInfo = types.PriceInfo{
+		Asset: types.AssetKey{
+			Token: types.TokenKey{
+				Name:   "ethereum",
+				Pair:   "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
+				Chain:  "ethereum",
+				Delta:  12,
+				Invert: true,
+				Cross:  string(utils.Shake(types.TokenKeys([]types.TokenKey{}).Sia().Bytes())),
+			},
+			Block: 100,
+		},
+		Price: *big.NewInt(1000),
 	}
 )
 
-type EvmLogTestSuite struct {
+type UniswapTestSuite struct {
 	suite.Suite
 
 	db       *embeddedpostgres.EmbeddedPostgres
@@ -55,11 +56,10 @@ type EvmLogTestSuite struct {
 	service  Service
 }
 
-func (s *EvmLogTestSuite) SetupTest() {
+func (s *UniswapTestSuite) SetupTest() {
 	utils.SetupLogger("info")
 	cachePath := fmt.Sprintf("embedded-postgres-go-%s", uuid.NewString())
 	cacheDir, err := os.MkdirTemp("", cachePath)
-	cacheContextDir, err := os.MkdirTemp("", fmt.Sprintf("context-test-%s", uuid.NewString()))
 	s.Require().NoError(err)
 	s.cacheDir = cacheDir
 
@@ -80,46 +80,47 @@ func (s *EvmLogTestSuite) SetupTest() {
 	posService.On("GetVotingPowerOfEvm", mock2.Anything, "0x12345").Return(10, nil)
 
 	ethRPC := ethereum.NewMock()
-	badger := NewBadger(cacheContextDir)
+	assetPriceRepo := postgresRepo.NewAssetPrice(s.ins)
 	proofRepo := postgresRepo.NewProof(s.ins)
-	evmlogRepo := postgresRepo.NewEventLog(s.ins)
 
-	_, testFilePath, _, _ := runtime.Caller(0)
-
-	config.App.Plugins.EthLog = &config.EthLog{
-		Events: []config.Event{
+	config.App.Plugins.Uniswap = &config.Uniswap{
+		Tokens: []config.Token{
 			{
-				Name:    "event",
-				Chain:   "eth",
-				Event:   "event",
-				Address: "0x12345",
-				Abi:     path.Join(path.Dir(testFilePath), "../../abi/UniV3.json"),
+				Name:   "ethereum",
+				Pair:   "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
+				Chain:  "ethereum",
+				Delta:  12,
+				Invert: true,
+				Unit:   "USDT",
+				Send:   true,
 			},
 		},
 	}
-	s.service = New(ethRPC, posService, evmlogRepo, proofRepo, badger)
+	s.service = New(ethRPC, posService, proofRepo, assetPriceRepo)
 }
 
-func (s *EvmLogTestSuite) TestRecordSignatures() {
+func (s *UniswapTestSuite) TestRecordSignature() {
 	_, _, shortPublicKey := bls.GenerateBlsKeyPair()
 
-	s.Run("Should return event not supported", func() {
+	s.Run("Should return token not supported", func() {
 		signature, err := bls.RecoverSignature(shortPublicKey.Bytes())
 		s.Require().NoError(err)
 
-		sampleEventLog := sampleEventLog
-		sampleEventLog.Event = "not_supported_event"
-		err = s.service.RecordSignature(context.TODO(), signature, sampleSigner, sampleEventLog, false, false)
-		s.ErrorIs(err, consts.ErrEventNotSupported)
+		samplePriceInfo := samplePriceInfo
+		samplePriceInfo.Asset.Token.Name += "invalid"
+
+		err = s.service.RecordSignature(context.TODO(), signature, sampleSigner, samplePriceInfo, false, false)
+		s.ErrorIs(err, consts.ErrTokenNotSupported)
 	})
 
 	s.Run("Should return data is too old", func() {
 		signature, err := bls.RecoverSignature(shortPublicKey.Bytes())
 		s.Require().NoError(err)
 
-		sampleEventLog := sampleEventLog
-		sampleEventLog.Block = 100
-		err = s.service.RecordSignature(context.TODO(), signature, sampleSigner, sampleEventLog, false, false)
+		samplePriceInfo := samplePriceInfo
+		samplePriceInfo.Asset.Block = 100
+
+		err = s.service.RecordSignature(context.TODO(), signature, sampleSigner, samplePriceInfo, false, false)
 		s.ErrorIs(err, consts.ErrDataTooOld)
 	})
 
@@ -127,14 +128,15 @@ func (s *EvmLogTestSuite) TestRecordSignatures() {
 		signature, err := bls.RecoverSignature(shortPublicKey.Bytes())
 		s.Require().NoError(err)
 
-		sampleEventLog := sampleEventLog
-		sampleEventLog.Block = 950
-		err = s.service.RecordSignature(context.TODO(), signature, sampleSigner, sampleEventLog, false, false)
+		samplePriceInfo := samplePriceInfo
+		samplePriceInfo.Asset.Block = 950
+
+		err = s.service.RecordSignature(context.TODO(), signature, sampleSigner, samplePriceInfo, false, false)
 		s.Require().NoError(err)
 	})
 }
 
-func (s *EvmLogTestSuite) TearDownSuite() {
+func (s *UniswapTestSuite) TearDownSuite() {
 	s.T().Log("Stopping the pg server")
 	err := s.db.Stop()
 	s.Require().NoError(err)
@@ -142,5 +144,5 @@ func (s *EvmLogTestSuite) TearDownSuite() {
 }
 
 func TestEvmLogTestSuite(t *testing.T) {
-	suite.Run(t, new(EvmLogTestSuite))
+	suite.Run(t, new(UniswapTestSuite))
 }

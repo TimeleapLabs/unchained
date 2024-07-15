@@ -12,11 +12,6 @@ import (
 func (h *consumer) PriceReport(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastPricePacket).FromBytes(message)
 
-	priceInfoHash, err := packet.Info.Bls()
-	if err != nil {
-		return
-	}
-
 	signature, err := bls.RecoverSignature(packet.Signature)
 	if err != nil {
 		utils.Logger.
@@ -30,7 +25,6 @@ func (h *consumer) PriceReport(ctx context.Context, message []byte) {
 		ctx,
 		signature,
 		packet.Signer,
-		priceInfoHash,
 		packet.Info,
 		true,
 		false,

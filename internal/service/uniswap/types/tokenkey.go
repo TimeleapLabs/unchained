@@ -45,8 +45,8 @@ func (t *TokenKey) FromSia(sia sia.Sia) *TokenKey {
 	return t
 }
 
-func NewTokenKey(cross TokenKeys, token Token) *TokenKey {
-	return &TokenKey{
+func NewTokenKey(cross TokenKeys, token Token) TokenKey {
+	return TokenKey{
 		Name:   strings.ToLower(token.Name),
 		Pair:   strings.ToLower(token.Pair),
 		Chain:  strings.ToLower(token.Chain),

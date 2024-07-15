@@ -22,15 +22,15 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 
 		// TODO: this can be cached
 		key := types.NewTokenKey(token.GetCrossTokenKeys(s.crossTokens), token)
-		tokenLastBlock, exists := s.LastBlock.Load(*key)
+		tokenLastBlock, exists := s.LastBlock.Load(key)
 
 		if !exists {
-			s.LastBlock.Store(*key, currBlockNumber-1)
+			s.LastBlock.Store(key, currBlockNumber-1)
 		} else if tokenLastBlock == currBlockNumber {
 			return nil
 		}
 
-		err = s.SyncBlocks(ctx, token, *key, currBlockNumber)
+		err = s.SyncBlocks(ctx, token, key, currBlockNumber)
 		if err != nil {
 			return err
 		}

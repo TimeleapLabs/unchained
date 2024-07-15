@@ -59,7 +59,7 @@ type Service interface {
 	GetPriceAtBlockFromPair(network string, blockNumber uint64, pairAddr string, decimalDif int64, inverse bool) (*big.Int, error)
 	SyncBlocks(ctx context.Context, token types.Token, key types.TokenKey, latest uint64) error
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info types.PriceInfo, debounce bool, historical bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, info types.PriceInfo, debounce bool, historical bool,
 	) error
 	ProcessBlocks(ctx context.Context, chain string) error
 }
@@ -267,8 +267,8 @@ func (s *service) priceFromSqrtX96(sqrtPriceX96 *big.Int, decimalDif int64, inve
 	return &price
 }
 
-func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.Caser, key *types.TokenKey, blockInx uint64) error {
-	lastSynced, ok := s.LastBlock.Load(*key)
+func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.Caser, key types.TokenKey, blockInx uint64) error {
+	lastSynced, ok := s.LastBlock.Load(key)
 	if ok && blockInx <= lastSynced {
 		return consts.ErrDataTooOld
 	}
@@ -309,7 +309,7 @@ func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.
 	priceF.Quo(new(big.Float).SetInt(price), &s.tenEighteenF)
 	priceStr := fmt.Sprintf("%.18f %s", &priceF, token.Unit)
 
-	lastSynced, ok = s.LastBlock.Load(*key)
+	lastSynced, ok = s.LastBlock.Load(key)
 	if ok && blockInx <= lastSynced {
 		return consts.ErrDataTooOld
 	}
@@ -325,11 +325,11 @@ func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.
 		Price: *price,
 		Asset: types.AssetKey{
 			Block: blockInx,
-			Token: *key,
+			Token: key,
 		},
 	}
 
-	signature, hash := crypto.Identity.Bls.Sign(priceInfo.Sia().Bytes())
+	signature, _ := crypto.Identity.Bls.Sign(priceInfo.Sia().Bytes())
 
 	if token.Send && !conn.IsClosed {
 		compressedSignature := signature.Bytes()
@@ -346,7 +346,6 @@ func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.
 			ctx,
 			signature,
 			*crypto.Identity.ExportEvmSigner(),
-			hash,
 			priceInfo,
 			false,
 			true,
@@ -357,7 +356,7 @@ func (s *service) syncBlock(ctx context.Context, token types.Token, caser cases.
 		}
 	}
 
-	s.LastBlock.Store(*key, blockInx)
+	s.LastBlock.Store(key, blockInx)
 
 	return nil
 }
@@ -371,7 +370,7 @@ func (s *service) SyncBlocks(ctx context.Context, token types.Token, key types.T
 	caser := cases.Title(language.English, cases.NoLower)
 
 	for blockInx := block + 1; blockInx < latest; blockInx++ {
-		err := s.syncBlock(ctx, token, caser, &key, blockInx)
+		err := s.syncBlock(ctx, token, caser, key, blockInx)
 		if err != nil {
 			return err
 		}
@@ -409,8 +408,10 @@ func New(
 		for _, t := range config.App.Plugins.Uniswap.Tokens {
 			token := types.NewTokenFromCfg(t)
 
+			fmt.Println(s.crossTokens)
 			key := types.NewTokenKey(token.GetCrossTokenKeys(s.crossTokens), token)
-			s.SupportedTokens[*key] = true
+
+			s.SupportedTokens[key] = true
 		}
 	}
 
