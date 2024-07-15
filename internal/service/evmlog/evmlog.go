@@ -86,7 +86,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	var newSigners []model.Signer
 	var newSignatures []bls12381.G1Affine
 
-	currentRecords, err := s.eventLogRepo.Find(ctx, args.Info.Block, args.Info.TxHash[:], args.Info.LogIndex)
+	currentRecords, err := s.eventLogRepo.Find(ctx, args.Info.Block, args.Info.TxHash, args.Info.LogIndex)
 	if err != nil {
 		return err
 	}

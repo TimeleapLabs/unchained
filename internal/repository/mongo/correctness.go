@@ -19,7 +19,7 @@ type CorrectnessRepo struct {
 	client database.MongoDatabase
 }
 
-func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Correctness, error) {
+func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp time.Time) ([]model.Correctness, error) {
 	cursor, err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).

@@ -5,6 +5,7 @@ import (
 	"log"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/model"
@@ -65,7 +66,7 @@ func (s *CorrectnessRepositoryTestSuite) TestFind() {
 	err := s.repo.Upsert(context.TODO(), sampleCorrectness)
 	s.NoError(err)
 
-	result, err := s.repo.Find(context.TODO(), sampleCorrectness.Hash, sampleCorrectness.Topic, sampleCorrectness.Timestamp)
+	result, err := s.repo.Find(context.TODO(), sampleCorrectness.Hash, sampleCorrectness.Topic, time.Unix(int64(sampleCorrectness.Timestamp), 0))
 	s.NoError(err)
 	s.Len(result, 1)
 }

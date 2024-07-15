@@ -3,6 +3,11 @@ package evmlog
 import (
 	"context"
 	"fmt"
+	"os"
+	"path"
+	"runtime"
+	"testing"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
@@ -17,10 +22,6 @@ import (
 	"github.com/google/uuid"
 	mock2 "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"path"
-	"runtime"
-	"testing"
 )
 
 var (
@@ -59,6 +60,7 @@ func (s *EvmLogTestSuite) SetupTest() {
 	utils.SetupLogger("info")
 	cachePath := fmt.Sprintf("embedded-postgres-go-%s", uuid.NewString())
 	cacheDir, err := os.MkdirTemp("", cachePath)
+	s.Require().NoError(err)
 	cacheContextDir, err := os.MkdirTemp("", fmt.Sprintf("context-test-%s", uuid.NewString()))
 	s.Require().NoError(err)
 	s.cacheDir = cacheDir

@@ -72,6 +72,9 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 			big.NewInt(int64(toBlock)),
 			[]common.Address{contractAddress},
 		)
+		if err != nil {
+			return err
+		}
 
 		contractAbi := s.abiMap[conf.Abi]
 		caser := cases.Title(language.English, cases.NoLower)

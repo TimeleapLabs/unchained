@@ -53,7 +53,7 @@ func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
 		Collection("eventlog").
 		UpdateOne(ctx, bson.M{
 			"block":       data.Block,
-			"transaction": data.TxHash[:],
+			"transaction": data.TxHash,
 			"index":       data.LogIndex,
 		}, bson.M{
 			"$set": bson.M{
@@ -75,7 +75,7 @@ func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
 					"address":       data.Address,
 					"event":         data.Event,
 					"index":         data.LogIndex,
-					"transaction":   data.TxHash[:],
+					"transaction":   data.TxHash,
 					"signers_count": data.SignersCount,
 					"signature":     data.Signature,
 					"args":          data.Args,

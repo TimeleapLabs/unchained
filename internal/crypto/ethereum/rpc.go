@@ -2,10 +2,11 @@ package ethereum
 
 import (
 	"context"
-	goEthereum "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"sync"
+
+	goEthereum "github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"

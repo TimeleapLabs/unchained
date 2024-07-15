@@ -22,7 +22,7 @@ var sampleEventLog = model.EventLog{
 	Address:      "123",
 	Event:        "321",
 	Chain:        "ETH",
-	TxHash:       [32]byte{},
+	TxHash:       []byte{},
 	Args:         nil,
 	Consensus:    false,
 	SignersCount: 100,
@@ -69,7 +69,7 @@ func (s *EventLogRepositoryTestSuite) TestFind() {
 	err := s.repo.Upsert(context.TODO(), sampleEventLog)
 	s.NoError(err)
 
-	result, err := s.repo.Find(context.TODO(), sampleEventLog.Block, sampleEventLog.TxHash[:], sampleEventLog.LogIndex)
+	result, err := s.repo.Find(context.TODO(), sampleEventLog.Block, sampleEventLog.TxHash, sampleEventLog.LogIndex)
 	s.NoError(err)
 	s.Len(result, 1)
 }

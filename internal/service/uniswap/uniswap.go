@@ -408,7 +408,6 @@ func New(
 		for _, t := range config.App.Plugins.Uniswap.Tokens {
 			token := types.NewTokenFromCfg(t)
 
-			fmt.Println(s.crossTokens)
 			key := types.NewTokenKey(token.GetCrossTokenKeys(s.crossTokens), token)
 
 			s.SupportedTokens[key] = true

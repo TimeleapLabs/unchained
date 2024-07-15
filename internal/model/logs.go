@@ -56,7 +56,7 @@ func (e *EventLog) Sia() sia.Sia {
 		AddString8(e.Address).
 		AddString8(e.Event).
 		AddString8(e.Chain).
-		AddByteArray8(e.TxHash[:]).
+		AddByteArray8(e.TxHash).
 		AddByteArray16(argsEncoded)
 }
 
@@ -71,7 +71,7 @@ func (e *EventLog) FromSia(sia sia.Sia) *EventLog {
 	e.Address = sia.ReadString8()
 	e.Event = sia.ReadString8()
 	e.Chain = sia.ReadString8()
-	copy(e.TxHash[:], sia.ReadByteArray8())
+	copy(e.TxHash, sia.ReadByteArray8())
 
 	argsEncoded := sia.ReadByteArray16()
 	err := json.Unmarshal(argsEncoded, &e.Args)

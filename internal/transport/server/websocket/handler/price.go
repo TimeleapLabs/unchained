@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
@@ -15,12 +14,8 @@ func PriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	}
 
 	priceReport := new(packet.PriceReportPacket).FromBytes(payload)
-	priceInfoHash, err := priceReport.PriceInfo.Bls()
-	if err != nil {
-		return []byte{}, consts.ErrInternalError
-	}
 
-	signer, err := middleware.IsMessageValid(conn, priceInfoHash, priceReport.Signature)
+	signer, err := middleware.IsMessageValid(conn, priceReport.PriceInfo.Bls(), priceReport.Signature)
 	if err != nil {
 		return []byte{}, err
 	}

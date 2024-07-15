@@ -2,8 +2,9 @@ package ethereum
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
@@ -16,7 +17,7 @@ type mockRPC struct {
 	backend *backends.SimulatedBackend
 }
 
-func (m mockRPC) GetLogs(ctx context.Context, chain string, from, to *big.Int, addresses []common.Address) ([]types.Log, error) {
+func (m mockRPC) GetLogs(_ context.Context, _ string, _, _ *big.Int, _ []common.Address) ([]types.Log, error) {
 	return []types.Log{}, nil
 }
 

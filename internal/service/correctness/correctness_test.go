@@ -3,6 +3,10 @@ package correctness
 import (
 	"context"
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
@@ -12,9 +16,6 @@ import (
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"github.com/google/uuid"
 	mock2 "github.com/stretchr/testify/mock"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/model"
 	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
