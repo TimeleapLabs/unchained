@@ -31,11 +31,6 @@ func (r *RPC) GetTask(taskID uuid.UUID) *websocket.Conn {
 	return r.Tasks[taskID]
 }
 
-func (r *RPC) NewTaskID() (uuid.UUID, error) {
-	taskID, err := uuid.NewV7()
-	return taskID, err
-}
-
 func (r *RPC) RegisterWorker(function string, conn *websocket.Conn) {
 	r.Workers[function] = append(r.Workers[function], conn)
 }

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/rpc"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
@@ -16,7 +15,6 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
-var unchainedRpc = rpc.New()
 
 func WithWebsocket() func() {
 	return func() {
@@ -43,7 +41,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	for {
-		messageType, payload, err := conn.ReadMessage()
+		_, payload, err := conn.ReadMessage()
 		if err != nil {
 			utils.Logger.Error("Can't read message: %v", err)
 
@@ -61,50 +59,15 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 		switch consts.OpCode(payload[0]) {
 		case consts.OpCodeHello:
-			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
-			result, err := handler.Hello(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "conf.ok")
-			handler.Send(conn, messageType, consts.OpCodeKoskChallenge, result)
+			handler.Hello(conn, payload[1:])
 		case consts.OpCodePriceReport:
-			result, err := handler.PriceReport(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelPriceReport, consts.OpCodePriceReportBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			handler.PriceReport(conn, payload[1:])
 		case consts.OpCodeEventLog:
-			result, err := handler.EventLog(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelEventLog, consts.OpCodeEventLogBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			handler.EventLog(conn, payload[1:])
 		case consts.OpCodeCorrectnessReport:
-			result, err := handler.CorrectnessRecord(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelCorrectnessReport, consts.OpCodeCorrectnessReportBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			handler.CorrectnessRecord(conn, payload[1:])
 		case consts.OpCodeKoskResult:
-			err := handler.Kosk(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
-				continue
-			}
-
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "kosk.ok")
+			handler.Kosk(conn, payload[1:])
 		case consts.OpCodeRegisterConsumer:
 			utils.Logger.
 				With("IP", conn.RemoteAddr().String()).
@@ -112,56 +75,14 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 				Info("New Consumer registered")
 
 			go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
-
 		case consts.OpCodeRegisterRpcFunction:
-			request := new(rpc.RegisterFunction).
-				FromSiaBytes(payload[1:])
-
-			utils.Logger.
-				With("IP", conn.RemoteAddr().String()).
-				With("Function", request.Function).
-				Info("New Worker registered")
-
-			unchainedRpc.RegisterWorker(request.Function, conn)
-
+			handler.RegisterRpcFunction(ctx, conn, payload[1:])
 		case consts.OpCodeRpcRequest:
-			request := new(rpc.TextToImageRpcRequest).
-				FromSiaBytes(payload[1:])
-
-			utils.Logger.
-				With("IP", conn.RemoteAddr().String()).
-				With("ID", request.ID).
-				With("Function", request.Method).
-				Info("RPC Request")
-
-			unchainedRpc.RegisterTask(request.ID, conn)
-			worker := unchainedRpc.GetRandomWorker(request.Method)
-
-			if worker != nil {
-				utils.Logger.
-					With("IP", conn.RemoteAddr().String()).
-					With("Function", request.Method).
-					Info("RPC Request Sent to Worker")
-
-				handler.Send(worker, messageType, consts.OpCodeRpcRequest, payload[1:])
-			}
-
+			handler.CallFunction(ctx, conn, payload[1:])
 		case consts.OpCodeRpcResponse:
-			response := new(rpc.TextToImageRpcResponse).
-				FromSiaBytes(payload[1:])
-
-			task := unchainedRpc.GetTask(response.ID)
-			if task != nil {
-				utils.Logger.
-					With("IP", conn.RemoteAddr().String()).
-					With("ID", response.ID).
-					Info("RPC Response")
-
-				handler.Send(task, messageType, consts.OpCodeRpcResponse, payload[1:])
-			}
-
+			handler.ResponseFunction(ctx, conn, payload[1:])
 		default:
-			handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
+			handler.SendError(conn, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}
 	}
 }

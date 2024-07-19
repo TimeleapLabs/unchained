@@ -8,9 +8,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func Send(conn *websocket.Conn, messageType int, opCode consts.OpCode, payload []byte) {
+func Send(conn *websocket.Conn, opCode consts.OpCode, payload []byte) {
 	err := conn.WriteMessage(
-		messageType,
+		websocket.BinaryMessage,
 		append(
 			[]byte{byte(opCode)},
 			payload...),
@@ -20,8 +20,8 @@ func Send(conn *websocket.Conn, messageType int, opCode consts.OpCode, payload [
 	}
 }
 
-func SendMessage(conn *websocket.Conn, messageType int, opCode consts.OpCode, message string) {
-	Send(conn, messageType, opCode, []byte(message))
+func SendMessage(conn *websocket.Conn, opCode consts.OpCode, message string) {
+	Send(conn, opCode, []byte(message))
 }
 
 func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte) {
@@ -40,8 +40,8 @@ func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte
 	}
 }
 
-func SendError(conn *websocket.Conn, messageType int, opCode consts.OpCode, err error) {
-	SendMessage(conn, messageType, opCode, err.Error())
+func SendError(conn *websocket.Conn, opCode consts.OpCode, err error) {
+	SendMessage(conn, opCode, err.Error())
 }
 
 func Close(conn *websocket.Conn) {

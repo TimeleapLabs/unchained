@@ -9,6 +9,6 @@ type Handler interface {
 	CorrectnessReport(ctx context.Context, message []byte)
 	EventLog(ctx context.Context, message []byte)
 	PriceReport(ctx context.Context, message []byte)
-	RpcRequest(ctx context.Context, message []byte) []byte
+	RpcRequest(ctx context.Context, message []byte)
 	RpcResponse(ctx context.Context, message []byte)
 }

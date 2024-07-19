@@ -9,21 +9,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func Kosk(conn *websocket.Conn, payload []byte) error {
+func Kosk(conn *websocket.Conn, payload []byte) {
 	challenge := new(model.ChallengePacket).FromBytes(payload)
 
 	hash, err := bls.Hash(challenge.Random[:])
 	if err != nil {
-		return err
+		SendError(conn, consts.OpCodeError, err)
+		return
 	}
 
 	_, err = middleware.IsMessageValid(conn, hash, challenge.Signature)
 	if err != nil {
-		return consts.ErrInvalidKosk
+		SendError(conn, consts.OpCodeError, consts.ErrInvalidKosk)
+		return
 	}
 
 	challenge.Passed = true
 	store.Challenges.Store(conn, *challenge)
-
-	return nil
+	SendMessage(conn, consts.OpCodeFeedback, "kosk.ok")
 }

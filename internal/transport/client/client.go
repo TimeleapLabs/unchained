@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/rpc"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -38,22 +37,12 @@ func NewRPC(handler handler.Handler) {
 					conn.Send(consts.OpCodeKoskResult, challenge)
 				case consts.OpCodePriceReportBroadcast:
 					handler.PriceReport(ctx, payload[1:])
-
 				case consts.OpCodeEventLogBroadcast:
 					handler.EventLog(ctx, payload[1:])
-
 				case consts.OpCodeCorrectnessReportBroadcast:
 					handler.CorrectnessReport(ctx, payload[1:])
-
 				case consts.OpCodeRpcRequest:
-					utils.Logger.Info("RPC Request")
-					request := new(rpc.TextToImageRpcRequest).FromSiaBytes(payload[1:])
-					result := handler.RpcRequest(ctx, payload[1:])
-					response := new(rpc.TextToImageRpcResponse)
-					response.ID = request.ID
-					response.Image = result
-					conn.Send(consts.OpCodeRpcResponse, response.Sia().Bytes())
-
+					handler.RpcRequest(ctx, payload[1:])
 				default:
 					utils.Logger.
 						With("Code", payload[0]).
