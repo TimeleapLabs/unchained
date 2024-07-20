@@ -16,7 +16,7 @@ type RpcRequest struct {
 	Method string `json:"method"`
 }
 
-type TextToImageRpcRequestPramas struct {
+type TextToImageRpcRequestParams struct {
 	// The text to be converted to an image
 	Prompt         string `json:"prompt"`
 	NegativePrompt string `json:"negativePrompt"`
@@ -30,7 +30,7 @@ type TextToImageRpcRequestPramas struct {
 
 type TextToImageRpcRequest struct {
 	RpcRequest
-	TextToImageRpcRequestPramas
+	TextToImageRpcRequestParams
 }
 
 type RpcResponse struct {

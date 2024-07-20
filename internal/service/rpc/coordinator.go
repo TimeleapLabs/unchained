@@ -7,35 +7,35 @@ import (
 	"golang.org/x/exp/rand"
 )
 
-type RPC struct {
+type Coordinator struct {
 	Tasks   map[uuid.UUID]*websocket.Conn
 	Workers map[string][]*websocket.Conn
 }
 
-func New() *RPC {
-	return &RPC{
+func NewCoordinator() *Coordinator {
+	return &Coordinator{
 		Tasks:   make(map[uuid.UUID]*websocket.Conn),
 		Workers: make(map[string][]*websocket.Conn),
 	}
 }
 
-func (r *RPC) RegisterTask(taskID uuid.UUID, conn *websocket.Conn) {
+func (r *Coordinator) RegisterTask(taskID uuid.UUID, conn *websocket.Conn) {
 	r.Tasks[taskID] = conn
 }
 
-func (r *RPC) UnregisterTask(taskID uuid.UUID) {
+func (r *Coordinator) UnregisterTask(taskID uuid.UUID) {
 	delete(r.Tasks, taskID)
 }
 
-func (r *RPC) GetTask(taskID uuid.UUID) *websocket.Conn {
+func (r *Coordinator) GetTask(taskID uuid.UUID) *websocket.Conn {
 	return r.Tasks[taskID]
 }
 
-func (r *RPC) RegisterWorker(function string, conn *websocket.Conn) {
+func (r *Coordinator) RegisterWorker(function string, conn *websocket.Conn) {
 	r.Workers[function] = append(r.Workers[function], conn)
 }
 
-func (r *RPC) UnregisterWorker(function string, conn *websocket.Conn) {
+func (r *Coordinator) UnregisterWorker(function string, conn *websocket.Conn) {
 	workers := r.Workers[function]
 	for i, c := range workers {
 		if c == conn {
@@ -45,11 +45,11 @@ func (r *RPC) UnregisterWorker(function string, conn *websocket.Conn) {
 	}
 }
 
-func (r *RPC) GetWorkers(function string) []*websocket.Conn {
+func (r *Coordinator) GetWorkers(function string) []*websocket.Conn {
 	return r.Workers[function]
 }
 
-func (r *RPC) GetRandomWorker(function string) *websocket.Conn {
+func (r *Coordinator) GetRandomWorker(function string) *websocket.Conn {
 	workers := r.Workers[function]
 	available := make([]*websocket.Conn, 0, len(workers))
 
