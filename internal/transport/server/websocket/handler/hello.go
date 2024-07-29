@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Hello handler store the new client in the Signers map and send it a challenge packet
 func Hello(conn *websocket.Conn, payload []byte) {
 	utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
 	signer := new(model.Signer).FromBytes(payload)

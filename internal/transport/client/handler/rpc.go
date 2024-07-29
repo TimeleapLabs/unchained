@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"math/big"
@@ -21,7 +21,7 @@ func (h *consumer) RpcRequest(ctx context.Context, message []byte) {
 
 func (w worker) RpcRequest(ctx context.Context, message []byte) {
 	utils.Logger.Info("RPC Request")
-	packet := new(rpc.TextToImageRpcRequest).FromSiaBytes(message)
+	packet := new(dto.RpcRequest).FromSiaBytes(message)
 
 	// check fees
 	checker, err := ai.NewTxChecker(TIMELEAP_RPC)
@@ -37,18 +37,12 @@ func (w worker) RpcRequest(ctx context.Context, message []byte) {
 		return
 	}
 
-	// process request
-	response := new(rpc.TextToImageRpcResponse)
-	response.ID = packet.ID
-	response.Image = ai.TextToImage(
-		packet.Prompt,
-		packet.NegativePrompt,
-		packet.Model,
-		packet.LoraWeights,
-		packet.Steps,
-	)
+	response, err := w.rpc.RunFunction(ctx, packet.Method, packet.Params)
+	if err != nil {
+		return
+	}
 
-	conn.Send(consts.OpCodeRpcResponse, response.Sia().Bytes())
+	conn.Send(consts.OpCodeRpcResponse, response)
 }
 
 func (w worker) RpcResponse(ctx context.Context, message []byte) {}

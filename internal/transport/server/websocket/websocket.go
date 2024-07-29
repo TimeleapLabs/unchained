@@ -16,6 +16,7 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
+// WithWebsocket is a function that starts a websocket server
 func WithWebsocket() func() {
 	return func() {
 		utils.Logger.Info("Starting a websocket server")
@@ -25,6 +26,7 @@ func WithWebsocket() func() {
 	}
 }
 
+// multiplexer is a function that routes incoming messages to the appropriate handler
 func multiplexer(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // remove this line in production
 

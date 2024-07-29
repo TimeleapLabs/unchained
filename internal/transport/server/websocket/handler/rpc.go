@@ -4,14 +4,17 @@ import (
 	"context"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
-var unchainedRpc = rpc.New()
+// unchainedRpc is a global variable that holds the rpc coordinator
+var unchainedRpc = rpc.NewCoordinator()
 
-func RegisterRpcFunction(ctx context.Context, conn *websocket.Conn, payload []byte) {
-	request := new(rpc.RegisterFunction).
+// RegisterRpcFunction is a handler of network that registers a new worker
+func RegisterRpcFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
+	request := new(dto.RegisterFunction).
 		FromSiaBytes(payload[1:])
 
 	utils.Logger.
@@ -22,8 +25,9 @@ func RegisterRpcFunction(ctx context.Context, conn *websocket.Conn, payload []by
 	unchainedRpc.RegisterWorker(request.Function, conn)
 }
 
-func CallFunction(ctx context.Context, conn *websocket.Conn, payload []byte) {
-	request := new(rpc.TextToImageRpcRequest).
+// CallFunction is a handler of network that calls a registered function
+func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
+	request := new(dto.RpcRequest).
 		FromSiaBytes(payload[1:])
 
 	utils.Logger.
@@ -45,8 +49,9 @@ func CallFunction(ctx context.Context, conn *websocket.Conn, payload []byte) {
 	}
 }
 
-func ResponseFunction(ctx context.Context, conn *websocket.Conn, payload []byte) {
-	response := new(rpc.TextToImageRpcResponse).
+// ResponseFunction is a handler of network that sends a response to requester
+func ResponseFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
+	response := new(dto.RpcResponse).
 		FromSiaBytes(payload[1:])
 
 	task := unchainedRpc.GetTask(response.ID)

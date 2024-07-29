@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// EventLog handles the event log packet from the client.
 func EventLog(conn *websocket.Conn, payload []byte) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {

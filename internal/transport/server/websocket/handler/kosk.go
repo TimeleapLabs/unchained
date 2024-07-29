@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Kosk handler check the result of signer challenge and store it.
 func Kosk(conn *websocket.Conn, payload []byte) {
 	challenge := new(model.ChallengePacket).FromBytes(payload)
 

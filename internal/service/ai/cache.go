@@ -1,4 +1,4 @@
-package fees
+package ai
 
 import (
 	"sync"

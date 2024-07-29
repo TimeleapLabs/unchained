@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// CorrectnessRecord is a handler for correctness report.
 func CorrectnessRecord(conn *websocket.Conn, payload []byte) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {

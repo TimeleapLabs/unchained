@@ -2,15 +2,14 @@ package app
 
 import (
 	"context"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 	"github.com/TimeleapLabs/unchained/internal/repository/postgres"
-	"github.com/TimeleapLabs/unchained/internal/rpc"
 	"github.com/TimeleapLabs/unchained/internal/scheduler"
-	"github.com/TimeleapLabs/unchained/internal/service/ai"
 	evmlogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
@@ -43,6 +42,7 @@ func Worker(ctx context.Context, withAI bool) {
 	badger := evmlogService.NewBadger(config.App.System.ContextPath)
 	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, badger)
 	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
+	rpcService := rpc.NewWorker()
 
 	scheduler := scheduler.New(
 		scheduler.WithEthLogs(evmLogService),
@@ -51,16 +51,10 @@ func Worker(ctx context.Context, withAI bool) {
 
 	conn.Start()
 
-	handler := handler.NewWorkerHandler()
+	handler := handler.NewWorkerHandler(rpcService)
 	client.NewRPC(handler)
-
 	if withAI {
-		// Start AI server
-		ai.StartServer(ctx)
-		register := new(rpc.RegisterFunction)
-		register.Function = "Unchained.AI.TextToImage"
-		payload := register.Sia().Bytes()
-		conn.Send(consts.OpCodeRegisterRpcFunction, payload)
+		rpcService.WithFunction("Unchained.AI.TextToImage", rpc.Python, "text_to_image.py")
 	}
 
 	scheduler.Start()
