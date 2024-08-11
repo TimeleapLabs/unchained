@@ -9,7 +9,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 )
 
-// New creates a new HTTP server
+// New creates a new HTTP server.
 func New(options ...func()) {
 	for _, option := range options {
 		option()

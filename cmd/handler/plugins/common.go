@@ -27,9 +27,15 @@ func Read() <-chan []byte {
 func CloseSocket() {
 	if conn != nil {
 		closed = true
-		conn.WriteMessage(
+		err := conn.WriteMessage(
 			websocket.CloseMessage,
 			websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-		conn.Close()
+		if err != nil {
+			return
+		}
+		err = conn.Close()
+		if err != nil {
+			return
+		}
 	}
 }

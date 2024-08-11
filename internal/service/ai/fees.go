@@ -20,7 +20,7 @@ type TxChecker struct {
 func NewTxChecker(clientURL string) (*TxChecker, error) {
 	client, err := ethclient.Dial(clientURL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to the Ethereum client: %v", err)
+		return nil, fmt.Errorf("failed to connect to the Ethereum client: %w", err)
 	}
 	return &TxChecker{
 		client:  client,
@@ -36,7 +36,7 @@ func (tc *TxChecker) CheckTransaction(txHash common.Hash, toAddress common.Addre
 
 	tx, isPending, err := tc.client.TransactionByHash(context.Background(), txHash)
 	if err != nil {
-		return false, fmt.Errorf("could not retrieve transaction: %v", err)
+		return false, fmt.Errorf("could not retrieve transaction: %w", err)
 	}
 
 	if isPending {
@@ -45,7 +45,7 @@ func (tc *TxChecker) CheckTransaction(txHash common.Hash, toAddress common.Addre
 
 	receipt, err := tc.client.TransactionReceipt(context.Background(), txHash)
 	if err != nil {
-		return false, fmt.Errorf("could not retrieve transaction receipt: %v", err)
+		return false, fmt.Errorf("could not retrieve transaction receipt: %w", err)
 	}
 
 	if receipt.Status != 1 {
@@ -54,7 +54,7 @@ func (tc *TxChecker) CheckTransaction(txHash common.Hash, toAddress common.Addre
 
 	header, err := tc.client.HeaderByNumber(context.Background(), receipt.BlockNumber)
 	if err != nil {
-		return false, fmt.Errorf("could not retrieve block header: %v", err)
+		return false, fmt.Errorf("could not retrieve block header: %w", err)
 	}
 
 	blockTime := time.Unix(int64(header.Time), 0)

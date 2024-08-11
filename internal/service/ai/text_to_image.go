@@ -64,7 +64,6 @@ func TextToImage(prompt string, negativePrompt string, model string, loraWeights
 
 	// Stop the dot-printing goroutine
 	close(stopDots)
-	fmt.Println()
 
 	// process data
 	s := sia.NewFromBytes(data)

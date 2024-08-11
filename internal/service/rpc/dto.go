@@ -4,7 +4,7 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-type TextToImageRpcRequestParams struct {
+type TextToImageRPCRequestParams struct {
 	// The text to be converted to an image
 	Prompt         string `json:"prompt"`
 	NegativePrompt string `json:"negativePrompt"`
@@ -16,12 +16,12 @@ type TextToImageRpcRequestParams struct {
 	Steps uint8 `json:"steps"`
 }
 
-type TextToImageRpcResponseParams struct {
+type TextToImageRPCResponseParams struct {
 	// The image in bytes
 	Image []byte `json:"image"`
 }
 
-func (t *TextToImageRpcRequestParams) Sia() sia.Sia {
+func (t *TextToImageRPCRequestParams) Sia() sia.Sia {
 	return sia.New().
 		AddString16(t.Prompt).
 		AddString16(t.NegativePrompt).
@@ -30,7 +30,7 @@ func (t *TextToImageRpcRequestParams) Sia() sia.Sia {
 		AddUInt8(t.Steps)
 }
 
-func (t *TextToImageRpcRequestParams) FromSiaBytes(bytes []byte) *TextToImageRpcRequestParams {
+func (t *TextToImageRPCRequestParams) FromSiaBytes(bytes []byte) *TextToImageRPCRequestParams {
 	s := sia.NewFromBytes(bytes)
 
 	t.Prompt = s.ReadString16()
@@ -42,12 +42,12 @@ func (t *TextToImageRpcRequestParams) FromSiaBytes(bytes []byte) *TextToImageRpc
 	return t
 }
 
-func (t *TextToImageRpcResponseParams) Sia() sia.Sia {
+func (t *TextToImageRPCResponseParams) Sia() sia.Sia {
 	return sia.New().
 		AddByteArray32(t.Image)
 }
 
-func (t *TextToImageRpcResponseParams) FromSiaBytes(bytes []byte) *TextToImageRpcResponseParams {
+func (t *TextToImageRPCResponseParams) FromSiaBytes(bytes []byte) *TextToImageRPCResponseParams {
 	s := sia.NewFromBytes(bytes)
 	t.Image = s.ReadByteArray32()
 

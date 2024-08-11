@@ -74,8 +74,8 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	if err != nil || !strings.Contains(string(output), "3.8.10") {
 		fmt.Println("Installing Python 3.8.10...")
 		installPythonCmd := exec.Command("pyenv", "install", "-s", "3.8.10")
-		//installPythonCmd.Stdout = os.Stdout
-		//installPythonCmd.Stderr = os.Stderr
+		// installPythonCmd.Stdout = os.Stdout
+		// installPythonCmd.Stderr = os.Stderr
 		if err := installPythonCmd.Run(); err != nil {
 			log.Fatalf("Failed to install Python 3.8.10: %v", err)
 		}
@@ -85,8 +85,8 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	fmt.Println("Selecting Python 3.8.10...")
 	selectPythonCmd := exec.Command("pyenv", "local", "3.8.10")
 	selectPythonCmd.Dir = targetDir
-	//selectPythonCmd.Stdout = os.Stdout
-	//selectPythonCmd.Stderr = os.Stderr
+	// selectPythonCmd.Stdout = os.Stdout
+	// selectPythonCmd.Stderr = os.Stderr
 	if err := selectPythonCmd.Run(); err != nil {
 		log.Fatalf("Failed to select Python 3.8.10: %v", err)
 	}
@@ -105,8 +105,8 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	if _, err := os.Stat(filepath.Join(venvPath, "bin", "python")); os.IsNotExist(err) {
 		fmt.Println("Creating virtual environment...")
 		createVenvCmd := exec.Command(pythonPathStr, "-m", "venv", venvPath)
-		//createVenvCmd.Stdout = os.Stdout
-		//createVenvCmd.Stderr = os.Stderr
+		// createVenvCmd.Stdout = os.Stdout
+		// createVenvCmd.Stderr = os.Stderr
 		if err := createVenvCmd.Run(); err != nil {
 			log.Fatalf("Failed to create virtual environment: %v", err)
 		}
@@ -122,8 +122,8 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	if err != nil || string(output) != string(ai.GetRequirementsFile()) {
 		fmt.Println("Installing dependencies...")
 		installDepsCmd := exec.Command("bash", "-c", fmt.Sprintf("source %s && %s install -r %s", activateScript, pipPath, filepath.Join(targetDir, "python_files", "requirements.txt")))
-		//installDepsCmd.Stdout = os.Stdout
-		//installDepsCmd.Stderr = os.Stderr
+		// installDepsCmd.Stdout = os.Stdout
+		// installDepsCmd.Stderr = os.Stderr
 		if err := installDepsCmd.Run(); err != nil {
 			log.Fatalf("Failed to install dependencies: %v", err)
 		}

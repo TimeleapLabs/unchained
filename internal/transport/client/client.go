@@ -41,8 +41,8 @@ func NewRPC(handler handler.Handler) {
 					handler.EventLog(ctx, payload[1:])
 				case consts.OpCodeCorrectnessReportBroadcast:
 					handler.CorrectnessReport(ctx, payload[1:])
-				case consts.OpCodeRpcRequest:
-					handler.RpcRequest(ctx, payload[1:])
+				case consts.OpCodeRPCRequest:
+					handler.RPCRequest(ctx, payload[1:])
 				default:
 					utils.Logger.
 						With("Code", payload[0]).

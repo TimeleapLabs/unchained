@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
@@ -9,11 +10,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// unchainedRpc is a global variable that holds the rpc coordinator
-var unchainedRpc = rpc.NewCoordinator()
+// unchainedRPC is a global variable that holds the rpc coordinator.
+var unchainedRPC = rpc.NewCoordinator()
 
-// RegisterRpcFunction is a handler of network that registers a new worker
-func RegisterRpcFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
+// RegisterRPCFunction is a handler of network that registers a new worker.
+func RegisterRPCFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 	request := new(dto.RegisterFunction).
 		FromSiaBytes(payload[1:])
 
@@ -22,12 +23,12 @@ func RegisterRpcFunction(_ context.Context, conn *websocket.Conn, payload []byte
 		With("Function", request.Function).
 		Info("New Worker registered")
 
-	unchainedRpc.RegisterWorker(request.Function, conn)
+	unchainedRPC.RegisterWorker(request.Function, conn)
 }
 
-// CallFunction is a handler of network that calls a registered function
+// CallFunction is a handler of network that calls a registered function.
 func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
-	request := new(dto.RpcRequest).
+	request := new(dto.RPCRequest).
 		FromSiaBytes(payload[1:])
 
 	utils.Logger.
@@ -36,8 +37,8 @@ func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 		With("Function", request.Method).
 		Info("RPC Request")
 
-	unchainedRpc.RegisterTask(request.ID, conn)
-	worker := unchainedRpc.GetRandomWorker(request.Method)
+	unchainedRPC.RegisterTask(request.ID, conn)
+	worker := unchainedRPC.GetRandomWorker(request.Method)
 
 	if worker != nil {
 		utils.Logger.
@@ -45,22 +46,22 @@ func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 			With("Function", request.Method).
 			Info("RPC Request Sent to Worker")
 
-		Send(worker, consts.OpCodeRpcRequest, payload[1:])
+		Send(worker, consts.OpCodeRPCRequest, payload[1:])
 	}
 }
 
-// ResponseFunction is a handler of network that sends a response to requester
+// ResponseFunction is a handler of network that sends a response to requester.
 func ResponseFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
-	response := new(dto.RpcResponse).
+	response := new(dto.RPCResponse).
 		FromSiaBytes(payload[1:])
 
-	task := unchainedRpc.GetTask(response.ID)
+	task := unchainedRPC.GetTask(response.ID)
 	if task != nil {
 		utils.Logger.
 			With("IP", conn.RemoteAddr().String()).
 			With("ID", response.ID).
 			Info("RPC Response")
 
-		Send(task, consts.OpCodeRpcResponse, payload[1:])
+		Send(task, consts.OpCodeRPCResponse, payload[1:])
 	}
 }

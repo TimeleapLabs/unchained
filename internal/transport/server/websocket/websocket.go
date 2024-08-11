@@ -16,7 +16,7 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
-// WithWebsocket is a function that starts a websocket server
+// WithWebsocket is a function that starts a websocket server.
 func WithWebsocket() func() {
 	return func() {
 		utils.Logger.Info("Starting a websocket server")
@@ -26,7 +26,7 @@ func WithWebsocket() func() {
 	}
 }
 
-// multiplexer is a function that routes incoming messages to the appropriate handler
+// multiplexer is a function that routes incoming messages to the appropriate handler.
 func multiplexer(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // remove this line in production
 
@@ -77,11 +77,11 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 				Info("New Consumer registered")
 
 			go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
-		case consts.OpCodeRegisterRpcFunction:
-			handler.RegisterRpcFunction(ctx, conn, payload[1:])
-		case consts.OpCodeRpcRequest:
+		case consts.OpCodeRegisterRPCFunction:
+			handler.RegisterRPCFunction(ctx, conn, payload[1:])
+		case consts.OpCodeRPCRequest:
 			handler.CallFunction(ctx, conn, payload[1:])
-		case consts.OpCodeRpcResponse:
+		case consts.OpCodeRPCResponse:
 			handler.ResponseFunction(ctx, conn, payload[1:])
 		default:
 			handler.SendError(conn, consts.OpCodeError, consts.ErrNotSupportedInstruction)

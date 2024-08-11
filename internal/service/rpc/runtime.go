@@ -1,9 +1,15 @@
 package rpc
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"net"
+)
+
+// Runtime is a type that holds the runtime of a function.
+type Runtime string
+
+const (
+	Mock Runtime = "mock"
+	Unix Runtime = "Unix"
 )
 
 func WithMockTask(name string) func(s *Worker) {
@@ -14,62 +20,19 @@ func WithMockTask(name string) func(s *Worker) {
 	}
 }
 
-func WithWebhookTask(name string, path string) func(s *Worker) {
+func WithUnixSocket(name string, path string) func(s *Worker) {
 	return func(s *Worker) {
-		s.functions[name] = meta{
-			runtime: Webhook,
+		meta := meta{
+			runtime: Unix,
 			path:    path,
 		}
 
-		packet := dto.RegisterFunction{
-			Function: name,
-			Runtime:  string(Webhook),
-		}
-		conn.Send(consts.OpCodeRegisterRpcFunction, packet.Sia().Bytes())
-	}
-}
-
-func WithWasmTask(name string, path string) func(s *Worker) {
-	return func(s *Worker) {
-		s.functions[name] = meta{
-			runtime: Wasm,
-			path:    path,
+		var err error
+		meta.conn, err = net.Dial("unix", path)
+		if err != nil {
+			panic(err)
 		}
 
-		packet := dto.RegisterFunction{
-			Function: name,
-			Runtime:  string(Wasm),
-		}
-		conn.Send(consts.OpCodeRegisterRpcFunction, packet.Sia().Bytes())
-	}
-}
-
-func WithPythonTask(name string, path string) func(s *Worker) {
-	return func(s *Worker) {
-		s.functions[name] = meta{
-			runtime: Python,
-			path:    path,
-		}
-
-		packet := dto.RegisterFunction{
-			Function: name,
-			Runtime:  string(Python),
-		}
-		conn.Send(consts.OpCodeRegisterRpcFunction, packet.Sia().Bytes())
-	}
-}
-
-func WithDockerTask(name string, path string) func(s *Worker) {
-	return func(s *Worker) {
-		s.functions[name] = meta{
-			runtime: Docker,
-			path:    path,
-		}
-
-		packet := dto.RegisterFunction{
-			Function: name,
-			Runtime:  string(Docker),
-		}
-		conn.Send(consts.OpCodeRegisterRpcFunction, packet.Sia().Bytes())
+		s.functions[name] = meta
 	}
 }

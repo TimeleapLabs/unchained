@@ -2,67 +2,48 @@ package rpc
 
 import (
 	"context"
+	"net"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/runtime"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-// Runtime is a type that holds the runtime of a function
-type Runtime string
+type Option func(s *Worker)
 
-const (
-	Mock    Runtime = "mock"
-	Wasm    Runtime = "wasm"
-	Python  Runtime = "python"
-	Webhook Runtime = "webhook"
-	Docker  Runtime = "docker"
-)
-
-// meta is a struct that holds the information of a function
+// meta is a struct that holds the information of a function.
 type meta struct {
 	runtime Runtime
 	path    string
+	conn    net.Conn
 }
 
-// Worker is a struct that holds the functions that the worker can run
+// Worker is a struct that holds the functions that the worker can run.
 type Worker struct {
 	functions map[string]meta
 }
 
-// RunFunction runs a function with the given name and parameters
-func (w *Worker) RunFunction(ctx context.Context, name string, params []byte) ([]byte, error) {
+// RunFunction runs a function with the given name and parameters.
+func (w *Worker) RunFunction(ctx context.Context, name string, params *dto.RPCRequest) ([]byte, error) {
 	switch w.functions[name].runtime {
-	case Wasm:
-		result, err := runtime.RunWasmFromFile(ctx, w.functions[name].path, params)
-		if err != nil {
-			utils.Logger.With("err", err).Error("Failed to run wasm")
-			return nil, err
-		}
-		return result, nil
-	case Python:
-		result, err := runtime.RunPython(ctx, w.functions[name].path, params)
-		if err != nil {
-			utils.Logger.With("err", err).Error("Failed to run python")
-			return nil, err
-		}
-		return result, nil
-	case Webhook:
-		result, err := runtime.RunWebhook(ctx, w.functions[name].path, params)
+	case Unix:
+		result, err := runtime.RunUnixCall(ctx, w.functions[name].conn, params)
 		if err != nil {
 			utils.Logger.With("err", err).Error("Failed to run wasm")
 			return nil, err
 		}
 
-		return result, nil
+		return result.Sia().Bytes(), nil
 	case Mock:
-		return runtime.RunMock(params)
+		return runtime.RunMock(params.Sia().Bytes())
 	}
 
 	return nil, consts.ErrInternalError
 }
 
-// NewWorker creates a new worker
-func NewWorker(options ...func(s *Worker)) *Worker {
+// NewWorker creates a new worker.
+func NewWorker(options ...Option) *Worker {
 	worker := &Worker{
 		functions: make(map[string]meta),
 	}

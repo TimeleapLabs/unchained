@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/service/rpc"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
@@ -20,7 +21,7 @@ import (
 )
 
 // Worker starts the Unchained worker and contains its DI.
-func Worker(ctx context.Context, withAI bool) {
+func Worker(_ context.Context, withAI bool) {
 	utils.Logger.
 		With("Mode", "Worker").
 		With("Version", consts.Version).
@@ -42,7 +43,12 @@ func Worker(ctx context.Context, withAI bool) {
 	badger := evmlogService.NewBadger(config.App.System.ContextPath)
 	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, badger)
 	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
-	rpcService := rpc.NewWorker()
+
+	rpcFunctions := []rpc.Option{}
+	if withAI {
+		rpcFunctions = append(rpcFunctions, rpc.WithUnixSocket("Unchained.AI.ImageToText", ""))
+	}
+	rpcService := rpc.NewWorker(rpcFunctions...)
 
 	scheduler := scheduler.New(
 		scheduler.WithEthLogs(evmLogService),
@@ -53,9 +59,6 @@ func Worker(ctx context.Context, withAI bool) {
 
 	handler := handler.NewWorkerHandler(rpcService)
 	client.NewRPC(handler)
-	if withAI {
-		rpcService.WithFunction("Unchained.AI.TextToImage", rpc.Python, "text_to_image.py")
-	}
 
 	scheduler.Start()
 }

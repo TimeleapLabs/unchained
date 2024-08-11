@@ -27,7 +27,7 @@ func Read() <-chan []byte {
 	return out
 }
 
-// worker represents the worker command.
+// plugin represents the plugin command.
 var plugin = &cobra.Command{
 	Use:   "plugin",
 	Short: "Run an Unchained plugin locally",
@@ -38,7 +38,7 @@ var plugin = &cobra.Command{
 	},
 }
 
-// WithRunCmd appends the run command to the root command.
+// WithPluginCmd appends the plugin command to the root command.
 func WithPluginCmd(cmd *cobra.Command) {
 	cmd.AddCommand(plugin)
 }

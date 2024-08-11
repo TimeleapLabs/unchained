@@ -1,11 +1,12 @@
 package rpc
 
 import (
+	"testing"
+
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type CoordinatorTestSuite struct {
