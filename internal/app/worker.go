@@ -21,7 +21,7 @@ import (
 )
 
 // Worker starts the Unchained worker and contains its DI.
-func Worker(_ context.Context, withAI bool) {
+func Worker(_ context.Context) {
 	utils.Logger.
 		With("Mode", "Worker").
 		With("Version", consts.Version).
@@ -45,8 +45,11 @@ func Worker(_ context.Context, withAI bool) {
 	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
 
 	rpcFunctions := []rpc.Option{}
-	if withAI {
-		rpcFunctions = append(rpcFunctions, rpc.WithUnixSocket("Unchained.AI.ImageToText", ""))
+	for _, fun := range config.App.Functions {
+		switch fun.Type {
+		case "unix":
+			rpcFunctions = append(rpcFunctions, rpc.WithUnixSocket(fun.Name, fun.Endpoint))
+		}
 	}
 	rpcService := rpc.NewWorker(rpcFunctions...)
 

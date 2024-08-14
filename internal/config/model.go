@@ -88,11 +88,19 @@ type Secret struct {
 	EvmPrivateKey string `env:"EVM_PRIVATE_KEY" yaml:"evmPrivateKey"`
 }
 
+// Function struct hold the function configuration of the application.
+type Function struct {
+	Type     string `json:"type"`
+	Name     string `json:"name"`
+	Endpoint string `json:"endpoint"`
+}
+
 // Config struct is the main configuration struct of application.
 type Config struct {
 	System       System       `yaml:"system"`
 	Network      Network      `yaml:"network"`
 	RPC          []RPC        `yaml:"rpc"`
+	Functions    []Function   `yaml:"functions"`
 	Postgres     Postgres     `yaml:"postgres"`
 	ProofOfStake ProofOfStake `yaml:"pos"`
 	Plugins      Plugins      `yaml:"plugins"`
