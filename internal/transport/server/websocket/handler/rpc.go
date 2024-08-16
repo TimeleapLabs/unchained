@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc"
@@ -29,7 +30,7 @@ func RegisterRPCFunction(_ context.Context, conn *websocket.Conn, payload []byte
 // CallFunction is a handler of network that calls a registered function.
 func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 	request := new(dto.RPCRequest).
-		FromSiaBytes(payload[1:])
+		FromSiaBytes(payload)
 
 	utils.Logger.
 		With("IP", conn.RemoteAddr().String()).
@@ -39,6 +40,9 @@ func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 
 	unchainedRPC.RegisterTask(request.ID, conn)
 	worker := unchainedRPC.GetRandomWorker(request.Method)
+
+	fmt.Println(worker)
+	fmt.Println(request.Method)
 
 	if worker != nil {
 		utils.Logger.

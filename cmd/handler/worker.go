@@ -23,13 +23,8 @@ var worker = &cobra.Command{
 			panic(err)
 		}
 
-		withAI, err := cmd.Flags().GetBool("with-ai")
-		if err != nil {
-			panic(err)
-		}
-
 		utils.SetupLogger(config.App.System.Log)
-		app.Worker(cmd.Context(), withAI)
+		app.Worker(cmd.Context())
 	},
 }
 
@@ -44,12 +39,5 @@ func init() {
 		"b",
 		"wss://shinobi.brokers.kenshi.io",
 		"Unchained broker to connect to",
-	)
-
-	worker.Flags().BoolP(
-		"with-ai",
-		"e",
-		false,
-		"Enable AI plugins",
 	)
 }

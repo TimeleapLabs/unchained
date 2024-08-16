@@ -8,7 +8,7 @@ import (
 type Runtime string
 
 const (
-	Mock Runtime = "mock"
+	Mock Runtime = "Mock"
 	Unix Runtime = "Unix"
 )
 
