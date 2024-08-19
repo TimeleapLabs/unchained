@@ -7,6 +7,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/runtime"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
@@ -40,6 +41,20 @@ func (w *Worker) RunFunction(ctx context.Context, name string, params *dto.RPCRe
 	}
 
 	return nil, consts.ErrInternalError
+}
+
+// registerFunction registers a function with the broker.
+func (w *Worker) registerFunction(name string, runtime string) {
+	payload := dto.RegisterFunction{Function: name, Runtime: runtime}
+	conn.Send(consts.OpCodeRegisterRPCFunction, payload.Sia().Bytes())
+}
+
+// RegisterFunctions registers the functions with the broker.
+func (w *Worker) RegisterFunctions() {
+	// Register the functions
+	for name, fun := range w.functions {
+		w.registerFunction(name, string(fun.runtime))
+	}
 }
 
 // NewWorker creates a new worker.

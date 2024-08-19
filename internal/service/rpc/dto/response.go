@@ -9,25 +9,22 @@ import (
 type RPCResponse struct {
 	// The ID of the request
 	ID uuid.UUID `json:"id"`
-	// The signature of the request
-	Signature [48]byte
-	// The response of the function
-	Response []byte `json:"response"`
 	// The error of the function
 	Error uint64 `json:"error"`
+	// The response of the function
+	Response []byte `json:"response"`
 }
 
 func (t *RPCResponse) Sia() sia.Sia {
 	uuidBytes, err := t.ID.MarshalBinary()
-
 	if err != nil {
 		panic(err)
 	}
+
 	return sia.New().
 		AddByteArray8(uuidBytes).
-		AddByteArray8(t.Signature[:]).
-		AddByteArray8(t.Response).
-		AddUInt64(t.Error)
+		AddUInt64(t.Error).
+		EmbedBytes(t.Response)
 }
 
 func (t *RPCResponse) FromSiaBytes(bytes []byte) *RPCResponse {
@@ -39,11 +36,8 @@ func (t *RPCResponse) FromSiaBytes(bytes []byte) *RPCResponse {
 		return nil
 	}
 
-	t.Signature = [48]byte{}
-	copy(t.Signature[:], s.ReadByteArray8())
-
-	t.Response = s.ReadByteArray8()
 	t.Error = s.ReadUInt64()
+	t.Response = s.Bytes()[s.Offset():]
 
 	return t
 }

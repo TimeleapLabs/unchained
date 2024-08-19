@@ -21,7 +21,7 @@ require (
 	github.com/lmittmann/tint v1.0.4
 	github.com/mattn/go-colorable v0.1.13
 	github.com/peterldowns/pgtestdb v0.0.14
-	github.com/pouya-eghbali/go-sia/v2 v2.2.2
+	github.com/pouya-eghbali/go-sia/v2 v2.3.0
 	github.com/puzpuzpuz/xsync/v3 v3.1.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0

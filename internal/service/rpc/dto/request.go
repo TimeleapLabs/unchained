@@ -11,12 +11,12 @@ type RPCRequest struct {
 	ID uuid.UUID `json:"id"`
 	// The signature of the request
 	Signature [48]byte `json:"signature"`
+	// Payment information
+	TxHash string `json:"tx_hash"`
 	// The method to be called
 	Method string `json:"method"`
 	// params to pass to the function
 	Params []byte `json:"params"`
-	// Payment information
-	TxHash string `json:"tx_hash"`
 }
 
 // NewRequest creates a new request with unique ID.
@@ -45,9 +45,9 @@ func (t *RPCRequest) Sia() sia.Sia {
 	return sia.New().
 		AddByteArray8(uuidBytes).
 		AddByteArray8(t.Signature[:]).
-		// AddByteArray16(t.Params).
 		AddString8(t.TxHash).
-		AddString8(t.Method)
+		AddString8(t.Method).
+		EmbedBytes(t.Params)
 }
 
 func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
@@ -56,16 +56,16 @@ func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
 	uuidBytes := s.ReadByteArray8()
 	err := t.ID.UnmarshalBinary(uuidBytes)
 	if err != nil {
-		return nil
+		panic(err)
+		//return nil
 	}
 
 	t.Signature = [48]byte{}
 	copy(t.Signature[:], s.ReadByteArray8())
 
-	// t.Params = s.ReadByteArray16()
-
 	t.TxHash = s.ReadString8()
 	t.Method = s.ReadString8()
+	t.Params = s.Bytes()[s.Offset():]
 
 	return t
 }
