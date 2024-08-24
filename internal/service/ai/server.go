@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TimeleapLabs/unchained/internal/utils"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/precompiles/ai"
 )
@@ -53,11 +55,11 @@ func startProcess(ctx context.Context, wg *sync.WaitGroup, env []string, cmdPath
 	}
 }
 
-func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
+func StartServer(ctx context.Context) (*sync.WaitGroup, context.CancelFunc) {
 	targetDir := filepath.Join(config.App.System.Home, "ai")
 
 	// Extract Python files
-	fmt.Println("Extracting the plugin Python files...")
+	utils.Logger.Info("Extracting the plugin Python files...")
 	if err := ai.ExtractPythonFiles(targetDir); err != nil {
 		log.Fatalf("Failed to extract Python files: %v", err)
 	}
@@ -72,7 +74,7 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	checkPythonCmd := exec.Command("pyenv", "versions", "--bare")
 	output, err := checkPythonCmd.Output()
 	if err != nil || !strings.Contains(string(output), "3.8.10") {
-		fmt.Println("Installing Python 3.8.10...")
+		utils.Logger.Info("Installing Python 3.8.10...")
 		installPythonCmd := exec.Command("pyenv", "install", "-s", "3.8.10")
 		// installPythonCmd.Stdout = os.Stdout
 		// installPythonCmd.Stderr = os.Stderr
@@ -82,7 +84,7 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	}
 
 	// Select Python 3.8.10 as the local version
-	fmt.Println("Selecting Python 3.8.10...")
+	utils.Logger.Info("Selecting Python 3.8.10...")
 	selectPythonCmd := exec.Command("pyenv", "local", "3.8.10")
 	selectPythonCmd.Dir = targetDir
 	// selectPythonCmd.Stdout = os.Stdout
@@ -103,7 +105,7 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	// Create a virtual environment with Python 3.8.10 if not already created
 	venvPath := filepath.Join(targetDir, "venv")
 	if _, err := os.Stat(filepath.Join(venvPath, "bin", "python")); os.IsNotExist(err) {
-		fmt.Println("Creating virtual environment...")
+		utils.Logger.Info("Creating virtual environment...")
 		createVenvCmd := exec.Command(pythonPathStr, "-m", "venv", venvPath)
 		// createVenvCmd.Stdout = os.Stdout
 		// createVenvCmd.Stderr = os.Stderr
@@ -117,11 +119,12 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 
 	// Install dependencies if not already installed
 	pipPath := filepath.Join(venvPath, "bin", "pip")
-	freezeCmd := exec.Command("bash", "-c", fmt.Sprintf("source %s && exec %s freeze", activateScript, pipPath))
+	freezeCmd := exec.Command("bash", "-c", fmt.Sprintf("source %s && exec %s freeze", activateScript, pipPath)) //nolint: gosec // This is a trusted command
 	output, err = freezeCmd.Output()
 	if err != nil || string(output) != string(ai.GetRequirementsFile()) {
-		fmt.Println("Installing dependencies...")
-		installDepsCmd := exec.Command("bash", "-c", fmt.Sprintf("source %s && %s install -r %s", activateScript, pipPath, filepath.Join(targetDir, "python_files", "requirements.txt")))
+		utils.Logger.Info("Installing dependencies...")
+		requirementPath := filepath.Join(targetDir, "python_files", "requirements.txt")
+		installDepsCmd := exec.Command("bash", "-c", fmt.Sprintf("source %s && %s install -r %s", activateScript, pipPath, requirementPath)) //nolint: gosec // This is a trusted command
 		// installDepsCmd.Stdout = os.Stdout
 		// installDepsCmd.Stderr = os.Stderr
 		if err := installDepsCmd.Run(); err != nil {
@@ -146,5 +149,5 @@ func StartServer(ctx context.Context) (sync.WaitGroup, context.CancelFunc) {
 	pythonCommand := fmt.Sprintf("source %s && exec python %s", activateScript, mainPyPath)
 	go startProcess(ctx, &wg, env, "bash", []string{"-c", pythonCommand}, targetDir)
 
-	return wg, cancel
+	return &wg, cancel
 }

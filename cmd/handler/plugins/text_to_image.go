@@ -29,7 +29,10 @@ var textToImagePlugin = &cobra.Command{
 		outputBytes := ai.TextToImage(prompt, negativePrompt, model, loraWeights, steps)
 
 		// write outputBytes as png to output file path of output flag
-		os.WriteFile(output, outputBytes, 0644)
+		err = os.WriteFile(output, outputBytes, 0644) //nolint: gosec // Other users may need to read these files.
+		if err != nil {
+			panic(err)
+		}
 
 		CloseSocket()
 		os.Exit(0)
@@ -79,6 +82,12 @@ func init() {
 		"Output file path",
 	)
 
-	textToImagePlugin.MarkFlagRequired("prompt")
-	textToImagePlugin.MarkFlagRequired("output")
+	err := textToImagePlugin.MarkFlagRequired("prompt")
+	if err != nil {
+		panic(err)
+	}
+	err = textToImagePlugin.MarkFlagRequired("output")
+	if err != nil {
+		panic(err)
+	}
 }

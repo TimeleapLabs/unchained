@@ -57,7 +57,7 @@ func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
 	err := t.ID.UnmarshalBinary(uuidBytes)
 	if err != nil {
 		panic(err)
-		//return nil
+		// return nil
 	}
 
 	t.Signature = [48]byte{}

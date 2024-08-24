@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net"
 
@@ -44,7 +45,7 @@ func RunUnixCall(_ context.Context, conn net.Conn, params *dto.RPCRequest) (*dto
 
 	for payloadSize > len(response) {
 		n, err := conn.Read(buf)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			utils.Logger.Error("Connection closed")
 			break // End of file or connection closed
 		} else if err != nil {

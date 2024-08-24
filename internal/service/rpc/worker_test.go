@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 	"testing"
@@ -36,7 +35,7 @@ func handleConnection(t *testing.T, conn net.Conn) {
 		n, err := conn.Read(buf)
 		assert.NoError(t, err)
 
-		fmt.Println(buf[0:n])
+		t.Log("Received: ", buf[0:n])
 		_, err = conn.Write(buf[0:n])
 		assert.NoError(t, err)
 	}

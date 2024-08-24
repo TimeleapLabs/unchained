@@ -204,6 +204,7 @@ issues:
         - funlen
         - forbidigo
         - gochecknoinits
+        - dupl
     - path: ".generated.go"
       linters:
         - typecheck

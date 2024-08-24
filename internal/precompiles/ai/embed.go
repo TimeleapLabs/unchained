@@ -28,7 +28,7 @@ func ExtractPythonFiles(targetDir string) error {
 		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
 			return err
 		}
-		return os.WriteFile(destPath, data, 0644)
+		return os.WriteFile(destPath, data, 0644) //nolint: gosec // Other users may need to read these files.
 	})
 }
 

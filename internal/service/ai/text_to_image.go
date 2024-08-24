@@ -55,7 +55,7 @@ func TextToImage(prompt string, negativePrompt string, model string, loraWeights
 			case <-stopDots:
 				return
 			case <-time.After(1 * time.Second):
-				fmt.Print(".")
+				fmt.Print(".") //nolint:forbidigo // This is a CLI tool
 			}
 		}
 	}()
