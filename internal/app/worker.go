@@ -1,6 +1,10 @@
 package app
 
 import (
+	"context"
+
+	"github.com/TimeleapLabs/unchained/internal/service/rpc"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
@@ -17,7 +21,7 @@ import (
 )
 
 // Worker starts the Unchained worker and contains its DI.
-func Worker() {
+func Worker(_ context.Context) {
 	utils.Logger.
 		With("Mode", "Worker").
 		With("Version", consts.Version).
@@ -40,6 +44,15 @@ func Worker() {
 	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, badger)
 	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
 
+	rpcFunctions := []rpc.Option{}
+	for _, fun := range config.App.Functions {
+		switch fun.Type { //nolint: gocritic // This is a switch case for different types of rpc functions
+		case "unix":
+			rpcFunctions = append(rpcFunctions, rpc.WithUnixSocket(fun.Name, fun.Endpoint))
+		}
+	}
+	rpcService := rpc.NewWorker(rpcFunctions...)
+
 	scheduler := scheduler.New(
 		scheduler.WithEthLogs(evmLogService),
 		scheduler.WithUniswapEvents(uniswapService),
@@ -47,7 +60,7 @@ func Worker() {
 
 	conn.Start()
 
-	handler := handler.NewWorkerHandler()
+	handler := handler.NewWorkerHandler(rpcService)
 	client.NewRPC(handler)
 
 	scheduler.Start()

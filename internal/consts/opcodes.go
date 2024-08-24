@@ -22,4 +22,9 @@ const (
 
 	OpCodeCorrectnessReport          OpCode = 10
 	OpCodeCorrectnessReportBroadcast OpCode = 11
+
+	OpCodeRegisterRPCFunction OpCode = 12
+
+	OpCodeRPCRequest  OpCode = 13
+	OpCodeRPCResponse OpCode = 14
 )

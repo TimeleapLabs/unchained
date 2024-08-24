@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// IsMessageValid checks if the message's signature belong to signer or not.
 func IsMessageValid(conn *websocket.Conn, message bls12381.G1Affine, signature [48]byte) (model.Signer, error) {
 	signer, ok := store.Signers.Load(conn)
 	if !ok {

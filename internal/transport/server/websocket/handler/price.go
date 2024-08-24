@@ -3,26 +3,30 @@ package handler
 import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
 )
 
 // PriceReport check signature of message and return price info.
-func PriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
+func PriceReport(conn *websocket.Conn, payload []byte) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
-		return []byte{}, err
+		SendError(conn, consts.OpCodeError, err)
+		return
 	}
 
 	priceReport := new(model.PriceReportPacket).FromBytes(payload)
 	priceInfoHash, err := priceReport.PriceInfo.Bls()
 	if err != nil {
-		return []byte{}, consts.ErrInternalError
+		SendError(conn, consts.OpCodeError, err)
+		return
 	}
 
 	signer, err := middleware.IsMessageValid(conn, priceInfoHash, priceReport.Signature)
 	if err != nil {
-		return []byte{}, err
+		SendError(conn, consts.OpCodeError, err)
+		return
 	}
 
 	priceInfo := model.BroadcastPricePacket{
@@ -31,5 +35,6 @@ func PriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
 		Signer:    signer,
 	}
 
-	return priceInfo.Sia().Bytes(), nil
+	pubsub.Publish(consts.ChannelPriceReport, consts.OpCodePriceReportBroadcast, priceInfo.Sia().Bytes())
+	SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
 }

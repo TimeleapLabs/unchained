@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// IsConnectionAuthenticated checks if the connection has passed the challenge or not.
 func IsConnectionAuthenticated(conn *websocket.Conn) error {
 	challenge, ok := store.Challenges.Load(conn)
 	if !ok || !challenge.Passed {

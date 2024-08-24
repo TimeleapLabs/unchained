@@ -17,14 +17,14 @@ var worker = &cobra.Command{
 		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
 	},
 
-	Run: func(_ *cobra.Command, _ []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
 		if err != nil {
 			panic(err)
 		}
 
 		utils.SetupLogger(config.App.System.Log)
-		app.Worker()
+		app.Worker(cmd.Context())
 	},
 }
 
