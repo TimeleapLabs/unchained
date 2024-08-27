@@ -1,7 +1,65 @@
-## v0.12.0
+## v0.13.0 (2024-08-27)
 
 ### ✨ Features
 
+- add optional tls support
+- **func-config**: add config struct for registering functions >>> ⏰ 3h
+- **rpc**: refactor rpc service to accept unix socket >>> ⏰ 6h
+- **rpc**: add comments and re arrange codes >>> ⏰ 6h
+- **rpc-runtime**: add some runtime and refactor rpc service >>> ⏰ 6h
+- **handlers**: refactoring rpc handlers >>> ⏰ 4h
+- **bls-test**: add unittest for bls and move bls sign to identity …
+- **bls-test**: add unittest for bls and move bls sign to identity method >>> ⏰ 1.5h
+- add the new schnorr based pos contract
+- **identity**: add flag to get permission to write to secret file,…
+- **identity**: add flag to get permission to write to secret file, to prevent losing keys. and some refactor >>> ⏰ 3h
+- **identity**: merge and add unit test for identity >>> ⏰ 1h
+
+### 🐛🚑️ Fixes
+
+- **concept**: remove unneccery file >>> ⏰ 5m
+- fix rpc issues
+- small bug fixes
+- small bug fixes with rpc
+- filter out unavailable workers
+- **lint**: fix linters >>> ⏰ 5m
+- **eth-rpc**: fix problem of race condition for client list >>> ⏰ 1h
+- **eth-rpc**: rename isExist to isFound >>> ⏰ 2m
+- **eth-rpc**: fix problem of race condition for client list >>> ⏰ 1h
+- **linters**: do linter fixes >>> ⏰ 2m
+- **identity**: rename export signer function name >>> ⏰ 2m
+- **identity**: rename export signer function name >>> ⏰ 2m
+- **evmlog**: fix mutex problem >>> ⏰ 30m
+
+### fix
+
+- display help correctly when no arguments are entered
+
+### ✅🤡🧪 Tests
+
+- fix mock modules
+- fix mock contracts
+
+### 🎨🏗️ Style & Architecture
+
+- **linter**: fix linters problems >>> ⏰ 3h
+- fix lint
+
+### 🔐🚧📈✏️ 💩👽️🍻💬🥚🌱🚩🥅🩺 Others
+
+- add unchained AI plugins
+
+### 🚨 Linting
+
+- fix go mod tidy
+
+## v0.12.0 (2024-04-25)
+
+### ✨ Features
+
+- **services**: add some tests to project >>> ⏰ 3h
+- **pubsub**: ability to send messages based on channels and sub-channel subscribe >>> ⏰ 6h
+- **pubsub**: add internal pubsub and lots of refactor >>> ⏰ 2d
 - record consensus info on boolean records
 - refactor consensus to save all signatures in db
 - add slashing mechanism
@@ -9,8 +67,15 @@
 
 ### 🐛🚑️ Fixes
 
+- fix identity key generation
 - **flags**: make config flag unrequired >>> ⏰ 2m
 - **flags**: make config flag unrequired >>> ⏰ 2m
+- **correctness**: delete unused tests temprorary >>> ⏰ 2m
+- **connection**: fix the problem of reconnecting to the broker >>> ⏰ 2h
+- **linters**: fix linters >>> ⏰ 2m
+- **models**: fix problem of deserializing sia >>> ⏰ 2h
+- **badge**: move badger to services and add unit tests >>> ⏰ 30m
+- **linters**: solve linters problems >>> ⏰ 1h
 - **linters-services**: add a new linter and fix dup in services >>> ⏰ 30m
 - **crypto**: fix linters about comments >>> ⏰ 2m
 - **crypto**: fix unused assining in evm init >>> ⏰ 10m
@@ -20,8 +85,10 @@
 
 ### ♻️ Refactorings
 
+- **ctx**: implement ctx passing through project >>> ⏰ 2h
+- **services**: capsulate services using interfaces >>> ⏰ 1h
 - fix debounce and pre-hook issues
-- **crypto**: move etherum to crypto and refactor crypto to make a identity manager >>> ⏰ 2h
+- **crypto**: move etherum to crypto and refactor crypto to make a identity manage >>> ⏰ 2h
 - refactor the eip712 module to repository pattern
 
 ### feat
@@ -58,6 +125,8 @@
 
 ### 💚👷 CI & Build
 
+- remove commitizen-branch
+- **docker**: fix docker build
 - migrate to the new org name
 
 ### 📌➕⬇️ ➖⬆️ Dependencies
@@ -66,8 +135,13 @@
 
 ### 📝💡 Documentation
 
+- **changelog**: add changelog
 - **crypto**: add some comments in crypto package >>> ⏰ 10m
 - add documentation for installing pre-commit hooks
+
+### 🚨 Linting
+
+- fix unnecessary trailing new line
 
 ## v0.11.21 (2024-03-31)
 
