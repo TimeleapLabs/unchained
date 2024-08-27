@@ -6,11 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/TimeleapLabs/unchained/internal/datasets"
 	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
 	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 	"github.com/TimeleapLabs/unchained/internal/ent/signer"
@@ -73,7 +73,7 @@ func (elc *EventLogCreate) SetTransaction(b []byte) *EventLogCreate {
 }
 
 // SetArgs sets the "args" field.
-func (elc *EventLogCreate) SetArgs(dla []datasets.EventLogArg) *EventLogCreate {
+func (elc *EventLogCreate) SetArgs(dla []model.EventLogArg) *EventLogCreate {
 	elc.mutation.SetArgs(dla)
 	return elc
 }
@@ -456,7 +456,7 @@ func (u *EventLogUpsert) UpdateTransaction() *EventLogUpsert {
 }
 
 // SetArgs sets the "args" field.
-func (u *EventLogUpsert) SetArgs(v []datasets.EventLogArg) *EventLogUpsert {
+func (u *EventLogUpsert) SetArgs(v []model.EventLogArg) *EventLogUpsert {
 	u.Set(eventlog.FieldArgs, v)
 	return u
 }
@@ -665,7 +665,7 @@ func (u *EventLogUpsertOne) UpdateTransaction() *EventLogUpsertOne {
 }
 
 // SetArgs sets the "args" field.
-func (u *EventLogUpsertOne) SetArgs(v []datasets.EventLogArg) *EventLogUpsertOne {
+func (u *EventLogUpsertOne) SetArgs(v []model.EventLogArg) *EventLogUpsertOne {
 	return u.Update(func(s *EventLogUpsert) {
 		s.SetArgs(v)
 	})
@@ -1044,7 +1044,7 @@ func (u *EventLogUpsertBulk) UpdateTransaction() *EventLogUpsertBulk {
 }
 
 // SetArgs sets the "args" field.
-func (u *EventLogUpsertBulk) SetArgs(v []datasets.EventLogArg) *EventLogUpsertBulk {
+func (u *EventLogUpsertBulk) SetArgs(v []model.EventLogArg) *EventLogUpsertBulk {
 	return u.Update(func(s *EventLogUpsert) {
 		s.SetArgs(v)
 	})

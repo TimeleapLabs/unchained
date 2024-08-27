@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -17,7 +18,8 @@ func newDebounceContext[KeyType comparable, ArgType any]() *debounceContext[KeyT
 }
 
 func Debounce[KeyType comparable, ArgType any](
-	wait time.Duration, function func(ArgType)) func(key KeyType, arg ArgType) {
+	wait time.Duration, function func(context.Context, ArgType) error,
+) func(key KeyType, arg ArgType) {
 	debounce := newDebounceContext[KeyType, ArgType]()
 
 	return func(key KeyType, arg ArgType) {
@@ -34,7 +36,12 @@ func Debounce[KeyType comparable, ArgType any](
 			go func() {
 				defer debounce.Unlock()
 				delete(debounce.timers, key)
-				function(arg)
+				ctx, cancel := context.WithTimeout(context.TODO(), time.Minute)
+				defer cancel()
+				err := function(ctx, arg)
+				if err != nil {
+					Logger.With("err", err).Error("unsuccessful debounced function call")
+				}
 			}()
 		})
 	}

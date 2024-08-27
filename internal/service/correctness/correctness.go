@@ -8,22 +8,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TimeleapLabs/unchained/internal/address"
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/log"
-	"github.com/TimeleapLabs/unchained/internal/pos"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/unchained/internal/utils/address"
+
 	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/puzpuzpuz/xsync/v3"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/crypto/shake"
-	"github.com/TimeleapLabs/unchained/internal/datasets"
-	"github.com/TimeleapLabs/unchained/internal/db"
 	"github.com/TimeleapLabs/unchained/internal/ent"
-	"github.com/TimeleapLabs/unchained/internal/ent/correctnessreport"
-	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
-	"github.com/TimeleapLabs/unchained/internal/ent/signer"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	lru "github.com/hashicorp/golang-lru/v2"
@@ -33,21 +29,27 @@ const (
 	LruSize = 128
 )
 
-type Conf struct {
-	Topic string `mapstructure:"name"`
-}
-
 type SaveSignatureArgs struct {
-	Info      datasets.Correctness
+	Info      model.Correctness
 	Hash      bls12381.G1Affine
 	Consensus bool
 	Voted     *big.Int
 }
-type Service struct {
-	ethRPC *ethereum.Repository
-	pos    *pos.Repository
 
-	signatureCache *lru.Cache[bls12381.G1Affine, []datasets.Signature]
+type Service interface {
+	IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool
+	RecordSignature(
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+	) error
+	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
+}
+
+type service struct {
+	pos             pos.Service
+	signerRepo      repository.Signer
+	correctnessRepo repository.CorrectnessReport
+
+	signatureCache *lru.Cache[bls12381.G1Affine, []model.Signature]
 	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]]
 
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
@@ -55,19 +57,8 @@ type Service struct {
 	supportedTopics         map[[64]byte]bool
 }
 
-// TODO: This code should be moved to a shared library
-func (s *Service) GetBlockNumber(network string) (*uint64, error) {
-	blockNumber, err := s.ethRPC.GetBlockNumber(network)
-
-	if err != nil {
-		s.ethRPC.RefreshRPC(network)
-		return nil, err
-	}
-
-	return &blockNumber, nil
-}
-
-func (s *Service) IsNewSigner(signature datasets.Signature, records []*ent.CorrectnessReport) bool {
+// IsNewSigner checks if the signer's pub key is in the records signers or not.
+func (s *service) IsNewSigner(signature model.Signature, records []*ent.CorrectnessReport) bool {
 	// TODO: This isn't efficient, we should use a map
 	for _, record := range records {
 		for _, signer := range record.Edges.Signers {
@@ -82,33 +73,32 @@ func (s *Service) IsNewSigner(signature datasets.Signature, records []*ent.Corre
 
 // TODO: How should we handle older records?
 // Possible Solution: Add a not after timestamp to the document.
-func (s *Service) RecordSignature(
-	signature bls12381.G1Affine,
-	signer datasets.Signer,
-	hash bls12381.G1Affine,
-	info datasets.Correctness,
-	debounce bool) {
+func (s *service) RecordSignature(
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+) error {
 	if supported := s.supportedTopics[info.Topic]; !supported {
-		return
+		utils.Logger.
+			With("Topic", info.Topic).
+			Debug("Token not supported")
+		return consts.ErrTopicNotSupported
 	}
 
 	s.signatureMutex.Lock()
 	defer s.signatureMutex.Unlock()
 
 	signatures, ok := s.signatureCache.Get(hash)
-
 	if !ok {
-		signatures = make([]datasets.Signature, 0)
+		signatures = make([]model.Signature, 0)
 	}
 
 	// Check for duplicates
 	for _, sig := range signatures {
 		if sig.Signer.PublicKey == signer.PublicKey {
-			return
+			return consts.ErrDuplicateSignature
 		}
 	}
 
-	packed := datasets.Signature{
+	packed := model.Signature{
 		Signature: signature,
 		Signer:    signer,
 	}
@@ -130,13 +120,13 @@ func (s *Service) RecordSignature(
 		voted = *big.NewInt(0)
 	}
 
-	votingPower, err := s.pos.GetVotingPowerOfPublicKey(signer.PublicKey)
+	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Address", address.Calculate(signer.PublicKey[:])).
 			With("Error", err).
 			Error("Failed to get voting power")
-		return
+		return err
 	}
 
 	totalVoted := new(big.Int).Add(votingPower, &voted)
@@ -161,22 +151,24 @@ func (s *Service) RecordSignature(
 
 	if debounce {
 		s.DebouncedSaveSignatures(hash, saveArgs)
-	} else {
-		s.SaveSignatures(saveArgs)
+		return nil
 	}
+
+	err = s.SaveSignatures(ctx, saveArgs)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *Service) SaveSignatures(args SaveSignatureArgs) {
-	dbClient := db.GetClient()
+func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
-
 	if !ok {
-		return
+		return consts.ErrSignatureNotfound
 	}
 
-	ctx := context.Background()
-
-	var newSigners []datasets.Signer
+	var newSigners []model.Signer
 	var newSignatures []bls12381.G1Affine
 	var keys [][]byte
 
@@ -185,17 +177,9 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 		keys = append(keys, signature.Signer.PublicKey[:])
 	}
 
-	currentRecords, err := dbClient.CorrectnessReport.
-		Query().
-		Where(correctnessreport.And(
-			correctnessreport.Hash(args.Info.Hash[:]),
-			correctnessreport.Topic(args.Info.Topic[:]),
-			correctnessreport.Timestamp(args.Info.Timestamp),
-		)).
-		All(ctx)
-
+	currentRecords, err := s.correctnessRepo.Find(ctx, args.Info.Hash, args.Info.Topic[:], args.Info.Timestamp)
 	if err != nil && !ent.IsNotFound(err) {
-		panic(err)
+		return err
 	}
 
 	// Select the new signers and signatures
@@ -212,34 +196,15 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 	}
 
 	// TODO: This part can be a shared library
-	err = dbClient.Signer.MapCreateBulk(newSigners, func(sc *ent.SignerCreate, i int) {
-		signer := newSigners[i]
-		sc.SetName(signer.Name).
-			SetEvm(signer.EvmAddress).
-			SetKey(signer.PublicKey[:]).
-			SetShortkey(signer.ShortPublicKey[:]).
-			SetPoints(0)
-	}).
-		OnConflictColumns("shortkey").
-		UpdateName().
-		UpdateEvm().
-		UpdateKey().
-		Update(func(su *ent.SignerUpsert) {
-			su.AddPoints(1)
-		}).
-		Exec(ctx)
 
+	err = s.signerRepo.CreateSigners(ctx, newSigners)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	signerIDs, err := dbClient.Signer.
-		Query().
-		Where(signer.KeyIn(keys...)).
-		IDs(ctx)
-
+	signerIDs, err := s.signerRepo.GetSingerIDsByKeys(ctx, keys)
 	if err != nil {
-		return
+		return err
 	}
 
 	var aggregate bls12381.G1Affine
@@ -249,7 +214,7 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 			currentSignature, err := bls.RecoverSignature([48]byte(record.Signature))
 
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			newSignatures = append(newSignatures, currentSignature)
@@ -258,63 +223,65 @@ func (s *Service) SaveSignatures(args SaveSignatureArgs) {
 	}
 
 	aggregate, err = bls.AggregateSignatures(newSignatures)
-
 	if err != nil {
-		return
+		return consts.ErrCantAggregateSignatures
 	}
 
 	signatureBytes := aggregate.Bytes()
 
-	err = dbClient.CorrectnessReport.
-		Create().
-		SetCorrect(args.Info.Correct).
-		SetSignersCount(uint64(len(signatures))).
-		SetSignature(signatureBytes[:]).
-		SetHash(args.Info.Hash[:]).
-		SetTimestamp(args.Info.Timestamp).
-		SetTopic(args.Info.Topic[:]).
-		SetConsensus(args.Consensus).
-		SetVoted(&helpers.BigInt{Int: *args.Voted}).
-		AddSignerIDs(signerIDs...).
-		OnConflictColumns("topic", "hash").
-		UpdateNewValues().
-		Exec(ctx)
-
+	err = s.correctnessRepo.Upsert(ctx, model.Correctness{
+		SignersCount: uint64(len(signatures)),
+		Signature:    signatureBytes[:],
+		Consensus:    args.Consensus,
+		Voted:        *args.Voted,
+		SignerIDs:    signerIDs,
+		Timestamp:    args.Info.Timestamp,
+		Hash:         args.Info.Hash,
+		Topic:        args.Info.Topic,
+		Correct:      args.Info.Correct,
+	})
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	s.signatureCache.Remove(args.Hash)
+
+	return nil
 }
 
-func (s *Service) init() {
+func (s *service) init() {
 	var err error
 
 	s.DebouncedSaveSignatures = utils.Debounce[bls12381.G1Affine, SaveSignatureArgs](5*time.Second, s.SaveSignatures)
 	s.signatureMutex = new(sync.Mutex)
 	s.supportedTopics = make(map[[64]byte]bool)
-	s.signatureCache, err = lru.New[bls12381.G1Affine, []datasets.Signature](LruSize)
+	s.signatureCache, err = lru.New[bls12381.G1Affine, []model.Signature](LruSize)
 
 	if err != nil {
 		panic(err)
 	}
 }
 
-func New(ethRPC *ethereum.Repository, pos *pos.Repository) *Service {
-	c := Service{
-		ethRPC: ethRPC,
-		pos:    pos,
+func New(
+	pos pos.Service,
+	signerRepo repository.Signer,
+	correctnessRepo repository.CorrectnessReport,
+) Service {
+	c := service{
+		pos:             pos,
+		signerRepo:      signerRepo,
+		correctnessRepo: correctnessRepo,
 	}
 	c.init()
 
 	for _, conf := range config.App.Plugins.Correctness {
-		c.supportedTopics[[64]byte(shake.Shake([]byte(conf)))] = true
+		c.supportedTopics[[64]byte(utils.Shake([]byte(conf)))] = true
 	}
 
 	var err error
 	c.consensus, err = lru.New[Key, xsync.MapOf[bls12381.G1Affine, big.Int]](evmlog.LruSize)
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			Error("Failed to create correctness consensus cache.")
 		os.Exit(1)
 	}

@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/TimeleapLabs/unchained/internal/app"
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -17,14 +17,14 @@ var worker = &cobra.Command{
 		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
 	},
 
-	Run: func(_ *cobra.Command, _ []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		err := config.Load(config.App.System.ConfigPath, config.App.System.SecretsPath)
 		if err != nil {
 			panic(err)
 		}
 
-		log.Start(config.App.System.Log)
-		app.Worker()
+		utils.SetupLogger(config.App.System.Log)
+		app.Worker(cmd.Context())
 	},
 }
 

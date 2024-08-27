@@ -3,11 +3,11 @@ package config
 import (
 	"os"
 
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
+
 	pureLog "log"
 
-	"github.com/TimeleapLabs/unchained/internal/log"
-
-	"github.com/TimeleapLabs/unchained/internal/constants"
 	"gopkg.in/yaml.v3"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -34,7 +34,7 @@ func Load(configPath, secretPath string) error {
 
 	err = cleanenv.ReadConfig(configPath, &App)
 	if err != nil {
-		return constants.ErrCantLoadConfig
+		return consts.ErrCantLoadConfig
 	}
 
 	err = cleanenv.ReadEnv(&App)
@@ -48,19 +48,18 @@ func Load(configPath, secretPath string) error {
 func (s *Secret) Save() error {
 	yamlData, err := yaml.Marshal(&s)
 	if err != nil {
-		log.Logger.With("Error", err).Error("Can't marshal secrets to yaml")
-		return constants.ErrCantWriteSecret
+		utils.Logger.With("Error", err).Error("Can't marshal secrets to yaml")
+		return consts.ErrCantWriteSecret
 	}
 
 	if SecretFilePath == "" {
-		log.Logger.With("Error", err).Error("SecretFilePath is not defined")
-		return constants.ErrCantWriteSecret
+		SecretFilePath = "./secrets.yaml" // #nosec G101
 	}
 
 	err = os.WriteFile(SecretFilePath, yamlData, 0600)
 	if err != nil {
-		log.Logger.With("Error", err).Error("Can't write secret file")
-		return constants.ErrCantWriteSecret
+		utils.Logger.With("Error", err).Error("Can't write secret file")
+		return consts.ErrCantWriteSecret
 	}
 
 	return nil

@@ -1,64 +1,40 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/constants"
-	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/datasets"
-	"github.com/TimeleapLabs/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-func PriceReport(conn *websocket.Conn, payload []byte) ([]byte, error) {
+// PriceReport check signature of message and return price info.
+func PriceReport(conn *websocket.Conn, payload []byte) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
-		return []byte{}, err
+		SendError(conn, consts.OpCodeError, err)
+		return
 	}
 
-	signer, ok := store.Signers.Load(conn)
-	if !ok {
-		return nil, constants.ErrMissingHello
-	}
-
-	report := new(datasets.PriceReport).DeSia(&sia.Sia{Content: payload})
-	toHash := report.PriceInfo.Sia().Content
-	hash, err := bls.Hash(toHash)
-
+	priceReport := new(model.PriceReportPacket).FromBytes(payload)
+	priceInfoHash, err := priceReport.PriceInfo.Bls()
 	if err != nil {
-		log.Logger.Error("Can't hash bls: %v", err)
-		return []byte{}, constants.ErrInternalError
+		SendError(conn, consts.OpCodeError, err)
+		return
 	}
 
-	signature, err := bls.RecoverSignature(report.Signature)
+	signer, err := middleware.IsMessageValid(conn, priceInfoHash, priceReport.Signature)
 	if err != nil {
-		log.Logger.Error("Can't recover bls signature: %v", err)
-		return []byte{}, constants.ErrInternalError
+		SendError(conn, consts.OpCodeError, err)
+		return
 	}
 
-	pk, err := bls.RecoverPublicKey(signer.PublicKey)
-	if err != nil {
-		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrInternalError
-	}
-
-	ok, err = crypto.Identity.Bls.Verify(signature, hash, pk)
-	if err != nil {
-		log.Logger.Error("Can't recover bls pub-key: %v", err)
-		return []byte{}, constants.ErrCantVerifyBls
-	}
-	if !ok {
-		return []byte{}, constants.ErrInvalidSignature
-	}
-
-	priceInfo := datasets.BroadcastPricePacket{
-		Info:      report.PriceInfo,
-		Signature: report.Signature,
+	priceInfo := model.BroadcastPricePacket{
+		Info:      priceReport.PriceInfo,
+		Signature: priceReport.Signature,
 		Signer:    signer,
 	}
 
-	priceInfoByte := priceInfo.Sia().Content
-	return priceInfoByte, nil
+	pubsub.Publish(consts.ChannelPriceReport, consts.OpCodePriceReportBroadcast, priceInfo.Sia().Bytes())
+	SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
 }

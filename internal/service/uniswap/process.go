@@ -1,0 +1,39 @@
+package uniswap
+
+import (
+	"context"
+
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/model"
+)
+
+func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
+	currBlockNumber, err := s.ethRPC.GetBlockNumber(ctx, chain)
+	if err != nil {
+		s.ethRPC.RefreshRPC(chain)
+		return err
+	}
+
+	for _, token := range model.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
+		if token.Chain != chain {
+			continue
+		}
+
+		// TODO: this can be cached
+		key := s.TokenKey(token)
+		tokenLastBlock, exists := s.LastBlock.Load(*key)
+
+		if !exists {
+			s.LastBlock.Store(*key, currBlockNumber-1)
+		} else if tokenLastBlock == currBlockNumber {
+			return nil
+		}
+
+		err = s.SyncBlocks(ctx, token, *key, currBlockNumber)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

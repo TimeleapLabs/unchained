@@ -6,11 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/model"
 	"sync"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/TimeleapLabs/unchained/internal/datasets"
 	"github.com/TimeleapLabs/unchained/internal/ent/assetprice"
 	"github.com/TimeleapLabs/unchained/internal/ent/correctnessreport"
 	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
@@ -1917,8 +1917,8 @@ type EventLogMutation struct {
 	addindex        *int64
 	event           *string
 	transaction     *[]byte
-	args            *[]datasets.EventLogArg
-	appendargs      []datasets.EventLogArg
+	args            *[]model.EventLogArg
+	appendargs      []model.EventLogArg
 	consensus       *bool
 	voted           **helpers.BigInt
 	clearedFields   map[string]struct{}
@@ -2377,13 +2377,13 @@ func (m *EventLogMutation) ResetTransaction() {
 }
 
 // SetArgs sets the "args" field.
-func (m *EventLogMutation) SetArgs(dla []datasets.EventLogArg) {
+func (m *EventLogMutation) SetArgs(dla []model.EventLogArg) {
 	m.args = &dla
 	m.appendargs = nil
 }
 
 // Args returns the value of the "args" field in the mutation.
-func (m *EventLogMutation) Args() (r []datasets.EventLogArg, exists bool) {
+func (m *EventLogMutation) Args() (r []model.EventLogArg, exists bool) {
 	v := m.args
 	if v == nil {
 		return
@@ -2394,7 +2394,7 @@ func (m *EventLogMutation) Args() (r []datasets.EventLogArg, exists bool) {
 // OldArgs returns the old "args" field's value of the EventLog entity.
 // If the EventLog object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EventLogMutation) OldArgs(ctx context.Context) (v []datasets.EventLogArg, err error) {
+func (m *EventLogMutation) OldArgs(ctx context.Context) (v []model.EventLogArg, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArgs is only allowed on UpdateOne operations")
 	}
@@ -2409,12 +2409,12 @@ func (m *EventLogMutation) OldArgs(ctx context.Context) (v []datasets.EventLogAr
 }
 
 // AppendArgs adds dla to the "args" field.
-func (m *EventLogMutation) AppendArgs(dla []datasets.EventLogArg) {
+func (m *EventLogMutation) AppendArgs(dla []model.EventLogArg) {
 	m.appendargs = append(m.appendargs, dla...)
 }
 
 // AppendedArgs returns the list of values that were appended to the "args" field in this mutation.
-func (m *EventLogMutation) AppendedArgs() ([]datasets.EventLogArg, bool) {
+func (m *EventLogMutation) AppendedArgs() ([]model.EventLogArg, bool) {
 	if len(m.appendargs) == 0 {
 		return nil, false
 	}
@@ -2748,7 +2748,7 @@ func (m *EventLogMutation) SetField(name string, value ent.Value) error {
 		m.SetTransaction(v)
 		return nil
 	case eventlog.FieldArgs:
-		v, ok := value.([]datasets.EventLogArg)
+		v, ok := value.([]model.EventLogArg)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

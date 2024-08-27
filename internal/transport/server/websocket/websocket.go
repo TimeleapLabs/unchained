@@ -1,13 +1,14 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-	"sync"
 
-	"github.com/TimeleapLabs/unchained/internal/constants"
-	"github.com/TimeleapLabs/unchained/internal/constants/opcodes"
-	"github.com/TimeleapLabs/unchained/internal/log"
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+	"github.com/TimeleapLabs/unchained/internal/utils"
+
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/handler"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
@@ -15,35 +16,40 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
+// WithWebsocket is a function that starts a websocket server.
 func WithWebsocket() func() {
 	return func() {
-		log.Logger.Info("Starting a websocket server")
+		utils.Logger.Info("Starting a websocket server")
 
-		versionedRoot := fmt.Sprintf("/%s", constants.ProtocolVersion)
+		versionedRoot := fmt.Sprintf("/%s", consts.ProtocolVersion)
 		http.HandleFunc(versionedRoot, multiplexer)
 	}
 }
 
+// multiplexer is a function that routes incoming messages to the appropriate handler.
 func multiplexer(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // remove this line in production
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Logger.Error("Can't upgrade the HTTP connection: %v", err)
+		utils.Logger.Error("Can't upgrade the HTTP connection: %v", err)
 		return
 	}
 
+	ctx, cancel := context.WithCancel(context.TODO())
+
 	defer store.Signers.Delete(conn)
 	defer store.Challenges.Delete(conn)
-	defer store.Consumers.Delete(conn)
-	defer store.BroadcastMutex.Delete(conn)
+	defer cancel()
 
 	for {
-		messageType, payload, err := conn.ReadMessage()
+		_, payload, err := conn.ReadMessage()
 		if err != nil {
-			log.Logger.Error("Can't read message: %v", err)
+			utils.Logger.Error("Can't read message: %v", err)
 
 			err := conn.Close()
 			if err != nil {
-				log.Logger.Error("Can't close connection: %v", err)
+				utils.Logger.Error("Can't close connection: %v", err)
 			}
 
 			break
@@ -53,63 +59,32 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		switch opcodes.OpCode(payload[0]) {
-		case opcodes.Hello:
-			log.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
-			result, err := handler.Hello(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, opcodes.Error, err)
-				continue
-			}
+		switch consts.OpCode(payload[0]) {
+		case consts.OpCodeHello:
+			handler.Hello(conn, payload[1:])
+		case consts.OpCodePriceReport:
+			handler.PriceReport(conn, payload[1:])
+		case consts.OpCodeEventLog:
+			handler.EventLog(conn, payload[1:])
+		case consts.OpCodeCorrectnessReport:
+			handler.CorrectnessRecord(conn, payload[1:])
+		case consts.OpCodeKoskResult:
+			handler.Kosk(conn, payload[1:])
+		case consts.OpCodeRegisterConsumer:
+			utils.Logger.
+				With("IP", conn.RemoteAddr().String()).
+				With("Channel", string(payload[1:])).
+				Info("New Consumer registered")
 
-			handler.SendMessage(conn, messageType, opcodes.Feedback, "conf.ok")
-			handler.Send(conn, messageType, opcodes.KoskChallenge, result)
-		case opcodes.PriceReport:
-			result, err := handler.PriceReport(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, opcodes.Error, err)
-				continue
-			}
-
-			handler.BroadcastPayload(opcodes.PriceReportBroadcast, result)
-			handler.SendMessage(conn, messageType, opcodes.Feedback, "signature.accepted")
-		case opcodes.EventLog:
-			result, err := handler.EventLog(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, opcodes.Error, err)
-				continue
-			}
-
-			handler.BroadcastPayload(opcodes.EventLogBroadcast, result)
-			handler.SendMessage(conn, messageType, opcodes.Feedback, "signature.accepted")
-
-		case opcodes.CorrectnessReport:
-			result, err := handler.CorrectnessRecord(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, opcodes.Error, err)
-				continue
-			}
-
-			handler.BroadcastPayload(opcodes.CorrectnessReportBroadcast, result)
-			handler.SendMessage(conn, messageType, opcodes.Feedback, "signature.accepted")
-
-		case opcodes.KoskResult:
-			err := handler.Kosk(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, messageType, opcodes.Error, err)
-				continue
-			}
-
-			handler.SendMessage(conn, messageType, opcodes.Feedback, "kosk.ok")
-
-		case opcodes.RegisterConsumer:
-			log.Logger.With("IP", conn.RemoteAddr().String()).Info("New Consumer registered")
-
-			// TODO: Consumers must specify what they're subscribing to
-			store.Consumers.Store(conn, true)
-			store.BroadcastMutex.Store(conn, new(sync.Mutex))
+			go handler.BroadcastListener(ctx, conn, pubsub.Subscribe(string(payload[1:])))
+		case consts.OpCodeRegisterRPCFunction:
+			handler.RegisterRPCFunction(ctx, conn, payload[1:])
+		case consts.OpCodeRPCRequest:
+			handler.CallFunction(ctx, conn, payload[1:])
+		case consts.OpCodeRPCResponse:
+			handler.ResponseFunction(ctx, conn, payload[1:])
 		default:
-			handler.SendError(conn, messageType, opcodes.Error, constants.ErrNotSupportedInstruction)
+			handler.SendError(conn, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}
 	}
 }

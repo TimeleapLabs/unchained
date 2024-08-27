@@ -7,14 +7,14 @@ package gql
 import (
 	"context"
 	"fmt"
+	"github.com/TimeleapLabs/unchained/internal/model"
 	"strings"
 
-	"github.com/TimeleapLabs/unchained/internal/datasets"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/generated"
 )
 
 // Value is the resolver for the value field.
-func (r *eventLogArgResolver) Value(ctx context.Context, obj *datasets.EventLogArg) (string, error) {
+func (r *eventLogArgResolver) Value(ctx context.Context, obj *model.EventLogArg) (string, error) {
 	switch {
 	case strings.HasPrefix(obj.Type, "uint"), strings.HasPrefix(obj.Type, "int"):
 		return obj.Value.(string), nil

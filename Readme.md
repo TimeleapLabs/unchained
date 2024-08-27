@@ -22,9 +22,12 @@ Unchained is a distributed computation engine:
 
 Cryptographic signatures and a proof-of-stake consensus secure all computations on Unchained.
 
-## Running a Node
+## Read More
 
-See [QuickStart](./quickstart.md).
+- [QuickStart](./quickstart.md) for running a node
+- [Schema](./schema.md) of the Unchained network
+- [Changelog](./CHANGELOG.md) of Unchained
+- [Contributing](./CONTRIBUTING.md) to Unchained
 
 ## License
 

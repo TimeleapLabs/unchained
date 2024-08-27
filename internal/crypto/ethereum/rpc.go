@@ -2,41 +2,60 @@ package ethereum
 
 import (
 	"context"
-	"fmt"
 	"sync"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 
-	"github.com/TimeleapLabs/unchained/internal/log"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-type Repository struct {
-	rpcList  map[string][]string
-	rpcIndex map[string]int
-	Clients  map[string]*ethclient.Client
-	rpcMutex *sync.Mutex
+type RPC interface {
+	RefreshRPC(network string)
+	GetClient(network string) *ethclient.Client
+	GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error)
+	GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error)
+	GetBlockNumber(ctx context.Context, network string) (uint64, error)
 }
 
-func (r *Repository) refreshRPCWithRetries(network string, retries int) bool {
+type repository struct {
+	list    map[string][]string
+	index   map[string]int
+	clients map[string]*ethclient.Client
+	mutex   *sync.Mutex
+}
+
+func (r *repository) GetClient(chain string) *ethclient.Client {
+	client, isFound := r.clients[chain]
+	if !isFound {
+		utils.Logger.With("Network", chain).Error("Client not found")
+		return nil
+	}
+
+	return client
+}
+
+func (r *repository) refreshRPCWithRetries(network string, retries int) bool {
 	if retries == 0 {
 		panic("Cannot connect to any of the provided RPCs")
 	}
 
-	if r.rpcIndex[network] == len(r.rpcList[network])-1 {
-		r.rpcIndex[network] = 0
+	if r.index[network] == len(r.list[network])-1 {
+		r.index[network] = 0
 	} else {
-		r.rpcIndex[network]++
+		r.index[network]++
 	}
 
 	var err error
 
-	index := r.rpcIndex[network]
-	r.Clients[network], err = ethclient.Dial(r.rpcList[network][index])
+	index := r.index[network]
+	r.clients[network], err = ethclient.Dial(r.list[network][index])
 
 	if err != nil {
 		return r.refreshRPCWithRetries(network, retries-1)
@@ -45,56 +64,61 @@ func (r *Repository) refreshRPCWithRetries(network string, retries int) bool {
 	return true
 }
 
-func (r *Repository) RefreshRPC(network string) {
-	r.rpcMutex.Lock()
-	defer r.rpcMutex.Unlock()
-	r.refreshRPCWithRetries(network, len(r.rpcList))
+func (r *repository) RefreshRPC(network string) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	utils.Logger.With("Network", network).Info("Connecting to RPC")
+	r.refreshRPCWithRetries(network, len(r.list))
 }
 
-func (r *Repository) GetNewStakingContract(
-	network string,
-	address string,
-	refresh bool) (*contracts.UnchainedStaking, error) {
+func (r *repository) GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error) {
 	if refresh {
 		r.RefreshRPC(network)
 	}
 
-	return contracts.NewUnchainedStaking(common.HexToAddress(address), r.Clients[network])
+	client := r.GetClient(network)
+	if client == nil {
+		return nil, consts.ErrClientNotFound
+	}
+
+	return contracts.NewProofOfStake(common.HexToAddress(address), client)
 }
 
-func (r *Repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
+func (r *repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
 	if refresh {
 		r.RefreshRPC(network)
 	}
 
-	return contracts.NewUniV3(common.HexToAddress(address), r.Clients[network])
-}
-
-func (r *Repository) GetBlockNumber(network string) (uint64, error) {
-	client, ok := r.Clients[network]
-
-	if !ok {
-		log.Logger.With("Network", network).Error("Client not found")
-		return 0, fmt.Errorf("client not found")
+	client := r.GetClient(network)
+	if client == nil {
+		return nil, consts.ErrClientNotFound
 	}
 
-	return client.BlockNumber(context.Background())
+	return contracts.NewUniV3(common.HexToAddress(address), client)
 }
 
-func (r *Repository) init() {
-	r.rpcList = make(map[string][]string)
-	r.rpcIndex = make(map[string]int)
-	r.Clients = make(map[string]*ethclient.Client)
-	r.rpcMutex = new(sync.Mutex)
+// GetBlockNumber returns the most recent block number.
+func (r *repository) GetBlockNumber(ctx context.Context, network string) (uint64, error) {
+	client := r.GetClient(network)
+	if client == nil {
+		return 0, consts.ErrClientNotFound
+	}
+
+	return client.BlockNumber(ctx)
 }
 
-func New() *Repository {
-	r := &Repository{}
-	r.init()
+func New() RPC {
+	r := &repository{
+		list:    map[string][]string{},
+		index:   map[string]int{},
+		clients: make(map[string]*ethclient.Client),
+		mutex:   new(sync.Mutex),
+	}
 
 	for _, rpc := range config.App.RPC {
-		r.rpcIndex[rpc.Name] = 0
-		r.rpcList[rpc.Name] = append(r.rpcList[rpc.Name], rpc.Nodes...)
+		r.index[rpc.Name] = 0
+		r.list[rpc.Name] = append(r.list[rpc.Name], rpc.Nodes...)
 		r.RefreshRPC(rpc.Name)
 	}
 

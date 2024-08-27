@@ -1,43 +1,42 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/datasets"
-	"github.com/TimeleapLabs/unchained/internal/log"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-func (h *consumer) EventLog(message []byte) {
-	packet := new(datasets.BroadcastEventPacket).DeSia(&sia.Sia{Content: message})
-	toHash := packet.Info.Sia().Content
-	hash, err := bls.Hash(toHash)
+func (h *consumer) EventLog(ctx context.Context, message []byte) {
+	packet := new(model.BroadcastEventPacket).FromBytes(message)
 
+	eventLogHash, err := packet.Info.Bls()
 	if err != nil {
-		log.Logger.
-			With("Error", err).
-			Error("Hash error")
-
 		return
 	}
 
 	signature, err := bls.RecoverSignature(packet.Signature)
-
 	if err != nil {
-		log.Logger.
+		utils.Logger.
 			With("Error", err).
 			Error("Failed to recover packet signature")
 
 		return
 	}
 
-	h.evmlog.RecordSignature(
+	err = h.evmlog.RecordSignature(
+		ctx,
 		signature,
 		packet.Signer,
-		hash,
+		eventLogHash,
 		packet.Info,
 		true,
 		false,
 	)
+	if err != nil {
+		return
+	}
 }
 
-func (w worker) EventLog(_ []byte) {}
+func (w worker) EventLog(_ context.Context, _ []byte) {}

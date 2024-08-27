@@ -6,7 +6,7 @@ import (
 
 	"github.com/TimeleapLabs/unchained/cmd/handler"
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/constants"
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +17,7 @@ var root = &cobra.Command{
 	Long:  `Unchained is the universal data validation and processing protocol`,
 	Run: func(_ *cobra.Command, _ []string) {
 		if config.App.System.PrintVersion {
-			fmt.Println(constants.Version)
+			fmt.Println(consts.Version)
 		} else {
 			os.Exit(1)
 		}
@@ -28,6 +28,7 @@ func main() {
 	handler.WithBrokerCmd(root)
 	handler.WithConsumerCmd(root)
 	handler.WithWorkerCmd(root)
+	handler.WithPluginCmd(root)
 
 	err := root.Execute()
 	if err != nil {
@@ -39,5 +40,7 @@ func init() {
 	root.Flags().BoolVarP(&config.App.System.PrintVersion, "version", "v", false, "Print the Unchained version number and die")
 	root.PersistentFlags().StringVarP(&config.App.System.ConfigPath, "config", "c", "./conf.yaml", "Config file")
 	root.PersistentFlags().StringVarP(&config.App.System.SecretsPath, "secrets", "s", "./secrets.yaml", "Secrets file")
+	root.PersistentFlags().BoolVarP(&config.App.System.AllowGenerateSecrets, "allow-generate-secrets", "a", false, "Allow to generate secrets file if not exists")
 	root.PersistentFlags().StringVarP(&config.App.System.ContextPath, "context", "x", "./context", "Context DB")
+	root.PersistentFlags().StringVarP(&config.App.System.Home, "home", "H", "./unchained", "Unchained Home")
 }

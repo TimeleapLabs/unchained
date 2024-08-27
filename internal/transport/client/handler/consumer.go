@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/constants/opcodes"
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/correctness"
 	"github.com/TimeleapLabs/unchained/internal/service/evmlog"
 	"github.com/TimeleapLabs/unchained/internal/service/uniswap"
@@ -9,17 +10,17 @@ import (
 )
 
 type consumer struct {
-	correctness *correctness.Service
-	uniswap     *uniswap.Service
-	evmlog      *evmlog.Service
+	correctness correctness.Service
+	uniswap     uniswap.Service
+	evmlog      evmlog.Service
 }
 
 func NewConsumerHandler(
-	correctness *correctness.Service,
-	uniswap *uniswap.Service,
-	evmlog *evmlog.Service,
+	correctness correctness.Service,
+	uniswap uniswap.Service,
+	evmlog evmlog.Service,
 ) Handler {
-	conn.Send(opcodes.RegisterConsumer, nil)
+	conn.Send(consts.OpCodeRegisterConsumer, []byte(config.App.Network.SubscribedChannel))
 
 	return &consumer{
 		correctness: correctness,

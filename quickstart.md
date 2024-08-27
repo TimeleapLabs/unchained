@@ -2,16 +2,11 @@
 
 Follow the guide on this page to run either a broker or a worker node:
 
+- **Broker nodes** are nodes that are responsible for connecting to each party and validate incoming data, and broadcast the results for consumers.
 - **Worker nodes** are nodes that only validate data, but they don't store any of
-  the validated datapoints. It's easier to set up a worker node than a broker node.
-- **Broker nodes** are nodes that validate data, and store the validated data for
-  future queries. Broker nodes require extra steps to set up, and need more
-  resources. You can either store the validated data on a local Postgres
-  instance, or use DBaaS such as [Neon](https://neon.tech),
-  [AWS RDS](https://aws.amazon.com/rds/), [ElephantSQL](https://www.elephantsql.com/)
-  or any other.
-
-For now, only worker nodes are implemented.
+  the validated data points. It's easier to set up a worker node than a broker node.
+- **Consumer nodes** are nodes that consume data from the brokers and store them in a database. They don't validate data, but they have the ability to store the network's results and provide a standard GraphQL for easy exploring. you can set a local Postgres instance or use DBaaS such as [Neon](https://neon.tech),
+  [AWS RDS](https://aws.amazon.com/rds/), [ElephantSQL](https://www.elephantsql.com/) or any other.
 
 You can setup a node using a docker deployment or local deployment:
 
@@ -154,7 +149,7 @@ locally, on a RaspberryPi, on a server, or on your computer/laptop.
 
 ### Prerequisites
 
-To run a Kenshi Unchained node, you need to download the latest release. Head over to the
+To run a Unchained node, you need to download the latest release. Head over to the
 [Unchained release page](https://github.com/TimeleapLabs/unchained/releases)
 on GitHub, find the latest release corresponding to your architecture and OS and download it.
 
@@ -170,9 +165,9 @@ To get the latest update of Unchained, you can download the latest release on th
 
 ### Postgres
 
-Note: Skip this step if you're planning to run a worker node.
+Note: Skip this step if you're not planning to run a consumer node.
 
-To run a broker node, you need to have an instance of Postgres. You can either run
+To run a consumer node, you need to have an instance of Postgres. You can either run
 your own, or make a subscription to a cloud service.
 
 Contact us on [Telegram](https://t.me/kenshi) if you need help with this step.
@@ -272,7 +267,7 @@ where you saved the above configuration file:
 unchained.OS.ARCH worker
 ```
 
-**Note: if you are running the node for the first time, Unchained will generate a random secret key. This key will be saved to the `secrets.yaml` file. It is your responsibility to keep this file safe.**
+**Note: If you are running the node for the first time, Unchained needs to have permission to generating a random secret key (You can pass this permission with -a flag) . This key will be saved to the `secrets.yaml` file and it is your responsibility to keep this file safe. If the app can't find the secret file location and doesn't have permission to generate it, it leads to panic and exits the app with an error **
 
 ## Help
 
