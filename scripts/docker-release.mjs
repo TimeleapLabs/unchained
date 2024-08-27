@@ -1,4 +1,4 @@
-import { writeFileSync, readFileSync, mkdirSync, copyFileSync } from "fs";
+import { writeFileSync, mkdirSync, copyFileSync } from "fs";
 import { dirname } from "path";
 import { execSync } from "child_process";
 
@@ -6,7 +6,7 @@ const about = [
   "Unchained is a decentralized, peer-to-peer network for data validation.",
   "Unchained nodes work to validate data together and are rewarded in KNS tokens.",
   "The validated data can then be queried by consumer in exchange for KNS tokens.",
-  "Learn more about Unchained [here](https://kenshi.io/docs/unchained).",
+  "Learn more about Unchained [here](https://timeleap.swiss/docs/unchained).",
 ].join(" ");
 
 const questions = [
@@ -15,23 +15,14 @@ const questions = [
   "[email](mailto:hi@kenshi.io).",
 ].join(" ");
 
-const releaseTemplate = (changes) => `\
+const releaseTemplate = () => `\
 ${about}
 
 ${questions}
-
-${changes}
   `;
 
 const makeReleaseNotes = async () => {
-  const url =
-    "https://app.whatthediff.ai/changelog/github/KenshiTech/unchained.json";
-  const req = await fetch(url);
-  const notes = await req.json();
-  const wtd = notes.changelog.data[0];
-
-  const changes = wtd.comment.replace(/^## PR Summary/, "## Changes");
-  const release = releaseTemplate(changes);
+  const release = releaseTemplate();
 
   writeFileSync("./release-notes.md", release);
 };
