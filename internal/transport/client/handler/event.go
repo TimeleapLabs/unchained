@@ -9,6 +9,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
+// EventLog is a method that handles event log packets.
 func (h *consumer) EventLog(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastEventPacket).FromBytes(message)
 
@@ -35,4 +36,5 @@ func (h *consumer) EventLog(ctx context.Context, message []byte) {
 	}
 }
 
+// EventLog is not defined for worker nodes.
 func (w worker) EventLog(_ context.Context, _ []byte) {}

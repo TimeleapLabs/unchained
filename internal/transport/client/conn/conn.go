@@ -135,12 +135,14 @@ func Read() <-chan []byte {
 	return out
 }
 
+// SendRaw function sends byte array data to the broker.
 func SendRaw(data []byte) error {
 	mu.Lock()
 	defer mu.Unlock()
 	return conn.WriteMessage(websocket.BinaryMessage, data)
 }
 
+// Send function sends a message with specific opCode to the broker.
 func Send(opCode consts.OpCode, payload []byte) {
 	err := SendRaw(
 		append([]byte{byte(opCode)}, payload...),
@@ -148,8 +150,4 @@ func Send(opCode consts.OpCode, payload []byte) {
 	if err != nil {
 		utils.Logger.Error("Can't send packet: %v", err)
 	}
-}
-
-func SendMessage(opCode consts.OpCode, message string) {
-	Send(opCode, []byte(message))
 }

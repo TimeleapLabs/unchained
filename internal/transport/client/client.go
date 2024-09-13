@@ -10,6 +10,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
+// NewRPC is a function that starts a new RPC client and connect to broker to consume events.
 func NewRPC(handler handler.Handler) {
 	incoming := conn.Read()
 

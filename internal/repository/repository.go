@@ -18,6 +18,12 @@ type EventLog interface {
 	Upsert(ctx context.Context, data model.EventLog) error
 }
 
+// Signer interface represents the methods that can be used to interact with the Signer table in the database.
+type Signer interface {
+	CreateSigners(ctx context.Context, signers []model.Signer) error
+	GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error)
+}
+
 // AssetPrice interface represents the methods that can be used to interact with the AssetPrice table in the database.
 type AssetPrice interface {
 	Find(ctx context.Context, block uint64, chain string, name string, pair string) ([]model.AssetPrice, error)

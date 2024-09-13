@@ -34,7 +34,6 @@ func Worker(_ context.Context) {
 	)
 
 	ethRPC := ethereum.New()
-	pos := pos.New(ethRPC)
 
 	eventLogRepo := postgres.NewEventLog(nil)
 	proofRepo := postgres.NewProof(nil)
@@ -43,6 +42,10 @@ func Worker(_ context.Context) {
 	badger := evmlogService.NewBadger(config.App.System.ContextPath)
 	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, proofRepo, badger)
 	uniswapService := uniswapService.New(ethRPC, pos, proofRepo, assetPrice)
+	_posService := pos.New(ethRPC)
+	_badgerService := evmlogService.NewBadger(config.App.System.ContextPath)
+	_evmLogService := evmlogService.New(ethRPC, _posService, eventLogRepo, signerRepo, _badgerService)
+	_uniswapService := uniswapService.New(ethRPC, _posService, signerRepo, assetPrice)
 
 	rpcFunctions := []rpc.Option{}
 	for _, fun := range config.App.Functions {
@@ -53,15 +56,15 @@ func Worker(_ context.Context) {
 	}
 	rpcService := rpc.NewWorker(rpcFunctions...)
 
-	scheduler := scheduler.New(
-		scheduler.WithEthLogs(evmLogService),
-		scheduler.WithUniswapEvents(uniswapService),
+	taskScheduler := scheduler.New(
+		scheduler.WithEthLogs(_evmLogService),
+		scheduler.WithUniswapEvents(_uniswapService),
 	)
 
 	conn.Start()
 
-	handler := handler.NewWorkerHandler(rpcService)
-	client.NewRPC(handler)
+	workerHandler := handler.NewWorkerHandler(rpcService)
+	client.NewRPC(workerHandler)
 
-	scheduler.Start()
+	taskScheduler.Start()
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// worker represents the worker command.
+// textToImagePlugin represents the text-to-image plugin command.
 var textToImagePlugin = &cobra.Command{
 	Use:   "text-to-image",
 	Short: "Run the text-to-image plugin locally",
@@ -39,7 +39,7 @@ var textToImagePlugin = &cobra.Command{
 	},
 }
 
-// WithRunCmd appends the run command to the root command.
+// WithTextToImagePluginCmd appends the run command to the root command.
 func WithTextToImagePluginCmd(cmd *cobra.Command) {
 	cmd.AddCommand(textToImagePlugin)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	"math/big"
 )
 
 type Key struct {
@@ -15,6 +16,13 @@ type Key struct {
 type Signature struct {
 	Signature bls12381.G1Affine
 	Signer    model.Signer
+}
+
+type SaveSignatureArgs struct {
+	Info      model.Correctness
+	Hash      bls12381.G1Affine
+	Consensus bool
+	Voted     *big.Int
 }
 
 func (s *Signature) Sia() sia.Sia {

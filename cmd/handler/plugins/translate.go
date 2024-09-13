@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// worker represents the worker command.
+// translatePlugin represents the translate plugin command.
 var translatePlugin = &cobra.Command{
 	Use:   "translate",
 	Short: "Run the translate plugin locally",
@@ -96,7 +96,7 @@ var translatePlugin = &cobra.Command{
 	},
 }
 
-// WithRunCmd appends the run command to the root command.
+// WithTranslatePluginCmd appends the run command to the root command.
 func WithTranslatePluginCmd(cmd *cobra.Command) {
 	cmd.AddCommand(translatePlugin)
 }

@@ -4,28 +4,8 @@ import (
 	"os"
 
 	"github.com/TimeleapLabs/unchained/cmd/handler/plugins"
-	"github.com/gorilla/websocket"
 	"github.com/spf13/cobra"
 )
-
-var conn *websocket.Conn
-
-func Read() <-chan []byte {
-	out := make(chan []byte)
-
-	go func() {
-		for {
-			_, payload, err := conn.ReadMessage()
-			if err != nil {
-				panic(err)
-			}
-
-			out <- payload
-		}
-	}()
-
-	return out
-}
 
 // plugin represents the plugin command.
 var plugin = &cobra.Command{

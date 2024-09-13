@@ -28,13 +28,7 @@ const (
 	LruSize = 128
 )
 
-type SaveSignatureArgs struct {
-	Info      model.Correctness
-	Hash      bls12381.G1Affine
-	Consensus bool
-	Voted     *big.Int
-}
-
+// Service represents the correctness service which confirm and store the correctness reports.
 type Service interface {
 	RecordSignature(
 		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,

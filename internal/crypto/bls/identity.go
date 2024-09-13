@@ -73,6 +73,7 @@ func NewIdentity() *Signer {
 	return s
 }
 
+// GenerateBlsKeyPair generates a BLS key pair.
 func GenerateBlsKeyPair() (*big.Int, *bls12381.G2Affine, *bls12381.G1Affine) {
 	_, _, g1Aff, g2Aff := bls12381.Generators()
 

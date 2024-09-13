@@ -13,9 +13,11 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+// App is holding all configuration
 var App Config
 var SecretFilePath string
 
+// Load loads configuration from files
 func Load(configPath, secretPath string) error {
 	if configPath == "" {
 		configPath = "./config.yaml"
@@ -45,6 +47,7 @@ func Load(configPath, secretPath string) error {
 	return nil
 }
 
+// Save saves secret configurations to file
 func (s *Secret) Save() error {
 	yamlData, err := yaml.Marshal(&s)
 	if err != nil {

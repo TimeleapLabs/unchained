@@ -5,6 +5,7 @@ import "github.com/gorilla/websocket"
 var conn *websocket.Conn
 var closed = false
 
+// Read is a function that reads messages from the websocket connection.
 func Read() <-chan []byte {
 	out := make(chan []byte)
 
@@ -24,6 +25,7 @@ func Read() <-chan []byte {
 	return out
 }
 
+// CloseSocket is a function that closes the websocket connection.
 func CloseSocket() {
 	if conn != nil {
 		closed = true

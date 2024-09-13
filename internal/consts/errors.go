@@ -2,6 +2,7 @@ package consts
 
 import "errors"
 
+// Error list of the project
 var (
 	ErrInvalidKosk             = errors.New("kosk.invalid")
 	ErrInvalidConfig           = errors.New("conf.invalid")

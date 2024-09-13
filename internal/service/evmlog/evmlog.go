@@ -40,6 +40,7 @@ type SaveSignatureArgs struct {
 	Voted     *big.Int
 }
 
+// Service is the interface that provides methods for processing Ethereum logs.
 type Service interface {
 	GetBlockNumber(ctx context.Context, network string) (*uint64, error)
 	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
@@ -50,6 +51,7 @@ type Service interface {
 	) error
 }
 
+// service is the implementation of the Service interface.
 type service struct {
 	ethRPC       ethereum.RPC
 	pos          pos.Service
@@ -66,6 +68,7 @@ type service struct {
 	abiMap                  map[string]abi.ABI
 }
 
+// GetBlockNumber returns the latest block number of the specified network.
 func (s *service) GetBlockNumber(ctx context.Context, network string) (*uint64, error) {
 	blockNumber, err := s.ethRPC.GetBlockNumber(ctx, network)
 
@@ -77,6 +80,7 @@ func (s *service) GetBlockNumber(ctx context.Context, network string) (*uint64, 
 	return &blockNumber, nil
 }
 
+// SaveSignatures saves the signatures to the database.
 func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
@@ -169,6 +173,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	return nil
 }
 
+// SendPriceReport sends the event report to the server.
 func (s *service) SendPriceReport(signature bls12381.G1Affine, event model.EventLog) {
 	priceReport := packet.EventLogReportPacket{
 		EventLog:  event,
@@ -178,6 +183,7 @@ func (s *service) SendPriceReport(signature bls12381.G1Affine, event model.Event
 	conn.Send(consts.OpCodeEventLog, priceReport.Sia().Bytes())
 }
 
+// New creates a new EVM log service.
 func New(
 	ethRPC ethereum.RPC, pos pos.Service, eventLogRepo repository.EventLog, proofRepo repository.Proof, persistence *Badger,
 ) Service {

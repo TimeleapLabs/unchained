@@ -27,6 +27,7 @@ Cryptographic signatures and a proof-of-stake consensus secure all computations 
 - [QuickStart](./quickstart.md) for running a node
 - [Schema](./schema.md) of the Unchained network
 - [Changelog](./CHANGELOG.md) of Unchained
+- [Developer Guide](./Developer-Guide.md) if you are developer and wanna participate
 - [Contributing](./CONTRIBUTING.md) to Unchained
 
 ## License

@@ -64,8 +64,8 @@ func Consumer() {
 
 	conn.Start()
 
-	handler := handler.NewConsumerHandler(correctnessService, uniswapService, evmLogService)
-	client.NewRPC(handler)
+	consumerHandler := handler.NewConsumerHandler(_correctnessService, _uniswapService, _evmLogService)
+	client.NewRPC(consumerHandler)
 
 	select {}
 }

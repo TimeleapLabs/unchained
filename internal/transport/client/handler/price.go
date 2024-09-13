@@ -9,6 +9,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
+// PriceReport is a method that handles price report packets.
 func (h *consumer) PriceReport(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastPricePacket).FromBytes(message)
 
@@ -40,4 +41,5 @@ func (h *consumer) PriceReport(ctx context.Context, message []byte) {
 	}
 }
 
+// PriceReport is not defined for worker nodes.
 func (w worker) PriceReport(_ context.Context, _ []byte) {}

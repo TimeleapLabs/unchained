@@ -9,6 +9,7 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
+// TextToImage converts a text prompt to an image by requesting the broker.
 func TextToImage(prompt string, negativePrompt string, model string, loraWeights string, steps uint8) []byte {
 	conn, _, err := websocket.DefaultDialer.Dial(
 		"ws://localhost:8765", nil,

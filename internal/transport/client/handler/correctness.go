@@ -9,6 +9,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
+// CorrectnessReport is a method that handles correctness report packets.
 func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastCorrectnessPacket).FromBytes(message)
 
@@ -34,4 +35,5 @@ func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 	}
 }
 
+// CorrectnessReport is not defined for worker nodes.
 func (w worker) CorrectnessReport(_ context.Context, _ []byte) {}
