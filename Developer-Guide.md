@@ -25,6 +25,10 @@ The project is not depends on a specific IDE or special tools, but some tools ar
 
 The Project follows the Clean Architecture pattern. The project is divided into the following layers:
 
+```mermaid
+
+```
+
 - Services: This layer contains the business logic of the application.
 - Repository: This layer contains the data access logic of the application which can be implemented for postgres, mongodb, etc.
 - Handler: This layer contains the adapters for websocket packet processing.
@@ -89,6 +93,20 @@ These keys are hold on a global machine identity and will used once the node wan
 ### BLS
 
 A BLS digital signature, also known as Boneh–Lynn–Shacham (BLS), is a cryptographic signature scheme which allows a user to verify that a signer is authentic. The scheme uses a bilinear pairing for verification, and signatures are elements of an elliptic curve group.
+
+```mermaid
+sequenceDiagram
+    worker->>+Broker: Say Hello!
+    Consumer->>+Broker: Say Hello!
+    Broker->>+worker: Sign this challenge! Ill remember you...
+    Broker->>+Consumer: Sign this challenge! Ill remember you...
+    Consumer->>+Broker: Here you go! Signed...
+    worker->>+Broker: Here you go! Signed...
+    Broker->>+worker: Now you can send other messages
+    Broker->>+Consumer: Now you can send other messages
+    Consumer->>+Broker: I wanna listen to XXX topic
+    Broker-->>+Consumer: All events on subscribed topic
+```
 
 ### Ethereum
 
