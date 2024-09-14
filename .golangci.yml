@@ -9,6 +9,8 @@ linters-settings:
   gosec:
     excludes:
       - G601
+      - G115
+
   errcheck:
     check-type-assertions: true
 

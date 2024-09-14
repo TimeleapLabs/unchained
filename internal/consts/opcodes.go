@@ -4,7 +4,7 @@ package consts
 
 type OpCode byte
 
-// OpCodes of events
+// OpCodes of events.
 const (
 	OpCodeHello         OpCode = iota
 	OpCodeKoskChallenge OpCode = 1

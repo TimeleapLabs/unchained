@@ -13,7 +13,7 @@ var plugin = &cobra.Command{
 	Short: "Run an Unchained plugin locally",
 	Long:  `Run an Unchained plugin locally`,
 
-	Run: func(cmd *cobra.Command, _ []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		os.Exit(1)
 	},
 }

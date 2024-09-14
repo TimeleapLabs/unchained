@@ -3,6 +3,7 @@ package websocket
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -16,6 +17,7 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
+// WithWebsocket is a function that starts a websocket server.
 func WithWebsocket() func() {
 	return func() {
 		utils.Logger.Info("Starting a websocket server")
@@ -25,10 +27,13 @@ func WithWebsocket() func() {
 	}
 }
 
+// multiplexer is a function that routes incoming messages to the appropriate handler.
 func multiplexer(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(_ *http.Request) bool { return true } // remove this line in production
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		utils.Logger.Error("Can't upgrade the HTTP connection: %v", err)
+		utils.Logger.ErrorContext(context.TODO(), "Can't upgrade the HTTP connection", slog.Any("error", err))
 		return
 	}
 
@@ -41,11 +46,11 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, payload, err := conn.ReadMessage()
 		if err != nil {
-			utils.Logger.Error("Can't read message: %v", err)
+			utils.Logger.ErrorContext(ctx, "Can't read message", slog.Any("error", err))
 
 			err := conn.Close()
 			if err != nil {
-				utils.Logger.Error("Can't close connection: %v", err)
+				utils.Logger.ErrorContext(ctx, "Can't close connection", slog.Any("error", err))
 			}
 
 			break

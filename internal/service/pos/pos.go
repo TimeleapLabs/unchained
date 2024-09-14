@@ -99,7 +99,7 @@ func (s *service) GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byt
 	if err != nil {
 		return nil, err
 	}
-	return s.GetVotingPower(addrHex, big.NewInt(int64(block)))
+	return s.GetVotingPower(addrHex, big.NewInt(int64(block))) //
 }
 
 func New(ethRPC ethereum.RPC) Service {

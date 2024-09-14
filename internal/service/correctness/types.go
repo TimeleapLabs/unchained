@@ -1,10 +1,11 @@
 package correctness
 
 import (
+	"math/big"
+
 	"github.com/TimeleapLabs/unchained/internal/model"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
-	"math/big"
 )
 
 type Key struct {

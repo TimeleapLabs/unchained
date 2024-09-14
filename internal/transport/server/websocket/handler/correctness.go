@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/middleware"
 	"github.com/gorilla/websocket"
 )
 
+// CorrectnessRecord is a handler for correctness report.
 func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
