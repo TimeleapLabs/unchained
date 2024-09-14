@@ -85,6 +85,8 @@ The consumers are the nodes that listen to the data from the broker and save or 
 ```
 ### RPC infrastructure
 
+The unchained network makes ability to run a function on a worker node and get the result. The broker node is responsible for routing the request to the correct worker node and get the result back to the client.
+
 ```mermaid
 sequenceDiagram
     Worker->>+Broker: I can run these functions
@@ -100,7 +102,7 @@ In a network like Unchained we send and receive many data from other parties and
 
 These keys are hold on a global machine identity and will used once the node wants to sign a message or verify a message.
 
-### BLS
+#### BLS
 
 A BLS digital signature, also known as Boneh–Lynn–Shacham (BLS), is a cryptographic signature scheme which allows a user to verify that a signer is authentic. The scheme uses a bilinear pairing for verification, and signatures are elements of an elliptic curve group.
 
@@ -118,6 +120,6 @@ sequenceDiagram
     Broker-->>+Consumer: All events on subscribed topic
 ```
 
-### Ethereum
+#### Ethereum
 
 A Key pair of private and public keys which represent the identity of the node in the Ethereum network. and address of smart contract which is used to sync the nodes together.
