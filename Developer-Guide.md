@@ -83,6 +83,16 @@ The consumers are the nodes that listen to the data from the broker and save or 
     W[Services] --> |Sign & Verify| T[Machine Identity]
     W[Services] --> |Save Data| Z[Database]
 ```
+### RPC infrastructure
+
+```mermaid
+sequenceDiagram
+    Worker->>+Broker: I can run these functions
+    Client->>+Broker: Run X func with these args
+    Broker->>+Worker: Run X func with these args
+    Worker->>+Broker: Ok! here is the results.
+    Broker->>+Client: Here is your result.
+```
 
 ### Identity and Security
 
