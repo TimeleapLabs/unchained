@@ -26,6 +26,27 @@ The project is not depends on a specific IDE or special tools, but some tools ar
 The Project follows the Clean Architecture pattern. The project is divided into the following layers:
 
 ```mermaid
+flowchart TD
+    X[Broker] <--> |Websocket|Y[Worker Handler]
+    X[Broker] <--> |Websocket|Z[Consumer Handler]
+    Y[Worker Handler] <--> B(EvmLog Service)
+    Y[Worker Handler] <--> C(Correctness Service)
+    Y[Worker Handler] <--> D(Uniswap Service)
+    Z[Consumer Handler] <--> B(EvmLog Service)
+    Z[Consumer Handler] <--> C(Correctness Service)
+    Z[Consumer Handler] <--> D(Uniswap Service)
+    E[Schduler] -->|every X min| B(EvmLog Service)
+    E[Schduler] -->|every X min| C(Correctness Service)
+    E[Schduler] -->|every X min| D(Uniswap Service)
+    B(EvmLog Service) <--> U(Repository)
+    C(Correctness Service) <--> U(Repository)
+    D(Uniswap Service) <--> U(Repository)
+    B(EvmLog Service) <--> V(Ethereum)
+    C(Correctness Service) <--> V(Ethereum)
+    D(Uniswap Service) <--> V(Ethereum)
+    B(EvmLog Service) <--> M(Machine Identity)
+    C(Correctness Service) <--> M(Machine Identity)
+    D(Uniswap Service) <--> M(Machine Identity)
 
 ```
 
@@ -95,6 +116,40 @@ sequenceDiagram
     Worker->>+Broker: Ok! here is the results.
     Broker->>+Client: Here is your result.
 ```
+
+#### RPC Runtime
+
+When you start a worker node, you can register the functions that you can run on the worker node. The broker node will get the list of functions and will route the request to the correct worker node. each function has a unique id and the runtime configuration of how it works. The runtimes can be:
+
+- **Unix Socket**: This method will refer the request to a unix socket which is provided on worker startup with this struct:
+```go
+type RPCRequest struct {
+	// The ID of the request
+	ID uuid.UUID `json:"id"`
+	// The signature of the request
+	Signature [48]byte `json:"signature"`
+	// Payment information
+	TxHash string `json:"tx_hash"`
+	// The method to be called
+	Method string `json:"method"`
+	// params to pass to the function
+	Params []byte `json:"params"`
+}
+```
+and at the end worker expect a result like this:
+```go
+type RPCResponse struct {
+	// The ID of the request
+	ID uuid.UUID `json:"id"`
+	// The error of the function
+	Error uint64 `json:"error"`
+	// The response of the function
+	Response []byte `json:"response"`
+}
+```
+
+- **Docker**: This method will refer the request to a docker container. 
+
 
 ### Identity and Security
 
