@@ -3,6 +3,8 @@ package postgres
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/model"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -46,7 +48,7 @@ func (c *connection) GetConnection() *gorm.DB {
 
 	var err error
 
-	utils.Logger.Info("Connecting to DB")
+	utils.Logger.Info("Connecting to PostgresSQL")
 
 	c.db, err = gorm.Open(
 		postgres.Open(config.App.Postgres.URL),
@@ -67,7 +69,12 @@ func (c *connection) Migrate() {
 		c.GetConnection()
 	}
 
-	err := c.db.AutoMigrate()
+	err := c.db.AutoMigrate(
+		&model.Proof{},
+		&model.CorrectnessDataFrame{},
+		&model.EventLogDataFrame{},
+		&model.AssetPriceDataFrame{},
+	)
 
 	if err != nil {
 		utils.Logger.With("Error", err).Error("Failed to migrate DB")

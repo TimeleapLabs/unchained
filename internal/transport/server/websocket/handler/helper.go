@@ -3,15 +3,16 @@ package handler
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
-// Send sends a packet to the client.
-func Send(conn *websocket.Conn, opCode consts.OpCode, payload []byte) {
+func Send(conn *websocket.Conn, messageType int, opCode consts.OpCode, payload []byte) {
 	err := conn.WriteMessage(
-		websocket.BinaryMessage,
+		messageType,
 		append(
 			[]byte{byte(opCode)},
 			payload...),
@@ -21,18 +22,16 @@ func Send(conn *websocket.Conn, opCode consts.OpCode, payload []byte) {
 	}
 }
 
-// SendMessage sends a string packet to the client.
-func SendMessage(conn *websocket.Conn, opCode consts.OpCode, message string) {
-	Send(conn, opCode, []byte(message))
+func SendMessage(conn *websocket.Conn, messageType int, opCode consts.OpCode, message string) {
+	Send(conn, messageType, opCode, []byte(message))
 }
 
-// BroadcastListener listens for messages on the channel and sends them to the client.
-func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte) {
+func BroadcastListener(ctx context.Context, conn *websocket.Conn, topic string, ch chan []byte) {
 	for {
 		select {
 		case <-ctx.Done():
 			utils.Logger.Info("Closing connection")
-			close(ch)
+			pubsub.Unsubscribe(topic, ch)
 			return
 		case message := <-ch:
 			err := conn.WriteMessage(websocket.BinaryMessage, message)
@@ -43,12 +42,10 @@ func BroadcastListener(ctx context.Context, conn *websocket.Conn, ch chan []byte
 	}
 }
 
-// SendError sends an error message to the client.
-func SendError(conn *websocket.Conn, opCode consts.OpCode, err error) {
-	SendMessage(conn, opCode, err.Error())
+func SendError(conn *websocket.Conn, messageType int, opCode consts.OpCode, err error) {
+	SendMessage(conn, messageType, opCode, err.Error())
 }
 
-// Close gracefully closes the connection.
 func Close(conn *websocket.Conn) {
 	err := conn.WriteMessage(
 		websocket.CloseMessage,

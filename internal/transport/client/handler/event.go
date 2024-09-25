@@ -12,11 +12,6 @@ import (
 func (h *consumer) EventLog(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastEventPacket).FromBytes(message)
 
-	eventLogHash, err := packet.Info.Bls()
-	if err != nil {
-		return
-	}
-
 	signature, err := bls.RecoverSignature(packet.Signature)
 	if err != nil {
 		utils.Logger.
@@ -30,7 +25,7 @@ func (h *consumer) EventLog(ctx context.Context, message []byte) {
 		ctx,
 		signature,
 		packet.Signer,
-		eventLogHash,
+		*packet.Info.Bls(),
 		packet.Info,
 		true,
 		false,

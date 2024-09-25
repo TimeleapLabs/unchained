@@ -13,7 +13,6 @@ type System struct {
 	SecretsPath          string
 	AllowGenerateSecrets bool
 	ContextPath          string
-	Home                 string
 	PrintVersion         bool
 }
 
@@ -70,11 +69,14 @@ type ProofOfStake struct {
 
 type Network struct {
 	Bind              string        `env:"BIND"               env-default:"0.0.0.0:9123"                    yaml:"bind"`
-	CertFile          string        `env:"CERT_FILE"          env-default:""                                yaml:"certFile"`
-	KeyFile           string        `env:"KEY_FILE"           env-default:""                                yaml:"keyFile"`
 	BrokerURI         string        `env:"BROKER_URI"         env-default:"wss://shinobi.brokers.kenshi.io" yaml:"brokerUri"`
 	SubscribedChannel string        `env:"SUBSCRIBED_CHANNEL" env-default:"unchained:"                      yaml:"subscribedChannel"`
 	BrokerTimeout     time.Duration `env:"BROKER_TIMEOUT"     env-default:"3s"                              yaml:"brokerTimeout"`
+}
+
+type Mongo struct {
+	URL      string `env:"Mongo_URL"      yaml:"url"`
+	Database string `env:"Mongo_Database" yaml:"database"`
 }
 
 type Postgres struct {
@@ -90,19 +92,12 @@ type Secret struct {
 	EvmPrivateKey string `env:"EVM_PRIVATE_KEY" yaml:"evmPrivateKey"`
 }
 
-// Function struct hold the function configuration of the application.
-type Function struct {
-	Type     string `json:"type"`
-	Name     string `json:"name"`
-	Endpoint string `json:"endpoint"`
-}
-
 // Config struct is the main configuration struct of application.
 type Config struct {
 	System       System       `yaml:"system"`
 	Network      Network      `yaml:"network"`
 	RPC          []RPC        `yaml:"rpc"`
-	Functions    []Function   `yaml:"functions"`
+	Mongo        Mongo        `yaml:"mongo"`
 	Postgres     Postgres     `yaml:"postgres"`
 	ProofOfStake ProofOfStake `yaml:"pos"`
 	Plugins      Plugins      `yaml:"plugins"`
