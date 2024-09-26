@@ -1,7 +1,6 @@
 package conn
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -150,6 +149,6 @@ func Send(opCode consts.OpCode, payload []byte) {
 		append([]byte{byte(opCode)}, payload...),
 	)
 	if err != nil {
-		utils.Logger.ErrorContext(context.TODO(), "Can't send packet", slog.Any("error", err))
+		utils.Logger.Error("Can't send packet", slog.Any("error", err))
 	}
 }

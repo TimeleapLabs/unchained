@@ -39,13 +39,11 @@ func Worker(_ context.Context) {
 	proofRepo := postgres.NewProof(nil)
 	assetPrice := postgres.NewAssetPrice(nil)
 
-	badger := evmlogService.NewBadger(config.App.System.ContextPath)
-	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, proofRepo, badger)
-	uniswapService := uniswapService.New(ethRPC, pos, proofRepo, assetPrice)
-	_posService := pos.New(ethRPC)
 	_badgerService := evmlogService.NewBadger(config.App.System.ContextPath)
-	_evmLogService := evmlogService.New(ethRPC, _posService, eventLogRepo, signerRepo, _badgerService)
-	_uniswapService := uniswapService.New(ethRPC, _posService, signerRepo, assetPrice)
+	_posService := pos.New(ethRPC)
+
+	_evmLogService := evmlogService.New(ethRPC, _posService, eventLogRepo, proofRepo, _badgerService)
+	_uniswapService := uniswapService.New(ethRPC, _posService, proofRepo, assetPrice)
 
 	rpcFunctions := []rpc.Option{}
 	for _, fun := range config.App.Functions {

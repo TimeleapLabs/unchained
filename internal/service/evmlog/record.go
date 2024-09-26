@@ -72,7 +72,7 @@ func (s *service) RecordSignature(
 	if err != nil {
 		publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
 		if err != nil {
-			utils.Logger.Error("Can't decode public key: %v", err)
+			utils.Logger.With("Err", err).ErrorContext(ctx, "Can't decode public key")
 			return err
 		}
 

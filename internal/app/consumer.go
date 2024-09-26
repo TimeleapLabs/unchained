@@ -34,7 +34,7 @@ func Consumer() {
 	)
 
 	ethRPC := ethereum.New()
-	pos := pos.New(ethRPC)
+	_posService := pos.New(ethRPC)
 
 	var eventLogRepo repository.EventLog
 	var proofRepo repository.Proof
@@ -42,6 +42,7 @@ func Consumer() {
 	var correctnessRepo repository.CorrectnessReport
 
 	if config.App.Mongo.URL != "" {
+		utils.Logger.Info("MongoDB configuration found, initializing...")
 		db := mongo.New()
 
 		eventLogRepo = mongoRepo.NewEventLog(db)
@@ -49,6 +50,7 @@ func Consumer() {
 		assetPrice = mongoRepo.NewAssetPrice(db)
 		correctnessRepo = mongoRepo.NewCorrectness(db)
 	} else {
+		utils.Logger.Info("Postgresql configuration found, initializing...")
 		db := postgres.New()
 		db.Migrate()
 
@@ -58,9 +60,9 @@ func Consumer() {
 		correctnessRepo = postgresRepo.NewCorrectness(db)
 	}
 
-	correctnessService := correctnessService.New(pos, proofRepo, correctnessRepo)
-	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, proofRepo, nil)
-	uniswapService := uniswapService.New(ethRPC, pos, proofRepo, assetPrice)
+	_correctnessService := correctnessService.New(_posService, proofRepo, correctnessRepo)
+	_evmLogService := evmlogService.New(ethRPC, _posService, eventLogRepo, proofRepo, nil)
+	_uniswapService := uniswapService.New(ethRPC, _posService, proofRepo, assetPrice)
 
 	conn.Start()
 

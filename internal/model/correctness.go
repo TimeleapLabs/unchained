@@ -57,7 +57,7 @@ func (c *Correctness) FromSia(sia sia.Sia) *Correctness {
 func (c *Correctness) Bls() *bls12381.G1Affine {
 	hash, err := bls.Hash(c.Sia().Bytes())
 	if err != nil {
-		utils.Logger.Error("Can't hash bls: %v", err)
+		utils.Logger.With("Err", err).Error("Can't hash bls")
 		return &bls12381.G1Affine{}
 	}
 

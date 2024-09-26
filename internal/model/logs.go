@@ -86,7 +86,7 @@ func (e *EventLog) FromSia(sia sia.Sia) *EventLog {
 func (e *EventLog) Bls() *bls12381.G1Affine {
 	hash, err := bls.Hash(e.Sia().Bytes())
 	if err != nil {
-		utils.Logger.Error("Can't hash bls: %v", err)
+		utils.Logger.With("Err", err).Error("Can't hash bls")
 		return &bls12381.G1Affine{}
 	}
 

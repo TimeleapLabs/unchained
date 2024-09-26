@@ -29,13 +29,13 @@ func (p *Proof) Sia() sia.Sia {
 
 	hashBytes, err := hex.DecodeString(p.Hash)
 	if err != nil {
-		utils.Logger.Error("Can't decode hash: %v", err)
+		utils.Logger.With("Err", err).Error("Can't decode hash")
 		return sia.New()
 	}
 
 	signatureBytes, err := hex.DecodeString(p.Signature)
 	if err != nil {
-		utils.Logger.Error("Can't decode signature: %v", err)
+		utils.Logger.With("Err", err).Error("Can't decode signature")
 		return sia.New()
 	}
 

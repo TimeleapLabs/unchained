@@ -142,9 +142,8 @@ linters:
     - durationcheck
     - errname
     - errorlint
-    - execinquery
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - forbidigo
     - funlen
     - gocheckcompilerdirectives

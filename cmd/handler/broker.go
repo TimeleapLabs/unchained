@@ -36,6 +36,13 @@ func WithBrokerCmd(cmd *cobra.Command) {
 
 func init() {
 	broker.Flags().StringP(
+		"broker",
+		"b",
+		"wss://shinobi.brokers.kenshi.io",
+		"Unchained broker to connect to",
+	)
+
+	broker.Flags().StringP(
 		"cert-file",
 		"C",
 		"",

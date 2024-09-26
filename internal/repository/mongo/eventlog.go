@@ -67,21 +67,11 @@ func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
 				"data.voted":         data.Voted,
 			},
 			"$setOnInsert": bson.M{
-				"hash":      data.Bls().Bytes(),
-				"timestamp": time.Now(),
-				"data": bson.M{
-					"block":         data.Block,
-					"chain":         data.Chain,
-					"address":       data.Address,
-					"event":         data.Event,
-					"index":         data.LogIndex,
-					"transaction":   data.TxHash[:],
-					"signers_count": data.SignersCount,
-					"signature":     data.Signature,
-					"args":          data.Args,
-					"consensus":     data.Consensus,
-					"voted":         data.Voted,
-				},
+				"hash":       data.Bls().Bytes(),
+				"timestamp":  time.Now(),
+				"data.block": data.Block,
+				"data.index": data.LogIndex,
+				"data.tx":    data.TxHash[:],
 			},
 		}, opt)
 

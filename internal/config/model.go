@@ -13,6 +13,7 @@ type System struct {
 	SecretsPath          string
 	AllowGenerateSecrets bool
 	ContextPath          string
+	Home                 string
 	PrintVersion         bool
 }
 

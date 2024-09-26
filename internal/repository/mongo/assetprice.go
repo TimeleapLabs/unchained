@@ -43,14 +43,12 @@ func (a AssetPriceRepo) Upsert(ctx context.Context, data model.AssetPrice) error
 				"data.voted":         data.Voted,
 			},
 			"$setOnInsert": bson.M{
-				"hash":      data.Bls().Bytes(),
-				"timestamp": time.Now(),
-				"data": bson.M{
-					"pair":  data.Pair,
-					"chain": data.Chain,
-					"block": data.Block,
-					"asset": data.Name,
-				},
+				"hash":       data.Bls().Bytes(),
+				"timestamp":  time.Now(),
+				"data.pair":  data.Pair,
+				"data.chain": data.Chain,
+				"data.block": data.Block,
+				"data.asset": data.Name,
 			},
 		}, opt)
 

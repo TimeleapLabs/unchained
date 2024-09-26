@@ -28,7 +28,7 @@ func IsMessageValid(conn *websocket.Conn, message bls12381.G1Affine, signature [
 
 	publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
 	if err != nil {
-		utils.Logger.Error("Can't decode public key: %v", err)
+		utils.Logger.With("Err", err).Error("Can't decode public key")
 		return model.Signer{}, consts.ErrInternalError
 	}
 

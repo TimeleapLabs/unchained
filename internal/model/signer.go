@@ -25,13 +25,13 @@ type Signer struct {
 func (s *Signer) Sia() sia.Sia {
 	publicKeyBytes, err := hex.DecodeString(s.PublicKey)
 	if err != nil {
-		utils.Logger.Error("Can't decode public key: %v", err)
+		utils.Logger.With("Err", err).Error("Can't decode public key")
 		return sia.New()
 	}
 
 	shortPublicKey, err := hex.DecodeString(s.ShortPublicKey)
 	if err != nil {
-		utils.Logger.Error("Can't decode short public key: %v", err)
+		utils.Logger.With("Err", err).Error("Can't decode short public key")
 		return sia.New()
 	}
 
@@ -59,7 +59,7 @@ func (s *Signer) FromSia(sia sia.Sia) *Signer {
 func (s *Signer) Bls() bls12381.G1Affine {
 	hash, err := bls.Hash(s.Sia().Bytes())
 	if err != nil {
-		utils.Logger.Error("Can't hash bls: %v", err)
+		utils.Logger.With("Err", err).Error("Can't hash bls")
 		return bls12381.G1Affine{}
 	}
 
@@ -72,7 +72,7 @@ func (s Signers) Bls() []byte {
 	for _, signer := range s {
 		hash, err := bls.Hash(signer.Sia().Bytes())
 		if err != nil {
-			utils.Logger.Error("Can't hash bls: %v", err)
+			utils.Logger.With("Err", err).Error("Can't hash bls")
 			return bytes
 		}
 

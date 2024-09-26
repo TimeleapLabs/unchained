@@ -98,7 +98,7 @@ func (s *service) checkAndCacheSignature(
 		if item.Signer.PublicKey == signer.PublicKey {
 			publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
 			if err != nil {
-				utils.Logger.Error("Can't decode public key: %v", err)
+				utils.Logger.With("Err", err).Error("Can't decode public key")
 				return err
 			}
 

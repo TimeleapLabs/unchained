@@ -64,18 +64,10 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 				"data.voted":         data.Voted,
 			},
 			"$setOnInsert": bson.M{
-				"hash":      data.Bls().Bytes(),
-				"timestamp": time.Now(),
-				"data": bson.M{
-					"correct":       data.Correct,
-					"signers_count": data.SignersCount,
-					"signature":     data.Signature,
-					"hash":          data.Hash,
-					"timestamp":     data.Timestamp,
-					"topic":         data.Topic,
-					"consensus":     data.Consensus,
-					"voted":         data.Voted,
-				},
+				"hash":       data.Bls().Bytes(),
+				"timestamp":  time.Now(),
+				"data.hash":  data.Hash,
+				"data.topic": data.Topic,
 			},
 		}, opt)
 

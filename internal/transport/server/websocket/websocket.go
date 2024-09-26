@@ -33,7 +33,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		utils.Logger.ErrorContext(context.TODO(), "Can't upgrade the HTTP connection", slog.Any("error", err))
+		utils.Logger.Error("Can't upgrade the HTTP connection", slog.Any("error", err))
 		return
 	}
 
@@ -44,13 +44,13 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	for {
-		messageType, payload, err := conn.ReadMessage()
+		_, payload, err := conn.ReadMessage()
 		if err != nil {
-			utils.Logger.ErrorContext(ctx, "Can't read message", slog.Any("error", err))
+			utils.Logger.With("Err", err).ErrorContext(ctx, "Can't read message")
 
 			err := conn.Close()
 			if err != nil {
-				utils.Logger.ErrorContext(ctx, "Can't close connection", slog.Any("error", err))
+				utils.Logger.With("Err", err).ErrorContext(ctx, "Can't close connection")
 			}
 
 			break
@@ -65,47 +65,47 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
 			result, err := handler.Hello(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
+				handler.SendError(conn, consts.OpCodeError, err)
 				continue
 			}
 
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "conf.ok")
-			handler.Send(conn, messageType, consts.OpCodeKoskChallenge, result)
+			handler.SendMessage(conn, consts.OpCodeFeedback, "conf.ok")
+			handler.Send(conn, consts.OpCodeKoskChallenge, result)
 		case consts.OpCodePriceReport:
 			result, err := handler.PriceReport(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
+				handler.SendError(conn, consts.OpCodeError, err)
 				continue
 			}
 
 			pubsub.Publish(consts.ChannelPriceReport, consts.OpCodePriceReportBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			handler.SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
 		case consts.OpCodeEventLog:
 			result, err := handler.EventLog(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
+				handler.SendError(conn, consts.OpCodeError, err)
 				continue
 			}
 
 			pubsub.Publish(consts.ChannelEventLog, consts.OpCodeEventLogBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			handler.SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
 		case consts.OpCodeCorrectnessReport:
 			result, err := handler.CorrectnessRecord(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
+				handler.SendError(conn, consts.OpCodeError, err)
 				continue
 			}
 
 			pubsub.Publish(consts.ChannelCorrectnessReport, consts.OpCodeCorrectnessReportBroadcast, result)
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "signature.accepted")
+			handler.SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
 		case consts.OpCodeKoskResult:
 			err := handler.Kosk(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, messageType, consts.OpCodeError, err)
+				handler.SendError(conn, consts.OpCodeError, err)
 				continue
 			}
 
-			handler.SendMessage(conn, messageType, consts.OpCodeFeedback, "kosk.ok")
+			handler.SendMessage(conn, consts.OpCodeFeedback, "kosk.ok")
 		case consts.OpCodeRegisterConsumer:
 			utils.Logger.
 				With("IP", conn.RemoteAddr().String()).
@@ -115,7 +115,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			topic := string(payload[1:])
 			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
 		default:
-			handler.SendError(conn, messageType, consts.OpCodeError, consts.ErrNotSupportedInstruction)
+			handler.SendError(conn, consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}
 	}
 }
