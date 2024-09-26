@@ -1,8 +1,6 @@
 package model
 
 import (
-	"encoding/hex"
-
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
@@ -18,28 +16,16 @@ type Signer struct {
 
 	Name           string `json:"name"`
 	EvmAddress     string `json:"evm_address"`
-	PublicKey      string `json:"public_key"`
-	ShortPublicKey string `json:"short_public_key"`
+	PublicKey      []byte `json:"public_key"`
+	ShortPublicKey []byte `json:"short_public_key"`
 }
 
 func (s *Signer) Sia() sia.Sia {
-	publicKeyBytes, err := hex.DecodeString(s.PublicKey)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Can't decode public key")
-		return sia.New()
-	}
-
-	shortPublicKey, err := hex.DecodeString(s.ShortPublicKey)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Can't decode short public key")
-		return sia.New()
-	}
-
 	return sia.New().
 		AddString8(s.Name).
 		AddString8(s.EvmAddress).
-		AddByteArray8(publicKeyBytes).
-		AddByteArray8(shortPublicKey)
+		AddByteArray8(s.PublicKey).
+		AddByteArray8(s.ShortPublicKey)
 }
 
 func (s *Signer) FromBytes(payload []byte) *Signer {
@@ -50,8 +36,8 @@ func (s *Signer) FromBytes(payload []byte) *Signer {
 func (s *Signer) FromSia(sia sia.Sia) *Signer {
 	s.Name = sia.ReadString8()
 	s.EvmAddress = sia.ReadString8()
-	s.PublicKey = hex.EncodeToString(sia.ReadByteArray8())
-	s.ShortPublicKey = hex.EncodeToString(sia.ReadByteArray8())
+	s.PublicKey = sia.ReadByteArray8()
+	s.ShortPublicKey = sia.ReadByteArray8()
 
 	return s
 }
