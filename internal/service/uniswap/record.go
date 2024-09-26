@@ -2,8 +2,11 @@ package uniswap
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
+
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap/types"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
@@ -17,7 +20,7 @@ import (
 // TODO: This needs to work with different datasets
 // TODO: Can we turn this into a library func?
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.PriceInfo, debounce bool, historical bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info types.PriceInfo, debounce bool, historical bool,
 ) error {
 	if supported := s.SupportedTokens[info.Asset.Token]; !supported {
 		utils.Logger.
@@ -60,8 +63,13 @@ func (s *service) RecordSignature(
 
 	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
+		publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
+		if err != nil {
+			utils.Logger.With("Err", err).ErrorContext(ctx, "Can't decode public key")
+			return err
+		}
 		utils.Logger.
-			With("Address", address.Calculate(signer.PublicKey[:])).
+			With("Address", address.Calculate(publicKeyBytes)).
 			With("Error", err).
 			Error("Failed to get voting power")
 		return err

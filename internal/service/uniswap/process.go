@@ -3,8 +3,9 @@ package uniswap
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/service/uniswap/types"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
 func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
@@ -14,13 +15,13 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 		return err
 	}
 
-	for _, token := range model.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
+	for _, token := range types.NewTokensFromCfg(config.App.Plugins.Uniswap.Tokens) {
 		if token.Chain != chain {
 			continue
 		}
 
 		// TODO: this can be cached
-		key := s.TokenKey(token)
+		key := types.NewTokenKey(token.GetCrossTokenKeys(s.crossTokens), token)
 		tokenLastBlock, exists := s.LastBlock.Load(*key)
 
 		if !exists {

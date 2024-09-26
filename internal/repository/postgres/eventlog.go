@@ -2,10 +2,11 @@ package postgres
 
 import (
 	"context"
+	"time"
+
+	"gorm.io/gorm/clause"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/ent"
-	"github.com/TimeleapLabs/unchained/internal/ent/eventlog"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
@@ -16,50 +17,46 @@ type EventLogRepo struct {
 	client database.Database
 }
 
-func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]*ent.EventLog, error) {
-	currentRecords, err := r.client.
+func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]model.EventLog, error) {
+	currentRecords := []model.EventLogDataFrame{}
+	tx := r.client.
 		GetConnection().
-		EventLog.
-		Query().
-		Where(
-			eventlog.Block(block),
-			eventlog.TransactionEQ(hash),
-			eventlog.IndexEQ(index),
-		).
-		WithSigners().
-		All(ctx)
+		WithContext(ctx).
+		Where("block", block).
+		Where("transaction", hash).
+		Where("index", index).
+		Preload("Signers").
+		Find(&currentRecords)
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch event log records from database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant fetch event log records from database")
 		return nil, consts.ErrInternalError
 	}
 
-	return currentRecords, nil
+	results := []model.EventLog{}
+	for _, record := range currentRecords {
+		results = append(results, record.Data)
+	}
+
+	return results, nil
 }
 
 func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
-	err := r.client.
+	tx := r.client.
 		GetConnection().
-		EventLog.
-		Create().
-		SetBlock(data.Block).
-		SetChain(data.Chain).
-		SetAddress(data.Address).
-		SetEvent(data.Event).
-		SetIndex(data.LogIndex).
-		SetTransaction(data.TxHash[:]).
-		SetSignersCount(data.SignersCount).
-		SetSignature(data.Signature).
-		SetArgs(data.Args).
-		SetConsensus(data.Consensus).
-		SetVoted(data.Voted).
-		AddSignerIDs(data.SignerIDs...).
-		OnConflictColumns("block", "transaction", "index").
-		UpdateNewValues().
-		Exec(ctx)
+		WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "block"}, {Name: "transaction"}, {Name: "index"}},
+			UpdateAll: true,
+		}).
+		Create(&model.EventLogDataFrame{
+			Hash:      "",
+			Timestamp: time.Now(),
+			Data:      data,
+		})
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant upsert event log record to database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant upsert event log record to database")
 		return consts.ErrInternalError
 	}
 

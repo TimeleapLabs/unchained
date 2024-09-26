@@ -3,13 +3,15 @@ package handler
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
+// PriceReport is a method that handles price report packets.
 func (h *consumer) PriceReport(ctx context.Context, message []byte) {
-	packet := new(model.BroadcastPricePacket).FromBytes(message)
+	packet := new(packet.BroadcastPricePacket).FromBytes(message)
 
 	priceInfoHash, err := packet.Info.Bls()
 	if err != nil {
@@ -39,4 +41,5 @@ func (h *consumer) PriceReport(ctx context.Context, message []byte) {
 	}
 }
 
+// PriceReport is not defined for worker nodes.
 func (w worker) PriceReport(_ context.Context, _ []byte) {}

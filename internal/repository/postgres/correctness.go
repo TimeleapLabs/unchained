@@ -2,11 +2,12 @@ package postgres
 
 import (
 	"context"
+	"encoding/hex"
+	"time"
+
+	"gorm.io/gorm/clause"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/ent"
-	"github.com/TimeleapLabs/unchained/internal/ent/correctnessreport"
-	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/transport/database"
@@ -17,46 +18,45 @@ type CorrectnessRepo struct {
 	client database.Database
 }
 
-func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]*ent.CorrectnessReport, error) {
-	currentRecords, err := c.client.
+func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Correctness, error) {
+	currentRecords := []model.CorrectnessDataFrame{}
+	tx := c.client.
 		GetConnection().
-		CorrectnessReport.
-		Query().
-		Where(correctnessreport.And(
-			correctnessreport.Hash(hash),
-			correctnessreport.Topic(topic),
-			correctnessreport.Timestamp(timestamp),
-		)).
-		All(ctx)
+		WithContext(ctx).
+		Where("hash", hash).
+		Where("topic", topic).
+		Where("timestamp", timestamp).
+		Find(&currentRecords)
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch correctness reports from database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant fetch correctness reports from database")
 		return nil, consts.ErrInternalError
 	}
 
-	return currentRecords, nil
+	results := []model.Correctness{}
+	for _, record := range currentRecords {
+		results = append(results, record.Data)
+	}
+
+	return results, nil
 }
 
 func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) error {
-	err := c.client.
+	tx := c.client.
 		GetConnection().
-		CorrectnessReport.
-		Create().
-		SetCorrect(data.Correct).
-		SetSignersCount(data.SignersCount).
-		SetSignature(data.Signature).
-		SetHash(data.Hash).
-		SetTimestamp(data.Timestamp).
-		SetTopic(data.Topic[:]).
-		SetConsensus(data.Consensus).
-		SetVoted(&helpers.BigInt{Int: data.Voted}).
-		AddSignerIDs(data.SignerIDs...).
-		OnConflictColumns("topic", "hash").
-		UpdateNewValues().
-		Exec(ctx)
+		WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "topic"}, {Name: "hash"}},
+			UpdateAll: true,
+		}).
+		Create(&model.CorrectnessDataFrame{
+			Hash:      hex.EncodeToString(data.Bls().Marshal()),
+			Timestamp: time.Now(),
+			Data:      data,
+		})
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant upsert correctness report in database")
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cant upsert correctness report in database")
 		return consts.ErrInternalError
 	}
 

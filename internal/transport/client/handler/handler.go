@@ -4,6 +4,7 @@ import (
 	"context"
 )
 
+// Handler is an interface that represent the handlers of client nodes.
 type Handler interface {
 	Challenge(message []byte) []byte
 	CorrectnessReport(ctx context.Context, message []byte)

@@ -2,57 +2,16 @@ package model
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/ent/helpers"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
-
-type EventLogReportPacket struct {
-	EventLog
-	Signature [48]byte
-}
-
-func (e *EventLogReportPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(e.EventLog.Sia().Bytes()).
-		AddByteArray8(e.Signature[:])
-}
-
-func (e *EventLogReportPacket) FromBytes(payload []byte) *EventLogReportPacket {
-	siaMessage := sia.NewFromBytes(payload)
-	e.EventLog.FromSia(siaMessage)
-	copy(e.Signature[:], siaMessage.ReadByteArray8())
-
-	return e
-}
-
-type BroadcastEventPacket struct {
-	Info      EventLog
-	Signature [48]byte
-	Signer    Signer
-}
-
-func (b *BroadcastEventPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(b.Info.Sia().Bytes()).
-		AddByteArray8(b.Signature[:]).
-		EmbedBytes(b.Signer.Sia().Bytes())
-}
-
-func (b *BroadcastEventPacket) FromBytes(payload []byte) *BroadcastEventPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	b.Info.FromSia(siaMessage)
-	copy(b.Signature[:], siaMessage.ReadByteArray8())
-	b.Signer.FromSia(siaMessage)
-
-	return b
-}
 
 type EventLogArg struct {
 	Name  string `json:"Name"`
@@ -60,20 +19,28 @@ type EventLogArg struct {
 	Value any    `json:"Value"`
 }
 
+type EventLogDataFrame struct {
+	ID    uint               `bson:"-"             gorm:"primarykey"`
+	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
+
+	Hash      string    `bson:"hash"      json:"hash"`
+	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
+	Data      EventLog  `bson:"data"      gorm:"embedded"  json:"data"`
+}
+
 type EventLog struct {
 	LogIndex uint64
-	Block    uint64
+	Block    uint64 `gorm:"uniqueIndex:idx_block_tx_index"`
 	Address  string
 	Event    string
 	Chain    string
-	TxHash   [32]byte
-	Args     []EventLogArg
+	TxHash   [32]byte      `gorm:"uniqueIndex:idx_block_tx_index"`
+	Args     []EventLogArg `gorm:"type:jsonb"`
 
 	Consensus    bool
 	SignersCount uint64
-	SignerIDs    []int
 	Signature    []byte
-	Voted        *helpers.BigInt
+	Voted        int64
 }
 
 func (e *EventLog) Sia() sia.Sia {
@@ -116,12 +83,12 @@ func (e *EventLog) FromSia(sia sia.Sia) *EventLog {
 	return e
 }
 
-func (e *EventLog) Bls() (bls12381.G1Affine, error) {
+func (e *EventLog) Bls() *bls12381.G1Affine {
 	hash, err := bls.Hash(e.Sia().Bytes())
 	if err != nil {
-		utils.Logger.Error("Can't hash bls: %v", err)
-		return bls12381.G1Affine{}, err
+		utils.Logger.With("Err", err).Error("Can't hash bls")
+		return &bls12381.G1Affine{}
 	}
 
-	return hash, err
+	return &hash
 }

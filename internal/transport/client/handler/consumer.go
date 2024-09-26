@@ -9,12 +9,14 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 )
 
+// consumer is a struct that holds the services required by the consumer handler.
 type consumer struct {
 	correctness correctness.Service
 	uniswap     uniswap.Service
 	evmlog      evmlog.Service
 }
 
+// NewConsumerHandler is a function that creates a new consumer handler.
 func NewConsumerHandler(
 	correctness correctness.Service,
 	uniswap uniswap.Service,

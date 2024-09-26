@@ -3,18 +3,15 @@ package handler
 import (
 	"context"
 
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
+// EventLog is a method that handles event log packets.
 func (h *consumer) EventLog(ctx context.Context, message []byte) {
-	packet := new(model.BroadcastEventPacket).FromBytes(message)
-
-	eventLogHash, err := packet.Info.Bls()
-	if err != nil {
-		return
-	}
+	packet := new(packet.BroadcastEventPacket).FromBytes(message)
 
 	signature, err := bls.RecoverSignature(packet.Signature)
 	if err != nil {
@@ -29,7 +26,7 @@ func (h *consumer) EventLog(ctx context.Context, message []byte) {
 		ctx,
 		signature,
 		packet.Signer,
-		eventLogHash,
+		*packet.Info.Bls(),
 		packet.Info,
 		true,
 		false,
@@ -39,4 +36,5 @@ func (h *consumer) EventLog(ctx context.Context, message []byte) {
 	}
 }
 
+// EventLog is not defined for worker nodes.
 func (w worker) EventLog(_ context.Context, _ []byte) {}

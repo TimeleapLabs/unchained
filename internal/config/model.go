@@ -17,27 +17,32 @@ type System struct {
 	PrintVersion         bool
 }
 
+// RPC struct hold the rpc configuration of the application.
 type RPC struct {
 	Name  string   `yaml:"name"`
 	Nodes []string `yaml:"nodes"`
 }
 
+// Uniswap struct hold the uniswap task's configurations and monitoring tokens.
 type Uniswap struct {
 	Schedule map[string]time.Duration `yaml:"schedule"`
 	Tokens   []Token                  `yaml:"tokens"`
 }
 
+// EthLog struct hold the ethlog task's configurations and monitoring events.
 type EthLog struct {
 	Schedule map[string]time.Duration `yaml:"schedule"`
 	Events   []Event                  `yaml:"events"`
 }
 
+// Plugins struct hold the plugins configurations of the application.
 type Plugins struct {
 	EthLog      *EthLog  `yaml:"logs"`
 	Uniswap     *Uniswap `yaml:"uniswap"`
 	Correctness []string `yaml:"correctness"`
 }
 
+// Event struct hold the monitored event on Ethereum network.
 type Event struct {
 	Name          string  `yaml:"name"`
 	Chain         string  `yaml:"chain"`
@@ -51,6 +56,7 @@ type Event struct {
 	Send          bool    `yaml:"send"`
 }
 
+// Token struct hold the monitored token on Uniswap network.
 type Token struct {
 	Name   string `yaml:"name"`
 	Pair   string `yaml:"pair"`
@@ -62,12 +68,14 @@ type Token struct {
 	Store  bool   `yaml:"store"`
 }
 
+// ProofOfStake struct hold the proof of stake contract's configurations.
 type ProofOfStake struct {
 	Chain   string `env:"POS_CHAIN"   env-default:"arbitrumSepolia"                            yaml:"chain"`
 	Address string `env:"POS_ADDRESS" env-default:"0x965e364987356785b7E89e2Fe7B70f5E5107332d" yaml:"address"`
 	Base    int64  `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
 }
 
+// Network struct hold the network configuration of the application.
 type Network struct {
 	Bind              string        `env:"BIND"               env-default:"0.0.0.0:9123"                    yaml:"bind"`
 	CertFile          string        `env:"CERT_FILE"          env-default:""                                yaml:"certFile"`
@@ -77,6 +85,12 @@ type Network struct {
 	BrokerTimeout     time.Duration `env:"BROKER_TIMEOUT"     env-default:"3s"                              yaml:"brokerTimeout"`
 }
 
+type Mongo struct {
+	URL      string `env:"Mongo_URL"      yaml:"url"`
+	Database string `env:"Mongo_Database" yaml:"database"`
+}
+
+// Postgres struct hold the postgres configuration of the application.
 type Postgres struct {
 	URL string `env:"DATABASE_URL" yaml:"url"`
 }
@@ -102,6 +116,7 @@ type Config struct {
 	System       System       `yaml:"system"`
 	Network      Network      `yaml:"network"`
 	RPC          []RPC        `yaml:"rpc"`
+	Mongo        Mongo        `yaml:"mongo"`
 	Functions    []Function   `yaml:"functions"`
 	Postgres     Postgres     `yaml:"postgres"`
 	ProofOfStake ProofOfStake `yaml:"pos"`
