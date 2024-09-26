@@ -1,10 +1,7 @@
 package model
 
 import (
-	"encoding/hex"
 	"time"
-
-	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -15,9 +12,9 @@ type Proof struct {
 	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
-	Hash      string    `bson:"hash"      json:"hash"`
+	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Signature string    `bson:"signature" json:"signature"`
+	Signature []byte    `bson:"signature" json:"signature"`
 
 	Signers []Signer `bson:"signers" gorm:"many2many:proof_signers;" json:"signers"`
 }
@@ -27,22 +24,10 @@ func (p *Proof) Sia() sia.Sia {
 		s.EmbedBytes(item.Sia().Bytes())
 	})
 
-	hashBytes, err := hex.DecodeString(p.Hash)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Can't decode hash")
-		return sia.New()
-	}
-
-	signatureBytes, err := hex.DecodeString(p.Signature)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Can't decode signature")
-		return sia.New()
-	}
-
 	return sia.New().
-		AddByteArray8(hashBytes).
+		AddByteArray8(p.Hash).
 		AddInt64(p.Timestamp.Unix()).
-		AddByteArray8(signatureBytes).
+		AddByteArray8(p.Signature).
 		AddByteArray64(signers.Bytes())
 }
 
@@ -58,18 +43,18 @@ func (p *Proof) FromSia(siaObj sia.Sia) *Proof {
 		return signer
 	})
 
-	p.Hash = hex.EncodeToString(siaObj.ReadByteArray8())
+	p.Hash = siaObj.ReadByteArray8()
 	p.Timestamp = time.Unix(siaObj.ReadInt64(), 0)
-	p.Signature = hex.EncodeToString(siaObj.ReadByteArray8())
+	p.Signature = siaObj.ReadByteArray8()
 	p.Signers = signers
 	return p
 }
 
 func NewProof(signers []Signer, signature []byte) *Proof {
 	return &Proof{
-		Hash:      hex.EncodeToString(Signers(signers).Bls()),
+		Hash:      Signers(signers).Bls(),
 		Timestamp: time.Now(),
-		Signature: hex.EncodeToString(signature),
+		Signature: signature,
 		Signers:   signers,
 	}
 }
