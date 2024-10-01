@@ -16,9 +16,7 @@ import (
 var TimeleapRPC = "https://devnet.timeleap.swiss/rpc"
 var CollectorAddress = common.HexToAddress("0xA2dEc4f8089f89F426e6beB76B555f3Cf9E7f499")
 
-func (h *consumer) RPCRequest(_ context.Context, _ []byte) {}
-
-func (w worker) RPCRequest(ctx context.Context, message []byte) {
+func (h *handler) RPCRequest(ctx context.Context, message []byte) {
 	utils.Logger.Info("RPC Request")
 	packet := new(dto.RPCRequest).FromSiaBytes(message)
 
@@ -36,14 +34,10 @@ func (w worker) RPCRequest(ctx context.Context, message []byte) {
 		return
 	}
 
-	response, err := w.rpc.RunFunction(ctx, packet.Method, packet)
+	response, err := h.rpc.RunFunction(ctx, packet.Method, packet)
 	if err != nil {
 		return
 	}
 
 	conn.Send(consts.OpCodeRPCResponse, response)
 }
-
-func (w worker) RPCResponse(_ context.Context, _ []byte) {}
-
-func (h *consumer) RPCResponse(_ context.Context, _ []byte) {}

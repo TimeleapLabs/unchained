@@ -35,14 +35,12 @@ func NewRPC(handler handler.Handler) {
 				case consts.OpCodeKoskChallenge:
 					challenge := handler.Challenge(payload[1:])
 					conn.Send(consts.OpCodeKoskResult, challenge)
-				case consts.OpCodePriceReportBroadcast:
-					handler.PriceReport(ctx, payload[1:])
-				case consts.OpCodeEventLogBroadcast:
-					handler.EventLog(ctx, payload[1:])
+
 				case consts.OpCodeCorrectnessReportBroadcast:
 					handler.CorrectnessReport(ctx, payload[1:])
 				case consts.OpCodeRPCRequest:
 					handler.RPCRequest(ctx, payload[1:])
+
 				default:
 					utils.Logger.
 						With("Code", payload[0]).

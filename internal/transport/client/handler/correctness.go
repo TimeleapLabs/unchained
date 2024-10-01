@@ -7,7 +7,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
+func (h *handler) CorrectnessReport(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastCorrectnessPacket).FromBytes(message)
 
 	signature, err := bls.RecoverSignature(packet.Signature)
@@ -24,11 +24,8 @@ func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 		signature,
 		packet.Signer,
 		packet.Info,
-		true,
 	)
 	if err != nil {
 		return
 	}
 }
-
-func (w worker) CorrectnessReport(_ context.Context, _ []byte) {}
