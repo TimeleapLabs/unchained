@@ -25,9 +25,7 @@ var root = &cobra.Command{
 }
 
 func main() {
-	handler.WithBrokerCmd(root)
-	handler.WithConsumerCmd(root)
-	handler.WithWorkerCmd(root)
+	handler.WithServerCmd(root)
 	handler.WithPluginCmd(root)
 
 	err := root.Execute()

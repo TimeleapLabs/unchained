@@ -2,8 +2,8 @@ package handler
 
 import (
 	"context"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
@@ -23,6 +23,7 @@ func (h *handler) CorrectnessReport(ctx context.Context, message []byte) {
 		ctx,
 		signature,
 		packet.Signer,
+		*packet.Info.Bls(),
 		packet.Info,
 	)
 	if err != nil {

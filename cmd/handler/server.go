@@ -7,11 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// broker represents the broker command.
-var broker = &cobra.Command{
-	Use:   "broker",
-	Short: "Run the Unchained client in broker mode",
-	Long:  `Run the Unchained client in broker mode`,
+// server represents the server command.
+var server = &cobra.Command{
+	Use:   "server",
+	Short: "Run the Unchained app",
+	Long:  `Run the Unchained app`,
 
 	PreRun: func(cmd *cobra.Command, _ []string) {
 		config.App.Network.CertFile = cmd.Flags().Lookup("cert-file").Value.String()
@@ -29,20 +29,20 @@ var broker = &cobra.Command{
 	},
 }
 
-// WithBrokerCmd appends the broker command to the root command.
-func WithBrokerCmd(cmd *cobra.Command) {
-	cmd.AddCommand(broker)
+// WithServerCmd appends the server command to the root command.
+func WithServerCmd(cmd *cobra.Command) {
+	cmd.AddCommand(server)
 }
 
 func init() {
-	broker.Flags().StringP(
+	server.Flags().StringP(
 		"cert-file",
 		"C",
 		"",
 		"TLS certificate file",
 	)
 
-	broker.Flags().StringP(
+	server.Flags().StringP(
 		"key-file",
 		"k",
 		"",

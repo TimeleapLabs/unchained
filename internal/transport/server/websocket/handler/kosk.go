@@ -9,14 +9,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Kosk handler check the result of signer challenge and store it.
 func Kosk(conn *websocket.Conn, payload []byte) error {
 	challenge := new(packet.ChallengePacket).FromBytes(payload)
 
 	hash, err := bls.Hash(challenge.Random[:])
 	if err != nil {
 		return err
-
 	}
 
 	_, err = middleware.IsMessageValid(conn, hash, challenge.Signature)
