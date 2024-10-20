@@ -70,7 +70,7 @@
 - fix identity key generation
 - **flags**: make config flag unrequired >>> ⏰ 2m
 - **flags**: make config flag unrequired >>> ⏰ 2m
-- **correctness**: delete unused tests temprorary >>> ⏰ 2m
+- **attestation**: delete unused tests temprorary >>> ⏰ 2m
 - **connection**: fix the problem of reconnecting to the broker >>> ⏰ 2h
 - **linters**: fix linters >>> ⏰ 2m
 - **models**: fix problem of deserializing sia >>> ⏰ 2h
@@ -113,7 +113,7 @@
 - remove go.work
 - seprate cobra and app init
 - linters and update quickstart
-- remove scheduler from consumer \ move correctness to services
+- remove scheduler from consumer \ move attestation to services
 - change structure of configs
 - extract siner from checkPublicKey
 - extract siner from checkPublicKey

@@ -8,10 +8,8 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	mongoRepo "github.com/TimeleapLabs/unchained/internal/repository/mongo"
 	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
-	correctnessService "github.com/TimeleapLabs/unchained/internal/service/correctness"
-	evmlogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
+	attestationService "github.com/TimeleapLabs/unchained/internal/service/attestation"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
-	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
 	"github.com/TimeleapLabs/unchained/internal/transport/client"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
@@ -36,37 +34,29 @@ func Consumer() {
 	ethRPC := ethereum.New()
 	_posService := pos.New(ethRPC)
 
-	var eventLogRepo repository.EventLog
 	var proofRepo repository.Proof
-	var assetPrice repository.AssetPrice
-	var correctnessRepo repository.CorrectnessReport
+	var attestationRepo repository.Attestation
 
 	if config.App.Mongo.URL != "" {
 		utils.Logger.Info("MongoDB configuration found, initializing...")
 		db := mongo.New()
 
-		eventLogRepo = mongoRepo.NewEventLog(db)
 		proofRepo = mongoRepo.NewProof(db)
-		assetPrice = mongoRepo.NewAssetPrice(db)
-		correctnessRepo = mongoRepo.NewCorrectness(db)
+		attestationRepo = mongoRepo.NewAttestation(db)
 	} else {
 		utils.Logger.Info("Postgresql configuration found, initializing...")
 		db := postgres.New()
 		db.Migrate()
 
-		eventLogRepo = postgresRepo.NewEventLog(db)
 		proofRepo = postgresRepo.NewProof(db)
-		assetPrice = postgresRepo.NewAssetPrice(db)
-		correctnessRepo = postgresRepo.NewCorrectness(db)
+		attestationRepo = postgresRepo.NewAttestation(db)
 	}
 
-	_correctnessService := correctnessService.New(_posService, proofRepo, correctnessRepo)
-	_evmLogService := evmlogService.New(ethRPC, _posService, eventLogRepo, proofRepo, nil)
-	_uniswapService := uniswapService.New(ethRPC, _posService, proofRepo, assetPrice)
+	_attestationService := attestationService.New(_posService, proofRepo, attestationRepo)
 
 	conn.Start()
 
-	consumerHandler := handler.NewConsumerHandler(_correctnessService, _uniswapService, _evmLogService)
+	consumerHandler := handler.NewConsumerHandler(_attestationService)
 	client.NewRPC(consumerHandler)
 
 	select {}

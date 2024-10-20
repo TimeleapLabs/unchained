@@ -71,9 +71,7 @@ func (c *connection) Migrate() {
 
 	err := c.db.AutoMigrate(
 		&model.Proof{},
-		&model.CorrectnessDataFrame{},
-		&model.EventLogDataFrame{},
-		&model.AssetPriceDataFrame{},
+		&model.AttestationDataFrame{},
 	)
 
 	if err != nil {

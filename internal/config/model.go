@@ -23,49 +23,9 @@ type RPC struct {
 	Nodes []string `yaml:"nodes"`
 }
 
-// Uniswap struct hold the uniswap task's configurations and monitoring tokens.
-type Uniswap struct {
-	Schedule map[string]time.Duration `yaml:"schedule"`
-	Tokens   []Token                  `yaml:"tokens"`
-}
-
-// EthLog struct hold the ethlog task's configurations and monitoring events.
-type EthLog struct {
-	Schedule map[string]time.Duration `yaml:"schedule"`
-	Events   []Event                  `yaml:"events"`
-}
-
 // Plugins struct hold the plugins configurations of the application.
 type Plugins struct {
-	EthLog      *EthLog  `yaml:"logs"`
-	Uniswap     *Uniswap `yaml:"uniswap"`
-	Correctness []string `yaml:"correctness"`
-}
-
-// Event struct hold the monitored event on Ethereum network.
-type Event struct {
-	Name          string  `yaml:"name"`
-	Chain         string  `yaml:"chain"`
-	Abi           string  `yaml:"abi"`
-	Event         string  `yaml:"event"`
-	Address       string  `yaml:"address"`
-	From          *uint64 `yaml:"from"`
-	Step          uint64  `yaml:"step"`
-	Confirmations uint64  `yaml:"confirmations"`
-	Store         bool    `yaml:"store"`
-	Send          bool    `yaml:"send"`
-}
-
-// Token struct hold the monitored token on Uniswap network.
-type Token struct {
-	Name   string `yaml:"name"`
-	Pair   string `yaml:"pair"`
-	Chain  string `yaml:"chain"`
-	Delta  int64  `yaml:"delta"`
-	Invert bool   `yaml:"invert"`
-	Unit   string `yaml:"unit"`
-	Send   bool   `yaml:"send"`
-	Store  bool   `yaml:"store"`
+	Attestation []string `yaml:"attestation"`
 }
 
 // ProofOfStake struct hold the proof of stake contract's configurations.

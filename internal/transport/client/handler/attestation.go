@@ -9,9 +9,9 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-// CorrectnessReport is a method that handles correctness report packets.
-func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
-	packet := new(packet.BroadcastCorrectnessPacket).FromBytes(message)
+// Attestation is a method that handles attestation report packets.
+func (h *consumer) Attestation(ctx context.Context, message []byte) {
+	packet := new(packet.BroadcastAttestationPacket).FromBytes(message)
 
 	signature, err := bls.RecoverSignature(packet.Signature)
 	if err != nil {
@@ -22,7 +22,7 @@ func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 		return
 	}
 
-	err = h.correctness.RecordSignature(
+	err = h.attestation.RecordSignature(
 		ctx,
 		signature,
 		packet.Signer,
@@ -35,5 +35,5 @@ func (h *consumer) CorrectnessReport(ctx context.Context, message []byte) {
 	}
 }
 
-// CorrectnessReport is not defined for worker nodes.
-func (w worker) CorrectnessReport(_ context.Context, _ []byte) {}
+// Attestation is not defined for worker nodes.
+func (w worker) Attestation(_ context.Context, _ []byte) {}

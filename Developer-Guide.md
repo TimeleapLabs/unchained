@@ -1,4 +1,3 @@
-
 # Developer Guide
 
 This article is a guide for developers who want to contribute to the Unchained project. The project is written in Go and we are open to all new suggestions and ideas, so keeping the codes clean and efficient is really important.
@@ -8,8 +7,9 @@ This article is a guide for developers who want to contribute to the Unchained p
 We follow the practices which is recommended by golang documents as [Effective Golang](https://go.dev/doc/effective_go) actually with some modifications. But its better to read it and follow the rules. Most of the important ones are covered in our linters, so if you need to check your codes, you can use the following command:
 
 ```bash
-golangci-lint run --fix 
+golangci-lint run --fix
 ```
+
 It will fix correctable issues and show the rest of them.
 
 ## Development Environment
@@ -29,24 +29,12 @@ The Project follows the Clean Architecture pattern. The project is divided into 
 flowchart TD
     X[Broker] <--> |Websocket|Y[Worker Handler]
     X[Broker] <--> |Websocket|Z[Consumer Handler]
-    Y[Worker Handler] <--> B(EvmLog Service)
-    Y[Worker Handler] <--> C(Correctness Service)
-    Y[Worker Handler] <--> D(Uniswap Service)
-    Z[Consumer Handler] <--> B(EvmLog Service)
-    Z[Consumer Handler] <--> C(Correctness Service)
-    Z[Consumer Handler] <--> D(Uniswap Service)
-    E[Schduler] -->|every X min| B(EvmLog Service)
-    E[Schduler] -->|every X min| C(Correctness Service)
-    E[Schduler] -->|every X min| D(Uniswap Service)
-    B(EvmLog Service) <--> U(Repository)
-    C(Correctness Service) <--> U(Repository)
-    D(Uniswap Service) <--> U(Repository)
-    B(EvmLog Service) <--> V(Ethereum)
-    C(Correctness Service) <--> V(Ethereum)
-    D(Uniswap Service) <--> V(Ethereum)
-    B(EvmLog Service) <--> M(Machine Identity)
-    C(Correctness Service) <--> M(Machine Identity)
-    D(Uniswap Service) <--> M(Machine Identity)
+    Y[Worker Handler] <--> C(Attestation Service)
+    Z[Consumer Handler] <--> C(Attestation Service)
+    E[Schduler] -->|every X min| C(Attestation Service)
+    C(Attestation Service) <--> U(Repository)
+    C(Attestation Service) <--> V(Ethereum)
+    C(Attestation Service) <--> M(Machine Identity)
 
 ```
 
@@ -82,13 +70,9 @@ The broker nodes are responsible for managing the network and routing the data t
 #### Worker
 
 The workers are the nodes that process the data and send them to the broker. The workers can be a service that listens to the data from the blockchain, or a service that listens to the data from the broker. These services hold different business logics and will provide different services to the network.
+
 ```mermaid
   graph TD;
-    Y[Ethereum Network] -->    A[EvmLog Scheduler]
-    Y[Ethereum Network] -->    B[Uniswap Scheduler]
-    A[EvmLog Scheduler] --> |Every x sec| W[Services]
-    B[Uniswap Scheduler] --> |Every x sec| W[Services]
-
     V[Broker] <--> |Websocket| W[Services]
     W[Services] --> |Sign & Verify| T[Machine Identity]
 
@@ -104,6 +88,7 @@ The consumers are the nodes that listen to the data from the broker and save or 
     W[Services] --> |Sign & Verify| T[Machine Identity]
     W[Services] --> |Save Data| Z[Database]
 ```
+
 ### RPC infrastructure
 
 The unchained network makes ability to run a function on a worker node and get the result. The broker node is responsible for routing the request to the correct worker node and get the result back to the client.
@@ -122,6 +107,7 @@ sequenceDiagram
 When you start a worker node, you can register the functions that you can run on the worker node. The broker node will get the list of functions and will route the request to the correct worker node. each function has a unique id and the runtime configuration of how it works. The runtimes can be:
 
 - **Unix Socket**: This method will refer the request to a unix socket which is provided on worker startup with this struct:
+
 ```go
 type RPCRequest struct {
 	// The ID of the request
@@ -136,7 +122,9 @@ type RPCRequest struct {
 	Params []byte `json:"params"`
 }
 ```
+
 and at the end worker expect a result like this:
+
 ```go
 type RPCResponse struct {
 	// The ID of the request
@@ -148,8 +136,7 @@ type RPCResponse struct {
 }
 ```
 
-- **Docker**: This method will refer the request to a docker container. 
-
+- **Docker**: This method will refer the request to a docker container.
 
 ### Identity and Security
 

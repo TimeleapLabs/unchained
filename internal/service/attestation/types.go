@@ -1,4 +1,4 @@
-package correctness
+package attestation
 
 import (
 	"math/big"
@@ -20,7 +20,7 @@ type Signature struct {
 }
 
 type SaveSignatureArgs struct {
-	Info      model.Correctness
+	Info      model.Attestation
 	Hash      bls12381.G1Affine
 	Consensus bool
 	Voted     *big.Int

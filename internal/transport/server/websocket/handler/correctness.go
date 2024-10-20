@@ -6,23 +6,23 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// CorrectnessRecord is a handler for correctness report.
-func CorrectnessRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
+// AttestationRecord is a handler for attestation report.
+func AttestationRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	err := middleware.IsConnectionAuthenticated(conn)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	correctness := new(packet.CorrectnessReportPacket).FromBytes(payload)
+	attestation := new(packet.AttestationPacket).FromBytes(payload)
 
-	signer, err := middleware.IsMessageValid(conn, *correctness.Correctness.Bls(), correctness.Signature)
+	signer, err := middleware.IsMessageValid(conn, *attestation.Attestation.Bls(), attestation.Signature)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	broadcastPacket := packet.BroadcastCorrectnessPacket{
-		Info:      correctness.Correctness,
-		Signature: correctness.Signature,
+	broadcastPacket := packet.BroadcastAttestationPacket{
+		Info:      attestation.Attestation,
+		Signature: attestation.Signature,
 		Signer:    signer,
 	}
 

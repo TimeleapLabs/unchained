@@ -5,40 +5,40 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-type CorrectnessReportPacket struct {
-	model.Correctness
+type AttestationPacket struct {
+	model.Attestation
 	Signature [48]byte
 }
 
-func (c *CorrectnessReportPacket) Sia() sia.Sia {
+func (c *AttestationPacket) Sia() sia.Sia {
 	return sia.New().
-		EmbedBytes(c.Correctness.Sia().Bytes()).
+		EmbedBytes(c.Attestation.Sia().Bytes()).
 		AddByteArray8(c.Signature[:])
 }
 
-func (c *CorrectnessReportPacket) FromBytes(payload []byte) *CorrectnessReportPacket {
+func (c *AttestationPacket) FromBytes(payload []byte) *AttestationPacket {
 	siaMessage := sia.NewFromBytes(payload)
 
-	c.Correctness.FromSia(siaMessage)
+	c.Attestation.FromSia(siaMessage)
 	copy(c.Signature[:], siaMessage.ReadByteArray8())
 
 	return c
 }
 
-type BroadcastCorrectnessPacket struct {
-	Info      model.Correctness
+type BroadcastAttestationPacket struct {
+	Info      model.Attestation
 	Signature [48]byte
 	Signer    model.Signer
 }
 
-func (b *BroadcastCorrectnessPacket) Sia() sia.Sia {
+func (b *BroadcastAttestationPacket) Sia() sia.Sia {
 	return sia.New().
 		EmbedBytes(b.Info.Sia().Bytes()).
 		AddByteArray8(b.Signature[:]).
 		EmbedBytes(b.Signer.Sia().Bytes())
 }
 
-func (b *BroadcastCorrectnessPacket) FromBytes(payload []byte) *BroadcastCorrectnessPacket {
+func (b *BroadcastAttestationPacket) FromBytes(payload []byte) *BroadcastAttestationPacket {
 	siaMessage := sia.NewFromBytes(payload)
 
 	b.Info.FromSia(siaMessage)

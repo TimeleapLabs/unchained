@@ -12,16 +12,16 @@ import (
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
-type CorrectnessDataFrame struct {
+type AttestationDataFrame struct {
 	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
 	Hash      string      `bson:"hash"      json:"hash"`
 	Timestamp time.Time   `bson:"timestamp" json:"timestamp"`
-	Data      Correctness `bson:"data"      gorm:"embedded"  json:"data"`
+	Data      Attestation `bson:"data"      gorm:"embedded"  json:"data"`
 }
 
-type Correctness struct {
+type Attestation struct {
 	SignersCount uint64
 	Signature    []byte
 	Consensus    bool
@@ -32,7 +32,7 @@ type Correctness struct {
 	Correct      bool
 }
 
-func (c *Correctness) Sia() sia.Sia {
+func (c *Attestation) Sia() sia.Sia {
 	return sia.New().
 		AddUInt64(c.Timestamp).
 		AddByteArray8(c.Hash).
@@ -40,21 +40,21 @@ func (c *Correctness) Sia() sia.Sia {
 		AddBool(c.Correct)
 }
 
-func (c *Correctness) FromBytes(payload []byte) *Correctness {
+func (c *Attestation) FromBytes(payload []byte) *Attestation {
 	siaMessage := sia.NewFromBytes(payload)
 	return c.FromSia(siaMessage)
 }
 
-func (c *Correctness) FromSia(sia sia.Sia) *Correctness {
+func (c *Attestation) FromSia(sia sia.Sia) *Attestation {
 	c.Timestamp = sia.ReadUInt64()
-	copy(c.Hash, sia.ReadByteArray8())
-	copy(c.Topic, sia.ReadByteArray8())
+	c.Hash = sia.ReadByteArray8()
+	c.Topic = sia.ReadByteArray8()
 	c.Correct = sia.ReadBool()
 
 	return c
 }
 
-func (c *Correctness) Bls() *bls12381.G1Affine {
+func (c *Attestation) Bls() *bls12381.G1Affine {
 	hash, err := bls.Hash(c.Sia().Bytes())
 	if err != nil {
 		utils.Logger.With("Err", err).Error("Can't hash bls")

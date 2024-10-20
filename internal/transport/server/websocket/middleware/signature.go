@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"encoding/hex"
-
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
@@ -26,13 +24,7 @@ func IsMessageValid(conn *websocket.Conn, message bls12381.G1Affine, signature [
 		return model.Signer{}, consts.ErrInternalError
 	}
 
-	publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Can't decode public key")
-		return model.Signer{}, consts.ErrInternalError
-	}
-
-	pk, err := bls.RecoverPublicKey([96]byte(publicKeyBytes))
+	pk, err := bls.RecoverPublicKey([96]byte(signer.PublicKey))
 	if err != nil {
 		utils.Logger.With("Err", err).Error("Can't recover pub key pub-key")
 		return model.Signer{}, consts.ErrInternalError

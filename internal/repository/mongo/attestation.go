@@ -15,76 +15,72 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-type EventLogRepo struct {
+type AttestationRepo struct {
 	client database.MongoDatabase
 }
 
-func (r EventLogRepo) Find(ctx context.Context, block uint64, hash []byte, index uint64) ([]model.EventLog, error) {
-	cursor, err := r.client.
+func (c AttestationRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Attestation, error) {
+	cursor, err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
-		Collection("eventlog").
+		Collection("attestationreport").
 		Find(ctx, bson.M{
-			"block":       block,
-			"transaction": hash,
-			"index":       index,
+			"hash":      hash,
+			"topic":     topic,
+			"timestamp": timestamp,
 		})
 
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch event log records from database")
+		utils.Logger.With("err", err).Error("Cant fetch attestation reports from database")
 		return nil, consts.ErrInternalError
 	}
 
-	currentRecords, err := CursorToList[model.EventLog](ctx, cursor)
+	currentRecords, err := CursorToList[model.Attestation](ctx, cursor)
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch event log records from database")
+		utils.Logger.With("err", err).Error("Cant fetch attestation reports from database")
 		return nil, consts.ErrInternalError
 	}
 
 	return currentRecords, nil
 }
 
-func (r EventLogRepo) Upsert(ctx context.Context, data model.EventLog) error {
+func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) error {
 	opt := options.Update().SetUpsert(true)
 
-	_, err := r.client.
+	_, err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
-		Collection("eventlog").
+		Collection("attestationreport").
 		UpdateOne(ctx, bson.M{
-			"block":       data.Block,
-			"transaction": data.TxHash[:],
-			"index":       data.LogIndex,
+			"hash":  data.Hash,
+			"topic": data.Topic,
 		}, bson.M{
 			"$set": bson.M{
-				"data.chain":         data.Chain,
-				"data.address":       data.Address,
-				"data.event":         data.Event,
+				"data.correct":       data.Correct,
 				"data.signers_count": data.SignersCount,
 				"data.signature":     data.Signature,
-				"data.args":          data.Args,
+				"data.timestamp":     data.Timestamp,
 				"data.consensus":     data.Consensus,
 				"data.voted":         data.Voted,
 			},
 			"$setOnInsert": bson.M{
 				"hash":       data.Bls().Bytes(),
 				"timestamp":  time.Now(),
-				"data.block": data.Block,
-				"data.index": data.LogIndex,
-				"data.tx":    data.TxHash[:],
+				"data.hash":  data.Hash,
+				"data.topic": data.Topic,
 			},
 		}, opt)
 
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cant upsert event log record to database")
+		utils.Logger.With("err", err).Error("Cant upsert attestation report in database")
 		return consts.ErrInternalError
 	}
 
 	return nil
 }
 
-func NewEventLog(client database.MongoDatabase) repository.EventLog {
-	return &EventLogRepo{
+func NewAttestation(client database.MongoDatabase) repository.Attestation {
+	return &AttestationRepo{
 		client: client,
 	}
 }

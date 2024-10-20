@@ -71,32 +71,14 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 			handler.SendMessage(conn, consts.OpCodeFeedback, "conf.ok")
 			handler.Send(conn, consts.OpCodeKoskChallenge, result)
-		case consts.OpCodePriceReport:
-			result, err := handler.PriceReport(conn, payload[1:])
+		case consts.OpCodeAttestation:
+			result, err := handler.AttestationRecord(conn, payload[1:])
 			if err != nil {
 				handler.SendError(conn, consts.OpCodeError, err)
 				continue
 			}
 
-			pubsub.Publish(consts.ChannelPriceReport, consts.OpCodePriceReportBroadcast, result)
-			handler.SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
-		case consts.OpCodeEventLog:
-			result, err := handler.EventLog(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelEventLog, consts.OpCodeEventLogBroadcast, result)
-			handler.SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
-		case consts.OpCodeCorrectnessReport:
-			result, err := handler.CorrectnessRecord(conn, payload[1:])
-			if err != nil {
-				handler.SendError(conn, consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelCorrectnessReport, consts.OpCodeCorrectnessReportBroadcast, result)
+			pubsub.Publish(consts.ChannelAttestation, consts.OpCodeAttestationBroadcast, result)
 			handler.SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
 		case consts.OpCodeKoskResult:
 			err := handler.Kosk(conn, payload[1:])

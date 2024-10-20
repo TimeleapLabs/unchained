@@ -15,7 +15,7 @@ import (
 	"github.com/tryvium-travels/memongo"
 )
 
-var sampleCorrectness = model.Correctness{
+var sampleAttestation = model.Attestation{
 	SignersCount: 100,
 	Signature:    nil,
 	Consensus:    false,
@@ -26,13 +26,13 @@ var sampleCorrectness = model.Correctness{
 	Correct:      false,
 }
 
-type CorrectnessRepositoryTestSuite struct {
+type AttestationRepositoryTestSuite struct {
 	suite.Suite
 	dbServer *memongo.Server
-	repo     repository.CorrectnessReport
+	repo     repository.Attestation
 }
 
-func (s *CorrectnessRepositoryTestSuite) SetupTest() {
+func (s *AttestationRepositoryTestSuite) SetupTest() {
 	utils.SetupLogger(config.App.System.Log)
 
 	var err error
@@ -53,29 +53,29 @@ func (s *CorrectnessRepositoryTestSuite) SetupTest() {
 	config.App.Mongo.URL = s.dbServer.URI()
 	config.App.Mongo.Database = memongo.RandomDatabase()
 	db := mongo.New()
-	s.repo = NewCorrectness(db)
+	s.repo = NewAttestation(db)
 }
 
-func (s *CorrectnessRepositoryTestSuite) TestUpsert() {
-	err := s.repo.Upsert(context.TODO(), sampleCorrectness)
+func (s *AttestationRepositoryTestSuite) TestUpsert() {
+	err := s.repo.Upsert(context.TODO(), sampleAttestation)
 	s.NoError(err)
 }
 
-func (s *CorrectnessRepositoryTestSuite) TestFind() {
-	err := s.repo.Upsert(context.TODO(), sampleCorrectness)
+func (s *AttestationRepositoryTestSuite) TestFind() {
+	err := s.repo.Upsert(context.TODO(), sampleAttestation)
 	s.NoError(err)
 
-	result, err := s.repo.Find(context.TODO(), sampleCorrectness.Hash, sampleCorrectness.Topic, sampleCorrectness.Timestamp)
+	result, err := s.repo.Find(context.TODO(), sampleAttestation.Hash, sampleAttestation.Topic, sampleAttestation.Timestamp)
 	s.NoError(err)
 	s.Len(result, 1)
 }
 
-func (s *CorrectnessRepositoryTestSuite) TearDownTest() {
+func (s *AttestationRepositoryTestSuite) TearDownTest() {
 	if s.dbServer != nil {
 		s.dbServer.Stop()
 	}
 }
 
-func TestCorrectnessRepositoryTestSuite(t *testing.T) {
-	suite.Run(t, new(CorrectnessRepositoryTestSuite))
+func TestAttestationRepositoryTestSuite(t *testing.T) {
+	suite.Run(t, new(AttestationRepositoryTestSuite))
 }

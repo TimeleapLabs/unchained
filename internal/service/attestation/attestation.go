@@ -1,8 +1,8 @@
-package correctness
+package attestation
 
 import (
+	"bytes"
 	"context"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"os"
@@ -28,10 +28,10 @@ const (
 	LruSize = 128
 )
 
-// Service represents the correctness service which confirm and store the correctness reports.
+// Service represents the attestation service which confirm and store the attestation reports.
 type Service interface {
 	RecordSignature(
-		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+		ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Attestation, debounce bool,
 	) error
 	SaveSignatures(ctx context.Context, args SaveSignatureArgs) error
 }
@@ -39,7 +39,7 @@ type Service interface {
 type service struct {
 	pos             pos.Service
 	proofRepo       repository.Proof
-	correctnessRepo repository.CorrectnessReport
+	attestationRepo repository.Attestation
 
 	signatureCache *lru.Cache[bls12381.G1Affine, []Signature]
 	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]]
@@ -52,7 +52,7 @@ type service struct {
 // TODO: How should we handle older records?
 // Possible Solution: Add a not after timestamp to the document.
 func (s *service) RecordSignature(
-	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Correctness, debounce bool,
+	ctx context.Context, signature bls12381.G1Affine, signer model.Signer, hash bls12381.G1Affine, info model.Attestation, debounce bool,
 ) error {
 	if supported := s.supportedTopics[[64]byte(info.Topic)]; !supported {
 		utils.Logger.
@@ -71,7 +71,7 @@ func (s *service) RecordSignature(
 
 	// Check for duplicates
 	for _, sig := range signatures {
-		if sig.Signer.PublicKey == signer.PublicKey {
+		if bytes.Equal(sig.Signer.PublicKey, signer.PublicKey) {
 			return consts.ErrDuplicateSignature
 		}
 	}
@@ -94,14 +94,8 @@ func (s *service) RecordSignature(
 
 	votingPower, err := s.pos.GetVotingPowerOfEvm(ctx, signer.EvmAddress)
 	if err != nil {
-		publicKeyBytes, err := hex.DecodeString(signer.PublicKey)
-		if err != nil {
-			utils.Logger.With("Err", err).ErrorContext(ctx, "Can't decode public key")
-			return err
-		}
-
 		utils.Logger.
-			With("Address", address.Calculate(publicKeyBytes)).
+			With("Address", address.Calculate(signer.PublicKey)).
 			With("Error", err).
 			Error("Failed to get voting power")
 		return err
@@ -150,7 +144,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return consts.ErrSignatureNotfound
 	}
 
-	currentRecords, err := s.correctnessRepo.Find(ctx, args.Info.Hash, args.Info.Topic, args.Info.Timestamp)
+	currentRecords, err := s.attestationRepo.Find(ctx, args.Info.Hash, args.Info.Topic, args.Info.Timestamp)
 	if err != nil {
 		return err
 	}
@@ -190,7 +184,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		return err
 	}
 
-	err = s.correctnessRepo.Upsert(ctx, model.Correctness{
+	err = s.attestationRepo.Upsert(ctx, model.Attestation{
 		SignersCount: uint64(len(signatures)),
 		Signature:    signatureBytes[:],
 		Consensus:    args.Consensus,
@@ -210,12 +204,12 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 }
 
 func New(
-	pos pos.Service, proofRepo repository.Proof, correctnessRepo repository.CorrectnessReport,
+	pos pos.Service, proofRepo repository.Proof, attestationRepo repository.Attestation,
 ) Service {
 	c := service{
 		pos:             pos,
 		proofRepo:       proofRepo,
-		correctnessRepo: correctnessRepo,
+		attestationRepo: attestationRepo,
 	}
 
 	var err error
@@ -227,14 +221,14 @@ func New(
 		panic(err)
 	}
 
-	for _, conf := range config.App.Plugins.Correctness {
+	for _, conf := range config.App.Plugins.Attestation {
 		c.supportedTopics[[64]byte(utils.Shake([]byte(conf)))] = true
 	}
 
 	c.consensus, err = lru.New[Key, xsync.MapOf[bls12381.G1Affine, big.Int]](LruSize)
 	if err != nil {
 		utils.Logger.
-			Error("Failed to create correctness consensus cache.")
+			Error("Failed to create attestation consensus cache.")
 		os.Exit(1)
 	}
 

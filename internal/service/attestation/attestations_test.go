@@ -1,7 +1,6 @@
-package correctness
+package attestation
 
 import (
-	"encoding/hex"
 	"testing"
 
 	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
@@ -15,32 +14,32 @@ import (
 var (
 	SignerOne = Signature{
 		Signer: model.Signer{
-			PublicKey: hex.EncodeToString([]byte{1, 2, 3}),
+			PublicKey: []byte{1, 2, 3},
 		},
 	}
 	SignerTwo = Signature{
 		Signer: model.Signer{
-			PublicKey: hex.EncodeToString([]byte{3, 2, 1}),
+			PublicKey: []byte{3, 2, 1},
 		},
 	}
 )
 
-type CorrectnessTestSuite struct {
+type AttestationTestSuite struct {
 	suite.Suite
 	service Service
 }
 
-func (s *CorrectnessTestSuite) SetupTest() {
+func (s *AttestationTestSuite) SetupTest() {
 	db := postgres.New()
 
 	posService := new(pos.MockService)
 
 	signerRepo := postgresRepo.NewProof(db)
-	correctnessRepo := postgresRepo.NewCorrectness(db)
+	attestationRepo := postgresRepo.NewAttestation(db)
 
-	s.service = New(posService, signerRepo, correctnessRepo)
+	s.service = New(posService, signerRepo, attestationRepo)
 }
 
-func TestCorrectnessSuite(t *testing.T) {
-	suite.Run(t, new(CorrectnessTestSuite))
+func TestAttestationSuite(t *testing.T) {
+	suite.Run(t, new(AttestationTestSuite))
 }

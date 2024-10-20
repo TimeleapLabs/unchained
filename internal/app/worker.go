@@ -8,12 +8,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/repository/postgres"
-	"github.com/TimeleapLabs/unchained/internal/scheduler"
-	evmlogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
-	"github.com/TimeleapLabs/unchained/internal/service/pos"
-	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
 	"github.com/TimeleapLabs/unchained/internal/transport/client"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
@@ -33,18 +27,6 @@ func Worker(_ context.Context) {
 		crypto.WithBlsIdentity(),
 	)
 
-	ethRPC := ethereum.New()
-
-	eventLogRepo := postgres.NewEventLog(nil)
-	proofRepo := postgres.NewProof(nil)
-	assetPrice := postgres.NewAssetPrice(nil)
-
-	_badgerService := evmlogService.NewBadger(config.App.System.ContextPath)
-	_posService := pos.New(ethRPC)
-
-	_evmLogService := evmlogService.New(ethRPC, _posService, eventLogRepo, proofRepo, _badgerService)
-	_uniswapService := uniswapService.New(ethRPC, _posService, proofRepo, assetPrice)
-
 	rpcFunctions := []rpc.Option{}
 	for _, fun := range config.App.Functions {
 		switch fun.Type { //nolint: gocritic // This is a switch case for different types of rpc functions
@@ -54,15 +36,9 @@ func Worker(_ context.Context) {
 	}
 	rpcService := rpc.NewWorker(rpcFunctions...)
 
-	taskScheduler := scheduler.New(
-		scheduler.WithEthLogs(_evmLogService),
-		scheduler.WithUniswapEvents(_uniswapService),
-	)
-
 	conn.Start()
 
 	workerHandler := handler.NewWorkerHandler(rpcService)
 	client.NewRPC(workerHandler)
 
-	taskScheduler.Start()
 }

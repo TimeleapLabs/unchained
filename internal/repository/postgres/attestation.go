@@ -14,12 +14,12 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
-type CorrectnessRepo struct {
+type AttestationRepo struct {
 	client database.Database
 }
 
-func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Correctness, error) {
-	currentRecords := []model.CorrectnessDataFrame{}
+func (c AttestationRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Attestation, error) {
+	currentRecords := []model.AttestationDataFrame{}
 	tx := c.client.
 		GetConnection().
 		WithContext(ctx).
@@ -29,11 +29,11 @@ func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, ti
 		Find(&currentRecords)
 
 	if tx.Error != nil {
-		utils.Logger.With("err", tx.Error).Error("Cant fetch correctness reports from database")
+		utils.Logger.With("err", tx.Error).Error("Cant fetch attestation reports from database")
 		return nil, consts.ErrInternalError
 	}
 
-	results := []model.Correctness{}
+	results := []model.Attestation{}
 	for _, record := range currentRecords {
 		results = append(results, record.Data)
 	}
@@ -41,7 +41,7 @@ func (c CorrectnessRepo) Find(ctx context.Context, hash []byte, topic []byte, ti
 	return results, nil
 }
 
-func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) error {
+func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) error {
 	tx := c.client.
 		GetConnection().
 		WithContext(ctx).
@@ -49,22 +49,22 @@ func (c CorrectnessRepo) Upsert(ctx context.Context, data model.Correctness) err
 			Columns:   []clause.Column{{Name: "topic"}, {Name: "hash"}},
 			UpdateAll: true,
 		}).
-		Create(&model.CorrectnessDataFrame{
+		Create(&model.AttestationDataFrame{
 			Hash:      hex.EncodeToString(data.Bls().Marshal()),
 			Timestamp: time.Now(),
 			Data:      data,
 		})
 
 	if tx.Error != nil {
-		utils.Logger.With("err", tx.Error).Error("Cant upsert correctness report in database")
+		utils.Logger.With("err", tx.Error).Error("Cant upsert attestation report in database")
 		return consts.ErrInternalError
 	}
 
 	return nil
 }
 
-func NewCorrectness(client database.Database) repository.CorrectnessReport {
-	return &CorrectnessRepo{
+func NewAttestation(client database.Database) repository.Attestation {
+	return &AttestationRepo{
 		client: client,
 	}
 }

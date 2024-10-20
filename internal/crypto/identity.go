@@ -1,8 +1,6 @@
 package crypto
 
 import (
-	"encoding/hex"
-
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
@@ -47,8 +45,8 @@ func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
 	return &model.Signer{
 		Name:           config.App.System.Name,
 		EvmAddress:     Identity.Eth.Address,
-		PublicKey:      hex.EncodeToString(publicKey[:]),
-		ShortPublicKey: hex.EncodeToString(shortPublicKey[:]),
+		PublicKey:      publicKey[:],
+		ShortPublicKey: shortPublicKey[:],
 	}
 }
 

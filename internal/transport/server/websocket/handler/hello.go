@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"bytes"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
@@ -20,7 +22,7 @@ func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
 	}
 
 	store.Signers.Range(func(conn *websocket.Conn, signerInMap model.Signer) bool {
-		publicKeyInUse := signerInMap.PublicKey == signer.PublicKey
+		publicKeyInUse := bytes.Equal(signerInMap.PublicKey, signer.PublicKey)
 		if publicKeyInUse {
 			Close(conn)
 		}
