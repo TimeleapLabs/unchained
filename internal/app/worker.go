@@ -40,5 +40,4 @@ func Worker(_ context.Context) {
 
 	workerHandler := handler.NewWorkerHandler(rpcService)
 	client.NewRPC(workerHandler)
-
 }
