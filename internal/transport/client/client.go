@@ -10,6 +10,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
+// NewRPC is a function that starts a new RPC client and connect to broker to consume events.
 func NewRPC(handler handler.Handler) {
 	incoming := conn.Read()
 
@@ -35,12 +36,8 @@ func NewRPC(handler handler.Handler) {
 				case consts.OpCodeKoskChallenge:
 					challenge := handler.Challenge(payload[1:])
 					conn.Send(consts.OpCodeKoskResult, challenge)
-				case consts.OpCodePriceReportBroadcast:
-					handler.PriceReport(ctx, payload[1:])
-				case consts.OpCodeEventLogBroadcast:
-					handler.EventLog(ctx, payload[1:])
-				case consts.OpCodeCorrectnessReportBroadcast:
-					handler.CorrectnessReport(ctx, payload[1:])
+				case consts.OpCodeAttestationBroadcast:
+					handler.Attestation(ctx, payload[1:])
 				case consts.OpCodeRPCRequest:
 					handler.RPCRequest(ctx, payload[1:])
 				default:

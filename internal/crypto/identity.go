@@ -39,11 +39,14 @@ func InitMachineIdentity(options ...Option) {
 
 // ExportEvmSigner returns EVM signer from machine identity.
 func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
+	publicKey := Identity.Bls.PublicKey.Bytes()
+	shortPublicKey := Identity.Bls.ShortPublicKey.Bytes()
+
 	return &model.Signer{
 		Name:           config.App.System.Name,
 		EvmAddress:     Identity.Eth.Address,
-		PublicKey:      Identity.Bls.PublicKey.Bytes(),
-		ShortPublicKey: Identity.Bls.ShortPublicKey.Bytes(),
+		PublicKey:      publicKey[:],
+		ShortPublicKey: shortPublicKey[:],
 	}
 }
 

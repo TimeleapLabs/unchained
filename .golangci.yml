@@ -9,6 +9,8 @@ linters-settings:
   gosec:
     excludes:
       - G601
+      - G115
+
   errcheck:
     check-type-assertions: true
 
@@ -140,9 +142,8 @@ linters:
     - durationcheck
     - errname
     - errorlint
-    - execinquery
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - forbidigo
     - funlen
     - gocheckcompilerdirectives
@@ -199,6 +200,9 @@ issues:
       linters: [ godot ]
     - source: "//noinspection"
       linters: [ gocritic ]
+    - path: "internal/transport/server/packet/*"
+      linters:
+        - dupl
     - path: "cmd"
       linters:
         - funlen
