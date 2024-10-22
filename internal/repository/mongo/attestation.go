@@ -23,7 +23,7 @@ func (c AttestationRepo) Find(ctx context.Context, hash []byte, topic []byte, ti
 	cursor, err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
-		Collection("attestationreport").
+		Collection("attestation").
 		Find(ctx, bson.M{
 			"hash":      hash,
 			"topic":     topic,
@@ -50,7 +50,7 @@ func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) err
 	_, err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
-		Collection("attestationreport").
+		Collection("attestation").
 		UpdateOne(ctx, bson.M{
 			"hash":  data.Hash,
 			"topic": data.Topic,
