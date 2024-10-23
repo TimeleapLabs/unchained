@@ -6,6 +6,7 @@ import (
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -19,29 +20,25 @@ type AttestationRepo struct {
 	client database.MongoDatabase
 }
 
-func (c AttestationRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Attestation, error) {
-	cursor, err := c.client.
+func (c AttestationRepo) Find(ctx context.Context, hash []byte) (model.Attestation, error) {
+	decoded := model.AttestationDataFrame{}
+	err := c.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
 		Collection("attestation").
-		Find(ctx, bson.M{
-			"hash":      hash,
-			"topic":     topic,
-			"timestamp": timestamp,
-		})
+		FindOne(ctx, bson.M{"hash": hash}).
+		Decode(&decoded)
 
-	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch attestation reports from database")
-		return nil, consts.ErrInternalError
+	if err == mongo.ErrNoDocuments {
+		return model.Attestation{}, consts.ErrRecordNotfound
 	}
 
-	currentRecords, err := CursorToList[model.Attestation](ctx, cursor)
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch attestation reports from database")
-		return nil, consts.ErrInternalError
+		utils.Logger.With("err", err).Error("Cannot decode attestation report from database")
+		return model.Attestation{}, consts.ErrInternalError
 	}
 
-	return currentRecords, nil
+	return decoded.Data, nil
 }
 
 func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) error {
@@ -52,16 +49,15 @@ func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) err
 		Database(config.App.Mongo.Database).
 		Collection("attestation").
 		UpdateOne(ctx, bson.M{
-			"hash":  data.Hash,
-			"topic": data.Topic,
+			"hash": data.Bls().Bytes(),
 		}, bson.M{
 			"$set": bson.M{
-				"data.correct":       data.Correct,
+				"data.correct":       data.Correct, // TODO: Replace with a "meta" field
 				"data.signers_count": data.SignersCount,
 				"data.signature":     data.Signature,
 				"data.timestamp":     data.Timestamp,
-				"data.consensus":     data.Consensus,
-				"data.voted":         data.Voted,
+				"data.consensus":     data.Consensus, // TODO: Remove this field
+				"data.voted":         data.Voted,     // TODO: Improve or remove this field
 			},
 			"$setOnInsert": bson.M{
 				"hash":       data.Bls().Bytes(),
@@ -72,7 +68,7 @@ func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) err
 		}, opt)
 
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cant upsert attestation report in database")
+		utils.Logger.With("err", err).Error("Cannot upsert attestation report in database")
 		return consts.ErrInternalError
 	}
 

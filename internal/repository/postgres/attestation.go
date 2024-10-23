@@ -18,27 +18,21 @@ type AttestationRepo struct {
 	client database.Database
 }
 
-func (c AttestationRepo) Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Attestation, error) {
-	currentRecords := []model.AttestationDataFrame{}
+func (c AttestationRepo) Find(ctx context.Context, hash []byte) (model.Attestation, error) {
+	currentRecord := model.AttestationDataFrame{}
+
 	tx := c.client.
 		GetConnection().
 		WithContext(ctx).
 		Where("hash", hash).
-		Where("topic", topic).
-		Where("timestamp", timestamp).
-		Find(&currentRecords)
+		First(&currentRecord)
 
 	if tx.Error != nil {
-		utils.Logger.With("err", tx.Error).Error("Cant fetch attestation reports from database")
-		return nil, consts.ErrInternalError
+		utils.Logger.With("err", tx.Error).Error("Cannot fetch attestation reports from database")
+		return currentRecord.Data, consts.ErrInternalError
 	}
 
-	results := []model.Attestation{}
-	for _, record := range currentRecords {
-		results = append(results, record.Data)
-	}
-
-	return results, nil
+	return currentRecord.Data, nil
 }
 
 func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) error {
@@ -56,7 +50,7 @@ func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) err
 		})
 
 	if tx.Error != nil {
-		utils.Logger.With("err", tx.Error).Error("Cant upsert attestation report in database")
+		utils.Logger.With("err", tx.Error).Error("Cannot upsert attestation report in database")
 		return consts.ErrInternalError
 	}
 

@@ -23,11 +23,28 @@ func (s proofRepo) CreateProof(ctx context.Context, signature [48]byte, signers 
 		Create(&proof)
 
 	if tx.Error != nil {
-		utils.Logger.With("err", tx.Error).Error("Cant create signers in database")
+		utils.Logger.With("err", tx.Error).Error("Cannot create signers in database")
 		return consts.ErrInternalError
 	}
 
 	return nil
+}
+
+func (s proofRepo) Find(ctx context.Context, hash [48]byte) (model.Proof, error) {
+	proof := model.Proof{}
+
+	tx := s.client.
+		GetConnection().
+		WithContext(ctx).
+		Where("hash = ?", hash).
+		First(&proof)
+
+	if tx.Error != nil {
+		utils.Logger.With("err", tx.Error).Error("Cannot fetch signer record from database")
+		return model.Proof{}, consts.ErrInternalError
+	}
+
+	return proof, nil
 }
 
 func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
@@ -42,7 +59,7 @@ func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int
 		Find(&ids)
 
 	if tx.Error != nil {
-		utils.Logger.With("err", tx.Error).Error("Cant fetch signer IDs from database")
+		utils.Logger.With("err", tx.Error).Error("Cannot fetch signer IDs from database")
 		return []int{}, consts.ErrInternalError
 	}
 

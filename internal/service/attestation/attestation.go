@@ -42,7 +42,7 @@ type service struct {
 	attestationRepo repository.Attestation
 
 	signatureCache *lru.Cache[bls12381.G1Affine, []Signature]
-	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]]
+	consensus      *lru.Cache[Key, xsync.MapOf[bls12381.G1Affine, big.Int]] // TODO: This needs to go
 
 	DebouncedSaveSignatures func(key bls12381.G1Affine, arg SaveSignatureArgs)
 	signatureMutex          *sync.Mutex
@@ -57,7 +57,7 @@ func (s *service) RecordSignature(
 	if supported := s.supportedTopics[[64]byte(info.Topic)]; !supported {
 		utils.Logger.
 			With("Topic", info.Topic).
-			Debug("Token not supported")
+			Debug("Topic not supported")
 		return consts.ErrTopicNotSupported
 	}
 
@@ -138,14 +138,30 @@ func (s *service) RecordSignature(
 	return nil
 }
 
+// TODO: This part can be a shared library
+func alreadySigned(signers []model.Signer, signer model.Signer) bool {
+	for _, s := range signers {
+		if bytes.Equal(s.PublicKey, signer.PublicKey) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) error {
 	signatures, ok := s.signatureCache.Get(args.Hash)
 	if !ok {
 		return consts.ErrSignatureNotfound
 	}
 
-	currentRecords, err := s.attestationRepo.Find(ctx, args.Info.Hash, args.Info.Topic, args.Info.Timestamp)
-	if err != nil {
+	blsHash := args.Info.Bls().Bytes()
+	currentRecord, err := s.attestationRepo.Find(ctx, blsHash[:])
+	if err != nil && err != consts.ErrRecordNotfound {
+		return err
+	}
+
+	currentProof, err := s.proofRepo.Find(ctx, blsHash)
+	if err != nil && err != consts.ErrRecordNotfound {
 		return err
 	}
 
@@ -153,22 +169,25 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 	var newSignatures []bls12381.G1Affine
 	// Select the new signers and signatures
 	for _, signature := range signatures {
-		newSigners = append(newSigners, signature.Signer)
-		newSignatures = append(newSignatures, signature.Signature)
+		if !alreadySigned(currentProof.Signers, signature.Signer) {
+			newSigners = append(newSigners, signature.Signer)
+			newSignatures = append(newSignatures, signature.Signature)
+		}
+	}
+
+	if len(newSigners) == 0 {
+		return consts.ErrNoNewSigners
 	}
 
 	// TODO: This part can be a shared library
-	for _, record := range currentRecords {
-		if record.Correct == args.Info.Correct {
-			currentSignature, err := bls.RecoverSignature([48]byte(record.Signature))
+	if currentRecord.Signature != nil {
+		currentSignature, err := bls.RecoverSignature([48]byte(currentRecord.Signature))
 
-			if err != nil {
-				return err
-			}
-
-			newSignatures = append(newSignatures, currentSignature)
-			break
+		if err != nil {
+			return err
 		}
+
+		newSignatures = append(newSignatures, currentSignature)
 	}
 
 	var aggregate bls12381.G1Affine
@@ -179,13 +198,13 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 
 	signatureBytes := aggregate.Bytes()
 
-	err = s.proofRepo.CreateProof(ctx, signatureBytes, newSigners)
+	err = s.proofRepo.CreateProof(ctx, blsHash, newSigners)
 	if err != nil {
 		return err
 	}
 
 	err = s.attestationRepo.Upsert(ctx, model.Attestation{
-		SignersCount: uint64(len(signatures)),
+		SignersCount: uint64(len(newSigners) + len(currentProof.Signers)),
 		Signature:    signatureBytes[:],
 		Consensus:    args.Consensus,
 		Voted:        args.Voted.Int64(),

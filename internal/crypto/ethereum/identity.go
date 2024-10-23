@@ -37,7 +37,7 @@ func NewIdentity() *Signer {
 		if err != nil {
 			utils.Logger.
 				With("Error", err).
-				Error("Can't decode EVM private key")
+				Error("Cannot decode EVM private key")
 
 			panic(err)
 		}
@@ -46,7 +46,7 @@ func NewIdentity() *Signer {
 		if err != nil {
 			utils.Logger.
 				With("Error", err).
-				Error("Can't generate EVM private key")
+				Error("Cannot generate EVM private key")
 
 			panic(err)
 		}
@@ -54,7 +54,7 @@ func NewIdentity() *Signer {
 
 	publicKeyECDSA, ok := privateKey.Public().(*ecdsa.PublicKey)
 	if !ok {
-		panic("Can't assert type: publicKey is not of type *ecdsa.PublicKey")
+		panic("Cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 	}
 
 	s := &Signer{

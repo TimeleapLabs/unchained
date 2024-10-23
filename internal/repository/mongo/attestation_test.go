@@ -65,7 +65,7 @@ func (s *AttestationRepositoryTestSuite) TestFind() {
 	err := s.repo.Upsert(context.TODO(), sampleAttestation)
 	s.NoError(err)
 
-	result, err := s.repo.Find(context.TODO(), sampleAttestation.Hash, sampleAttestation.Topic, sampleAttestation.Timestamp)
+	result, err := s.repo.Find(context.TODO(), sampleAttestation.Hash)
 	s.NoError(err)
 	s.Len(result, 1)
 }

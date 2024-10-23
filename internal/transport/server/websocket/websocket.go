@@ -33,7 +33,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		utils.Logger.Error("Can't upgrade the HTTP connection", slog.Any("error", err))
+		utils.Logger.Error("Cannot upgrade the HTTP connection", slog.Any("error", err))
 		return
 	}
 
@@ -46,11 +46,11 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, payload, err := conn.ReadMessage()
 		if err != nil {
-			utils.Logger.With("Err", err).ErrorContext(ctx, "Can't read message")
+			utils.Logger.With("Err", err).ErrorContext(ctx, "Cannot read message")
 
 			err := conn.Close()
 			if err != nil {
-				utils.Logger.With("Err", err).ErrorContext(ctx, "Can't close connection")
+				utils.Logger.With("Err", err).ErrorContext(ctx, "Cannot close connection")
 			}
 
 			break

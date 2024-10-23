@@ -45,7 +45,7 @@ func (s *Signer) FromSia(sia sia.Sia) *Signer {
 func (s *Signer) Bls() bls12381.G1Affine {
 	hash, err := bls.Hash(s.Sia().Bytes())
 	if err != nil {
-		utils.Logger.With("Err", err).Error("Can't hash bls")
+		utils.Logger.With("Err", err).Error("Cannot hash bls")
 		return bls12381.G1Affine{}
 	}
 
@@ -58,7 +58,7 @@ func (s Signers) Bls() []byte {
 	for _, signer := range s {
 		hash, err := bls.Hash(signer.Sia().Bytes())
 		if err != nil {
-			utils.Logger.With("Err", err).Error("Can't hash bls")
+			utils.Logger.With("Err", err).Error("Cannot hash bls")
 			return bytes
 		}
 

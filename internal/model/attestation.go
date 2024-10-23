@@ -57,7 +57,7 @@ func (c *Attestation) FromSia(sia sia.Sia) *Attestation {
 func (c *Attestation) Bls() *bls12381.G1Affine {
 	hash, err := bls.Hash(c.Sia().Bytes())
 	if err != nil {
-		utils.Logger.With("Err", err).Error("Can't hash bls")
+		utils.Logger.With("Err", err).Error("Cannot hash bls")
 		return &bls12381.G1Affine{}
 	}
 

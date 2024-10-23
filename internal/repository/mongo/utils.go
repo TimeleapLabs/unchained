@@ -12,7 +12,7 @@ func CursorToList[T any](ctx context.Context, cursor *mongo.Cursor) ([]T, error)
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
 		if err != nil {
-			utils.Logger.With("err", err).Error("Cant close cursor")
+			utils.Logger.With("err", err).Error("Cannot close cursor")
 		}
 	}(cursor, ctx)
 
@@ -27,7 +27,7 @@ func CursorToList[T any](ctx context.Context, cursor *mongo.Cursor) ([]T, error)
 	}
 
 	if err := cursor.Err(); err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch asset price records from database")
+		utils.Logger.With("err", err).Error("Cannot fetch asset price records from database")
 		return nil, consts.ErrInternalError
 	}
 

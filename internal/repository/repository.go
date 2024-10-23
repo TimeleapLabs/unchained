@@ -9,6 +9,7 @@ import (
 // Proof interface represents the methods that can be used to interact with the Proof table in the database.
 type Proof interface {
 	CreateProof(ctx context.Context, signature [48]byte, signers []model.Signer) error
+	Find(ctx context.Context, hash [48]byte) (model.Proof, error)
 	GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error)
 }
 
@@ -20,7 +21,7 @@ type Signer interface {
 
 // Attestation interface represents the methods that can be used to interact with the Attestation table in the database.
 type Attestation interface {
-	Find(ctx context.Context, hash []byte, topic []byte, timestamp uint64) ([]model.Attestation, error)
+	Find(ctx context.Context, hash []byte) (model.Attestation, error)
 	Upsert(ctx context.Context, data model.Attestation) error
 }
 

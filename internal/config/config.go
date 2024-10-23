@@ -30,7 +30,7 @@ func Load(configPath, secretPath string) error {
 	SecretFilePath = secretPath
 	err := cleanenv.ReadConfig(secretPath, &App.Secret)
 	if err != nil {
-		pureLog.Println("Can't load secrets")
+		pureLog.Println("Cannot load secrets")
 		// return constants.ErrCantLoadSecret
 	}
 
@@ -51,7 +51,7 @@ func Load(configPath, secretPath string) error {
 func (s *Secret) Save() error {
 	yamlData, err := yaml.Marshal(&s)
 	if err != nil {
-		utils.Logger.With("Error", err).Error("Can't marshal secrets to yaml")
+		utils.Logger.With("Error", err).Error("Cannot marshal secrets to yaml")
 		return consts.ErrCantWriteSecret
 	}
 
@@ -61,7 +61,7 @@ func (s *Secret) Save() error {
 
 	err = os.WriteFile(SecretFilePath, yamlData, 0600)
 	if err != nil {
-		utils.Logger.With("Error", err).Error("Can't write secret file")
+		utils.Logger.With("Error", err).Error("Cannot write secret file")
 		return consts.ErrCantWriteSecret
 	}
 

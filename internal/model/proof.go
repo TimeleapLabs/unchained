@@ -14,7 +14,6 @@ type Proof struct {
 
 	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Signature []byte    `bson:"signature" json:"signature"`
 
 	Signers []Signer `bson:"signers" gorm:"many2many:proof_signers;" json:"signers"`
 }
@@ -27,7 +26,6 @@ func (p *Proof) Sia() sia.Sia {
 	return sia.New().
 		AddByteArray8(p.Hash).
 		AddInt64(p.Timestamp.Unix()).
-		AddByteArray8(p.Signature).
 		AddByteArray64(signers.Bytes())
 }
 
@@ -45,16 +43,14 @@ func (p *Proof) FromSia(siaObj sia.Sia) *Proof {
 
 	p.Hash = siaObj.ReadByteArray8()
 	p.Timestamp = time.Unix(siaObj.ReadInt64(), 0)
-	p.Signature = siaObj.ReadByteArray8()
 	p.Signers = signers
 	return p
 }
 
-func NewProof(signers []Signer, signature []byte) *Proof {
+func NewProof(signers []Signer, hash []byte) *Proof {
 	return &Proof{
-		Hash:      Signers(signers).Bls(),
+		Hash:      hash,
 		Timestamp: time.Now(),
-		Signature: signature,
 		Signers:   signers,
 	}
 }

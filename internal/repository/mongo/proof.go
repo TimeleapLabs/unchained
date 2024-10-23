@@ -19,20 +19,49 @@ type proofRepo struct {
 	client database.MongoDatabase
 }
 
-func (s proofRepo) CreateProof(ctx context.Context, signature [48]byte, signers []model.Signer) error {
-	proof := model.NewProof(signers, signature[:])
-
+func (s proofRepo) CreateProof(ctx context.Context, hash [48]byte, signers []model.Signer) error {
 	_, err := s.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
 		Collection("signer").
-		InsertOne(ctx, proof)
+		UpdateOne(ctx, bson.M{
+			"hash": hash[:],
+		}, bson.M{
+			"$push": bson.M{
+				"signers": bson.M{
+					"$each": signers,
+				},
+			},
+		}, options.Update().SetUpsert(true))
+
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cant create signers in database")
+		utils.Logger.With("err", err).Error("Cannot create signers in database")
 		return consts.ErrInternalError
 	}
 
 	return nil
+}
+
+func (s proofRepo) Find(ctx context.Context, hash [48]byte) (model.Proof, error) {
+	var result model.Proof
+	err := s.client.
+		GetConnection().
+		Database(config.App.Mongo.Database).
+		Collection("signer").
+		FindOne(ctx, bson.M{
+			"hash": hash[:],
+		}).Decode(&result)
+
+	if err == mongo.ErrNoDocuments {
+		return model.Proof{}, consts.ErrRecordNotfound
+	}
+
+	if err != nil {
+		utils.Logger.With("err", err).Error("Cannot fetch signer record from database")
+		return model.Proof{}, consts.ErrInternalError
+	}
+
+	return result, nil
 }
 
 func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
@@ -46,7 +75,7 @@ func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int
 		}, opt)
 
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch signer IDs from database")
+		utils.Logger.With("err", err).Error("Cannot fetch signer IDs from database")
 		return []int{}, consts.ErrInternalError
 	}
 
@@ -54,21 +83,21 @@ func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
 		if err != nil {
-			utils.Logger.With("err", err).Error("Cant close cursor")
+			utils.Logger.With("err", err).Error("Cannot close cursor")
 		}
 	}(cursor, ctx)
 	for cursor.Next(ctx) {
 		var result model.Signer
 		err := cursor.Decode(&result)
 		if err != nil {
-			utils.Logger.With("err", err).Error("Cant decode signer record")
+			utils.Logger.With("err", err).Error("Cannot decode signer record")
 			return nil, err
 		}
 
 		ids = append(ids, int(result.ID))
 	}
 	if err := cursor.Err(); err != nil {
-		utils.Logger.With("err", err).Error("Cant fetch asset price records from database")
+		utils.Logger.With("err", err).Error("Cannot fetch asset price records from database")
 		return nil, consts.ErrInternalError
 	}
 
