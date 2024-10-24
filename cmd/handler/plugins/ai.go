@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// worker represents the worker command.
+// aiPlugin represents the ai command.
 var aiPlugin = &cobra.Command{
 	Use:   "ai",
 	Short: "Start the Unchained ai server for local invocation",
@@ -35,7 +35,7 @@ var aiPlugin = &cobra.Command{
 	},
 }
 
-// WithRunCmd appends the run command to the root command.
+// WithAIPluginCmd appends the run command to the root command.
 func WithAIPluginCmd(cmd *cobra.Command) {
 	cmd.AddCommand(aiPlugin)
 }

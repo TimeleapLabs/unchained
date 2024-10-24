@@ -1,20 +1,20 @@
 package app
 
 import (
+	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/unchained/internal/repository"
+	mongoRepo "github.com/TimeleapLabs/unchained/internal/repository/mongo"
 	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
-	correctnessService "github.com/TimeleapLabs/unchained/internal/service/correctness"
-	evmlogService "github.com/TimeleapLabs/unchained/internal/service/evmlog"
+	attestationService "github.com/TimeleapLabs/unchained/internal/service/attestation"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
-	uniswapService "github.com/TimeleapLabs/unchained/internal/service/uniswap"
 	"github.com/TimeleapLabs/unchained/internal/transport/client"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
+	"github.com/TimeleapLabs/unchained/internal/transport/database/mongo"
 	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
-	"github.com/TimeleapLabs/unchained/internal/transport/server"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/gql"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
@@ -32,24 +32,32 @@ func Consumer() {
 	)
 
 	ethRPC := ethereum.New()
-	pos := pos.New(ethRPC)
-	db := postgres.New()
+	_posService := pos.New(ethRPC)
 
-	eventLogRepo := postgresRepo.NewEventLog(db)
-	signerRepo := postgresRepo.NewSigner(db)
-	assetPrice := postgresRepo.NewAssetPrice(db)
-	correctnessRepo := postgresRepo.NewCorrectness(db)
+	var proofRepo repository.Proof
+	var attestationRepo repository.Attestation
 
-	correctnessService := correctnessService.New(pos, signerRepo, correctnessRepo)
-	evmLogService := evmlogService.New(ethRPC, pos, eventLogRepo, signerRepo, nil)
-	uniswapService := uniswapService.New(ethRPC, pos, signerRepo, assetPrice)
+	if config.App.Mongo.URL != "" {
+		utils.Logger.Info("MongoDB configuration found, initializing...")
+		db := mongo.New()
+
+		proofRepo = mongoRepo.NewProof(db)
+		attestationRepo = mongoRepo.NewAttestation(db)
+	} else {
+		utils.Logger.Info("Postgresql configuration found, initializing...")
+		db := postgres.New()
+		db.Migrate()
+
+		proofRepo = postgresRepo.NewProof(db)
+		attestationRepo = postgresRepo.NewAttestation(db)
+	}
+
+	_attestationService := attestationService.New(_posService, proofRepo, attestationRepo)
 
 	conn.Start()
 
-	handler := handler.NewConsumerHandler(correctnessService, uniswapService, evmLogService)
-	client.NewRPC(handler)
+	consumerHandler := handler.NewConsumerHandler(_attestationService)
+	client.NewRPC(consumerHandler)
 
-	server.New(
-		gql.WithGraphQL(db),
-	)
+	select {}
 }

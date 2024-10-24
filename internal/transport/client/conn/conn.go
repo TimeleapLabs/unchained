@@ -2,6 +2,7 @@ package conn
 
 import (
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -62,7 +63,7 @@ func Reconnect(err error) {
 				utils.Logger.
 					With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
 					With("Error", err).
-					Error("Can't reconnect to broker")
+					Error("Cannot reconnect to broker")
 			} else {
 				IsClosed = false
 				Send(consts.OpCodeHello, hello)
@@ -71,7 +72,7 @@ func Reconnect(err error) {
 			}
 		}
 
-		panic("Cant Connect to broker")
+		panic("Cannot Connect to broker")
 	}
 }
 
@@ -82,7 +83,7 @@ func Close() {
 		if err != nil {
 			utils.Logger.
 				With("Error", err).
-				Error("Can't sent close packet")
+				Error("Cannot sent close packet")
 		}
 
 		IsClosed = true
@@ -135,21 +136,19 @@ func Read() <-chan []byte {
 	return out
 }
 
+// SendRaw function sends byte array data to the broker.
 func SendRaw(data []byte) error {
 	mu.Lock()
 	defer mu.Unlock()
 	return conn.WriteMessage(websocket.BinaryMessage, data)
 }
 
+// Send function sends a message with specific opCode to the broker.
 func Send(opCode consts.OpCode, payload []byte) {
 	err := SendRaw(
 		append([]byte{byte(opCode)}, payload...),
 	)
 	if err != nil {
-		utils.Logger.Error("Can't send packet: %v", err)
+		utils.Logger.Error("Cannot send packet", slog.Any("error", err))
 	}
-}
-
-func SendMessage(opCode consts.OpCode, message string) {
-	Send(opCode, []byte(message))
 }

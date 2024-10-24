@@ -2,6 +2,7 @@ package consts
 
 import "errors"
 
+// Error list of the project.
 var (
 	ErrInvalidKosk             = errors.New("kosk.invalid")
 	ErrInvalidConfig           = errors.New("conf.invalid")
@@ -24,10 +25,12 @@ var (
 	ErrCantRecoverSignature    = errors.New("can't recover signature")
 	ErrClientNotFound          = errors.New("client not found")
 	ErrSignatureNotfound       = errors.New("signature not found")
+	ErrRecordNotfound          = errors.New("record not found")
 	ErrCantLoadLastBlock       = errors.New("can't load last block")
 	ErrDuplicateSignature      = errors.New("duplicate signature")
 	ErrCrossPriceIsNotZero     = errors.New("cross price is not zero")
 	ErrAlreadySynced           = errors.New("already synced")
 	ErrCantSendRPCRequest      = errors.New("can't send rpc request")
 	ErrCantReceiveRPCResponse  = errors.New("can't receive rpc response")
+	ErrNoNewSigners            = errors.New("no new signers")
 )
