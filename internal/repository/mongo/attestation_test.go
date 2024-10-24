@@ -23,7 +23,9 @@ var sampleAttestation = model.Attestation{
 	Timestamp:    999,
 	Hash:         nil,
 	Topic:        []byte{},
-	Correct:      false,
+	Meta: map[string]interface{}{
+		"Correct": true,
+	},
 }
 
 type AttestationRepositoryTestSuite struct {

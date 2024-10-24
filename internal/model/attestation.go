@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
@@ -29,15 +30,21 @@ type Attestation struct {
 	Timestamp    uint64
 	Hash         []byte `gorm:"uniqueIndex:idx_topic_hash"`
 	Topic        []byte `gorm:"uniqueIndex:idx_topic_hash"`
-	Correct      bool
+	Meta         map[string]interface{}
 }
 
 func (c *Attestation) Sia() sia.Sia {
+	json, err := json.Marshal(c.Meta)
+	if err != nil {
+		utils.Logger.With("Err", err).Error("Cannot marshal meta")
+		panic(err)
+	}
+
 	return sia.New().
 		AddUInt64(c.Timestamp).
 		AddByteArray8(c.Hash).
 		AddByteArray8(c.Topic).
-		AddBool(c.Correct)
+		AddByteArray32(json)
 }
 
 func (c *Attestation) FromBytes(payload []byte) *Attestation {
@@ -49,7 +56,14 @@ func (c *Attestation) FromSia(sia sia.Sia) *Attestation {
 	c.Timestamp = sia.ReadUInt64()
 	c.Hash = sia.ReadByteArray8()
 	c.Topic = sia.ReadByteArray8()
-	c.Correct = sia.ReadBool()
+	c.Meta = make(map[string]interface{})
+
+	jsonBytes := sia.ReadByteArray32()
+	err := json.Unmarshal(jsonBytes, &c.Meta)
+	if err != nil {
+		utils.Logger.With("Err", err).Error("Cannot unmarshal meta")
+		panic(err)
+	}
 
 	return c
 }

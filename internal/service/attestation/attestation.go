@@ -3,6 +3,7 @@ package attestation
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
@@ -76,10 +77,15 @@ func (s *service) RecordSignature(
 		}
 	}
 
+	metaJSON, err := json.Marshal(info.Meta)
+	if err != nil {
+		return err
+	}
+
 	key := Key{
-		Hash:    fmt.Sprintf("%x", info.Hash),
-		Topic:   fmt.Sprintf("%x", info.Topic),
-		Correct: info.Correct,
+		Hash:  fmt.Sprintf("%x", info.Hash),
+		Topic: fmt.Sprintf("%x", info.Topic),
+		Meta:  string(metaJSON),
 	}
 
 	if !s.consensus.Contains(key) {
@@ -211,7 +217,7 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 		Timestamp:    args.Info.Timestamp,
 		Hash:         args.Info.Hash,
 		Topic:        args.Info.Topic,
-		Correct:      args.Info.Correct,
+		Meta:         args.Info.Meta,
 	})
 	if err != nil {
 		return err

@@ -52,11 +52,11 @@ func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) err
 			"hash": data.Bls().Bytes(),
 		}, bson.M{
 			"$set": bson.M{
-				"data.correct":       data.Correct, // TODO: Replace with a "meta" field
+				"data.meta":          data.Meta,
 				"data.signers_count": data.SignersCount,
 				"data.signature":     data.Signature,
 				"data.timestamp":     data.Timestamp,
-				"data.consensus":     data.Consensus, // TODO: Remove this field
+				"data.consensus":     data.Consensus, // TODO: Remove this field?
 				"data.voted":         data.Voted,     // TODO: Improve or remove this field
 			},
 			"$setOnInsert": bson.M{

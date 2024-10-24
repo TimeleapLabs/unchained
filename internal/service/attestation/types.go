@@ -9,9 +9,9 @@ import (
 )
 
 type Key struct {
-	Hash    string
-	Topic   string
-	Correct bool
+	Hash  string
+	Topic string
+	Meta  string
 }
 
 type Signature struct {
