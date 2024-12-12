@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
 func TextToImage(prompt string, negativePrompt string, model string, loraWeights string, steps uint8) []byte {

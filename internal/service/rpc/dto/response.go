@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/google/uuid"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
 // RPCResponse is the response of a RPC request.

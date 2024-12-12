@@ -1,6 +1,6 @@
 package dto
 
-import sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+import sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 
 // RegisterFunction is a DTO for registering a function.
 type RegisterFunction struct {
