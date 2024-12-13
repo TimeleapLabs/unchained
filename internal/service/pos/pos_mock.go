@@ -39,5 +39,10 @@ func (m *MockService) GetVotingPowerOfPublicKey(_ context.Context, pkBytes [96]b
 
 func (m *MockService) GetSchnorrSigners(_ context.Context) ([]common.Address, error) {
 	args := m.Called()
-	return args.Get(0).([]common.Address), args.Error(1)
+	if result := args.Get(0); result != nil {
+		if addresses, ok := result.([]common.Address); ok {
+			return addresses, args.Error(1)
+		}
+	}
+	return nil, args.Error(1)
 }

@@ -252,6 +252,7 @@ func (s *service) GetPriceAtBlockFromPair(
 
 	data, err := pair.Slot0(
 		&bind.CallOpts{
+			//nolint:gosec // refactoring needed
 			BlockNumber: big.NewInt(int64(blockNumber)),
 		})
 

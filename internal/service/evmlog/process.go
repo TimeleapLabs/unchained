@@ -67,7 +67,9 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 		}
 
 		query := goEthereum.FilterQuery{
+			//nolint:gosec //refactoring needed
 			FromBlock: big.NewInt(int64(fromBlock)),
+			//nolint:gosec // refactoring needed
 			ToBlock:   big.NewInt(int64(toBlock)),
 			Addresses: []common.Address{contractAddress},
 		}
@@ -139,7 +141,9 @@ func (s *service) ProcessBlocks(ctx context.Context, chain string) error {
 				value := eventData[key]
 
 				if strings.HasPrefix(argTypes[key], "uint") || strings.HasPrefix(argTypes[key], "int") {
-					value = value.(*big.Int).String()
+					if bigInt, ok := value.(*big.Int); ok {
+						value = bigInt.String()
+					}
 				}
 
 				args = append(

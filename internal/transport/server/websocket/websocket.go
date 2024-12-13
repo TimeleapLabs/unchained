@@ -28,11 +28,11 @@ func WithWebsocket() func() {
 
 // multiplexer is a function that routes incoming messages to the appropriate handler.
 func multiplexer(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // remove this line in production
+	upgrader.CheckOrigin = func(_ *http.Request) bool { return true } // remove this line in production
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		utils.Logger.Error("Can't upgrade the HTTP connection: %v", err)
+		utils.Logger.With("Error", err).Error("Can't upgrade the HTTP connection")
 		return
 	}
 
@@ -45,11 +45,11 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, payload, err := conn.ReadMessage()
 		if err != nil {
-			utils.Logger.Error("Can't read message: %v", err)
+			utils.Logger.With("Error", err).Error("Can't read message")
 
 			err := conn.Close()
 			if err != nil {
-				utils.Logger.Error("Can't close connection: %v", err)
+				utils.Logger.With("Error", err).Error("Can't close connection")
 			}
 
 			break

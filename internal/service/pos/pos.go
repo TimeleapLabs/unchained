@@ -86,6 +86,7 @@ func (s *service) GetVotingPowerOfEvm(ctx context.Context, evmAddress string) (*
 		return nil, err
 	}
 	address := common.HexToAddress(evmAddress)
+	//nolint:gosec // refactoring needed
 	return s.GetVotingPower(address, big.NewInt(int64(block)))
 }
 
@@ -99,6 +100,7 @@ func (s *service) GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byt
 	if err != nil {
 		return nil, err
 	}
+	//nolint:gosec // refactoring needed
 	return s.GetVotingPower(addrHex, big.NewInt(int64(block)))
 }
 

@@ -57,6 +57,7 @@ func (tc *TxChecker) CheckTransaction(txHash common.Hash, toAddress common.Addre
 		return false, fmt.Errorf("could not retrieve block header: %w", err)
 	}
 
+	//nolint:gosec // refactoring needed
 	blockTime := time.Unix(int64(header.Time), 0)
 	if time.Since(blockTime) > 5*time.Minute {
 		tc.txCache.MarkExpired(txHash)

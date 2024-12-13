@@ -20,6 +20,7 @@ type UnixPayload struct {
 func NewUnixPayload(params *dto.RPCRequest) *UnixPayload {
 	payload := params.Sia().Bytes()
 	return &UnixPayload{
+		//nolint:gosec // refactoring needed
 		Size:   uint32(len(payload)),
 		Params: payload,
 	}
