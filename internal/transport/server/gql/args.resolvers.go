@@ -7,8 +7,9 @@ package gql
 import (
 	"context"
 	"fmt"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"strings"
+
+	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/generated"
 )

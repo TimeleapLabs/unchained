@@ -26,10 +26,11 @@ import (
 	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	lru "github.com/hashicorp/golang-lru/v2"
-	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/puzpuzpuz/xsync/v3"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
 const (

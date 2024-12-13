@@ -5,8 +5,9 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"strings"
+
+	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

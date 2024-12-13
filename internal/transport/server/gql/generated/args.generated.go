@@ -5,10 +5,11 @@ package generated
 import (
 	"context"
 	"errors"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
+
+	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/gql/types"

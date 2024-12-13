@@ -9,6 +9,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 

@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/google/uuid"
+
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 

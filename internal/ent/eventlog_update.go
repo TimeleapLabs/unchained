@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"entgo.io/ent/dialect/sql"

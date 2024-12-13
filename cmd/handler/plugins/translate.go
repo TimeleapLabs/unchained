@@ -7,8 +7,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/spf13/cobra"
+
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
 // worker represents the worker command.

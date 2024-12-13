@@ -6,10 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
+
+	"github.com/TimeleapLabs/unchained/internal/model"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
