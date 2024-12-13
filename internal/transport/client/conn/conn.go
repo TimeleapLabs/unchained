@@ -146,7 +146,7 @@ func Send(opCode consts.OpCode, payload []byte) {
 		append([]byte{byte(opCode)}, payload...),
 	)
 	if err != nil {
-		utils.Logger.Error("Can't send packet: %v", err)
+		utils.Logger.With("Error", err).Error("Can't send packet")
 	}
 }
 
