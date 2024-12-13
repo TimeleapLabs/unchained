@@ -23,7 +23,7 @@ strip:
 tools:
 	go mod tidy
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-	  sh -s -- -b $(CURDIR)/bin v1.55.2
+	  sh -s -- -b $(CURDIR)/bin v1.62.2
 	go get golang.org/x/tools/cmd/goimports
 	go install github.com/kisielk/errcheck@latest
 
