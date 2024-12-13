@@ -110,7 +110,7 @@ linters-settings:
     max-func-lines: 0
 
   nolintlint:
-    allow-no-explanation: [ funlen, gocognit, lll ]
+    allow-no-explanation: [funlen, gocognit, lll]
     require-explanation: true
     require-specific: true
 
@@ -136,13 +136,12 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
+    - copyloopvar
     - cyclop
     - durationcheck
     - errname
     - errorlint
-    - execinquery
     - exhaustive
-    - exportloopref
     - forbidigo
     - funlen
     - gocheckcompilerdirectives
@@ -194,11 +193,11 @@ issues:
   max-same-issues: 50
   exclude-rules:
     - text: 'shadow: declaration of "(err|ctx|ok)" shadows declaration at'
-      linters: [ govet ]
+      linters: [govet]
     - source: "(noinspection|TODO)"
-      linters: [ godot ]
+      linters: [godot]
     - source: "//noinspection"
-      linters: [ gocritic ]
+      linters: [gocritic]
     - path: "cmd"
       linters:
         - funlen
