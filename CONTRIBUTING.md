@@ -59,23 +59,6 @@ pull request (PR).
 - If the `develop` branch is updated before your PR is merged, you must rebase
   your commits to keep the history clean and avoid merge conflicts.
 
-### 6. Commit Messages and Pull Requests
-
-We use commitizen for commit and changelog management. You'll need the following
-tools to get started:
-
-- [Pre-commit](https://pre-commit.com/): Used for various pre-commit checks
-  including commit message lint checks.
-- [Commitizen](https://commitizen-tools.github.io): Used for creating commit
-  messages and maintaining a logfile.
-- [Golangci-lint](https://golangci-lint.run/): Used for Golang lint checks.
-
-You'll need to run the following command to setup the pre-commit hooks:
-
-```sh
-pre-commit install --install-hooks --hook-type commit-msg --hook-type pre-push
-```
-
 ## Conclusion
 
 Following these guidelines helps us maintain a high standard of quality for our

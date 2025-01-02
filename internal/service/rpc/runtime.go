@@ -1,15 +1,15 @@
 package rpc
 
 import (
-	"net"
+	"github.com/gorilla/websocket"
 )
 
 // Runtime is a type that holds the runtime of a function.
 type Runtime string
 
 const (
-	Mock Runtime = "Mock"
-	Unix Runtime = "Unix"
+	Mock      Runtime = "Mock"
+	WebSocket Runtime = "WebSocket"
 )
 
 func WithMockTask(name string) func(s *Worker) {
@@ -20,19 +20,24 @@ func WithMockTask(name string) func(s *Worker) {
 	}
 }
 
-func WithUnixSocket(name string, path string) func(s *Worker) {
+func WithWebSocket(name string, url string) func(s *Worker) {
 	return func(s *Worker) {
 		meta := meta{
-			runtime: Unix,
-			path:    path,
+			runtime: WebSocket,
+			path:    url,
 		}
 
-		var err error
-		meta.conn, err = net.Dial("unix", path)
+		// TODO: NEED A HANDLER TO HANDLE THE CONNECTION
+		wsConn, httpResp, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			panic(err)
 		}
 
+		if httpResp.StatusCode != 101 {
+			panic("Failed to establish websocket connection")
+		}
+
+		meta.conn = wsConn
 		s.functions[name] = meta
 	}
 }

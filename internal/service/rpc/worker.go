@@ -2,13 +2,14 @@ package rpc
 
 import (
 	"context"
-	"net"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/runtime"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+
+	"github.com/gorilla/websocket"
 )
 
 type Option func(s *Worker)
@@ -17,7 +18,7 @@ type Option func(s *Worker)
 type meta struct {
 	runtime Runtime
 	path    string
-	conn    net.Conn
+	conn    *websocket.Conn
 }
 
 // Worker is a struct that holds the functions that the worker can run.
@@ -26,21 +27,21 @@ type Worker struct {
 }
 
 // RunFunction runs a function with the given name and parameters.
-func (w *Worker) RunFunction(ctx context.Context, name string, params *dto.RPCRequest) ([]byte, error) {
+func (w *Worker) RunFunction(ctx context.Context, name string, params *dto.RPCRequest) error {
 	switch w.functions[name].runtime {
-	case Unix:
-		result, err := runtime.RunUnixCall(ctx, w.functions[name].conn, params)
+	case WebSocket:
+		err := runtime.RunWebSocketCall(ctx, w.functions[name].conn, params)
 		if err != nil {
-			utils.Logger.With("err", err).Error("Failed to run wasm")
-			return nil, err
+			utils.Logger.With("err", err).Error("Failed to run function")
+			return err
 		}
 
-		return result.Sia().Bytes(), nil
+		return nil
 	case Mock:
 		return runtime.RunMock(params.Sia().Bytes())
 	}
 
-	return nil, consts.ErrInternalError
+	return consts.ErrInternalError
 }
 
 // registerFunction registers a function with the broker.

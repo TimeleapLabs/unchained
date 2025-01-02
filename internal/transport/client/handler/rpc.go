@@ -4,9 +4,7 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/service/ai"
@@ -38,12 +36,10 @@ func (w worker) RPCRequest(ctx context.Context, message []byte) {
 		return
 	}
 
-	response, err := w.rpc.RunFunction(ctx, packet.Method, packet)
+	err = w.rpc.RunFunction(ctx, packet.Method, packet)
 	if err != nil {
 		return
 	}
-
-	conn.Send(consts.OpCodeRPCResponse, response)
 }
 
 // RPCResponse is not defined for worker nodes.

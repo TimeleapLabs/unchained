@@ -30,8 +30,8 @@ func Worker(_ context.Context) {
 	rpcFunctions := []rpc.Option{}
 	for _, fun := range config.App.Functions {
 		switch fun.Type { //nolint: gocritic // This is a switch case for different types of rpc functions
-		case "unix":
-			rpcFunctions = append(rpcFunctions, rpc.WithUnixSocket(fun.Name, fun.Endpoint))
+		case "websocket":
+			rpcFunctions = append(rpcFunctions, rpc.WithWebSocket(fun.Name, fun.Endpoint))
 		}
 	}
 	rpcService := rpc.NewWorker(rpcFunctions...)
