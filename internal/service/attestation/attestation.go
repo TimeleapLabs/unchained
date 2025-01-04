@@ -246,7 +246,7 @@ func New(
 		panic(err)
 	}
 
-	for _, conf := range config.App.Plugins.Attestation {
+	for _, conf := range config.App.Dataframes {
 		c.supportedTopics[[64]byte(utils.Shake([]byte(conf)))] = true
 	}
 

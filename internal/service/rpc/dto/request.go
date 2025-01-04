@@ -13,6 +13,8 @@ type RPCRequest struct {
 	Signature [48]byte `json:"signature"`
 	// Payment information
 	TxHash string `json:"tx_hash"`
+	// The plugin to be called
+	Plugin string `json:"plugin"`
 	// The method to be called
 	Method string `json:"method"`
 	// params to pass to the function
@@ -46,6 +48,7 @@ func (t *RPCRequest) Sia() sia.Sia {
 		AddByteArray8(uuidBytes).
 		AddByteArray8(t.Signature[:]).
 		AddString8(t.TxHash).
+		AddString8(t.Plugin).
 		AddString8(t.Method).
 		EmbedBytes(t.Params)
 }
@@ -64,6 +67,7 @@ func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
 	copy(t.Signature[:], s.ReadByteArray8())
 
 	t.TxHash = s.ReadString8()
+	t.Plugin = s.ReadString8()
 	t.Method = s.ReadString8()
 	t.Params = s.Bytes()[s.Offset():]
 

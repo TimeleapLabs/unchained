@@ -10,7 +10,7 @@ type RPCResponse struct {
 	// The ID of the request
 	ID uuid.UUID `json:"id"`
 	// The error of the function
-	Error uint64 `json:"error"`
+	Error uint16 `json:"error"`
 	// The response of the function
 	Response []byte `json:"response"`
 }
@@ -23,7 +23,7 @@ func (t *RPCResponse) Sia() sia.Sia {
 
 	return sia.New().
 		AddByteArray8(uuidBytes).
-		AddUInt64(t.Error).
+		AddUInt16(t.Error).
 		EmbedBytes(t.Response)
 }
 
@@ -36,7 +36,7 @@ func (t *RPCResponse) FromSiaBytes(bytes []byte) *RPCResponse {
 		return nil
 	}
 
-	t.Error = s.ReadUInt64()
+	t.Error = s.ReadUInt16()
 	t.Response = s.Bytes()[s.Offset():]
 
 	return t

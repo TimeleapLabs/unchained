@@ -28,10 +28,10 @@ func Worker(_ context.Context) {
 	)
 
 	rpcFunctions := []rpc.Option{}
-	for _, fun := range config.App.Functions {
-		switch fun.Type { //nolint: gocritic // This is a switch case for different types of rpc functions
+	for _, plugin := range config.App.Plugins {
+		switch plugin.Type { //nolint: gocritic // This is a switch case for different types of rpc functions
 		case "websocket":
-			rpcFunctions = append(rpcFunctions, rpc.WithWebSocket(fun.Name, fun.Endpoint))
+			rpcFunctions = append(rpcFunctions, rpc.WithWebSocket(plugin.Name, plugin.Functions, plugin.Endpoint))
 		}
 	}
 	rpcService := rpc.NewWorker(rpcFunctions...)
@@ -40,4 +40,6 @@ func Worker(_ context.Context) {
 
 	workerHandler := handler.NewWorkerHandler(rpcService)
 	client.NewRPC(workerHandler)
+
+	select {}
 }

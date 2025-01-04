@@ -1,6 +1,12 @@
 package rpc
 
 import (
+	"log"
+
+	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
@@ -12,22 +18,24 @@ const (
 	WebSocket Runtime = "WebSocket"
 )
 
-func WithMockTask(name string) func(s *Worker) {
+func WithMockTask(pluginName string, name string) func(s *Worker) {
 	return func(s *Worker) {
-		s.functions[name] = meta{
-			runtime: Mock,
+		s.plugins[name] = plugin{
+			name:      pluginName,
+			runtime:   Mock,
+			functions: []string{name},
 		}
 	}
 }
 
-func WithWebSocket(name string, url string) func(s *Worker) {
+func WithWebSocket(pluginName string, functions []string, url string) func(s *Worker) {
 	return func(s *Worker) {
-		meta := meta{
-			runtime: WebSocket,
-			path:    url,
+		p := plugin{
+			name:      pluginName,
+			runtime:   WebSocket,
+			functions: functions,
 		}
 
-		// TODO: NEED A HANDLER TO HANDLE THE CONNECTION
 		wsConn, httpResp, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			panic(err)
@@ -37,7 +45,28 @@ func WithWebSocket(name string, url string) func(s *Worker) {
 			panic("Failed to establish websocket connection")
 		}
 
-		meta.conn = wsConn
-		s.functions[name] = meta
+		go func() {
+			for {
+				_, message, err := wsConn.ReadMessage()
+				if err != nil {
+					log.Println("Read error:", err)
+					break
+				}
+
+				if len(message) == 0 {
+					continue
+				}
+
+				packet := new(dto.RPCResponse).FromSiaBytes(message)
+				utils.Logger.
+					With("ID", packet.ID).
+					Info("RPC Response")
+
+				conn.Send(consts.OpCodeRPCResponse, message)
+			}
+		}()
+
+		p.conn = wsConn
+		s.plugins[pluginName] = p
 	}
 }

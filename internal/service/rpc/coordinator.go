@@ -29,29 +29,29 @@ func (r *Coordinator) GetTask(taskID uuid.UUID) *websocket.Conn {
 }
 
 // RegisterWorker will register a worker which a connection provide.
-func (r *Coordinator) RegisterWorker(function string, conn *websocket.Conn) {
-	r.Workers[function] = append(r.Workers[function], conn)
+func (r *Coordinator) RegisterWorker(plugin string, conn *websocket.Conn) {
+	r.Workers[plugin] = append(r.Workers[plugin], conn)
 }
 
 // UnregisterWorker will unregister a worker which a connection provide.
-func (r *Coordinator) UnregisterWorker(function string, conn *websocket.Conn) {
-	workers := r.Workers[function]
+func (r *Coordinator) UnregisterWorker(plugin string, conn *websocket.Conn) {
+	workers := r.Workers[plugin]
 	for i, c := range workers {
 		if c == conn {
-			r.Workers[function] = append(workers[:i], workers[i+1:]...)
+			r.Workers[plugin] = append(workers[:i], workers[i+1:]...)
 			break
 		}
 	}
 }
 
 // GetWorkers will return a list of workers which provide a function.
-func (r *Coordinator) GetWorkers(function string) []*websocket.Conn {
-	return r.Workers[function]
+func (r *Coordinator) GetWorkers(plugin string) []*websocket.Conn {
+	return r.Workers[plugin]
 }
 
 // GetRandomWorker will return a random worker which provide a function.
-func (r *Coordinator) GetRandomWorker(function string) *websocket.Conn {
-	workers := r.Workers[function]
+func (r *Coordinator) GetRandomWorker(plugin string) *websocket.Conn {
+	workers := r.Workers[plugin]
 	available := make([]*websocket.Conn, 0, len(workers))
 
 	for _, worker := range workers {
@@ -64,7 +64,7 @@ func (r *Coordinator) GetRandomWorker(function string) *websocket.Conn {
 		return nil
 	}
 
-	r.Workers[function] = available
+	r.Workers[plugin] = available
 	random := rand.Intn(len(available))
 
 	return available[random]

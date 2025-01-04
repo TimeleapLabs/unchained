@@ -15,7 +15,7 @@ func NewRPC(handler handler.Handler) {
 	incoming := conn.Read()
 
 	go func() {
-		utils.Logger.Info("Starting consumer from broker")
+		utils.Logger.Info("RPC client started")
 
 		for payload := range incoming {
 			go func(payload []byte) {

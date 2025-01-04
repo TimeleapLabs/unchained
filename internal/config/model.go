@@ -24,8 +24,11 @@ type RPC struct {
 }
 
 // Plugins struct hold the plugins configurations of the application.
-type Plugins struct {
-	Attestation []string `yaml:"attestation"`
+type Plugin struct {
+	Type      string   `json:"type"`
+	Name      string   `json:"name"`
+	Endpoint  string   `json:"endpoint"`
+	Functions []string `json:"functions"`
 }
 
 // ProofOfStake struct hold the proof of stake contract's configurations.
@@ -65,11 +68,6 @@ type Secret struct {
 }
 
 // Function struct hold the function configuration of the application.
-type Function struct {
-	Type     string `json:"type"`
-	Name     string `json:"name"`
-	Endpoint string `json:"endpoint"`
-}
 
 // Config struct is the main configuration struct of application.
 type Config struct {
@@ -77,9 +75,9 @@ type Config struct {
 	Network      Network      `yaml:"network"`
 	RPC          []RPC        `yaml:"rpc"`
 	Mongo        Mongo        `yaml:"mongo"`
-	Functions    []Function   `yaml:"functions"`
 	Postgres     Postgres     `yaml:"postgres"`
 	ProofOfStake ProofOfStake `yaml:"pos"`
-	Plugins      Plugins      `yaml:"plugins"`
+	Plugins      []Plugin     `yaml:"plugins"`
 	Secret       Secret       `yaml:"secret"`
+	Dataframes   []string     `yaml:"dataframes"`
 }

@@ -20,7 +20,6 @@ type RPC interface {
 	RefreshRPC(network string)
 	GetClient(network string) *ethclient.Client
 	GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error)
-	GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error)
 	GetBlockNumber(ctx context.Context, network string) (uint64, error)
 }
 
@@ -83,19 +82,6 @@ func (r *repository) GetNewStakingContract(network string, address string, refre
 	}
 
 	return contracts.NewProofOfStake(common.HexToAddress(address), client)
-}
-
-func (r *repository) GetNewUniV3Contract(network string, address string, refresh bool) (*contracts.UniV3, error) {
-	if refresh {
-		r.RefreshRPC(network)
-	}
-
-	client := r.GetClient(network)
-	if client == nil {
-		return nil, consts.ErrClientNotFound
-	}
-
-	return contracts.NewUniV3(common.HexToAddress(address), client)
 }
 
 // GetBlockNumber returns the most recent block number.

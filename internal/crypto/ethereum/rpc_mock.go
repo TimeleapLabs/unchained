@@ -29,13 +29,6 @@ func (m mockRPC) GetNewStakingContract(_ string, address string, _ bool) (*contr
 	)
 }
 
-func (m mockRPC) GetNewUniV3Contract(_ string, address string, _ bool) (*contracts.UniV3, error) {
-	return contracts.NewUniV3(
-		common.HexToAddress(address),
-		m.backend,
-	)
-}
-
 func (m mockRPC) GetBlockNumber(_ context.Context, _ string) (uint64, error) {
 	var blockNumber uint64 = 1000
 	return blockNumber, nil
