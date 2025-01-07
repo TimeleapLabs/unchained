@@ -1,24 +1,40 @@
-prod:
-	GOOS=windows GOARCH=amd64 go build -o bin/unchained.windows.amd64.exe ./cmd/main.go
-	GOOS=darwin GOARCH=amd64 go build -o bin/unchained.darwin.amd64 ./cmd/main.go
-	GOOS=linux GOARCH=amd64 go build -o bin/unchained.linux.amd64 ./cmd/main.go
+# Variables
+BIN_DIR := bin
+CMD := ./cmd/main.go
+ARCHS := amd64 arm64
+OS_LIST := windows darwin linux
 
-	GOOS=windows GOARCH=arm64 go build -o bin/unchained.windows.arm64.exe ./cmd/main.go
-	GOOS=darwin GOARCH=arm64 go build -o bin/unchained.darwin.arm64 ./cmd/main.go
-	GOOS=linux GOARCH=arm64 go build -o bin/unchained.linux.arm64 ./cmd/main.go
+# Targets
+all: prod
 
-	find bin -type f -exec chmod u+x {} \;
+prod: build
 
-strip:
-	GOOS=windows GOARCH=amd64 go build -ldflags "-w -s" -o bin/unchained.windows.amd64.exe ./cmd/main.go
-	GOOS=darwin GOARCH=amd64 go build -ldflags "-w -s" -o bin/unchained.darwin.amd64 ./cmd/main.go
-	GOOS=linux GOARCH=amd64 go build -ldflags "-w -s" -o bin/unchained.linux.amd64 ./cmd/main.go
+strip: LD_FLAGS=-ldflags "-w -s"
+strip: build
 
-	GOOS=windows GOARCH=arm64 go build -ldflags "-w -s" -o bin/unchained.windows.arm64.exe ./cmd/main.go
-	GOOS=darwin GOARCH=arm64 go build -ldflags "-w -s" -o bin/unchained.darwin.arm64 ./cmd/main.go
-	GOOS=linux GOARCH=arm64 go build -ldflags "-w -s" -o bin/unchained.linux.arm64 ./cmd/main.go
+darwin: OS=darwin
+darwin: build
 
-	find bin -type f -exec chmod u+x {} \;
+linux: OS=linux
+linux: build
+
+windows: OS=windows
+windows: build
+
+# Unified build rule
+build:
+	@for os in $(if $(OS),$(OS),$(OS_LIST)); do \
+		for arch in $(ARCHS); do \
+			output="$(BIN_DIR)/unchained.$$os.$$arch"; \
+			[ $$os = "windows" ] && output+=".exe"; \
+			echo "Building $$output $(if $(LD_FLAGS),with flags: $(LD_FLAGS),)"; \
+			GOOS=$$os GOARCH=$$arch go build $(LD_FLAGS) -o $$output $(CMD); \
+		done; \
+	done
+
+exec:
+	@echo "Setting executable permissions for files in $(BIN_DIR)"
+	@find $(BIN_DIR) -type f -exec chmod u+x {} \;
 
 tools:
 	go mod tidy
@@ -41,3 +57,6 @@ imports:
 
 fmt:
 	go fmt ./...
+
+# Prevent Make from misinterpreting `build-specific` arguments
+.PHONY: all prod strip darwin linux windows exec build
