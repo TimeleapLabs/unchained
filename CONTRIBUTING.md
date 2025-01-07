@@ -53,7 +53,16 @@ pull request (PR).
   describe what you're trying to achieve. This helps reviewers understand your
   intentions and the impact of your contributions.
 
-### 5. Pull Request Process
+### 5. Git Hooks
+
+We use [lefthook](https://github.com/evilmartians/lefthook) for Git hooks.
+Make sure you have it on your system and then install the hooks using:
+
+```bash
+lefthook install
+```
+
+### 6. Pull Request Process
 
 - Your PR should always target the `develop` branch.
 - If the `develop` branch is updated before your PR is merged, you must rebase
