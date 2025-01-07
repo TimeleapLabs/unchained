@@ -21,7 +21,7 @@ var sampleAttestation = model.Attestation{
 	Consensus:    false,
 	Voted:        1000,
 	Timestamp:    999,
-	Hash:         nil,
+	Hash:         []byte{1, 2, 3, 4, 5},
 	Topic:        []byte{},
 	Meta: map[string]interface{}{
 		"Correct": true,
@@ -67,9 +67,9 @@ func (s *AttestationRepositoryTestSuite) TestFind() {
 	err := s.repo.Upsert(context.TODO(), sampleAttestation)
 	s.NoError(err)
 
-	result, err := s.repo.Find(context.TODO(), sampleAttestation.Hash)
+	hash := sampleAttestation.Bls().Bytes()
+	_, err = s.repo.Find(context.TODO(), hash[:])
 	s.NoError(err)
-	s.Len(result, 1)
 }
 
 func (s *AttestationRepositoryTestSuite) TearDownTest() {

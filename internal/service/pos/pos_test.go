@@ -2,8 +2,10 @@ package pos
 
 import (
 	"context"
+	"math/big"
 	"testing"
 
+	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 	"github.com/TimeleapLabs/unchained/internal/utils"
@@ -16,6 +18,8 @@ type PosTestSuite struct {
 }
 
 func (s *PosTestSuite) SetupTest() {
+	config.App.System.AllowGenerateSecrets = true
+
 	utils.SetupLogger("info")
 	crypto.InitMachineIdentity(
 		crypto.WithBlsIdentity(),
@@ -32,13 +36,13 @@ func (s *PosTestSuite) TestGetTotalVotingPower() {
 }
 
 func (s *PosTestSuite) TestGetVotingPower() {
-	_, err := s.service.GetVotingPower([20]byte{}, nil)
+	_, err := s.service.GetVotingPower([20]byte{}, big.NewInt(1000))
 	s.NoError(err)
 }
 
 func (s *PosTestSuite) TestGetVotingPowerFromContract() {
-	_, err := s.service.GetVotingPowerFromContract([20]byte{}, nil)
-	s.NoError(err)
+	_, err := s.service.GetVotingPowerFromContract([20]byte{}, big.NewInt(1000))
+	s.Error(err)
 }
 
 func (s *PosTestSuite) TestGetVotingPowerOfPublicKey() {

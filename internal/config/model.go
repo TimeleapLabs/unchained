@@ -40,12 +40,12 @@ type ProofOfStake struct {
 
 // Network struct hold the network configuration of the application.
 type Network struct {
-	Bind              string        `env:"BIND"               env-default:"0.0.0.0:9123"                    yaml:"bind"`
-	CertFile          string        `env:"CERT_FILE"          env-default:""                                yaml:"certFile"`
-	KeyFile           string        `env:"KEY_FILE"           env-default:""                                yaml:"keyFile"`
+	Bind              string        `env:"BIND"               env-default:"0.0.0.0:9123"                         yaml:"bind"`
+	CertFile          string        `env:"CERT_FILE"          env-default:""                                     yaml:"certFile"`
+	KeyFile           string        `env:"KEY_FILE"           env-default:""                                     yaml:"keyFile"`
 	BrokerURI         string        `env:"BROKER_URI"         env-default:"wss://shinobi.brokers.timeleap.swiss" yaml:"brokerUri"`
-	SubscribedChannel string        `env:"SUBSCRIBED_CHANNEL" env-default:"unchained:"                      yaml:"subscribedChannel"`
-	BrokerTimeout     time.Duration `env:"BROKER_TIMEOUT"     env-default:"3s"                              yaml:"brokerTimeout"`
+	SubscribedChannel string        `env:"SUBSCRIBED_CHANNEL" env-default:"unchained:"                           yaml:"subscribedChannel"`
+	BrokerTimeout     time.Duration `env:"BROKER_TIMEOUT"     env-default:"3s"                                   yaml:"brokerTimeout"`
 }
 
 type Mongo struct {

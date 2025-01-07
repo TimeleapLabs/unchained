@@ -13,6 +13,7 @@ const SamplePrivateKey = "3b885a8a8f043724abfa865eccd38f536887d9ea1c08a742720e81
 func TestEvmSignerWithoutGeneratePrivateKey(t *testing.T) {
 	utils.SetupLogger("info")
 	config.App.Secret.EvmPrivateKey = SamplePrivateKey
+	config.App.System.AllowGenerateSecrets = true
 
 	InitMachineIdentity(
 		WithEvmSigner(),

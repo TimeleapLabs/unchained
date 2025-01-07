@@ -1,0 +1,31 @@
+hooks:
+  pre-commit:
+    parallel: true
+    commands:
+      golang-lint:
+        run: |
+          make lint
+      golang-errors:
+        run: |
+          make errors
+      yamllint:
+        run: |
+          yamllint .
+      go-test:
+        run: |
+          go test ./...
+  pre-push:
+    parallel: true
+    commands:
+      golang-lint:
+        run: |
+          make lint
+      golang-errors:
+        run: |
+          make errors
+      yamllint:
+        run: |
+          yamllint .
+      go-test:
+        run: |
+          go test ./...

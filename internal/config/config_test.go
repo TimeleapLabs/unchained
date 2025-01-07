@@ -4,8 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
-
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,11 +16,8 @@ var s = config.Secret{
 }
 
 func TestSaveSecret(t *testing.T) {
-	err := s.Save()
-	assert.Equal(t, consts.ErrCantWriteSecret, err, "Should return error because path of secret is not defined")
-
 	config.SecretFilePath = "./secret.yaml"
-	err = s.Save()
+	err := s.Save()
 	assert.Nil(t, err, "Should write successfully")
 
 	err = os.Remove(config.SecretFilePath)

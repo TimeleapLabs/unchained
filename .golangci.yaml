@@ -73,17 +73,6 @@ linters-settings:
       underef:
         skipRecvDeref: false
 
-  gomnd:
-    ignored-functions:
-      - os.Chmod
-      - os.Mkdir
-      - os.MkdirAll
-      - os.OpenFile
-      - os.WriteFile
-      - prometheus.ExponentialBuckets
-      - prometheus.ExponentialBucketsRange
-      - prometheus.LinearBuckets
-
   gomodguard:
     blocked:
       modules:
