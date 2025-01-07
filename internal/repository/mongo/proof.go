@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -52,7 +53,7 @@ func (s proofRepo) Find(ctx context.Context, hash [48]byte) (model.Proof, error)
 			"hash": hash[:],
 		}).Decode(&result)
 
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return model.Proof{}, consts.ErrRecordNotfound
 	}
 

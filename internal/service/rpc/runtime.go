@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
@@ -41,8 +42,13 @@ func WithWebSocket(pluginName string, functions []string, url string) func(s *Wo
 			panic(err)
 		}
 
-		if httpResp.StatusCode != 101 {
+		if httpResp.StatusCode != http.StatusSwitchingProtocols {
 			panic("Failed to establish websocket connection")
+		}
+
+		err = httpResp.Body.Close()
+		if err != nil {
+			panic(err)
 		}
 
 		go func() {

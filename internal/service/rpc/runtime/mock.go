@@ -1,5 +1,5 @@
 package runtime
 
-func RunMock(params []byte) error {
+func RunMock(_ []byte) error {
 	return nil
 }

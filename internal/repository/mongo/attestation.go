@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
@@ -29,7 +30,7 @@ func (c AttestationRepo) Find(ctx context.Context, hash []byte) (model.Attestati
 		FindOne(ctx, bson.M{"hash": hash}).
 		Decode(&decoded)
 
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return model.Attestation{}, consts.ErrRecordNotfound
 	}
 

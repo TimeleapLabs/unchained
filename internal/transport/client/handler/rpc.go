@@ -26,18 +26,18 @@ func (w worker) RPCRequest(ctx context.Context, message []byte) {
 		Info("RPC Request")
 
 	// check fees
-	//checker, err := ai.NewTxChecker(TimeleapRPC)
-	//if err != nil {
-	//	return
-	//}
+	// checker, err := ai.NewTxChecker(TimeleapRPC)
+	// if err != nil {
+	//	 return
+	// }
 
 	// 0.1 TLP
-	//fee, _ := new(big.Int).SetString("100000000000000000", 10)
+	// fee, _ := new(big.Int).SetString("100000000000000000", 10)
 
-	//ok, err := checker.CheckTransaction(common.HexToHash(packet.TxHash), CollectorAddress, fee)
-	//if err != nil || !ok {
-	//	return
-	//}
+	// ok, err := checker.CheckTransaction(common.HexToHash(packet.TxHash), CollectorAddress, fee)
+	// if err != nil || !ok {
+	//	 return
+	// }
 
 	err := w.rpc.RunFunction(ctx, packet.Plugin, packet)
 	if err != nil {

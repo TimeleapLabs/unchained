@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -162,12 +163,12 @@ func (s *service) SaveSignatures(ctx context.Context, args SaveSignatureArgs) er
 
 	blsHash := args.Info.Bls().Bytes()
 	currentRecord, err := s.attestationRepo.Find(ctx, blsHash[:])
-	if err != nil && err != consts.ErrRecordNotfound {
+	if err != nil && errors.Is(err, consts.ErrRecordNotfound) {
 		return err
 	}
 
 	currentProof, err := s.proofRepo.Find(ctx, blsHash)
-	if err != nil && err != consts.ErrRecordNotfound {
+	if err != nil && errors.Is(err, consts.ErrRecordNotfound) {
 		return err
 	}
 
