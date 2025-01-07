@@ -1,6 +1,6 @@
 ARG UBUNTU_VERSION
 FROM ubuntu:${UBUNTU_VERSION}
-LABEL maintainer="hi@kenshi.io"
+LABEL maintainer="hi@timeleap.swiss"
 ARG TARGETOS
 ARG TARGETARCH
 ARG UNCHAINED_VERSION

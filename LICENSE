@@ -2,16 +2,16 @@ Business Source License 1.1
 
 Parameters
 
-Licensor:             Kenshi
-Licensed Work:        Kenshi Unchained
-                      The Licensed Work is (c) 2023-2024 Kenshi.
+Licensor: Timeleap
+Licensed Work: Timeleap Unchained
+The Licensed Work is (c) 2023-2024 Timeleap.
 Additional Use Grant: You are granted the right to use the Licensed Work as-is,
-                      exclusively on networks officially designated by Kenshi or
-                      Unchained. This right is akin to the permissible use of
-                      Ethereum code on its mainnet or testnet, and excludes use
-                      on private networks. The intent is to ensure the Licensed
-                      Work's application remains within its intended network
-                      ecosystem.
+exclusively on networks officially designated by Timeleap or
+Unchained. This right is akin to the permissible use of
+Ethereum code on its mainnet or testnet, and excludes use
+on private networks. The intent is to ensure the Licensed
+Work's application remains within its intended network
+ecosystem.
 
                       You may operate the Licensed Work on private networks
                       for non-commercial purposes only. Permissible
@@ -32,20 +32,20 @@ Additional Use Grant: You are granted the right to use the Licensed Work as-is,
                       Operating the Licensed Work on private networks for
                       commercial purposes, outside of the aforementioned
                       exception, is prohibited unless a separate commercial
-                      license is obtained from Kenshi. Commercial purposes
+                      license is obtained from Timeleap. Commercial purposes
                       encompass any use involving monetary or other forms of
                       compensation, or as part of a commercial offering or
-                      service. This restriction is to protect Kenshi's
+                      service. This restriction is to protect Timeleap's
                       commercial interests and ensure the Licensed Work is
                       appropriately licensed for commercial uses.
 
-Change Date:          Ten years from the date the Licensed Work is
-                      published.
+Change Date: Ten years from the date the Licensed Work is
+published.
 
-Change License:       AGPL License, Version 3.0
+Change License: AGPL License, Version 3.0
 
 For information about alternative licensing arrangements for the Software,
-please visit: https://kenshi.io/
+please visit: https://timeleap.swiss/
 
 Notice
 
@@ -56,7 +56,7 @@ under an Open Source License, as stated in this License.
 License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
 “Business Source License” is a trademark of MariaDB Corporation Ab.
 
------------------------------------------------------------------------------
+---
 
 Business Source License 1.1
 

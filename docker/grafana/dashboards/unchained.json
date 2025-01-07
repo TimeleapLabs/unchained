@@ -41,7 +41,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<img width=\"240px\" src=\"https://kenshi.io/images/logo.typography.svg\">\n\n<p style=\"margin-top: 2em\">\n  Welcome to the Kenshi Unchained dashboard.\n</p>",
+        "content": "<img width=\"240px\" src=\"https://timeleap.swiss/images/logo.typography.svg\">\n\n<p style=\"margin-top: 2em\">\n  Welcome to the Timeleap Unchained dashboard.\n</p>",
         "mode": "html"
       },
       "pluginVersion": "10.2.3",

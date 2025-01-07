@@ -10,9 +10,9 @@ const about = [
 ].join(" ");
 
 const questions = [
-  "Have any questions? Ask in the [forum](https://forum.kenshi.io/c/unchained),",
-  "in our [chat](https://t.me/KenshiTech/85602), or send us an",
-  "[email](mailto:hi@kenshi.io).",
+  "Have any questions? Ask in the [forum](https://forum.timeleap.swiss/c/unchained),",
+  "in our [chat](https://t.me/TimeleapTech/85602), or send us an",
+  "[email](mailto:hi@timeleap.swiss).",
 ].join(" ");
 
 const releaseTemplate = () => `\

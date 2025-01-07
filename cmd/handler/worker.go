@@ -37,7 +37,7 @@ func init() {
 	worker.Flags().StringP(
 		"broker",
 		"b",
-		"wss://shinobi.brokers.kenshi.io",
+		"wss://shinobi.brokers.timeleap.swiss",
 		"Unchained broker to connect to",
 	)
 }

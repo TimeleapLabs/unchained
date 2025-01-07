@@ -1,20 +1,20 @@
-# Contributor License Agreement for Kenshi Unchained
+# Contributor License Agreement for Timeleap Unchained
 
 ## Introduction
 
-This Contributor License Agreement ("Agreement") documents the rights granted by contributors to Kenshi, the owner and maintainer of Kenshi Unchained. This Agreement is intended to clarify the terms under which contributions are made to the project.
+This Contributor License Agreement ("Agreement") documents the rights granted by contributors to Timeleap, the owner and maintainer of Timeleap Unchained. This Agreement is intended to clarify the terms under which contributions are made to the project.
 
 ## 1. Definitions
 
 - "You" and "Your" means the individual or legal entity submitting a Contribution to the project.
 - "Contribution" means any source code, object code, patch, tool, sample, graphic, specification, manual, documentation, or any other material posted or submitted by You to the Project.
-- "Project" refers to the Kenshi Unchained project managed by Kenshi.
+- "Project" refers to the Timeleap Unchained project managed by Timeleap.
 
 ## 2. Grant of Rights
 
-- **2.1. Code Contributions**: You hereby grant to Kenshi, a perpetual, worldwide, non-exclusive, transferable, royalty-free license, with the right to sublicense, under Your applicable copyright, to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of Your Contributions.
+- **2.1. Code Contributions**: You hereby grant to Timeleap, a perpetual, worldwide, non-exclusive, transferable, royalty-free license, with the right to sublicense, under Your applicable copyright, to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of Your Contributions.
 - **2.2. Moral Rights**: To the extent allowed by law, the above license includes the right to omit any attribution for your Contributions. If your jurisdiction allows moral rights to be waivable, you waive all moral rights related to your Contributions.
-- **2.3. Patent License**: You hereby grant to Kenshi and to recipients of software distributed by Kenshi a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer your Contributions, where such license applies only to those patent claims licensable by you that are necessarily infringed by your Contributions alone or by combination with the software provided by the Project.
+- **2.3. Patent License**: You hereby grant to Timeleap and to recipients of software distributed by Timeleap a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer your Contributions, where such license applies only to those patent claims licensable by you that are necessarily infringed by your Contributions alone or by combination with the software provided by the Project.
 
 ## 3. Representations
 
@@ -27,7 +27,7 @@ This Contributor License Agreement ("Agreement") documents the rights granted by
 ## 5. Acceptance and Termination
 
 - By submitting a Contribution to the Project, you agree to the terms of this Agreement.
-- This Agreement will be effective upon your first submission of a Contribution to the Project, and will terminate if you cease contributing or upon notice by Kenshi.
+- This Agreement will be effective upon your first submission of a Contribution to the Project, and will terminate if you cease contributing or upon notice by Timeleap.
 
 ## 6. Miscellaneous
 
@@ -35,4 +35,4 @@ This Contributor License Agreement ("Agreement") documents the rights granted by
 
 ## 7. Contact Information
 
-- Any questions or concerns about this Agreement or its application can be addressed to: unchained@kenshi.io.
+- Any questions or concerns about this Agreement or its application can be addressed to: support@timeleap.swiss.
