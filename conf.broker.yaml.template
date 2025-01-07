@@ -1,14 +1,16 @@
 system:
   log: info
-  name: <name>
+  name: Timeleap
 
-postgres:
-  url: postgres://<user>:<pass>@<host>:<port>/<db>
+network:
+  bind: 0.0.0.0:9123
+  brokerUri: ws://localhost:9123
 
 rpc:
   - name: arbitrumSepolia
     nodes:
       - https://sepolia-rollup.arbitrum.io/rpc
 
+mongo:
+dataframes:
 plugins:
-  

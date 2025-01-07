@@ -1,14 +1,16 @@
 system:
   log: info
-  name: <name>
+  name: Timeleap
 
 network:
-  bind: 127.0.0.1:9123
-  broker-uri: ws://127.0.0.1:9123
+  bind: 0.0.0.0:9123
+  brokerUri: ws://localhost:9123
 
 rpc:
   - name: arbitrumSepolia
     nodes:
       - https://sepolia-rollup.arbitrum.io/rpc
 
+mongo:
+dataframes:
 plugins:
