@@ -19,8 +19,7 @@ type System struct {
 
 // RPC struct hold the rpc configuration of the application.
 type RPC struct {
-	Name  string   `yaml:"name"`
-	Nodes []string `yaml:"nodes"`
+	MaxConcurrency int `env:"RPC_MAX_CONCURRENCY" env-default:"10" yaml:"maxConcurrency"`
 }
 
 // Plugins struct hold the plugins configurations of the application.
@@ -33,9 +32,9 @@ type Plugin struct {
 
 // ProofOfStake struct hold the proof of stake contract's configurations.
 type ProofOfStake struct {
-	Chain   string `env:"POS_CHAIN"   env-default:"arbitrumSepolia"                            yaml:"chain"`
-	Address string `env:"POS_ADDRESS" env-default:"0x965e364987356785b7E89e2Fe7B70f5E5107332d" yaml:"address"`
-	Base    int64  `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
+	RPC     []string `env:"POS_RPC"     env-default:"https://sepolia-rollup.arbitrum.io/rpc"     yaml:"rpc"`
+	Address string   `env:"POS_ADDRESS" env-default:"0x965e364987356785b7E89e2Fe7B70f5E5107332d" yaml:"address"`
+	Base    int64    `env:"POS_BASE"    env-default:"1"                                          yaml:"base"`
 }
 
 // Network struct hold the network configuration of the application.

@@ -1,35 +1,49 @@
+## Next [WIP]
+
+- Move EVM RPC under PoS in configuration file
+
+## v0.14.0 (2025-01-07)
+
+- Implement the initial version of TEP-1: Unchained Plugins
+- Remove Gitmoji
+- Replace Commitizen with Lefthook
+- Add support for MongoDB
+- Add initial support for generic dataframes
+- Remove GraphQL support for queries
+- Replace Ent with Gorm
+
 ## v0.13.0 (2024-08-27)
 
 ### ✨ Features
 
 - add optional tls support
-- **func-config**: add config struct for registering functions >>> ⏰ 3h
-- **rpc**: refactor rpc service to accept unix socket >>> ⏰ 6h
-- **rpc**: add comments and re arrange codes >>> ⏰ 6h
-- **rpc-runtime**: add some runtime and refactor rpc service >>> ⏰ 6h
-- **handlers**: refactoring rpc handlers >>> ⏰ 4h
+- **func-config**: add config struct for registering functions
+- **rpc**: refactor rpc service to accept unix socket
+- **rpc**: add comments and re arrange codes
+- **rpc-runtime**: add some runtime and refactor rpc service
+- **handlers**: refactoring rpc handlers
 - **bls-test**: add unittest for bls and move bls sign to identity …
-- **bls-test**: add unittest for bls and move bls sign to identity method >>> ⏰ 1.5h
+- **bls-test**: add unittest for bls and move bls sign to identity method
 - add the new schnorr based pos contract
 - **identity**: add flag to get permission to write to secret file,…
-- **identity**: add flag to get permission to write to secret file, to prevent losing keys. and some refactor >>> ⏰ 3h
-- **identity**: merge and add unit test for identity >>> ⏰ 1h
+- **identity**: add flag to get permission to write to secret file, to prevent losing keys. and some refactor
+- **identity**: merge and add unit test for identity
 
 ### 🐛🚑️ Fixes
 
-- **concept**: remove unneccery file >>> ⏰ 5m
+- **concept**: remove unneccery file
 - fix rpc issues
 - small bug fixes
 - small bug fixes with rpc
 - filter out unavailable workers
-- **lint**: fix linters >>> ⏰ 5m
-- **eth-rpc**: fix problem of race condition for client list >>> ⏰ 1h
-- **eth-rpc**: rename isExist to isFound >>> ⏰ 2m
-- **eth-rpc**: fix problem of race condition for client list >>> ⏰ 1h
-- **linters**: do linter fixes >>> ⏰ 2m
-- **identity**: rename export signer function name >>> ⏰ 2m
-- **identity**: rename export signer function name >>> ⏰ 2m
-- **evmlog**: fix mutex problem >>> ⏰ 30m
+- **lint**: fix linters
+- **eth-rpc**: fix problem of race condition for client list
+- **eth-rpc**: rename isExist to isFound
+- **eth-rpc**: fix problem of race condition for client list
+- **linters**: do linter fixes
+- **identity**: rename export signer function name
+- **identity**: rename export signer function name
+- **evmlog**: fix mutex problem
 
 ### fix
 
@@ -42,7 +56,7 @@
 
 ### 🎨🏗️ Style & Architecture
 
-- **linter**: fix linters problems >>> ⏰ 3h
+- **linter**: fix linters problems
 - fix lint
 
 ### 🔐🚧📈✏️ 💩👽️🍻💬🥚🌱🚩🥅🩺 Others
@@ -57,9 +71,9 @@
 
 ### ✨ Features
 
-- **services**: add some tests to project >>> ⏰ 3h
-- **pubsub**: ability to send messages based on channels and sub-channel subscribe >>> ⏰ 6h
-- **pubsub**: add internal pubsub and lots of refactor >>> ⏰ 2d
+- **services**: add some tests to project
+- **pubsub**: ability to send messages based on channels and sub-channel subscribe
+- **pubsub**: add internal pubsub and lots of refactor
 - record consensus info on boolean records
 - refactor consensus to save all signatures in db
 - add slashing mechanism
@@ -68,27 +82,27 @@
 ### 🐛🚑️ Fixes
 
 - fix identity key generation
-- **flags**: make config flag unrequired >>> ⏰ 2m
-- **flags**: make config flag unrequired >>> ⏰ 2m
-- **attestation**: delete unused tests temprorary >>> ⏰ 2m
-- **connection**: fix the problem of reconnecting to the broker >>> ⏰ 2h
-- **linters**: fix linters >>> ⏰ 2m
-- **models**: fix problem of deserializing sia >>> ⏰ 2h
-- **badge**: move badger to services and add unit tests >>> ⏰ 30m
-- **linters**: solve linters problems >>> ⏰ 1h
-- **linters-services**: add a new linter and fix dup in services >>> ⏰ 30m
-- **crypto**: fix linters about comments >>> ⏰ 2m
-- **crypto**: fix unused assining in evm init >>> ⏰ 10m
-- **quickstart**: fix wrong address in the text >>> ⏰ 2m
-- **bls**: fix paths on bls >>> ⏰ 2m
-- **bls**: fix import paths of bls package >>> ⏰ 2m
+- **flags**: make config flag unrequired
+- **flags**: make config flag unrequired
+- **attestation**: delete unused tests temprorary
+- **connection**: fix the problem of reconnecting to the broker
+- **linters**: fix linters
+- **models**: fix problem of deserializing sia
+- **badge**: move badger to services and add unit tests
+- **linters**: solve linters problems
+- **linters-services**: add a new linter and fix dup in services
+- **crypto**: fix linters about comments
+- **crypto**: fix unused assining in evm init
+- **quickstart**: fix wrong address in the text
+- **bls**: fix paths on bls
+- **bls**: fix import paths of bls package
 
 ### ♻️ Refactorings
 
-- **ctx**: implement ctx passing through project >>> ⏰ 2h
-- **services**: capsulate services using interfaces >>> ⏰ 1h
+- **ctx**: implement ctx passing through project
+- **services**: capsulate services using interfaces
 - fix debounce and pre-hook issues
-- **crypto**: move etherum to crypto and refactor crypto to make a identity manage >>> ⏰ 2h
+- **crypto**: move etherum to crypto and refactor crypto to make a identity manage
 - refactor the eip712 module to repository pattern
 
 ### feat
@@ -136,7 +150,7 @@
 ### 📝💡 Documentation
 
 - **changelog**: add changelog
-- **crypto**: add some comments in crypto package >>> ⏰ 10m
+- **crypto**: add some comments in crypto package
 - add documentation for installing pre-commit hooks
 
 ### 🚨 Linting

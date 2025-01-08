@@ -6,10 +6,9 @@ network:
   bind: 0.0.0.0:9123
   brokerUri: ws://localhost:9123
 
-rpc:
-  - name: arbitrumSepolia
-    nodes:
-      - https://sepolia-rollup.arbitrum.io/rpc
+pos:
+  rpc:
+    - https://sepolia-rollup.arbitrum.io/rpc
 
 mongo:
 dataframes:

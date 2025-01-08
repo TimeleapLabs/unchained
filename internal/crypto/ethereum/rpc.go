@@ -17,66 +17,64 @@ import (
 )
 
 type RPC interface {
-	RefreshRPC(network string)
-	GetClient(network string) *ethclient.Client
-	GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error)
-	GetBlockNumber(ctx context.Context, network string) (uint64, error)
+	RefreshRPC()
+	GetClient() *ethclient.Client
+	GetNewStakingContract(address string, refresh bool) (*contracts.ProofOfStake, error)
+	GetBlockNumber(ctx context.Context) (uint64, error)
 }
 
 type repository struct {
-	list    map[string][]string
-	index   map[string]int
-	clients map[string]*ethclient.Client
-	mutex   *sync.Mutex
+	list   []string
+	index  int
+	client *ethclient.Client
+	mutex  *sync.Mutex
 }
 
-func (r *repository) GetClient(chain string) *ethclient.Client {
-	client, isFound := r.clients[chain]
-	if !isFound {
-		utils.Logger.With("Network", chain).Error("Client not found")
+func (r *repository) GetClient() *ethclient.Client {
+	if r.client == nil {
+		utils.Logger.Error("PoS client not found")
 		return nil
 	}
 
-	return client
+	return r.client
 }
 
-func (r *repository) refreshRPCWithRetries(network string, retries int) bool {
+func (r *repository) refreshRPCWithRetries(retries int) bool {
 	if retries == 0 {
 		panic("Cannot connect to any of the provided RPCs")
 	}
 
-	if r.index[network] == len(r.list[network])-1 {
-		r.index[network] = 0
+	if r.index == len(r.list)-1 {
+		r.index = 0
 	} else {
-		r.index[network]++
+		r.index++
 	}
 
 	var err error
 
-	index := r.index[network]
-	r.clients[network], err = ethclient.Dial(r.list[network][index])
+	r.client, err = ethclient.Dial(r.list[r.index])
 
 	if err != nil {
-		return r.refreshRPCWithRetries(network, retries-1)
+		return r.refreshRPCWithRetries(retries - 1)
 	}
 
 	return true
 }
 
-func (r *repository) RefreshRPC(network string) {
+func (r *repository) RefreshRPC() {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
-	utils.Logger.With("Network", network).Info("Connecting to RPC")
-	r.refreshRPCWithRetries(network, len(r.list))
+	utils.Logger.Info("Connecting to the PoS RPC")
+	r.refreshRPCWithRetries(len(r.list))
 }
 
-func (r *repository) GetNewStakingContract(network string, address string, refresh bool) (*contracts.ProofOfStake, error) {
+func (r *repository) GetNewStakingContract(address string, refresh bool) (*contracts.ProofOfStake, error) {
 	if refresh {
-		r.RefreshRPC(network)
+		r.RefreshRPC()
 	}
 
-	client := r.GetClient(network)
+	client := r.GetClient()
 	if client == nil {
 		return nil, consts.ErrClientNotFound
 	}
@@ -85,8 +83,8 @@ func (r *repository) GetNewStakingContract(network string, address string, refre
 }
 
 // GetBlockNumber returns the most recent block number.
-func (r *repository) GetBlockNumber(ctx context.Context, network string) (uint64, error) {
-	client := r.GetClient(network)
+func (r *repository) GetBlockNumber(ctx context.Context) (uint64, error) {
+	client := r.GetClient()
 	if client == nil {
 		return 0, consts.ErrClientNotFound
 	}
@@ -96,17 +94,12 @@ func (r *repository) GetBlockNumber(ctx context.Context, network string) (uint64
 
 func New() RPC {
 	r := &repository{
-		list:    map[string][]string{},
-		index:   map[string]int{},
-		clients: make(map[string]*ethclient.Client),
-		mutex:   new(sync.Mutex),
+		list:  config.App.ProofOfStake.RPC,
+		index: 0,
+		mutex: &sync.Mutex{},
 	}
 
-	for _, rpc := range config.App.RPC {
-		r.index[rpc.Name] = 0
-		r.list[rpc.Name] = append(r.list[rpc.Name], rpc.Nodes...)
-		r.RefreshRPC(rpc.Name)
-	}
+	r.RefreshRPC()
 
 	return r
 }
