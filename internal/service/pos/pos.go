@@ -81,7 +81,7 @@ func (s *service) GetVotingPower(address [20]byte, block *big.Int) (*big.Int, er
 }
 
 func (s *service) GetVotingPowerOfEvm(ctx context.Context, evmAddress string) (*big.Int, error) {
-	block, err := s.ethRPC.GetBlockNumber(ctx, config.App.ProofOfStake.Chain)
+	block, err := s.ethRPC.GetBlockNumber(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (s *service) GetSchnorrSigners(ctx context.Context) ([]common.Address, erro
 
 func (s *service) GetVotingPowerOfPublicKey(ctx context.Context, pkBytes [96]byte) (*big.Int, error) {
 	_, addrHex := address.CalculateHex(pkBytes[:])
-	block, err := s.ethRPC.GetBlockNumber(ctx, config.App.ProofOfStake.Chain)
+	block, err := s.ethRPC.GetBlockNumber(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,6 @@ func New(ethRPC ethereum.RPC) Service {
 	var err error
 
 	s.posContract, err = s.ethRPC.GetNewStakingContract(
-		config.App.ProofOfStake.Chain,
 		config.App.ProofOfStake.Address,
 		false,
 	)
