@@ -33,4 +33,7 @@ var (
 	ErrCantSendRPCRequest      = errors.New("can't send rpc request")
 	ErrCantReceiveRPCResponse  = errors.New("can't receive rpc response")
 	ErrNoNewSigners            = errors.New("no new signers")
+	ErrPluginNotFound          = errors.New("plugin not found")
+	ErrFunctionNotFound        = errors.New("function not found")
+	ErrOverloaded              = errors.New("RPC overloaded")
 )

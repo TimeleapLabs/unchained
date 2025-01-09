@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
@@ -20,21 +21,31 @@ const (
 )
 
 func WithMockTask(pluginName string, name string) func(s *Worker) {
+	functions := map[string]config.Function{}
+	functions[name] = config.Function{
+		Name: name,
+	}
+
 	return func(s *Worker) {
 		s.plugins[name] = plugin{
 			name:      pluginName,
 			runtime:   Mock,
-			functions: []string{name},
+			functions: functions,
 		}
 	}
 }
 
-func WithWebSocket(pluginName string, functions []string, url string) func(s *Worker) {
+func WithWebSocket(pluginName string, functions []config.Function, url string) func(s *Worker) {
+	functionsMap := map[string]config.Function{}
+	for _, f := range functions {
+		functionsMap[f.Name] = f
+	}
+
 	return func(s *Worker) {
 		p := plugin{
 			name:      pluginName,
 			runtime:   WebSocket,
-			functions: functions,
+			functions: functionsMap,
 		}
 
 		wsConn, httpResp, err := websocket.DefaultDialer.Dial(url, nil)
@@ -67,6 +78,18 @@ func WithWebSocket(pluginName string, functions []string, url string) func(s *Wo
 				utils.Logger.
 					With("ID", packet.ID).
 					Info("RPC Response")
+
+				// Release the resources
+				if task, ok := s.currentTasks[packet.ID]; ok {
+					s.cpuUsage -= task.CPU
+					s.gpuUsage -= task.GPU
+					delete(s.currentTasks, packet.ID)
+				}
+
+				if s.overloaded {
+					s.overloaded = false
+					// TODO: Notify the broker that we're not overloaded anymore
+				}
 
 				conn.Send(consts.OpCodeRPCResponse, message)
 			}

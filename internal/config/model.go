@@ -19,15 +19,22 @@ type System struct {
 
 // RPC struct hold the rpc configuration of the application.
 type RPC struct {
-	MaxConcurrency int `env:"RPC_MAX_CONCURRENCY" env-default:"10" yaml:"maxConcurrency"`
+	CPUs int `env:"RPC_CPU_COUNT" env-default:"1" yaml:"cpus"`
+	GPUs int `env:"RPC_GPU_COUNT" env-default:"0" yaml:"gpus"`
+}
+
+type Function struct {
+	Name string `json:"name"`
+	CPU  int    `json:"cpu"`
+	GPU  int    `json:"gpu"`
 }
 
 // Plugins struct hold the plugins configurations of the application.
 type Plugin struct {
-	Type      string   `json:"type"`
-	Name      string   `json:"name"`
-	Endpoint  string   `json:"endpoint"`
-	Functions []string `json:"functions"`
+	Type      string     `json:"type"`
+	Name      string     `json:"name"`
+	Endpoint  string     `json:"endpoint"`
+	Functions []Function `json:"functions"`
 }
 
 // ProofOfStake struct hold the proof of stake contract's configurations.
@@ -72,7 +79,7 @@ type Secret struct {
 type Config struct {
 	System       System       `yaml:"system"`
 	Network      Network      `yaml:"network"`
-	RPC          []RPC        `yaml:"rpc"`
+	RPC          RPC          `yaml:"rpc"`
 	Mongo        Mongo        `yaml:"mongo"`
 	Postgres     Postgres     `yaml:"postgres"`
 	ProofOfStake ProofOfStake `yaml:"pos"`
