@@ -6,6 +6,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/google/uuid"
@@ -56,14 +57,15 @@ func (s *CoordinatorTestSuite) TestCoordinator_RegisterWorker() {
 func (s *CoordinatorTestSuite) TestCoordinator_RegisterTask() {
 	worker := &websocket.Conn{}
 	client := &websocket.Conn{}
+	writer := queue.NewWebSocketWriter(client, 10)
 
 	taskID, err := uuid.NewUUID()
 	s.NoError(err)
 
-	s.service.RegisterTask(taskID, worker, client, 100, 1)
+	s.service.RegisterTask(taskID, worker, writer, 100, 1)
 	task, _ := s.service.GetTask(taskID)
 	s.Equal(worker, task.Worker)
-	s.Equal(client, task.Client)
+	s.Equal(writer, task.Client)
 
 	s.service.UnregisterTask(taskID)
 	task, _ = s.service.GetTask(taskID)

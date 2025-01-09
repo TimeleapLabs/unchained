@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/gorilla/websocket"
 	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
@@ -12,6 +13,7 @@ type Runtime string
 type Plugin struct {
 	Name      string
 	Conn      *websocket.Conn
+	Writer    *queue.WebSocketWriter
 	Runtime   Runtime
 	Functions map[string]config.Function
 }

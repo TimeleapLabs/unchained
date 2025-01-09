@@ -7,41 +7,38 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
-const (
-	Mock      dto.Runtime = "Mock"
-	WebSocket dto.Runtime = "WebSocket"
-)
-
-func WithMockTask(pluginName string, name string) func(s *Worker) {
+func WithMockTask(pluginName string, name string) func(s *worker.Worker) {
 	functions := map[string]config.Function{}
 	functions[name] = config.Function{
 		Name: name,
 	}
 
-	return func(s *Worker) {
+	return func(s *worker.Worker) {
 		s.Plugins[name] = dto.Plugin{
 			Name:      pluginName,
-			Runtime:   Mock,
+			Runtime:   worker.Mock,
 			Functions: functions,
 		}
 	}
 }
 
-func WithWebSocket(pluginName string, functions []config.Function, url string) func(s *Worker) {
+func WithWebSocket(pluginName string, functions []config.Function, url string) func(s *worker.Worker) {
 	functionsMap := map[string]config.Function{}
 	for _, f := range functions {
 		functionsMap[f.Name] = f
 	}
 
-	return func(s *Worker) {
+	return func(s *worker.Worker) {
 		p := dto.Plugin{
 			Name:      pluginName,
-			Runtime:   WebSocket,
+			Runtime:   worker.WebSocket,
 			Functions: functionsMap,
 		}
 
@@ -77,10 +74,10 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 					Info("RPC Response")
 
 				// Release the resources
-				if task, ok := s.CurrentTasks[packet.ID]; ok {
+				if task, ok := s.CurrentTasks.Load(packet.ID); ok {
 					s.CPUUsage -= task.CPU
 					s.GPUUsage -= task.GPU
-					delete(s.CurrentTasks, packet.ID)
+					s.CurrentTasks.Delete(packet.ID)
 				}
 
 				if s.CPUUsage < s.MaxCPU && s.GPUUsage < s.MaxGPU {
@@ -93,6 +90,7 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 		}()
 
 		p.Conn = wsConn
+		p.Writer = queue.NewWebSocketWriter(wsConn, 100) // TODO: Make the buffer size configurable
 		s.Plugins[pluginName] = p
 	}
 }

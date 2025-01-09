@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/handler"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 )
@@ -43,10 +45,32 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	defer store.Challenges.Delete(conn)
 	defer cancel()
 
+	// register a close handler to stop the for loop
+	conn.SetCloseHandler(func(code int, text string) error {
+		utils.Logger.With("Code", code).With("Text", text).Info("Connection closed")
+		cancel()
+		return nil
+	})
+
+	writer := queue.NewWebSocketWriter(conn, 10)
+
 	for {
+		// stop the loop if the context is done
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		_, payload, err := conn.ReadMessage()
 		if err != nil {
-			utils.Logger.With("Err", err).ErrorContext(ctx, "Cannot read message")
+			var closeError *websocket.CloseError
+			errIsClosedError := errors.As(err, &closeError) &&
+				(closeError.Code == websocket.CloseNoStatusReceived || closeError.Code == websocket.CloseNormalClosure)
+
+			if !errIsClosedError {
+				utils.Logger.With("Err", err).ErrorContext(ctx, "Cannot read message")
+			}
 
 			err := conn.Close()
 			if err != nil {
@@ -65,29 +89,29 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
 			result, err := handler.Hello(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, consts.OpCodeError, err)
+				writer.SendError(consts.OpCodeError, err)
 				continue
 			}
 
-			handler.SendMessage(conn, consts.OpCodeFeedback, "conf.ok")
-			handler.Send(conn, consts.OpCodeKoskChallenge, result)
+			writer.SendMessage(consts.OpCodeFeedback, "conf.ok")
+			writer.Send(consts.OpCodeKoskChallenge, result)
 		case consts.OpCodeAttestation:
 			result, err := handler.AttestationRecord(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, consts.OpCodeError, err)
+				writer.SendError(consts.OpCodeError, err)
 				continue
 			}
 
 			pubsub.Publish(consts.ChannelAttestation, consts.OpCodeAttestationBroadcast, result)
-			handler.SendMessage(conn, consts.OpCodeFeedback, "signature.accepted")
+			writer.SendMessage(consts.OpCodeFeedback, "signature.accepted")
 		case consts.OpCodeKoskResult:
 			err := handler.Kosk(conn, payload[1:])
 			if err != nil {
-				handler.SendError(conn, consts.OpCodeError, err)
+				writer.SendError(consts.OpCodeError, err)
 				continue
 			}
 
-			handler.SendMessage(conn, consts.OpCodeFeedback, "kosk.ok")
+			writer.SendMessage(consts.OpCodeFeedback, "kosk.ok")
 		case consts.OpCodeRegisterConsumer:
 			utils.Logger.
 				With("IP", conn.RemoteAddr().String()).
@@ -99,12 +123,12 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		case consts.OpCodeRegisterWorker:
 			go handler.RegisterWorker(ctx, conn, payload[1:])
 		case consts.OpCodeRPCRequest:
-			go handler.CallFunction(ctx, conn, payload[1:])
+			go handler.CallFunction(ctx, writer, payload[1:])
 		case consts.OpCodeRPCResponse:
-			go handler.ResponseFunction(ctx, conn, payload[1:])
+			go handler.ResponseFunction(ctx, writer, payload[1:])
 		default:
 			utils.Logger.With("OpCode", payload[0]).Error("Unsupported OpCode")
-			handler.SendError(conn, consts.OpCodeError, consts.ErrNotSupportedInstruction)
+			writer.SendError(consts.OpCodeError, consts.ErrNotSupportedInstruction)
 		}
 	}
 }

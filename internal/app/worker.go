@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/TimeleapLabs/unchained/internal/service/rpc"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -27,14 +28,14 @@ func Worker(_ context.Context) {
 		crypto.WithBlsIdentity(),
 	)
 
-	rpcFunctions := []rpc.Option{}
+	rpcFunctions := []worker.Option{}
 	for _, plugin := range config.App.Plugins {
 		switch plugin.Type { //nolint: gocritic // This is a switch case for different types of rpc functions
 		case "websocket":
 			rpcFunctions = append(rpcFunctions, rpc.WithWebSocket(plugin.Name, plugin.Functions, plugin.Endpoint))
 		}
 	}
-	rpcService := rpc.NewWorker(rpcFunctions...)
+	rpcService := worker.NewWorker(rpcFunctions...)
 
 	conn.Start()
 

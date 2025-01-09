@@ -1,4 +1,4 @@
-package rpc
+package worker
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/google/uuid"
+	"github.com/puzpuzpuz/xsync/v3"
 )
 
 type Option func(s *Worker)
@@ -24,7 +25,7 @@ type resourceUsage struct {
 // Worker is a struct that holds the functions that the worker can run.
 type Worker struct {
 	Plugins      map[string]dto.Plugin
-	CurrentTasks map[uuid.UUID]resourceUsage
+	CurrentTasks xsync.MapOf[uuid.UUID, resourceUsage]
 	CPUUsage     int
 	GPUUsage     int
 	MaxCPU       int
@@ -69,14 +70,14 @@ func (w *Worker) RunFunction(ctx context.Context, pluginName string, params *dto
 	w.GPUUsage += method.GPU
 
 	// Record the current task to release the resources when the task is done
-	w.CurrentTasks[params.ID] = resourceUsage{
+	w.CurrentTasks.Store(params.ID, resourceUsage{
 		CPU: method.CPU,
 		GPU: method.GPU,
-	}
+	})
 
 	switch w.Plugins[pluginName].Runtime {
 	case WebSocket:
-		err := runtime.RunWebSocketCall(ctx, w.Plugins[pluginName].Conn, params)
+		err := runtime.RunWebSocketCall(ctx, w.Plugins[pluginName].Writer, params)
 		if err != nil {
 			utils.Logger.With("err", err).Error("Failed to run function")
 			return err
@@ -110,7 +111,7 @@ func (w *Worker) RegisterWorker() {
 func NewWorker(options ...Option) *Worker {
 	worker := &Worker{
 		Plugins:      make(map[string]dto.Plugin),
-		CurrentTasks: make(map[uuid.UUID]resourceUsage),
+		CurrentTasks: *xsync.NewMapOf[uuid.UUID, resourceUsage](),
 		MaxCPU:       config.App.RPC.CPUs,
 		MaxGPU:       config.App.RPC.GPUs,
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
@@ -37,12 +38,12 @@ func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
 }
 
 // CallFunction is a handler of network that calls a registered function.
-func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
+func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []byte) {
 	request := new(dto.RPCRequest).
 		FromSiaBytes(payload)
 
 	utils.Logger.
-		With("IP", conn.RemoteAddr().String()).
+		With("IP", wsQueue.Conn.RemoteAddr().String()).
 		With("ID", request.ID).
 		With("Plugin", request.Plugin).
 		With("Function", request.Method).
@@ -51,10 +52,10 @@ func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 	worker, function := unchainedRPC.GetRandomWorker(request.Plugin, request.Method)
 
 	if worker != nil && function != nil {
-		unchainedRPC.RegisterTask(request.ID, worker.Conn, conn, function.CPU, function.GPU)
+		unchainedRPC.RegisterTask(request.ID, worker.Conn, wsQueue, function.CPU, function.GPU)
 
 		utils.Logger.
-			With("IP", conn.RemoteAddr().String()).
+			With("IP", wsQueue.Conn.RemoteAddr().String()).
 			With("ID", request.ID).
 			With("Worker", worker.Conn.RemoteAddr().String()).
 			With("Plugin", request.Plugin).
@@ -63,27 +64,27 @@ func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 			With("WorkerGPU", worker.GPUUsage).
 			Info("RPC Request Sent to Worker")
 
-		Send(worker.Conn, consts.OpCodeRPCRequest, payload)
+		worker.Writer.Send(consts.OpCodeRPCRequest, payload)
 	} // TODO: Handle if worker is nil
 }
 
 // ResponseFunction is a handler of network that sends a response to requester.
-func ResponseFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
+func ResponseFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []byte) {
 	response := new(dto.RPCResponse).
 		FromSiaBytes(payload)
 
 	task, ok := unchainedRPC.GetTask(response.ID)
 	if ok {
 		utils.Logger.
-			With("IP", conn.RemoteAddr().String()).
+			With("IP", wsQueue.Conn.RemoteAddr().String()).
 			With("ID", response.ID).
 			Info("RPC Response")
 
-		Send(task.Client, consts.OpCodeRPCResponse, payload)
+		task.Client.Send(consts.OpCodeRPCResponse, payload)
 		unchainedRPC.UnregisterTask(response.ID)
 	} else {
 		utils.Logger.
-			With("IP", conn.RemoteAddr().String()).
+			With("IP", wsQueue.Conn.RemoteAddr().String()).
 			With("ID", response.ID).
 			Error("Task not found")
 	}
