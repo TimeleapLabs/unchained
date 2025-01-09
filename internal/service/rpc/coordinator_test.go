@@ -3,6 +3,7 @@ package rpc
 import (
 	"testing"
 
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -22,13 +23,22 @@ func (s *CoordinatorTestSuite) SetupTest() {
 
 func (s *CoordinatorTestSuite) TestCoordinator_RegisterWorker() {
 	conn := &websocket.Conn{}
-	s.service.RegisterWorker("test-worker", conn)
-	gotConns := s.service.GetWorkers("test-worker")
+	worker := dto.RegisterWorker{
+		CPU: 1,
+		GPU: 1,
+		Plugins: []dto.Plugin{
+			{
+				Name: "test-plugin",
+			},
+		},
+	}
+	s.service.RegisterWorker(&worker, conn)
+	gotConns := s.service.GetWorkers("test-plugin")
 	s.Len(gotConns, 1)
 	s.Equal(conn, gotConns[0])
 
-	s.service.UnregisterWorker("test-worker", conn)
-	gotConns = s.service.GetWorkers("test-worker")
+	s.service.UnregisterWorker("test-plugin", conn)
+	gotConns = s.service.GetWorkers("test-plugin")
 	s.Len(gotConns, 0)
 }
 

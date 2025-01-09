@@ -96,8 +96,8 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 			topic := string(payload[1:])
 			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
-		case consts.OpCodeRegisterRPCFunction:
-			go handler.RegisterRPCFunction(ctx, conn, payload[1:])
+		case consts.OpCodeRegisterWorker:
+			go handler.RegisterWorker(ctx, conn, payload[1:])
 		case consts.OpCodeRPCRequest:
 			go handler.CallFunction(ctx, conn, payload[1:])
 		case consts.OpCodeRPCResponse:

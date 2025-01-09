@@ -8,7 +8,7 @@ type worker struct {
 
 func NewWorkerHandler(rpc *rpc.Worker) Handler {
 	// Register the worker functions with the broker
-	rpc.RegisterFunctions()
+	rpc.RegisterWorker()
 
 	return &worker{
 		rpc: rpc,

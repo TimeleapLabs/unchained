@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -29,8 +30,10 @@ func (r *Coordinator) GetTask(taskID uuid.UUID) *websocket.Conn {
 }
 
 // RegisterWorker will register a worker which a connection provide.
-func (r *Coordinator) RegisterWorker(plugin string, conn *websocket.Conn) {
-	r.Workers[plugin] = append(r.Workers[plugin], conn)
+func (r *Coordinator) RegisterWorker(worker *dto.RegisterWorker, conn *websocket.Conn) {
+	for _, plugin := range worker.Plugins {
+		r.Workers[plugin.Name] = append(r.Workers[plugin.Name], conn)
+	}
 }
 
 // UnregisterWorker will unregister a worker which a connection provide.

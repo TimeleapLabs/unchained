@@ -12,12 +12,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Runtime is a type that holds the runtime of a function.
-type Runtime string
-
 const (
-	Mock      Runtime = "Mock"
-	WebSocket Runtime = "WebSocket"
+	Mock      dto.Runtime = "Mock"
+	WebSocket dto.Runtime = "WebSocket"
 )
 
 func WithMockTask(pluginName string, name string) func(s *Worker) {
@@ -27,10 +24,10 @@ func WithMockTask(pluginName string, name string) func(s *Worker) {
 	}
 
 	return func(s *Worker) {
-		s.plugins[name] = plugin{
-			name:      pluginName,
-			runtime:   Mock,
-			functions: functions,
+		s.plugins[name] = dto.Plugin{
+			Name:      pluginName,
+			Runtime:   Mock,
+			Functions: functions,
 		}
 	}
 }
@@ -42,10 +39,10 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 	}
 
 	return func(s *Worker) {
-		p := plugin{
-			name:      pluginName,
-			runtime:   WebSocket,
-			functions: functionsMap,
+		p := dto.Plugin{
+			Name:      pluginName,
+			Runtime:   WebSocket,
+			Functions: functionsMap,
 		}
 
 		wsConn, httpResp, err := websocket.DefaultDialer.Dial(url, nil)
@@ -95,7 +92,7 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 			}
 		}()
 
-		p.conn = wsConn
+		p.Conn = wsConn
 		s.plugins[pluginName] = p
 	}
 }

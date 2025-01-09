@@ -16,7 +16,7 @@ const (
 	OpCodeAttestation          OpCode = 6
 	OpCodeAttestationBroadcast OpCode = 7
 
-	OpCodeRegisterRPCFunction OpCode = 8
+	OpCodeRegisterWorker OpCode = 8
 
 	OpCodeRPCRequest  OpCode = 9
 	OpCodeRPCResponse OpCode = 10

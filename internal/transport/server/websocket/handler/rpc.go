@@ -14,18 +14,26 @@ import (
 // unchainedRPC is a global variable that holds the rpc coordinator.
 var unchainedRPC = rpc.NewCoordinator()
 
-// RegisterRPCFunction is a handler of network that registers a new worker.
-func RegisterRPCFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
-	request := new(dto.RegisterFunction).
+// RegisterWorker is a handler of network that registers a new worker.
+func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
+	request := new(dto.RegisterWorker).
 		FromSiaBytes(payload)
+
+	pluginNames := make([]string, 0, len(request.Plugins))
+	for _, plugin := range request.Plugins {
+		pluginNames = append(pluginNames, plugin.Name)
+	}
+
+	plugins := strings.Join(pluginNames, ", ")
 
 	utils.Logger.
 		With("IP", conn.RemoteAddr().String()).
-		With("Plugin", request.Plugin).
-		With("Functions", strings.Join(request.Functions, ",")).
+		With("Plugins", plugins).
+		With("CPU", request.CPU).
+		With("GPU", request.GPU).
 		Info("New Worker registered")
 
-	unchainedRPC.RegisterWorker(request.Plugin, conn)
+	unchainedRPC.RegisterWorker(request, conn)
 }
 
 // CallFunction is a handler of network that calls a registered function.
