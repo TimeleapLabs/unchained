@@ -48,18 +48,23 @@ func CallFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 		With("Function", request.Method).
 		Info("RPC Request")
 
-	unchainedRPC.RegisterTask(request.ID, conn)
-	worker := unchainedRPC.GetRandomWorker(request.Plugin)
+	worker, function := unchainedRPC.GetRandomWorker(request.Plugin, request.Method)
 
-	if worker != nil {
+	if worker != nil && function != nil {
+		unchainedRPC.RegisterTask(request.ID, worker.Conn, conn, function.CPU, function.GPU)
+
 		utils.Logger.
 			With("IP", conn.RemoteAddr().String()).
+			With("ID", request.ID).
+			With("Worker", worker.Conn.RemoteAddr().String()).
 			With("Plugin", request.Plugin).
 			With("Function", request.Method).
+			With("WorkerCPU", worker.CPUUsage).
+			With("WorkerGPU", worker.GPUUsage).
 			Info("RPC Request Sent to Worker")
 
-		Send(worker, consts.OpCodeRPCRequest, payload)
-	}
+		Send(worker.Conn, consts.OpCodeRPCRequest, payload)
+	} // TODO: Handle if worker is nil
 }
 
 // ResponseFunction is a handler of network that sends a response to requester.
@@ -67,14 +72,15 @@ func ResponseFunction(_ context.Context, conn *websocket.Conn, payload []byte) {
 	response := new(dto.RPCResponse).
 		FromSiaBytes(payload)
 
-	task := unchainedRPC.GetTask(response.ID)
-	if task != nil {
+	task, ok := unchainedRPC.GetTask(response.ID)
+	if ok {
 		utils.Logger.
 			With("IP", conn.RemoteAddr().String()).
 			With("ID", response.ID).
 			Info("RPC Response")
 
-		Send(task, consts.OpCodeRPCResponse, payload)
+		Send(task.Client, consts.OpCodeRPCResponse, payload)
+		unchainedRPC.UnregisterTask(response.ID)
 	} else {
 		utils.Logger.
 			With("IP", conn.RemoteAddr().String()).

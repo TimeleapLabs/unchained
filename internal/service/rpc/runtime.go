@@ -24,7 +24,7 @@ func WithMockTask(pluginName string, name string) func(s *Worker) {
 	}
 
 	return func(s *Worker) {
-		s.plugins[name] = dto.Plugin{
+		s.Plugins[name] = dto.Plugin{
 			Name:      pluginName,
 			Runtime:   Mock,
 			Functions: functions,
@@ -77,15 +77,15 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 					Info("RPC Response")
 
 				// Release the resources
-				if task, ok := s.currentTasks[packet.ID]; ok {
-					s.cpuUsage -= task.CPU
-					s.gpuUsage -= task.GPU
-					delete(s.currentTasks, packet.ID)
+				if task, ok := s.CurrentTasks[packet.ID]; ok {
+					s.CPUUsage -= task.CPU
+					s.GPUUsage -= task.GPU
+					delete(s.CurrentTasks, packet.ID)
 				}
 
-				if s.overloaded {
-					s.overloaded = false
+				if s.CPUUsage < s.MaxCPU && s.GPUUsage < s.MaxGPU {
 					// TODO: Notify the broker that we're not overloaded anymore
+					s.Overloaded = false
 				}
 
 				conn.Send(consts.OpCodeRPCResponse, message)
@@ -93,6 +93,6 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 		}()
 
 		p.Conn = wsConn
-		s.plugins[pluginName] = p
+		s.Plugins[pluginName] = p
 	}
 }
