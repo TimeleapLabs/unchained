@@ -20,6 +20,7 @@ type Option func(s *Worker)
 type resourceUsage struct {
 	CPU int
 	GPU int
+	RAM int
 }
 
 // Worker is a struct that holds the functions that the worker can run.
@@ -28,8 +29,10 @@ type Worker struct {
 	CurrentTasks xsync.MapOf[uuid.UUID, resourceUsage]
 	CPUUsage     int
 	GPUUsage     int
+	RAMUsage     int
 	MaxCPU       int
 	MaxGPU       int
+	MaxRAM       int
 	Overloaded   bool
 }
 
@@ -55,7 +58,7 @@ func (w *Worker) RunFunction(ctx context.Context, pluginName string, params *dto
 	method := w.Plugins[pluginName].Functions[params.Method]
 
 	// Make sure we're not overloading the worker
-	if w.Overloaded || w.CPUUsage+method.CPU > w.MaxCPU || w.GPUUsage+method.GPU > w.MaxGPU {
+	if w.Overloaded || w.CPUUsage+method.CPU > w.MaxCPU || w.GPUUsage+method.GPU > w.MaxGPU || w.RAMUsage+method.RAM > w.MaxRAM {
 		utils.Logger.
 			With("cpu", w.CPUUsage).
 			With("gpu", w.GPUUsage).
@@ -68,11 +71,13 @@ func (w *Worker) RunFunction(ctx context.Context, pluginName string, params *dto
 	// Record CPU and GPU units
 	w.CPUUsage += method.CPU
 	w.GPUUsage += method.GPU
+	w.RAMUsage += method.RAM
 
 	// Record the current task to release the resources when the task is done
 	w.CurrentTasks.Store(params.ID, resourceUsage{
 		CPU: method.CPU,
 		GPU: method.GPU,
+		RAM: method.RAM,
 	})
 
 	switch w.Plugins[pluginName].Runtime {
@@ -98,6 +103,7 @@ func (w *Worker) RegisterWorker() {
 		Plugins: make([]dto.Plugin, 0, len(w.Plugins)),
 		CPU:     w.MaxCPU,
 		GPU:     w.MaxGPU,
+		RAM:     w.MaxRAM,
 	}
 
 	for _, p := range w.Plugins {
@@ -114,6 +120,7 @@ func NewWorker(options ...Option) *Worker {
 		CurrentTasks: *xsync.NewMapOf[uuid.UUID, resourceUsage](),
 		MaxCPU:       config.App.RPC.CPUs,
 		MaxGPU:       config.App.RPC.GPUs,
+		MaxRAM:       config.App.RPC.RAM,
 	}
 
 	for _, o := range options {

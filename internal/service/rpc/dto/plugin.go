@@ -33,6 +33,7 @@ func (p *Plugin) Sia() sia.Sia {
 			s.AddString8(v.Name)
 			s.AddInt64(int64(v.CPU))
 			s.AddInt64(int64(v.GPU))
+			s.AddInt64(int64(v.RAM))
 		}).Bytes())
 
 	return s
@@ -48,6 +49,7 @@ func (p *Plugin) FromSia(s sia.Sia) *Plugin {
 		f.Name = s.ReadString8()
 		f.CPU = int(s.ReadInt64())
 		f.GPU = int(s.ReadInt64())
+		f.RAM = int(s.ReadInt64())
 		return f
 	})
 

@@ -7,6 +7,7 @@ type RegisterWorker struct {
 	Plugins []Plugin `json:"plugins"`
 	CPU     int      `json:"cpu"`
 	GPU     int      `json:"gpu"`
+	RAM     int      `json:"ram"`
 }
 
 func (t *RegisterWorker) Sia() sia.Sia {
@@ -18,7 +19,8 @@ func (t *RegisterWorker) Sia() sia.Sia {
 	return sia.New().
 		EmbedBytes(plugins.Bytes()).
 		AddInt64(int64(t.CPU)).
-		AddInt64(int64(t.GPU))
+		AddInt64(int64(t.GPU)).
+		AddInt64(int64(t.RAM))
 }
 
 func (t *RegisterWorker) FromSiaBytes(bytes []byte) *RegisterWorker {
@@ -31,6 +33,7 @@ func (t *RegisterWorker) FromSiaBytes(bytes []byte) *RegisterWorker {
 
 	t.CPU = int(sp.ReadInt64())
 	t.GPU = int(sp.ReadInt64())
+	t.RAM = int(sp.ReadInt64())
 
 	return t
 }

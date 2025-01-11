@@ -19,14 +19,16 @@ type System struct {
 
 // RPC struct hold the rpc configuration of the application.
 type RPC struct {
-	CPUs int `env:"RPC_CPU_COUNT" env-default:"1" yaml:"cpus"`
-	GPUs int `env:"RPC_GPU_COUNT" env-default:"0" yaml:"gpus"`
+	CPUs int `env:"RPC_CPU_COUNT" env-default:"1"    yaml:"cpus"`
+	GPUs int `env:"RPC_GPU_COUNT" env-default:"0"    yaml:"gpus"`
+	RAM  int `env:"RPC_RAM"       env-default:"1024" yaml:"ram"`
 }
 
 type Function struct {
 	Name string `json:"name"`
 	CPU  int    `json:"cpu"`
 	GPU  int    `json:"gpu"`
+	RAM  int    `json:"ram"`
 }
 
 // Plugins struct hold the plugins configurations of the application.

@@ -62,7 +62,7 @@ func (s *CoordinatorTestSuite) TestCoordinator_RegisterTask() {
 	taskID, err := uuid.NewUUID()
 	s.NoError(err)
 
-	s.service.RegisterTask(taskID, worker, writer, 100, 1)
+	s.service.RegisterTask(taskID, worker, writer, 100, 1, 10)
 	task, _ := s.service.GetTask(taskID)
 	s.Equal(worker, task.Worker)
 	s.Equal(writer, task.Client)

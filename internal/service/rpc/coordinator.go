@@ -23,6 +23,7 @@ type Task struct {
 	Client *queue.WebSocketWriter
 	CPU    int
 	GPU    int
+	RAM    int
 }
 
 // Coordinator is a struct that holds the tasks and workers.
@@ -32,18 +33,22 @@ type Coordinator struct {
 }
 
 // RegisterTask will register a task which a connection provide.
-func (r *Coordinator) RegisterTask(taskID uuid.UUID, worker *websocket.Conn, client *queue.WebSocketWriter, cpu int, gpu int) {
+func (r *Coordinator) RegisterTask(
+	taskID uuid.UUID, worker *websocket.Conn,
+	client *queue.WebSocketWriter, cpu int, gpu int, ram int) {
 	r.Tasks.Store(taskID, Task{
 		Worker: worker,
 		Client: client,
 		CPU:    cpu,
 		GPU:    gpu,
+		RAM:    ram,
 	})
 
 	remoteWorker := r.GetWorker(worker)
 	if remoteWorker != nil {
 		remoteWorker.CPUUsage += cpu
 		remoteWorker.GPUUsage += gpu
+		remoteWorker.RAMUsage += ram
 	}
 }
 
@@ -69,6 +74,7 @@ func (r *Coordinator) UnregisterTask(taskID uuid.UUID) {
 	if worker != nil {
 		worker.CPUUsage -= task.CPU
 		worker.GPUUsage -= task.GPU
+		worker.RAMUsage -= task.RAM
 	}
 }
 
@@ -89,6 +95,7 @@ func (r *Coordinator) RegisterWorker(w *dto.RegisterWorker, conn *websocket.Conn
 		Worker: worker.Worker{
 			MaxCPU:  w.CPU,
 			MaxGPU:  w.GPU,
+			MaxRAM:  w.RAM,
 			Plugins: pluginsMap,
 		},
 		Conn:   conn,
@@ -122,7 +129,9 @@ func (r *Coordinator) GetWorkers(plugin string, function string) []*RemoteWorker
 		if p, ok := worker.Plugins[plugin]; ok {
 			if f, ok := p.Functions[function]; ok {
 				// Check if the worker has enough resources
-				if worker.CPUUsage+f.CPU <= worker.MaxCPU && worker.GPUUsage+f.GPU <= worker.MaxGPU {
+				if worker.CPUUsage+f.CPU <= worker.MaxCPU &&
+					worker.GPUUsage+f.GPU <= worker.MaxGPU &&
+					worker.RAMUsage+f.RAM <= worker.MaxRAM {
 					workers = append(workers, worker)
 				}
 			}

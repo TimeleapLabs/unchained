@@ -77,10 +77,11 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 				if task, ok := s.CurrentTasks.Load(packet.ID); ok {
 					s.CPUUsage -= task.CPU
 					s.GPUUsage -= task.GPU
+					s.RAMUsage -= task.RAM
 					s.CurrentTasks.Delete(packet.ID)
 				}
 
-				if s.CPUUsage < s.MaxCPU && s.GPUUsage < s.MaxGPU {
+				if s.CPUUsage < s.MaxCPU && s.GPUUsage < s.MaxGPU && s.RAMUsage < s.MaxRAM {
 					// TODO: Notify the broker that we're not overloaded anymore
 					s.Overloaded = false
 				}

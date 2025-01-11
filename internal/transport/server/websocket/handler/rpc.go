@@ -32,6 +32,7 @@ func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
 		With("Plugins", plugins).
 		With("CPU", request.CPU).
 		With("GPU", request.GPU).
+		With("RAM", request.RAM).
 		Info("New Worker registered")
 
 	unchainedRPC.RegisterWorker(request, conn)
@@ -52,7 +53,7 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 	worker, function := unchainedRPC.GetRandomWorker(request.Plugin, request.Method)
 
 	if worker != nil && function != nil {
-		unchainedRPC.RegisterTask(request.ID, worker.Conn, wsQueue, function.CPU, function.GPU)
+		unchainedRPC.RegisterTask(request.ID, worker.Conn, wsQueue, function.CPU, function.GPU, function.RAM)
 
 		utils.Logger.
 			With("IP", wsQueue.Conn.RemoteAddr().String()).
@@ -62,6 +63,7 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 			With("Function", request.Method).
 			With("WorkerCPU", worker.CPUUsage).
 			With("WorkerGPU", worker.GPUUsage).
+			With("WorkerRAM", worker.RAMUsage).
 			Info("RPC Request Sent to Worker")
 
 		worker.Writer.Send(consts.OpCodeRPCRequest, payload)
