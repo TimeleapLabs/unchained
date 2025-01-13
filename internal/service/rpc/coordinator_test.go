@@ -35,8 +35,9 @@ func (s *CoordinatorTestSuite) TestCoordinator_RegisterWorker() {
 				Name: "test-plugin",
 				Functions: map[string]config.Function{
 					"test-function": {
-						Name: "test-function",
-						CPU:  10,
+						Name:    "test-function",
+						CPU:     10,
+						Timeout: 1,
 					},
 				},
 			},
@@ -45,12 +46,12 @@ func (s *CoordinatorTestSuite) TestCoordinator_RegisterWorker() {
 	s.service.RegisterWorker(&worker, conn)
 	store.Signers.Store(conn, model.Signer{ID: 0})
 
-	gotConns := s.service.GetWorkers("test-plugin", "test-function")
+	gotConns := s.service.GetWorkers("test-plugin", "test-function", 0)
 	s.Len(gotConns, 1)
 	s.Equal(conn, gotConns[0].Conn)
 
 	s.service.UnregisterWorker(conn)
-	gotConns = s.service.GetWorkers("test-plugin", "test-function")
+	gotConns = s.service.GetWorkers("test-plugin", "test-function", 0)
 	s.Len(gotConns, 0)
 }
 
@@ -62,7 +63,7 @@ func (s *CoordinatorTestSuite) TestCoordinator_RegisterTask() {
 	taskID, err := uuid.NewUUID()
 	s.NoError(err)
 
-	s.service.RegisterTask(taskID, worker, writer, 100, 1, 10)
+	s.service.RegisterTask(taskID, worker, writer, 100, 1, 10, 10000)
 	task, _ := s.service.GetTask(taskID)
 	s.Equal(worker, task.Worker)
 	s.Equal(writer, task.Client)

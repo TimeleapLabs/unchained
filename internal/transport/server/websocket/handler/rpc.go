@@ -69,10 +69,18 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 		With("Function", request.Method).
 		Info("RPC Request")
 
-	worker, function := unchainedRPC.GetRandomWorker(request.Plugin, request.Method)
+	worker, function := unchainedRPC.GetRandomWorker(request.Plugin, request.Method, request.Timeout)
 
 	if worker != nil && function != nil {
-		unchainedRPC.RegisterTask(request.ID, worker.Conn, wsQueue, function.CPU, function.GPU, function.RAM)
+		unchainedRPC.RegisterTask(
+			request.ID,
+			worker.Conn,
+			wsQueue,
+			function.CPU,
+			function.GPU,
+			function.RAM,
+			request.Timeout,
+		)
 
 		utils.Logger.
 			With("IP", wsQueue.Conn.RemoteAddr().String()).

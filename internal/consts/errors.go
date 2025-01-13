@@ -38,4 +38,5 @@ var (
 	ErrFunctionNotFound        = errors.New("function not found")
 	ErrOverloaded              = errors.New("worker overloaded")
 	ErrNoWorker                = errors.New("no worker")
+	ErrTimeout                 = errors.New("timeout")
 )

@@ -13,6 +13,8 @@ type RPCRequest struct {
 	Plugin string `json:"plugin"`
 	// The method to be called
 	Method string `json:"method"`
+	// The timeout of the request
+	Timeout int `json:"timeout"`
 	// params to pass to the function
 	Params []byte `json:"params"`
 	// The signature of the request
@@ -45,6 +47,7 @@ func (t *RPCRequest) Sia() sia.Sia {
 		AddByteArray8(uuidBytes).
 		AddString8(t.Plugin).
 		AddString8(t.Method).
+		AddInt64(int64(t.Timeout)).
 		AddByteArray64(t.Params).
 		AddByteArray8(t.Signature[:])
 }
@@ -61,6 +64,7 @@ func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
 
 	t.Plugin = s.ReadString8()
 	t.Method = s.ReadString8()
+	t.Timeout = int(s.ReadInt64())
 	t.Params = s.ReadByteArray64()
 
 	t.Signature = [48]byte{}

@@ -31,6 +31,7 @@ func (p *Plugin) Sia() sia.Sia {
 	s.EmbedBytes(sia.NewSiaArray[config.Function]().
 		AddArray16(functions, func(s *sia.ArraySia[config.Function], v config.Function) {
 			s.AddString8(v.Name)
+			s.AddInt64(int64(v.Timeout))
 			s.AddInt64(int64(v.CPU))
 			s.AddInt64(int64(v.GPU))
 			s.AddInt64(int64(v.RAM))
@@ -47,6 +48,7 @@ func (p *Plugin) FromSia(s sia.Sia) *Plugin {
 	functions := sa.ReadArray16(func(s *sia.ArraySia[config.Function]) config.Function {
 		f := config.Function{}
 		f.Name = s.ReadString8()
+		f.Timeout = int(s.ReadInt64())
 		f.CPU = int(s.ReadInt64())
 		f.GPU = int(s.ReadInt64())
 		f.RAM = int(s.ReadInt64())

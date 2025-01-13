@@ -25,10 +25,11 @@ type RPC struct {
 }
 
 type Function struct {
-	Name string `json:"name"`
-	CPU  int    `json:"cpu"`
-	GPU  int    `json:"gpu"`
-	RAM  int    `json:"ram"`
+	Name    string `json:"name"`
+	Timeout int    `json:"timeout"`
+	CPU     int    `json:"cpu"`
+	GPU     int    `json:"gpu"`
+	RAM     int    `json:"ram"`
 }
 
 // Plugins struct hold the plugins configurations of the application.
