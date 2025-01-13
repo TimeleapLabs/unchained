@@ -33,7 +33,7 @@ type Task struct {
 }
 
 type TimeoutManager struct {
-	CancelFunc context.CancelFunc
+	CancelFunc *context.CancelFunc
 	Mutex      *sync.Mutex
 }
 
@@ -206,7 +206,7 @@ func (r *Coordinator) StartTimeoutManager() {
 	mu := &sync.Mutex{}
 
 	r.TimeoutManager = &TimeoutManager{
-		CancelFunc: cancel,
+		CancelFunc: &cancel,
 		Mutex:      mu,
 	}
 
