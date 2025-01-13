@@ -38,6 +38,25 @@ func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
 	unchainedRPC.RegisterWorker(request, conn)
 }
 
+func WorkerOverload(_ context.Context, conn *websocket.Conn, payload []byte) {
+	overload := new(dto.WorkerOverload).
+		FromSiaBytes(payload)
+
+	utils.Logger.
+		With("IP", conn.RemoteAddr().String()).
+		With("FailedTaskID", overload.FailedTaskID).
+		With("CPU", overload.CPU).
+		With("GPU", overload.GPU).
+		With("RAM", overload.RAM).
+		Error("Worker Overload")
+
+	task, ok := unchainedRPC.GetTask(overload.FailedTaskID)
+	if ok {
+		task.Client.SendError(consts.OpCodeError, consts.ErrOverloaded)
+		unchainedRPC.UnregisterTask(overload.FailedTaskID)
+	}
+}
+
 // CallFunction is a handler of network that calls a registered function.
 func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []byte) {
 	request := new(dto.RPCRequest).
@@ -67,7 +86,16 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 			Info("RPC Request Sent to Worker")
 
 		worker.Writer.Send(consts.OpCodeRPCRequest, payload)
-	} // TODO: Handle if worker is nil
+	} else {
+		utils.Logger.
+			With("IP", wsQueue.Conn.RemoteAddr().String()).
+			With("ID", request.ID).
+			With("Plugin", request.Plugin).
+			With("Function", request.Method).
+			Error("Worker not found")
+
+		wsQueue.SendError(consts.OpCodeError, consts.ErrNoWorker)
+	}
 }
 
 // ResponseFunction is a handler of network that sends a response to requester.

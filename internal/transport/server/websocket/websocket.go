@@ -122,6 +122,8 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
 		case consts.OpCodeRegisterWorker:
 			go handler.RegisterWorker(ctx, conn, payload[1:])
+		case consts.OpCodeWorkerOverload:
+			go handler.WorkerOverload(ctx, conn, payload[1:])
 		case consts.OpCodeRPCRequest:
 			go handler.CallFunction(ctx, writer, payload[1:])
 		case consts.OpCodeRPCResponse:

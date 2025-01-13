@@ -64,7 +64,16 @@ func (w *Worker) RunFunction(ctx context.Context, pluginName string, params *dto
 			With("gpu", w.GPUUsage).
 			With("method", params.Method).
 			Error("Overloaded")
-		// TODO: We should notify the broker that we're overloaded so it can stop sending us requests
+
+		// Send overload message to the broker
+		overload := dto.WorkerOverload{
+			FailedTaskID: params.ID,
+			CPU:          w.CPUUsage,
+			GPU:          w.GPUUsage,
+			RAM:          w.RAMUsage,
+		}
+
+		conn.Send(consts.OpCodeWorkerOverload, overload.Sia().Bytes())
 		return consts.ErrOverloaded
 	}
 
