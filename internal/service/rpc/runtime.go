@@ -4,37 +4,42 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
-// Runtime is a type that holds the runtime of a function.
-type Runtime string
+func WithMockTask(pluginName string, name string) func(s *worker.Worker) {
+	functions := map[string]config.Function{}
+	functions[name] = config.Function{
+		Name: name,
+	}
 
-const (
-	Mock      Runtime = "Mock"
-	WebSocket Runtime = "WebSocket"
-)
-
-func WithMockTask(pluginName string, name string) func(s *Worker) {
-	return func(s *Worker) {
-		s.plugins[name] = plugin{
-			name:      pluginName,
-			runtime:   Mock,
-			functions: []string{name},
+	return func(s *worker.Worker) {
+		s.Plugins[name] = dto.Plugin{
+			Name:      pluginName,
+			Runtime:   worker.Mock,
+			Functions: functions,
 		}
 	}
 }
 
-func WithWebSocket(pluginName string, functions []string, url string) func(s *Worker) {
-	return func(s *Worker) {
-		p := plugin{
-			name:      pluginName,
-			runtime:   WebSocket,
-			functions: functions,
+func WithWebSocket(pluginName string, functions []config.Function, url string) func(s *worker.Worker) {
+	functionsMap := map[string]config.Function{}
+	for _, f := range functions {
+		functionsMap[f.Name] = f
+	}
+
+	return func(s *worker.Worker) {
+		p := dto.Plugin{
+			Name:      pluginName,
+			Runtime:   worker.WebSocket,
+			Functions: functionsMap,
 		}
 
 		wsConn, httpResp, err := websocket.DefaultDialer.Dial(url, nil)
@@ -68,11 +73,25 @@ func WithWebSocket(pluginName string, functions []string, url string) func(s *Wo
 					With("ID", packet.ID).
 					Info("RPC Response")
 
+				// Release the resources
+				if task, ok := s.CurrentTasks.Load(packet.ID); ok {
+					s.CPUUsage -= task.CPU
+					s.GPUUsage -= task.GPU
+					s.RAMUsage -= task.RAM
+					s.CurrentTasks.Delete(packet.ID)
+				}
+
+				if s.CPUUsage < s.MaxCPU && s.GPUUsage < s.MaxGPU && s.RAMUsage < s.MaxRAM {
+					// TODO: Notify the broker that we're not overloaded anymore
+					s.Overloaded = false
+				}
+
 				conn.Send(consts.OpCodeRPCResponse, message)
 			}
 		}()
 
-		p.conn = wsConn
-		s.plugins[pluginName] = p
+		p.Conn = wsConn
+		p.Writer = queue.NewWebSocketWriter(wsConn, 100) // TODO: Make the buffer size configurable
+		s.Plugins[pluginName] = p
 	}
 }

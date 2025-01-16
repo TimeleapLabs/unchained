@@ -114,8 +114,6 @@ type RPCRequest struct {
 	ID uuid.UUID `json:"id"`
 	// The signature of the request
 	Signature [48]byte `json:"signature"`
-	// Payment information
-	TxHash string `json:"tx_hash"`
 	// The method to be called
 	Method string `json:"method"`
 	// params to pass to the function

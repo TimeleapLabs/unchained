@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
@@ -36,7 +37,7 @@ func Load(configPath, secretPath string) error {
 
 	err = cleanenv.ReadConfig(configPath, &App)
 	if err != nil {
-		return consts.ErrCantLoadConfig
+		return fmt.Errorf("%w: %w", consts.ErrCantLoadConfig, err)
 	}
 
 	err = cleanenv.ReadEnv(&App)

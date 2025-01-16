@@ -5,26 +5,9 @@ import (
 
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
-
-func Send(conn *websocket.Conn, opCode consts.OpCode, payload []byte) {
-	err := conn.WriteMessage(
-		websocket.BinaryMessage,
-		append(
-			[]byte{byte(opCode)},
-			payload...),
-	)
-	if err != nil {
-		utils.Logger.With("Error", err).Error("Cannot send packet")
-	}
-}
-
-func SendMessage(conn *websocket.Conn, opCode consts.OpCode, message string) {
-	Send(conn, opCode, []byte(message))
-}
 
 func BroadcastListener(ctx context.Context, conn *websocket.Conn, topic string, ch chan []byte) {
 	for {
@@ -40,10 +23,6 @@ func BroadcastListener(ctx context.Context, conn *websocket.Conn, topic string, 
 			}
 		}
 	}
-}
-
-func SendError(conn *websocket.Conn, opCode consts.OpCode, err error) {
-	SendMessage(conn, opCode, err.Error())
 }
 
 func Close(conn *websocket.Conn) {

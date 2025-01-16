@@ -2,6 +2,7 @@ package consts
 
 import "errors"
 
+// TODO: This is a mess
 // Error list of the project.
 var (
 	ErrInvalidKosk             = errors.New("kosk.invalid")
@@ -33,4 +34,9 @@ var (
 	ErrCantSendRPCRequest      = errors.New("can't send rpc request")
 	ErrCantReceiveRPCResponse  = errors.New("can't receive rpc response")
 	ErrNoNewSigners            = errors.New("no new signers")
+	ErrPluginNotFound          = errors.New("plugin not found")
+	ErrFunctionNotFound        = errors.New("function not found")
+	ErrOverloaded              = errors.New("worker overloaded")
+	ErrNoWorker                = errors.New("no worker")
+	ErrTimeout                 = errors.New("timeout")
 )

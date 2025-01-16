@@ -7,7 +7,7 @@ import (
 )
 
 func TestRequestSia(t *testing.T) {
-	req := NewRequest("test", []byte("hello world"), [48]byte{}, "txHash")
+	req := NewRequest("test", []byte("hello world"), [48]byte{})
 	reqByte := req.Sia().Bytes()
 	gotReq := new(RPCRequest).FromSiaBytes(reqByte)
 

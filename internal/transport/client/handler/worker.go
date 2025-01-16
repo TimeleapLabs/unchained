@@ -1,14 +1,16 @@
 package handler
 
-import "github.com/TimeleapLabs/unchained/internal/service/rpc"
+import (
+	rpcWorker "github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
+)
 
 type worker struct {
-	rpc *rpc.Worker
+	rpc *rpcWorker.Worker
 }
 
-func NewWorkerHandler(rpc *rpc.Worker) Handler {
+func NewWorkerHandler(rpc *rpcWorker.Worker) Handler {
 	// Register the worker functions with the broker
-	rpc.RegisterFunctions()
+	rpc.RegisterWorker()
 
 	return &worker{
 		rpc: rpc,

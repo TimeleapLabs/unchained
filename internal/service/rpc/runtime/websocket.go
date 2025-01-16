@@ -4,17 +4,11 @@ import (
 	"context"
 
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/utils"
-	"github.com/gorilla/websocket"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 )
 
 // RunWebSocketCall runs a function with the given name and parameters.
-func RunWebSocketCall(_ context.Context, conn *websocket.Conn, params *dto.RPCRequest) error {
-	err := conn.WriteMessage(websocket.BinaryMessage, params.Sia().Bytes())
-	if err != nil {
-		utils.Logger.With("err", err).Error("Error sending message")
-		return err
-	}
-
+func RunWebSocketCall(_ context.Context, wsQueue *queue.WebSocketWriter, params *dto.RPCRequest) error {
+	wsQueue.SendRaw(params.Sia().Bytes()) // TODO: How to handle write errors?
 	return nil
 }

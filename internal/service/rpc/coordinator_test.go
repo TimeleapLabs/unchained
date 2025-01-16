@@ -3,6 +3,11 @@ package rpc
 import (
 	"testing"
 
+	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -22,29 +27,51 @@ func (s *CoordinatorTestSuite) SetupTest() {
 
 func (s *CoordinatorTestSuite) TestCoordinator_RegisterWorker() {
 	conn := &websocket.Conn{}
-	s.service.RegisterWorker("test-worker", conn)
-	gotConns := s.service.GetWorkers("test-worker")
-	s.Len(gotConns, 1)
-	s.Equal(conn, gotConns[0])
+	worker := dto.RegisterWorker{
+		CPU: 100,
+		GPU: 1,
+		Plugins: []dto.Plugin{
+			{
+				Name: "test-plugin",
+				Functions: map[string]config.Function{
+					"test-function": {
+						Name:    "test-function",
+						CPU:     10,
+						Timeout: 1,
+					},
+				},
+			},
+		},
+	}
+	s.service.RegisterWorker(&worker, conn)
+	store.Signers.Store(conn, model.Signer{ID: 0})
 
-	s.service.UnregisterWorker("test-worker", conn)
-	gotConns = s.service.GetWorkers("test-worker")
+	gotConns := s.service.GetWorkers("test-plugin", "test-function", 0)
+	s.Len(gotConns, 1)
+	s.Equal(conn, gotConns[0].Conn)
+
+	s.service.UnregisterWorker(conn)
+	gotConns = s.service.GetWorkers("test-plugin", "test-function", 0)
 	s.Len(gotConns, 0)
 }
 
 func (s *CoordinatorTestSuite) TestCoordinator_RegisterTask() {
-	conn := &websocket.Conn{}
+	worker := &websocket.Conn{}
+	client := &websocket.Conn{}
+	writer := queue.NewWebSocketWriter(client, 10)
 
 	taskID, err := uuid.NewUUID()
 	s.NoError(err)
 
-	s.service.RegisterTask(taskID, conn)
-	gotConn := s.service.GetTask(taskID)
-	s.Equal(conn, gotConn)
+	s.service.RegisterTask(taskID, worker, writer, 100, 1, 10, 10000)
+	task, _ := s.service.GetTask(taskID)
+	s.Equal(worker, task.Worker)
+	s.Equal(writer, task.Client)
 
 	s.service.UnregisterTask(taskID)
-	gotConn = s.service.GetTask(taskID)
-	s.Nil(gotConn)
+	task, _ = s.service.GetTask(taskID)
+	s.Nil(task.Worker)
+	s.Nil(task.Client)
 }
 
 func TestCoordinatorSuite(t *testing.T) {

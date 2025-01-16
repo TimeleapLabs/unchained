@@ -9,20 +9,20 @@ import (
 type RPCRequest struct {
 	// The ID of the request
 	ID uuid.UUID `json:"id"`
-	// The signature of the request
-	Signature [48]byte `json:"signature"`
-	// Payment information
-	TxHash string `json:"tx_hash"`
 	// The plugin to be called
 	Plugin string `json:"plugin"`
 	// The method to be called
 	Method string `json:"method"`
+	// The timeout of the request
+	Timeout int `json:"timeout"`
 	// params to pass to the function
 	Params []byte `json:"params"`
+	// The signature of the request
+	Signature [48]byte `json:"signature"`
 }
 
 // NewRequest creates a new request with unique ID.
-func NewRequest(method string, params []byte, signature [48]byte, txHash string) RPCRequest {
+func NewRequest(method string, params []byte, signature [48]byte) RPCRequest {
 	taskID, err := uuid.NewV7()
 	if err != nil {
 		panic(err)
@@ -33,7 +33,6 @@ func NewRequest(method string, params []byte, signature [48]byte, txHash string)
 		Method:    method,
 		Params:    params,
 		Signature: signature,
-		TxHash:    txHash,
 	}
 }
 
@@ -46,11 +45,11 @@ func (t *RPCRequest) Sia() sia.Sia {
 
 	return sia.New().
 		AddByteArray8(uuidBytes).
-		AddByteArray8(t.Signature[:]).
-		AddString8(t.TxHash).
 		AddString8(t.Plugin).
 		AddString8(t.Method).
-		EmbedBytes(t.Params)
+		AddInt64(int64(t.Timeout)).
+		AddByteArray64(t.Params).
+		AddByteArray8(t.Signature[:])
 }
 
 func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
@@ -63,13 +62,13 @@ func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
 		// return nil
 	}
 
-	t.Signature = [48]byte{}
-	copy(t.Signature[:], s.ReadByteArray8())
-
-	t.TxHash = s.ReadString8()
 	t.Plugin = s.ReadString8()
 	t.Method = s.ReadString8()
-	t.Params = s.Bytes()[s.Offset():]
+	t.Timeout = int(s.ReadInt64())
+	t.Params = s.ReadByteArray64()
+
+	t.Signature = [48]byte{}
+	copy(t.Signature[:], s.ReadByteArray8())
 
 	return t
 }
