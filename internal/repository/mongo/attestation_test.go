@@ -11,18 +11,14 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/transport/database/mongo"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/utils/hash"
 	"github.com/stretchr/testify/suite"
 	"github.com/tryvium-travels/memongo"
 )
 
 var sampleAttestation = model.Attestation{
-	SignersCount: 100,
-	Signature:    nil,
-	Consensus:    false,
-	Voted:        1000,
-	Timestamp:    999,
-	Hash:         []byte{1, 2, 3, 4, 5},
-	Topic:        []byte{},
+	Timestamp: 999,
+	Topic:     []byte{},
 	Meta: map[string]interface{}{
 		"Correct": true,
 	},
@@ -59,16 +55,16 @@ func (s *AttestationRepositoryTestSuite) SetupTest() {
 }
 
 func (s *AttestationRepositoryTestSuite) TestUpsert() {
-	err := s.repo.Upsert(context.TODO(), sampleAttestation)
+	err := s.repo.Upsert(context.TODO(), hash.Hash(&sampleAttestation), sampleAttestation)
 	s.NoError(err)
 }
 
 func (s *AttestationRepositoryTestSuite) TestFind() {
-	err := s.repo.Upsert(context.TODO(), sampleAttestation)
+	err := s.repo.Upsert(context.TODO(), hash.Hash(&sampleAttestation), sampleAttestation)
 	s.NoError(err)
 
-	hash := sampleAttestation.Bls().Bytes()
-	_, err = s.repo.Find(context.TODO(), hash[:])
+	hashed := hash.Hash(&sampleAttestation)
+	_, err = s.repo.Find(context.TODO(), hashed)
 	s.NoError(err)
 }
 

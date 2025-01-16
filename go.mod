@@ -4,7 +4,6 @@ go 1.22.1
 
 require (
 	github.com/btcsuite/btcutil v1.0.2
-	github.com/consensys/gnark-crypto v0.12.1
 	github.com/ethereum/go-ethereum v1.14.9
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.1
@@ -18,6 +17,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tryvium-travels/memongo v0.12.0
+	github.com/zeebo/blake3 v0.2.4
 	go.mongodb.org/mongo-driver v1.15.1
 	golang.org/x/crypto v0.32.0
 	golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81
@@ -44,6 +44,7 @@ require (
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
+	github.com/consensys/gnark-crypto v0.12.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20240223125850-b1e8a79f509c // indirect
 	github.com/crate-crypto/go-kzg-4844 v1.0.0 // indirect
@@ -76,6 +77,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

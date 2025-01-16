@@ -40,10 +40,13 @@ func InitMachineIdentity(options ...Option) {
 
 // ExportEvmSigner returns EVM signer from machine identity.
 func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
+	pk := [32]byte{}
+	copy(pk[:], i.Ed25519.PublicKey)
+
 	return &model.Signer{
 		Name:       config.App.System.Name,
 		EvmAddress: Identity.Eth.Address,
-		PublicKey:  Identity.Ed25519.PublicKey,
+		PublicKey:  pk,
 	}
 }
 
@@ -61,7 +64,7 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 	}
 }
 
-// WithEd25519Identity initialize and will add Bls keys to machine identity.
+// WithEd25519Identity initialize and will add Ed25519 keys to machine identity.
 func WithEd25519Identity() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
 		machineIdentity.Ed25519 = ed25519.NewIdentity()

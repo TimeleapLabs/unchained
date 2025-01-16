@@ -3,7 +3,6 @@ package mongo
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,7 +20,7 @@ type AttestationRepo struct {
 	client database.MongoDatabase
 }
 
-func (c AttestationRepo) Find(ctx context.Context, hash []byte) (model.Attestation, error) {
+func (c AttestationRepo) Find(ctx context.Context, hash [32]byte) (model.Attestation, error) {
 	decoded := model.AttestationDataFrame{}
 	err := c.client.
 		GetConnection().
@@ -42,7 +41,7 @@ func (c AttestationRepo) Find(ctx context.Context, hash []byte) (model.Attestati
 	return decoded.Data, nil
 }
 
-func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) error {
+func (c AttestationRepo) Upsert(ctx context.Context, hash [32]byte, data model.Attestation) error {
 	opt := options.Update().SetUpsert(true)
 
 	_, err := c.client.
@@ -50,21 +49,13 @@ func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) err
 		Database(config.App.Mongo.Database).
 		Collection("attestation").
 		UpdateOne(ctx, bson.M{
-			"hash": data.Bls().Bytes(),
+			"hash": hash,
 		}, bson.M{
-			"$set": bson.M{
-				"data.meta":          data.Meta,
-				"data.signers_count": data.SignersCount,
-				"data.signature":     data.Signature,
-				"data.timestamp":     data.Timestamp,
-				"data.consensus":     data.Consensus, // TODO: Remove this field?
-				"data.voted":         data.Voted,     // TODO: Improve or remove this field
-			},
 			"$setOnInsert": bson.M{
-				"hash":       data.Bls().Bytes(),
-				"timestamp":  time.Now(),
-				"data.hash":  data.Hash,
-				"data.topic": data.Topic,
+				"hash":           hash,
+				"data.topic":     data.Topic,
+				"data.timestamp": data.Timestamp,
+				"data.meta":      data.Meta,
 			},
 		}, opt)
 

@@ -14,12 +14,12 @@ import (
 var (
 	SignerOne = Signature{
 		Signer: model.Signer{
-			PublicKey: []byte{1, 2, 3},
+			PublicKey: [32]byte{1, 2, 3},
 		},
 	}
 	SignerTwo = Signature{
 		Signer: model.Signer{
-			PublicKey: []byte{3, 2, 1},
+			PublicKey: [32]byte{3, 2, 1},
 		},
 	}
 )

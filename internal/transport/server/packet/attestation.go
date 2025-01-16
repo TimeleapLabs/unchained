@@ -7,7 +7,7 @@ import (
 
 type AttestationPacket struct {
 	model.Attestation
-	Signature [48]byte
+	Signature [64]byte
 }
 
 func (c *AttestationPacket) Sia() sia.Sia {
@@ -27,7 +27,7 @@ func (c *AttestationPacket) FromBytes(payload []byte) *AttestationPacket {
 
 type BroadcastAttestationPacket struct {
 	Info      model.Attestation
-	Signature [48]byte
+	Signature [64]byte
 	Signer    model.Signer
 }
 

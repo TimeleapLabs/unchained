@@ -8,7 +8,6 @@ var (
 	ErrInvalidConfig           = errors.New("conf.invalid")
 	ErrMissingHello            = errors.New("hello.missing")
 	ErrInternalError           = errors.New("internal_error")
-	ErrCantVerifyBls           = errors.New("cant_verify_bls")
 	ErrInvalidSignature        = errors.New("signature.invalid")
 	ErrNotSupportedDataset     = errors.New("dataset not supported")
 	ErrNotSupportedInstruction = errors.New("instruction not supported")

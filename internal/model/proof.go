@@ -15,18 +15,18 @@ type Proof struct {
 	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
 
-	Signers []Signer `bson:"signers" gorm:"many2many:proof_signers;" json:"signers"`
+	Signatures []Signature `bson:"signatures" gorm:"many2many:proof_signatures;" json:"signers"`
 }
 
 func (p *Proof) Sia() sia.Sia {
-	signers := sia.NewSiaArray[Signer]().AddArray64(p.Signers, func(s *sia.ArraySia[Signer], item Signer) {
+	signatures := sia.NewSiaArray[Signature]().AddArray64(p.Signatures, func(s *sia.ArraySia[Signature], item Signature) {
 		s.EmbedBytes(item.Sia().Bytes())
 	})
 
 	return sia.New().
 		AddByteArray8(p.Hash).
 		AddInt64(p.Timestamp.Unix()).
-		AddByteArray64(signers.Bytes())
+		AddByteArray64(signatures.Bytes())
 }
 
 func (p *Proof) FromBytes(payload []byte) *Proof {
@@ -35,22 +35,25 @@ func (p *Proof) FromBytes(payload []byte) *Proof {
 }
 
 func (p *Proof) FromSia(siaObj sia.Sia) *Proof {
-	signers := sia.NewArrayFromBytes[Signer](siaObj.ReadByteArray64()).ReadArray64(func(s *sia.ArraySia[Signer]) Signer {
-		signer := Signer{}
-		signer.FromBytes(s.ReadByteArray64())
-		return signer
-	})
-
 	p.Hash = siaObj.ReadByteArray8()
 	p.Timestamp = time.Unix(siaObj.ReadInt64(), 0)
-	p.Signers = signers
+
+	signatureBytes := siaObj.ReadByteArray64()
+	signatures := sia.NewArrayFromBytes[Signature](signatureBytes).ReadArray64(func(s *sia.ArraySia[Signature]) Signature {
+		signature := new(Signature)
+		signature.FromBytes(s.Bytes())
+		return *signature
+	})
+
+	p.Signatures = signatures
+
 	return p
 }
 
-func NewProof(signers []Signer, hash []byte) *Proof {
+func NewProof(signatures []Signature, hash []byte) *Proof {
 	return &Proof{
-		Hash:      hash,
-		Timestamp: time.Now(),
-		Signers:   signers,
+		Hash:       hash,
+		Timestamp:  time.Now(),
+		Signatures: signatures,
 	}
 }

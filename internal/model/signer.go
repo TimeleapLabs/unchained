@@ -11,16 +11,39 @@ type Signer struct {
 	ID    uint               `bson:"-"             gorm:"primarykey"`
 	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
 
-	Name       string `json:"name"`
-	EvmAddress string `json:"evm_address"`
-	PublicKey  []byte `json:"public_key"`
+	Name       string   `json:"name"`
+	EvmAddress string   `json:"evm_address"`
+	PublicKey  [32]byte `json:"public_key"`
+}
+
+type Signature struct {
+	PublicKey [32]byte `json:"public_key"`
+	Signature [64]byte `json:"signature"`
+}
+
+func (s *Signature) Sia() sia.Sia {
+	return sia.New().
+		AddByteArray8(s.PublicKey[:]).
+		AddByteArray8(s.Signature[:])
+}
+
+func (s *Signature) FromBytes(payload []byte) *Signature {
+	siaMessage := sia.NewFromBytes(payload)
+	return s.FromSia(siaMessage)
+}
+
+func (s *Signature) FromSia(sia sia.Sia) *Signature {
+	copy(s.PublicKey[:], sia.ReadByteArray8())
+	copy(s.Signature[:], sia.ReadByteArray8())
+
+	return s
 }
 
 func (s *Signer) Sia() sia.Sia {
 	return sia.New().
 		AddString8(s.Name).
 		AddString8(s.EvmAddress).
-		AddByteArray8(s.PublicKey)
+		AddByteArray8(s.PublicKey[:])
 }
 
 func (s *Signer) FromBytes(payload []byte) *Signer {
@@ -31,7 +54,9 @@ func (s *Signer) FromBytes(payload []byte) *Signer {
 func (s *Signer) FromSia(sia sia.Sia) *Signer {
 	s.Name = sia.ReadString8()
 	s.EvmAddress = sia.ReadString8()
-	s.PublicKey = sia.ReadByteArray8()
+
+	pk := sia.ReadByteArray8()
+	copy(s.PublicKey[:], pk)
 
 	return s
 }
