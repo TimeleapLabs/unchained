@@ -25,7 +25,7 @@ func Worker(_ context.Context) {
 
 	crypto.InitMachineIdentity(
 		crypto.WithEvmSigner(),
-		crypto.WithBlsIdentity(),
+		crypto.WithEd25519Identity(),
 	)
 
 	rpcFunctions := []worker.Option{}

@@ -28,7 +28,7 @@ func Consumer() {
 
 	crypto.InitMachineIdentity(
 		crypto.WithEvmSigner(),
-		crypto.WithBlsIdentity(),
+		crypto.WithEd25519Identity(),
 	)
 
 	ethRPC := ethereum.New()

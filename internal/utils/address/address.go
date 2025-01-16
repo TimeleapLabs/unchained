@@ -4,41 +4,13 @@ import (
 	"fmt"
 
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/btcsuite/btcutil/base58"
 )
-
-const chars = "0123456789ABCDEFGHJKMNPQRSTUVXYZ"
 
 func Calculate(input []byte) string {
 	hash := utils.Shake(input)
-	address := ToBase32(hash[:20])
-	checksum := utils.Shake([]byte(address))
-	checkchars := []byte{chars[checksum[0]%32], chars[checksum[1]%32]}
-
-	return fmt.Sprintf("%s%s", address, checkchars)
-}
-
-func ToBase32(input []byte) string {
-	var output []byte
-	var temp int
-	var bits int
-
-	for _, b := range input {
-		temp = (temp << 8) | int(b)
-		bits += 8
-
-		for bits >= 5 {
-			bits -= 5
-			index := (temp >> bits) & 0x1F
-			output = append(output, chars[index])
-		}
-	}
-
-	if bits > 0 {
-		lastChunk := (temp << (5 - bits)) & 0x1F
-		output = append(output, chars[lastChunk])
-	}
-
-	return string(output)
+	address := base58.Encode(hash[:20])
+	return address
 }
 
 func CalculateHex(input []byte) (string, [20]byte) {

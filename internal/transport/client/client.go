@@ -33,13 +33,12 @@ func NewRPC(handler handler.Handler) {
 						With("Feedback", string(payload[1:])).
 						Info("Broker")
 
-				case consts.OpCodeKoskChallenge:
-					challenge := handler.Challenge(payload[1:])
-					conn.Send(consts.OpCodeKoskResult, challenge)
 				case consts.OpCodeAttestationBroadcast:
 					handler.Attestation(ctx, payload[1:])
+
 				case consts.OpCodeRPCRequest:
 					handler.RPCRequest(ctx, payload[1:])
+
 				default:
 					utils.Logger.
 						With("Code", payload[0]).

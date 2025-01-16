@@ -1,40 +1,23 @@
 package handler
 
 import (
-	"bytes"
-
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
-// Hello handler store the new client in the Signers map and send it a challenge packet.
-func Hello(conn *websocket.Conn, payload []byte) ([]byte, error) {
+// Hello handler store the new client in the Signers map.
+func Hello(conn *websocket.Conn, payload []byte) error {
 	utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
 	signer := new(model.Signer).FromBytes(payload)
 
 	if signer.Name == "" {
-		utils.Logger.Error("Signer name is empty Or public key is invalid")
-		return []byte{}, consts.ErrInvalidConfig
+		utils.Logger.Error("Signer name is empty or public key is invalid")
+		return consts.ErrInvalidConfig
 	}
 
-	store.Signers.Range(func(conn *websocket.Conn, signerInMap model.Signer) bool {
-		publicKeyInUse := bytes.Equal(signerInMap.PublicKey, signer.PublicKey)
-		if publicKeyInUse {
-			Close(conn)
-		}
-
-		return !publicKeyInUse
-	})
-
 	store.Signers.Store(conn, *signer)
-
-	// Start KOSK verification
-	challenge := packet.ChallengePacket{Random: utils.NewChallenge()}
-	store.Challenges.Store(conn, challenge)
-
-	return challenge.Sia().Bytes(), nil
+	return nil
 }

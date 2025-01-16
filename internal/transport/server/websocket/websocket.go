@@ -42,7 +42,6 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(context.TODO())
 
 	defer store.Signers.Delete(conn)
-	defer store.Challenges.Delete(conn)
 	defer cancel()
 
 	// register a close handler to stop the for loop
@@ -87,14 +86,13 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		switch consts.OpCode(payload[0]) {
 		case consts.OpCodeHello:
 			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
-			result, err := handler.Hello(conn, payload[1:])
+			err := handler.Hello(conn, payload[1:])
 			if err != nil {
 				writer.SendError(consts.OpCodeError, err)
 				continue
 			}
 
 			writer.SendMessage(consts.OpCodeFeedback, "conf.ok")
-			writer.Send(consts.OpCodeKoskChallenge, result)
 		case consts.OpCodeAttestation:
 			result, err := handler.AttestationRecord(conn, payload[1:])
 			if err != nil {
@@ -104,14 +102,6 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 			pubsub.Publish(consts.ChannelAttestation, consts.OpCodeAttestationBroadcast, result)
 			writer.SendMessage(consts.OpCodeFeedback, "signature.accepted")
-		case consts.OpCodeKoskResult:
-			err := handler.Kosk(conn, payload[1:])
-			if err != nil {
-				writer.SendError(consts.OpCodeError, err)
-				continue
-			}
-
-			writer.SendMessage(consts.OpCodeFeedback, "kosk.ok")
 		case consts.OpCodeRegisterConsumer:
 			utils.Logger.
 				With("IP", conn.RemoteAddr().String()).

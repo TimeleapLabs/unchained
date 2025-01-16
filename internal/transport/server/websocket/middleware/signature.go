@@ -3,40 +3,19 @@ package middleware
 import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
-	"github.com/TimeleapLabs/unchained/internal/utils"
-	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
 	"github.com/gorilla/websocket"
 )
 
 // IsMessageValid checks if the message's signature belong to signer or not.
-func IsMessageValid(conn *websocket.Conn, message bls12381.G1Affine, signature [48]byte) (model.Signer, error) {
+func IsMessageValid(conn *websocket.Conn, message []byte, signature [48]byte) (model.Signer, error) {
 	signer, ok := store.Signers.Load(conn)
 	if !ok {
 		return model.Signer{}, consts.ErrMissingHello
 	}
 
-	signatureBls, err := bls.RecoverSignature(signature)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Cannot recover bls signature")
-		return model.Signer{}, consts.ErrInternalError
-	}
-
-	pk, err := bls.RecoverPublicKey([96]byte(signer.PublicKey))
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Cannot recover pub key pub-key")
-		return model.Signer{}, consts.ErrInternalError
-	}
-
-	ok, err = crypto.Identity.Bls.Verify(signatureBls, message, pk)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Cannot verify bls")
-		return model.Signer{}, consts.ErrCantVerifyBls
-	}
-
-	if !ok {
+	if ok = crypto.Identity.Ed25519.Verify(signature[:], message, signer.PublicKey); !ok {
 		return model.Signer{}, consts.ErrInvalidSignature
 	}
 

@@ -110,7 +110,7 @@ func New(ethRPC ethereum.RPC) Service {
 		lastUpdated:  xsync.NewMapOf[[20]byte, *big.Int](),
 	}
 
-	pkBytes := crypto.Identity.Bls.PublicKey.Bytes()
+	pkBytes := crypto.Identity.Ed25519.PublicKey
 	addrHexStr, addrHex := address.CalculateHex(pkBytes[:])
 
 	utils.Logger.

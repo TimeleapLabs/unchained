@@ -22,7 +22,7 @@ func (s *PosTestSuite) SetupTest() {
 
 	utils.SetupLogger("info")
 	crypto.InitMachineIdentity(
-		crypto.WithBlsIdentity(),
+		crypto.WithEd25519Identity(),
 		crypto.WithEvmSigner(),
 	)
 

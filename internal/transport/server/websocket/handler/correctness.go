@@ -8,14 +8,9 @@ import (
 
 // AttestationRecord is a handler for attestation report.
 func AttestationRecord(conn *websocket.Conn, payload []byte) ([]byte, error) {
-	err := middleware.IsConnectionAuthenticated(conn)
-	if err != nil {
-		return []byte{}, err
-	}
-
 	attestation := new(packet.AttestationPacket).FromBytes(payload)
 
-	signer, err := middleware.IsMessageValid(conn, *attestation.Attestation.Bls(), attestation.Signature)
+	signer, err := middleware.IsMessageValid(conn, attestation.Attestation.Sia().Bytes(), attestation.Signature)
 	if err != nil {
 		return []byte{}, err
 	}
