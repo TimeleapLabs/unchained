@@ -1,7 +1,7 @@
 package model
 
 import (
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

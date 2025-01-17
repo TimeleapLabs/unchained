@@ -1,8 +1,8 @@
 package packet
 
 import (
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 type AttestationPacket struct {

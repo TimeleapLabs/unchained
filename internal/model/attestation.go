@@ -6,7 +6,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
 type AttestationDataFrame struct {

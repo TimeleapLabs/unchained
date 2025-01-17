@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 // TextToImage converts a text prompt to an image by requesting the broker.

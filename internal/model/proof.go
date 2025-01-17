@@ -5,7 +5,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
 type Proof struct {
@@ -19,14 +19,16 @@ type Proof struct {
 }
 
 func (p *Proof) Sia() sia.Sia {
-	signatures := sia.NewSiaArray[Signature]().AddArray64(p.Signatures, func(s *sia.ArraySia[Signature], item Signature) {
+	s := sia.New().
+		AddByteArray8(p.Hash).
+		AddInt64(p.Timestamp.Unix())
+
+	sarr := sia.NewArray[Signature](&s)
+	sarr.AddArray64(p.Signatures, func(s *sia.ArraySia[Signature], item Signature) {
 		s.EmbedBytes(item.Sia().Bytes())
 	})
 
-	return sia.New().
-		AddByteArray8(p.Hash).
-		AddInt64(p.Timestamp.Unix()).
-		AddByteArray64(signatures.Bytes())
+	return s
 }
 
 func (p *Proof) FromBytes(payload []byte) *Proof {
@@ -34,12 +36,12 @@ func (p *Proof) FromBytes(payload []byte) *Proof {
 	return p.FromSia(siaMessage)
 }
 
-func (p *Proof) FromSia(siaObj sia.Sia) *Proof {
-	p.Hash = siaObj.ReadByteArray8()
-	p.Timestamp = time.Unix(siaObj.ReadInt64(), 0)
+func (p *Proof) FromSia(s sia.Sia) *Proof {
+	p.Hash = s.ReadByteArray8()
+	p.Timestamp = time.Unix(s.ReadInt64(), 0)
 
-	signatureBytes := siaObj.ReadByteArray64()
-	signatures := sia.NewArrayFromBytes[Signature](signatureBytes).ReadArray64(func(s *sia.ArraySia[Signature]) Signature {
+	sarr := sia.NewArray[Signature](&s)
+	signatures := sarr.ReadArray64(func(s *sia.ArraySia[Signature]) Signature {
 		signature := new(Signature)
 		signature.FromBytes(s.Bytes())
 		return *signature

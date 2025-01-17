@@ -3,6 +3,7 @@ module github.com/TimeleapLabs/unchained
 go 1.22.1
 
 require (
+	github.com/TimeleapLabs/go-sia/v2 v2.4.0
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/ethereum/go-ethereum v1.14.9
 	github.com/google/uuid v1.6.0
@@ -12,7 +13,6 @@ require (
 	github.com/lmittmann/tint v1.0.4
 	github.com/mattn/go-colorable v0.1.13
 	github.com/newrelic/go-agent/v3/integrations/nrmongo v1.1.3
-	github.com/pouya-eghbali/go-sia/v2 v2.3.0
 	github.com/puzpuzpuz/xsync/v3 v3.1.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0

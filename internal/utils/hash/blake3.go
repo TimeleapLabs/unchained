@@ -1,7 +1,7 @@
 package hash
 
 import (
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/zeebo/blake3"
 )
 
