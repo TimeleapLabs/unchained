@@ -1,6 +1,7 @@
 package attestation
 
 import (
+	"crypto/ed25519"
 	"testing"
 
 	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
@@ -14,12 +15,12 @@ import (
 var (
 	SignerOne = Signature{
 		Signer: model.Signer{
-			PublicKey: [32]byte{1, 2, 3},
+			PublicKey: ed25519.PublicKey{1, 2, 3},
 		},
 	}
 	SignerTwo = Signature{
 		Signer: model.Signer{
-			PublicKey: [32]byte{3, 2, 1},
+			PublicKey: ed25519.PublicKey{3, 2, 1},
 		},
 	}
 )

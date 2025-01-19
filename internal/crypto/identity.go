@@ -7,6 +7,8 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/TimeleapLabs/unchained/internal/utils/address"
+
+	goEd25519 "crypto/ed25519"
 )
 
 // MachineIdentity holds machine identity and provide and manage keys.
@@ -40,7 +42,7 @@ func InitMachineIdentity(options ...Option) {
 
 // ExportEvmSigner returns EVM signer from machine identity.
 func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
-	pk := [32]byte{}
+	pk := goEd25519.PublicKey{}
 	copy(pk[:], i.Ed25519.PublicKey)
 
 	return &model.Signer{

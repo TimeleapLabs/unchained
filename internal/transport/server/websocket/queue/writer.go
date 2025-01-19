@@ -2,6 +2,7 @@ package queue
 
 import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
@@ -41,10 +42,22 @@ func (w *WebSocketWriter) run() {
 }
 
 func (w *WebSocketWriter) SendRaw(payload []byte) {
+	signed, err := packet.SignPacket(payload)
+	if err != nil {
+		// TODO?: Close the connection on error?
+		utils.Logger.
+			With("Error", err).
+			Error("Cannot sign packet")
+		return
+	}
+
 	select {
-	case w.queue <- payload:
+	case w.queue <- signed:
 		// Message enqueued successfully.
 	default:
+		// TODO!: Implement a proper queue overflow strategy.
+		// We should never reach this point.
+		// And if we do, we should NOT drop packets.
 		utils.Logger.Error("Write queue is full, dropping packet")
 	}
 }

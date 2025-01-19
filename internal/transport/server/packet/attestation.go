@@ -5,26 +5,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/model"
 )
 
-type AttestationPacket struct {
-	model.Attestation
-	Signature [64]byte
-}
-
-func (c *AttestationPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(c.Attestation.Sia().Bytes()).
-		AddByteArray8(c.Signature[:])
-}
-
-func (c *AttestationPacket) FromBytes(payload []byte) *AttestationPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	c.Attestation.FromSia(siaMessage)
-	copy(c.Signature[:], siaMessage.ReadByteArray8())
-
-	return c
-}
-
 type BroadcastAttestationPacket struct {
 	Info      model.Attestation
 	Signature [64]byte

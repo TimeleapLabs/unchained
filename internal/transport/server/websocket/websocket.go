@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
@@ -83,6 +84,13 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		signer, signature, err := packet.IsPacketValid(conn, payload)
+		if err != nil {
+			utils.Logger.With("Err", err).Error("Invalid Packet")
+			writer.SendError(consts.OpCodeError, err)
+			continue
+		}
+
 		switch consts.OpCode(payload[0]) {
 		case consts.OpCodeHello:
 			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
@@ -94,7 +102,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 			writer.SendMessage(consts.OpCodeFeedback, "conf.ok")
 		case consts.OpCodeAttestation:
-			result, err := handler.AttestationRecord(conn, payload[1:])
+			result, err := handler.AttestationRecord(payload[1:], signature, signer)
 			if err != nil {
 				writer.SendError(consts.OpCodeError, err)
 				continue
