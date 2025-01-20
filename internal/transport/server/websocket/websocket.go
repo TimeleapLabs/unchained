@@ -60,7 +60,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 
-	writer := queue.NewWebSocketWriter(conn, 10)
+	writer := queue.NewWebSocketWriter(conn, 100)
 
 	for {
 		// stop the loop if the context is done

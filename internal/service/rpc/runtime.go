@@ -9,9 +9,12 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/gorilla/websocket"
+	"golang.org/x/crypto/ed25519"
 )
 
 func WithMockTask(pluginName string, name string) func(s *worker.Worker) {
@@ -29,7 +32,15 @@ func WithMockTask(pluginName string, name string) func(s *worker.Worker) {
 	}
 }
 
-func WithWebSocket(pluginName string, functions []config.Function, url string) func(s *worker.Worker) {
+func WithWebSocket(
+	pluginName string,
+	functions []config.Function,
+	url string,
+	publicKey string,
+) func(s *worker.Worker) {
+	pkBytes := base58.Decode(publicKey)
+	pk := ed25519.PublicKey(pkBytes)
+
 	functionsMap := map[string]config.Function{}
 	for _, f := range functions {
 		functionsMap[f.Name] = f
@@ -68,17 +79,30 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 					continue
 				}
 
-				packet := new(dto.RPCResponse).FromSiaBytes(message)
+				p := new(packet.Packet).FromBytes(message)
+
+				if !p.IsValid() {
+					utils.Logger.Error("Invalid Packet")
+					continue
+				}
+
+				if !pk.Equal(p.Signer) {
+					utils.Logger.Error("Invalid Public Key")
+					continue
+				}
+
+				response := new(dto.RPCResponse).FromSiaBytes(message)
+
 				utils.Logger.
-					With("ID", packet.ID).
+					With("ID", response.ID).
 					Info("RPC Response")
 
 				// Release the resources
-				if task, ok := s.CurrentTasks.Load(packet.ID); ok {
+				if task, ok := s.CurrentTasks.Load(response.ID); ok {
 					s.CPUUsage -= task.CPU
 					s.GPUUsage -= task.GPU
 					s.RAMUsage -= task.RAM
-					s.CurrentTasks.Delete(packet.ID)
+					s.CurrentTasks.Delete(response.ID)
 				}
 
 				if s.CPUUsage < s.MaxCPU && s.GPUUsage < s.MaxGPU && s.RAMUsage < s.MaxRAM {

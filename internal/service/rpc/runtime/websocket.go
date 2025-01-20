@@ -9,6 +9,6 @@ import (
 
 // RunWebSocketCall runs a function with the given name and parameters.
 func RunWebSocketCall(_ context.Context, wsQueue *queue.WebSocketWriter, params *dto.RPCRequest) error {
-	wsQueue.SendRaw(params.Sia().Bytes()) // TODO: How to handle write errors?
+	wsQueue.SendRawSigned(params.Sia().Bytes()) // TODO: How to handle write errors?
 	return nil
 }

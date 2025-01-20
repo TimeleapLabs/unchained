@@ -112,7 +112,7 @@ func (r *Coordinator) RegisterWorker(w *dto.RegisterWorker, conn *websocket.Conn
 			Plugins: pluginsMap,
 		},
 		Conn:   conn,
-		Writer: queue.NewWebSocketWriter(conn, 10),
+		Writer: queue.NewWebSocketWriter(conn, 100),
 	})
 }
 

@@ -23,12 +23,11 @@ type RPC struct {
 }
 
 type Function struct {
-	Name      string `json:"name"`
-	PublicKey string `json:"publicKey"`
-	Timeout   int    `json:"timeout"`
-	CPU       int    `json:"cpu"`
-	GPU       int    `json:"gpu"`
-	RAM       int    `json:"ram"`
+	Name    string `json:"name"`
+	Timeout int    `json:"timeout"`
+	CPU     int    `json:"cpu"`
+	GPU     int    `json:"gpu"`
+	RAM     int    `json:"ram"`
 }
 
 // Plugins struct hold the plugins configurations of the application.
@@ -37,6 +36,7 @@ type Plugin struct {
 	Name      string     `json:"name"`
 	Endpoint  string     `json:"endpoint"`
 	Functions []Function `json:"functions"`
+	PublicKey string     `json:"publicKey"`
 }
 
 // ProofOfStake struct hold the proof of stake contract's configurations.
