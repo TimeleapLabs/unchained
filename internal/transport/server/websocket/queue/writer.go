@@ -62,7 +62,7 @@ func (w *WebSocketWriter) Send(opCode consts.OpCode, payload []byte) {
 // Send enqueues a message for writing.
 func (w *WebSocketWriter) SendSigned(opCode consts.OpCode, payload []byte) {
 	message := append([]byte{byte(opCode)}, payload...)
-	signed := packet.MustSignPacket(message)
+	signed := packet.New(message).Sia().Bytes()
 	w.SendRaw(signed)
 }
 

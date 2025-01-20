@@ -4,10 +4,8 @@ import (
 	"testing"
 
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -43,8 +41,8 @@ func (s *CoordinatorTestSuite) TestCoordinator_RegisterWorker() {
 			},
 		},
 	}
+
 	s.service.RegisterWorker(&worker, conn)
-	store.Signers.Store(conn, model.Signer{ID: 0})
 
 	gotConns := s.service.GetWorkers("test-plugin", "test-function", 0)
 	s.Len(gotConns, 1)

@@ -1,24 +1,61 @@
 package packet
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/consts"
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"github.com/gorilla/websocket"
+	"golang.org/x/crypto/ed25519"
 )
 
-func SignPacket(message []byte) ([]byte, error) {
-	signature, err := crypto.Identity.Ed25519.Sign(message)
-	if err != nil {
-		return nil, err
-	}
-	return append(message, signature...), nil
+type Packet struct {
+	Message   []byte
+	Signer    ed25519.PublicKey
+	Signature [64]byte
 }
 
-func MustSignPacket(message []byte) []byte {
-	signed, err := SignPacket(message)
+func New(message []byte) *Packet {
+	p := &Packet{
+		Signer:  crypto.Identity.Ed25519.PublicKey,
+		Message: message,
+	}
+
+	return p.MustSign()
+}
+
+func (p *Packet) Sia() sia.Sia {
+	return sia.New().
+		AddByteArrayN(p.Message).
+		AddByteArrayN(p.Signer).
+		AddByteArrayN(p.Signature[:])
+}
+
+func (p *Packet) FromSia(sia sia.Sia) *Packet {
+	length := len(sia.Bytes())
+	messageLength := uint64(length - 32 - 64)
+
+	copy(p.Message, sia.ReadByteArrayN(messageLength))
+	copy(p.Signer, sia.ReadByteArrayN(32))
+	copy(p.Signature[:], sia.ReadByteArrayN(64))
+
+	return p
+}
+
+func (p *Packet) FromBytes(data []byte) *Packet {
+	return p.FromSia(sia.NewFromBytes(data))
+}
+
+func (p *Packet) Sign() (*Packet, error) {
+	signature, err := crypto.Identity.Ed25519.Sign(p.Message)
+	if err != nil {
+		return p, err
+	}
+
+	copy(p.Signature[:], signature)
+	return p, nil
+}
+
+func (p *Packet) MustSign() *Packet {
+	signed, err := p.Sign()
 	if err != nil {
 		utils.Logger.
 			With("Error", err).
@@ -29,18 +66,6 @@ func MustSignPacket(message []byte) []byte {
 	return signed
 }
 
-func IsPacketValid(conn *websocket.Conn, message []byte) (model.Signer, [64]byte, error) {
-	signer, ok := store.Signers.Load(conn)
-	if !ok {
-		return model.Signer{}, [64]byte{}, consts.ErrMissingHello
-	}
-
-	signature := [64]byte{}
-	copy(signature[:], message[len(message)-64:])
-
-	if ok = crypto.Identity.Ed25519.Verify(signature[:], message, signer.PublicKey); !ok {
-		return model.Signer{}, [64]byte{}, consts.ErrInvalidSignature
-	}
-
-	return signer, signature, nil
+func (p *Packet) IsValid() bool {
+	return crypto.Identity.Ed25519.Verify(p.Signer, p.Message, p.Signature[:])
 }

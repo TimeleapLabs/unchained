@@ -11,6 +11,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"golang.org/x/crypto/ed25519"
 
 	lru "github.com/hashicorp/golang-lru/v2"
 )
@@ -24,7 +25,7 @@ type Service interface {
 	RecordSignature(
 		ctx context.Context,
 		signature [64]byte,
-		signer model.Signer,
+		signer ed25519.PublicKey,
 		hash [32]byte,
 		info model.Attestation,
 		debounce bool,
@@ -43,7 +44,7 @@ type service struct {
 }
 
 func (s *service) RecordSignature(
-	ctx context.Context, signature [64]byte, signer model.Signer, hash [32]byte, info model.Attestation, debounce bool,
+	ctx context.Context, signature [64]byte, signer ed25519.PublicKey, hash [32]byte, info model.Attestation, debounce bool,
 ) error {
 	if supported := s.supportedTopics[[64]byte(info.Topic)]; !supported {
 		utils.Logger.
@@ -59,14 +60,14 @@ func (s *service) RecordSignature(
 
 	// Check for duplicates
 	for _, sig := range signatures {
-		if bytes.Equal(sig.PublicKey[:], signer.PublicKey[:]) {
+		if bytes.Equal(sig.PublicKey[:], signer[:]) {
 			return consts.ErrDuplicateSignature
 		}
 	}
 
 	signatures = append(signatures, model.Signature{
 		Signature: signature,
-		PublicKey: signer.PublicKey,
+		PublicKey: signer,
 	})
 
 	s.signatureCache.Add(hash, signatures)

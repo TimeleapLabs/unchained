@@ -38,6 +38,14 @@ func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
 	unchainedRPC.RegisterWorker(request, conn)
 }
 
+func UnregisterWorker(conn *websocket.Conn) {
+	utils.Logger.
+		With("IP", conn.RemoteAddr().String()).
+		Info("Worker unregistered")
+
+	unchainedRPC.UnregisterWorker(conn)
+}
+
 func WorkerOverload(_ context.Context, conn *websocket.Conn, payload []byte) {
 	overload := new(dto.WorkerOverload).
 		FromSiaBytes(payload)

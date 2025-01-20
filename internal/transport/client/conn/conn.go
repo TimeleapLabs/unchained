@@ -8,8 +8,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
-	"github.com/TimeleapLabs/unchained/internal/crypto"
-
 	"github.com/TimeleapLabs/unchained/internal/config"
 
 	"github.com/gorilla/websocket"
@@ -41,13 +39,11 @@ func Start() {
 	}
 
 	writer = queue.NewWebSocketWriter(conn, 1024)
-	writer.SendSigned(consts.OpCodeHello, crypto.Identity.ExportEvmSigner().Sia().Bytes())
 }
 
 func Reconnect(err error) {
 	if websocket.IsUnexpectedCloseError(err) {
 		Close()
-		hello := crypto.Identity.ExportEvmSigner().Sia().Bytes()
 
 		for i := 1; i < 6; i++ {
 			time.Sleep(time.Duration(i) * 3 * time.Second)
@@ -68,7 +64,6 @@ func Reconnect(err error) {
 					Error("Cannot reconnect to broker")
 			} else {
 				IsClosed = false
-				writer.SendSigned(consts.OpCodeHello, hello)
 				utils.Logger.Info("Connection with broker recovered")
 				return
 			}

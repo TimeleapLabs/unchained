@@ -4,19 +4,16 @@ type OpCode byte
 
 // OpCodes of events.
 const (
-	OpCodeHello OpCode = iota
+	OpCodeFeedback OpCode = iota
+	OpCodeError    OpCode = 1
 
-	OpCodeRegisterConsumer OpCode = 1
+	OpCodeRegisterConsumer OpCode = 2
 
-	OpCodeFeedback OpCode = 2
-	OpCodeError    OpCode = 3
+	OpCodeAttestation OpCode = 3
 
-	OpCodeAttestation          OpCode = 4
-	OpCodeAttestationBroadcast OpCode = 5
+	OpCodeRegisterWorker OpCode = 4
+	OpCodeWorkerOverload OpCode = 5
 
-	OpCodeRegisterWorker OpCode = 6
-	OpCodeWorkerOverload OpCode = 7
-
-	OpCodeRPCRequest  OpCode = 8
-	OpCodeRPCResponse OpCode = 9
+	OpCodeRPCRequest  OpCode = 6
+	OpCodeRPCResponse OpCode = 7
 )
