@@ -16,7 +16,10 @@ type consumer struct {
 func NewConsumerHandler(
 	attestation attestation.Service,
 ) Handler {
-	conn.Send(consts.OpCodeRegisterConsumer, []byte(config.App.Network.SubscribedChannel))
+	conn.SendSigned(
+		consts.OpCodeRegisterConsumer,
+		[]byte(config.App.Network.SubscribedChannel),
+	)
 
 	return &consumer{
 		attestation: attestation,

@@ -5,6 +5,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
+	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
@@ -14,6 +15,18 @@ func SignPacket(message []byte) ([]byte, error) {
 		return nil, err
 	}
 	return append(message, signature...), nil
+}
+
+func MustSignPacket(message []byte) []byte {
+	signed, err := SignPacket(message)
+	if err != nil {
+		utils.Logger.
+			With("Error", err).
+			Error("Cannot sign packet")
+		panic(err)
+	}
+
+	return signed
 }
 
 func IsPacketValid(conn *websocket.Conn, message []byte) (model.Signer, [64]byte, error) {

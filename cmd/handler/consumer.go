@@ -14,7 +14,7 @@ var consumer = &cobra.Command{
 	Long:  `Run the Unchained client in consumer mode`,
 
 	PreRun: func(cmd *cobra.Command, _ []string) {
-		config.App.Network.BrokerURI = cmd.Flags().Lookup("broker").Value.String()
+		config.App.Network.Broker.URI = cmd.Flags().Lookup("broker").Value.String()
 		config.App.Network.Bind = cmd.Flags().Lookup("graphql").Value.String()
 	},
 

@@ -86,7 +86,7 @@ func WithWebSocket(pluginName string, functions []config.Function, url string) f
 					s.Overloaded = false
 				}
 
-				conn.Send(consts.OpCodeRPCResponse, message)
+				conn.SendSigned(consts.OpCodeRPCResponse, message)
 			}
 		}()
 

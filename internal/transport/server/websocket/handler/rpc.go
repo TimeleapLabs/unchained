@@ -93,7 +93,7 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 			With("WorkerRAM", worker.RAMUsage).
 			Info("RPC Request Sent to Worker")
 
-		worker.Writer.Send(consts.OpCodeRPCRequest, payload)
+		worker.Writer.SendSigned(consts.OpCodeRPCRequest, payload)
 	} else {
 		utils.Logger.
 			With("IP", wsQueue.Conn.RemoteAddr().String()).
@@ -102,7 +102,7 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 			With("Function", request.Method).
 			Error("Worker not found")
 
-		wsQueue.SendError(consts.OpCodeError, consts.ErrNoWorker)
+		wsQueue.SendErrorSigned(consts.OpCodeError, consts.ErrNoWorker)
 	}
 }
 
@@ -118,7 +118,7 @@ func ResponseFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload
 			With("ID", response.ID).
 			Info("RPC Response")
 
-		task.Client.Send(consts.OpCodeRPCResponse, payload)
+		task.Client.SendSigned(consts.OpCodeRPCResponse, payload)
 		unchainedRPC.UnregisterTask(response.ID)
 	} else {
 		utils.Logger.

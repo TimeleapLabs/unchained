@@ -42,17 +42,8 @@ func (w *WebSocketWriter) run() {
 }
 
 func (w *WebSocketWriter) SendRaw(payload []byte) {
-	signed, err := packet.SignPacket(payload)
-	if err != nil {
-		// TODO?: Close the connection on error?
-		utils.Logger.
-			With("Error", err).
-			Error("Cannot sign packet")
-		return
-	}
-
 	select {
-	case w.queue <- signed:
+	case w.queue <- payload:
 		// Message enqueued successfully.
 	default:
 		// TODO!: Implement a proper queue overflow strategy.
@@ -68,14 +59,30 @@ func (w *WebSocketWriter) Send(opCode consts.OpCode, payload []byte) {
 	w.SendRaw(message)
 }
 
+// Send enqueues a message for writing.
+func (w *WebSocketWriter) SendSigned(opCode consts.OpCode, payload []byte) {
+	message := append([]byte{byte(opCode)}, payload...)
+	signed := packet.MustSignPacket(message)
+	w.SendRaw(signed)
+}
+
 // SendMessage sends a message to the client.
 func (w *WebSocketWriter) SendMessage(opCode consts.OpCode, message string) {
 	w.Send(opCode, []byte(message))
 }
 
+// SendMessage sends a message to the client.
+func (w *WebSocketWriter) SendMessageSigned(opCode consts.OpCode, message string) {
+	w.SendSigned(opCode, []byte(message))
+}
+
 // SendError sends an error message to the client.
 func (w *WebSocketWriter) SendError(opCode consts.OpCode, err error) {
 	w.SendMessage(opCode, err.Error())
+}
+
+func (w *WebSocketWriter) SendErrorSigned(opCode consts.OpCode, err error) {
+	w.SendMessageSigned(opCode, err.Error())
 }
 
 // Close shuts down the writer.

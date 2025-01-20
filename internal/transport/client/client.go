@@ -7,6 +7,7 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
 	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 )
 
@@ -21,6 +22,11 @@ func NewRPC(handler handler.Handler) {
 			go func(payload []byte) {
 				ctx, cancel := context.WithTimeout(context.TODO(), time.Second*10)
 				defer cancel()
+
+				if _, _, err := packet.IsPacketValid(conn.Get(), payload); err != nil {
+					utils.Logger.Error("Invalid packet")
+					return
+				}
 
 				switch consts.OpCode(payload[0]) {
 				case consts.OpCodeError:

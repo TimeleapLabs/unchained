@@ -2,11 +2,10 @@ package conn
 
 import (
 	"fmt"
-	"log/slog"
-	"sync"
 	"time"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/crypto"
@@ -17,29 +16,32 @@ import (
 )
 
 var conn *websocket.Conn
+var writer *queue.WebSocketWriter
 var IsClosed bool
-var mu = new(sync.Mutex)
 
 // Start function create a new websocket connection to the broker.
 func Start() {
 	var err error
 
+	var brokerURI = config.App.Network.Broker.URI
+
 	utils.Logger.
-		With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
+		With("URL", fmt.Sprintf("%s/%s", brokerURI, consts.ProtocolVersion)).
 		Info("Connecting to the broker")
 
 	conn, _, err = websocket.DefaultDialer.Dial(
-		fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion), nil,
+		fmt.Sprintf("%s/%s", brokerURI, consts.ProtocolVersion), nil,
 	)
 	if err != nil {
 		utils.Logger.
-			With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
+			With("URI", fmt.Sprintf("%s/%s", brokerURI, consts.ProtocolVersion)).
 			With("Error", err).
 			Error("can't connect to broker")
 		panic(err)
 	}
 
-	Send(consts.OpCodeHello, crypto.Identity.ExportEvmSigner().Sia().Bytes())
+	writer = queue.NewWebSocketWriter(conn, 1024)
+	writer.SendSigned(consts.OpCodeHello, crypto.Identity.ExportEvmSigner().Sia().Bytes())
 }
 
 func Reconnect(err error) {
@@ -51,22 +53,22 @@ func Reconnect(err error) {
 			time.Sleep(time.Duration(i) * 3 * time.Second)
 
 			utils.Logger.
-				With("URL", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
+				With("URL", fmt.Sprintf("%s/%s", config.App.Network.Broker.URI, consts.ProtocolVersion)).
 				With("Retry", i).
 				Info("Reconnecting to broker")
 
 			conn, _, err = websocket.DefaultDialer.Dial(
-				fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion),
+				fmt.Sprintf("%s/%s", config.App.Network.Broker.URI, consts.ProtocolVersion),
 				nil,
 			)
 			if err != nil {
 				utils.Logger.
-					With("URI", fmt.Sprintf("%s/%s", config.App.Network.BrokerURI, consts.ProtocolVersion)).
+					With("URI", fmt.Sprintf("%s/%s", config.App.Network.Broker.URI, consts.ProtocolVersion)).
 					With("Error", err).
 					Error("Cannot reconnect to broker")
 			} else {
 				IsClosed = false
-				Send(consts.OpCodeHello, hello)
+				writer.SendSigned(consts.OpCodeHello, hello)
 				utils.Logger.Info("Connection with broker recovered")
 				return
 			}
@@ -78,7 +80,7 @@ func Reconnect(err error) {
 
 // Close function gracefully disconnect from the broker.
 func Close() {
-	if conn != nil && config.App.Network.BrokerURI != "" {
+	if conn != nil && config.App.Network.Broker.URI != "" {
 		err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		if err != nil {
 			utils.Logger.
@@ -136,19 +138,10 @@ func Read() <-chan []byte {
 	return out
 }
 
-// SendRaw function sends byte array data to the broker.
-func SendRaw(data []byte) error {
-	mu.Lock()
-	defer mu.Unlock()
-	return conn.WriteMessage(websocket.BinaryMessage, data)
+func SendSigned(opCode consts.OpCode, payload []byte) {
+	writer.SendSigned(opCode, payload)
 }
 
-// Send function sends a message with specific opCode to the broker.
-func Send(opCode consts.OpCode, payload []byte) {
-	err := SendRaw(
-		append([]byte{byte(opCode)}, payload...),
-	)
-	if err != nil {
-		utils.Logger.Error("Cannot send packet", slog.Any("error", err))
-	}
+func Get() *websocket.Conn {
+	return conn
 }
