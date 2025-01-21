@@ -6,12 +6,13 @@ import (
 	"errors"
 	"time"
 
+	"crypto/ed25519"
+
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/repository"
 	"github.com/TimeleapLabs/unchained/internal/service/pos"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"golang.org/x/crypto/ed25519"
 
 	lru "github.com/hashicorp/golang-lru/v2"
 )

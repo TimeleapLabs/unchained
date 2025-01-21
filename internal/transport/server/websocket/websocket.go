@@ -95,8 +95,8 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		p := new(packet.Packet).FromBytes(payload)
 
 		if !p.IsValid() {
-			utils.Logger.With("Err", err).Error("Invalid Packet")
-			writer.SendError(consts.OpCodeError, err)
+			utils.Logger.Error("Invalid Packet")
+			writer.SendError(consts.OpCodeError, consts.ErrInvalidPacket)
 			continue
 		}
 

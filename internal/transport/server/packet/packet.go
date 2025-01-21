@@ -1,10 +1,11 @@
 package packet
 
 import (
+	"crypto/ed25519"
+
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/TimeleapLabs/unchained/internal/crypto"
 	"github.com/TimeleapLabs/unchained/internal/utils"
-	"golang.org/x/crypto/ed25519"
 )
 
 type Packet struct {
@@ -33,8 +34,10 @@ func (p *Packet) FromSia(sia sia.Sia) *Packet {
 	length := len(sia.Bytes())
 	messageLength := uint64(length - 32 - 64)
 
+	p.Message = make([]byte, messageLength)
 	copy(p.Message, sia.ReadByteArrayN(messageLength))
-	copy(p.Signer, sia.ReadByteArrayN(32))
+
+	p.Signer = ed25519.PublicKey(sia.ReadByteArrayN(32))
 	copy(p.Signature[:], sia.ReadByteArrayN(64))
 
 	return p
@@ -67,5 +70,5 @@ func (p *Packet) MustSign() *Packet {
 }
 
 func (p *Packet) IsValid() bool {
-	return crypto.Identity.Ed25519.Verify(p.Signer, p.Message, p.Signature[:])
+	return crypto.Identity.Ed25519.Verify(p.Signature[:], p.Message, p.Signer)
 }

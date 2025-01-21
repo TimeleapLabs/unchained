@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"crypto/ed25519"
+
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/consts"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
@@ -14,7 +16,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/gorilla/websocket"
-	"golang.org/x/crypto/ed25519"
 )
 
 func WithMockTask(pluginName string, name string) func(s *worker.Worker) {

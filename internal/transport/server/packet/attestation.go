@@ -1,9 +1,10 @@
 package packet
 
 import (
+	"crypto/ed25519"
+
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	"golang.org/x/crypto/ed25519"
 )
 
 type BroadcastAttestationPacket struct {
@@ -24,7 +25,7 @@ func (b *BroadcastAttestationPacket) FromBytes(payload []byte) *BroadcastAttesta
 
 	b.Info.FromSia(siaMessage)
 	copy(b.Signature[:], siaMessage.ReadByteArrayN(64))
-	copy(b.Signer, siaMessage.ReadByteArrayN(32))
+	b.Signer = ed25519.PublicKey(siaMessage.ReadByteArrayN(32))
 
 	return b
 }

@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"crypto/ed25519"
+
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
-	"golang.org/x/crypto/ed25519"
 )
 
 // AttestationRecord is a handler for attestation report.

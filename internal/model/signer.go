@@ -35,7 +35,7 @@ func (s *Signature) FromBytes(payload []byte) *Signature {
 }
 
 func (s *Signature) FromSia(sia sia.Sia) *Signature {
-	copy(s.PublicKey[:], sia.ReadByteArray8())
+	s.PublicKey = ed25519.PublicKey(sia.ReadByteArray8())
 	copy(s.Signature[:], sia.ReadByteArray8())
 
 	return s
@@ -56,9 +56,7 @@ func (s *Signer) FromBytes(payload []byte) *Signer {
 func (s *Signer) FromSia(sia sia.Sia) *Signer {
 	s.Name = sia.ReadString8()
 	s.EvmAddress = sia.ReadString8()
-
-	pk := sia.ReadByteArray8()
-	copy(s.PublicKey[:], pk)
+	s.PublicKey = ed25519.PublicKey(sia.ReadByteArray8())
 
 	return s
 }
