@@ -45,7 +45,7 @@ func (t *RPCRequest) Sia() sia.Sia {
 		AddString8(t.Plugin).
 		AddString8(t.Method).
 		AddInt64(int64(t.Timeout)).
-		AddByteArray64(t.Params)
+		AddByteArrayN(t.Params)
 }
 
 func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
@@ -61,7 +61,7 @@ func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
 	t.Plugin = s.ReadString8()
 	t.Method = s.ReadString8()
 	t.Timeout = int(s.ReadInt64())
-	t.Params = s.ReadByteArray64()
+	t.Params = s.Bytes()[s.Offset():]
 
 	return t
 }

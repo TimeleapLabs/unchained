@@ -59,17 +59,10 @@ func NewIdentity() *Signer {
 
 // Sign signs a message with the identities secret key.
 func (s *Signer) Sign(message []byte) ([]byte, error) {
-	return s.SecretKey.Sign(rand.Reader, message, &ed25519.Options{Context: "UNCHAINED"})
+	return s.SecretKey.Sign(rand.Reader, message, &ed25519.Options{})
 }
 
 // Verify verifies the signature of a message belongs to the public key.
 func (s *Signer) Verify(signature []byte, message []byte, publicKey ed25519.PublicKey) bool {
-	err := ed25519.VerifyWithOptions(
-		publicKey,
-		message,
-		signature,
-		&ed25519.Options{Context: "UNCHAINED"},
-	)
-
-	return err == nil
+	return ed25519.Verify(publicKey, message, signature)
 }

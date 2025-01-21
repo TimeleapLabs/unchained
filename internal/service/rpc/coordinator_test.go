@@ -44,12 +44,12 @@ func (s *CoordinatorTestSuite) TestCoordinator_RegisterWorker() {
 
 	s.service.RegisterWorker(&worker, conn)
 
-	gotConns := s.service.GetWorkers("test-plugin", "test-function", 0)
+	gotConns := s.service.GetWorkers("test-plugin", "test-function", 10)
 	s.Len(gotConns, 1)
 	s.Equal(conn, gotConns[0].Conn)
 
 	s.service.UnregisterWorker(conn)
-	gotConns = s.service.GetWorkers("test-plugin", "test-function", 0)
+	gotConns = s.service.GetWorkers("test-plugin", "test-function", 10)
 	s.Len(gotConns, 0)
 }
 

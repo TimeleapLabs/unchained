@@ -88,7 +88,10 @@ func WithWebSocket(
 				}
 
 				if !pk.Equal(p.Signer) {
-					utils.Logger.Error("Invalid Public Key")
+					utils.Logger.
+						With("Signer", base58.Encode(p.Signer)).
+						With("Expected", base58.Encode(pk)).
+						Error("Invalid Public Key")
 					continue
 				}
 

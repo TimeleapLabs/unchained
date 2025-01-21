@@ -144,7 +144,7 @@ func (r *Coordinator) GetWorkers(plugin string, function string, timeout int) []
 			continue
 		}
 
-		if f.Timeout < timeout {
+		if f.Timeout > timeout {
 			continue
 		}
 
