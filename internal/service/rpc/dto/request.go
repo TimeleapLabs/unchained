@@ -17,22 +17,19 @@ type RPCRequest struct {
 	Timeout int `json:"timeout"`
 	// params to pass to the function
 	Params []byte `json:"params"`
-	// The signature of the request
-	Signature [48]byte `json:"signature"`
 }
 
 // NewRequest creates a new request with unique ID.
-func NewRequest(method string, params []byte, signature [48]byte) RPCRequest {
+func NewRequest(method string, params []byte) RPCRequest {
 	taskID, err := uuid.NewV7()
 	if err != nil {
 		panic(err)
 	}
 
 	return RPCRequest{
-		ID:        taskID,
-		Method:    method,
-		Params:    params,
-		Signature: signature,
+		ID:     taskID,
+		Method: method,
+		Params: params,
 	}
 }
 
@@ -48,8 +45,7 @@ func (t *RPCRequest) Sia() sia.Sia {
 		AddString8(t.Plugin).
 		AddString8(t.Method).
 		AddInt64(int64(t.Timeout)).
-		AddByteArray64(t.Params).
-		AddByteArray8(t.Signature[:])
+		AddByteArray64(t.Params)
 }
 
 func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
@@ -66,9 +62,6 @@ func (t *RPCRequest) FromSiaBytes(bytes []byte) *RPCRequest {
 	t.Method = s.ReadString8()
 	t.Timeout = int(s.ReadInt64())
 	t.Params = s.ReadByteArray64()
-
-	t.Signature = [48]byte{}
-	copy(t.Signature[:], s.ReadByteArray8())
 
 	return t
 }
