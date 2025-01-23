@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"encoding/hex"
-	"time"
 
 	"gorm.io/gorm/clause"
 
@@ -18,7 +17,7 @@ type AttestationRepo struct {
 	client database.Database
 }
 
-func (c AttestationRepo) Find(ctx context.Context, hash []byte) (model.Attestation, error) {
+func (c AttestationRepo) Find(ctx context.Context, hash [32]byte) (model.Attestation, error) {
 	currentRecord := model.AttestationDataFrame{}
 
 	tx := c.client.
@@ -35,7 +34,7 @@ func (c AttestationRepo) Find(ctx context.Context, hash []byte) (model.Attestati
 	return currentRecord.Data, nil
 }
 
-func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) error {
+func (c AttestationRepo) Upsert(ctx context.Context, hash [32]byte, data model.Attestation) error {
 	tx := c.client.
 		GetConnection().
 		WithContext(ctx).
@@ -44,9 +43,8 @@ func (c AttestationRepo) Upsert(ctx context.Context, data model.Attestation) err
 			UpdateAll: true,
 		}).
 		Create(&model.AttestationDataFrame{
-			Hash:      hex.EncodeToString(data.Bls().Marshal()),
-			Timestamp: time.Now(),
-			Data:      data,
+			Hash: hex.EncodeToString(hash[:]),
+			Data: data,
 		})
 
 	if tx.Error != nil {

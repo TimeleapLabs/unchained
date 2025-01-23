@@ -1,10 +1,10 @@
 package dto
 
 import (
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/TimeleapLabs/unchained/internal/config"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
 	"github.com/gorilla/websocket"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 // Runtime is a type that holds the runtime of a function.
@@ -28,14 +28,14 @@ func (p *Plugin) Sia() sia.Sia {
 		AddString8(p.Name).
 		AddString8(string(p.Runtime))
 
-	s.EmbedBytes(sia.NewSiaArray[config.Function]().
-		AddArray16(functions, func(s *sia.ArraySia[config.Function], v config.Function) {
-			s.AddString8(v.Name)
-			s.AddInt64(int64(v.Timeout))
-			s.AddInt64(int64(v.CPU))
-			s.AddInt64(int64(v.GPU))
-			s.AddInt64(int64(v.RAM))
-		}).Bytes())
+	sarr := sia.NewArray[config.Function](&s)
+	sarr.AddArray16(functions, func(s *sia.ArraySia[config.Function], v config.Function) {
+		s.AddString8(v.Name)
+		s.AddInt64(int64(v.Timeout))
+		s.AddInt64(int64(v.CPU))
+		s.AddInt64(int64(v.GPU))
+		s.AddInt64(int64(v.RAM))
+	})
 
 	return s
 }
@@ -44,8 +44,8 @@ func (p *Plugin) FromSia(s sia.Sia) *Plugin {
 	p.Name = s.ReadString8()
 	p.Runtime = Runtime(s.ReadString8())
 
-	sa := sia.NewArrayFromBytes[config.Function](s.Bytes()[s.Offset():])
-	functions := sa.ReadArray16(func(s *sia.ArraySia[config.Function]) config.Function {
+	sarr := sia.NewArray[config.Function](&s)
+	functions := sarr.ReadArray16(func(s *sia.ArraySia[config.Function]) config.Function {
 		f := config.Function{}
 		f.Name = s.ReadString8()
 		f.Timeout = int(s.ReadInt64())
@@ -60,7 +60,6 @@ func (p *Plugin) FromSia(s sia.Sia) *Plugin {
 		p.Functions[v.Name] = v
 	}
 
-	s.Seek(s.Offset() + sa.Offset())
 	return p
 }
 

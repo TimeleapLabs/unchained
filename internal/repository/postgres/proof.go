@@ -14,8 +14,8 @@ type proofRepo struct {
 	client database.Database
 }
 
-func (s proofRepo) CreateProof(ctx context.Context, signature [48]byte, signers []model.Signer) error {
-	proof := model.NewProof(signers, signature[:])
+func (s proofRepo) CreateProof(ctx context.Context, hash [32]byte, signatures []model.Signature) error {
+	proof := model.NewProof(signatures, hash[:])
 
 	tx := s.client.
 		GetConnection().
@@ -30,7 +30,7 @@ func (s proofRepo) CreateProof(ctx context.Context, signature [48]byte, signers 
 	return nil
 }
 
-func (s proofRepo) Find(ctx context.Context, hash [48]byte) (model.Proof, error) {
+func (s proofRepo) Find(ctx context.Context, hash [32]byte) (model.Proof, error) {
 	proof := model.Proof{}
 
 	tx := s.client.
@@ -47,7 +47,7 @@ func (s proofRepo) Find(ctx context.Context, hash [48]byte) (model.Proof, error)
 	return proof, nil
 }
 
-func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
+func (s proofRepo) GetSignerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
 	ids := []int{}
 
 	tx := s.client.

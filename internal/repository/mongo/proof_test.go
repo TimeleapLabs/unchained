@@ -15,7 +15,7 @@ import (
 	"github.com/tryvium-travels/memongo"
 )
 
-var sampleSigner = model.Signer{}
+var sampleSignature = model.Signature{}
 
 type SignerRepositoryTestSuite struct {
 	suite.Suite
@@ -48,7 +48,7 @@ func (s *SignerRepositoryTestSuite) SetupTest() {
 }
 
 func (s *SignerRepositoryTestSuite) TestUpsert() {
-	err := s.repo.CreateProof(context.TODO(), [48]byte{}, []model.Signer{sampleSigner})
+	err := s.repo.CreateProof(context.TODO(), [32]byte{}, []model.Signature{sampleSignature})
 	s.Require().NoError(err)
 }
 

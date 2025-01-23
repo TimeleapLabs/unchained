@@ -4,29 +4,18 @@ import (
 	"context"
 
 	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
-
-	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/utils/hash"
 )
 
 // Attestation is a method that handles attestation report packets.
 func (h *consumer) Attestation(ctx context.Context, message []byte) {
 	packet := new(packet.BroadcastAttestationPacket).FromBytes(message)
 
-	signature, err := bls.RecoverSignature(packet.Signature)
-	if err != nil {
-		utils.Logger.
-			With("Error", err).
-			Error("Failed to recover packet signature")
-
-		return
-	}
-
-	err = h.attestation.RecordSignature(
+	err := h.attestation.RecordSignature(
 		ctx,
-		signature,
+		packet.Signature,
 		packet.Signer,
-		*packet.Info.Bls(),
+		hash.Hash(&packet.Info),
 		packet.Info,
 		true,
 	)

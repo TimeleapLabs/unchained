@@ -25,14 +25,21 @@ func Worker(_ context.Context) {
 
 	crypto.InitMachineIdentity(
 		crypto.WithEvmSigner(),
-		crypto.WithBlsIdentity(),
+		crypto.WithEd25519Identity(),
 	)
 
 	rpcFunctions := []worker.Option{}
 	for _, plugin := range config.App.Plugins {
 		switch plugin.Type { //nolint: gocritic // This is a switch case for different types of rpc functions
 		case "websocket":
-			rpcFunctions = append(rpcFunctions, rpc.WithWebSocket(plugin.Name, plugin.Functions, plugin.Endpoint))
+			rpcFunctions = append(rpcFunctions,
+				rpc.WithWebSocket(
+					plugin.Name,
+					plugin.Functions,
+					plugin.Endpoint,
+					plugin.PublicKey,
+				),
+			)
 		}
 	}
 	rpcService := worker.NewWorker(rpcFunctions...)

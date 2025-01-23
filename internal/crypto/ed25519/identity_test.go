@@ -1,4 +1,4 @@
-package bls
+package ed25519
 
 import (
 	"testing"
@@ -27,19 +27,19 @@ func (s *TestIdentitySuit) SetupTest() {
 }
 
 func (s *TestIdentitySuit) TestVerifyIdentity() {
-	signature, messageHash := s.signer.Sign(TestMessage)
-	isValid, err := s.signer.Verify(signature, messageHash, *s.signer.PublicKey)
+	signature, err := s.signer.Sign(TestMessage)
 	s.NoError(err)
+
+	isValid := s.signer.Verify(signature, TestMessage, s.signer.PublicKey)
 	s.True(isValid)
 
-	secondSignature, secondMessageHash := s.signer.Sign(SecondMessage)
-
-	isValid, err = s.signer.Verify(signature, secondMessageHash, *s.signer.PublicKey)
+	secondSignature, err := s.signer.Sign(SecondMessage)
 	s.NoError(err)
+
+	isValid = s.signer.Verify(signature, SecondMessage, s.signer.PublicKey)
 	s.False(isValid)
 
-	isValid, err = s.signer.Verify(secondSignature, messageHash, *s.signer.PublicKey)
-	s.NoError(err)
+	isValid = s.signer.Verify(secondSignature, TestMessage, s.signer.PublicKey)
 	s.False(isValid)
 }
 

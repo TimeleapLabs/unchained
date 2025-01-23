@@ -1,49 +1,31 @@
 package packet
 
 import (
+	"crypto/ed25519"
+
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
-
-type AttestationPacket struct {
-	model.Attestation
-	Signature [48]byte
-}
-
-func (c *AttestationPacket) Sia() sia.Sia {
-	return sia.New().
-		EmbedBytes(c.Attestation.Sia().Bytes()).
-		AddByteArray8(c.Signature[:])
-}
-
-func (c *AttestationPacket) FromBytes(payload []byte) *AttestationPacket {
-	siaMessage := sia.NewFromBytes(payload)
-
-	c.Attestation.FromSia(siaMessage)
-	copy(c.Signature[:], siaMessage.ReadByteArray8())
-
-	return c
-}
 
 type BroadcastAttestationPacket struct {
 	Info      model.Attestation
-	Signature [48]byte
-	Signer    model.Signer
+	Signature [64]byte
+	Signer    ed25519.PublicKey
 }
 
 func (b *BroadcastAttestationPacket) Sia() sia.Sia {
 	return sia.New().
 		EmbedBytes(b.Info.Sia().Bytes()).
-		AddByteArray8(b.Signature[:]).
-		EmbedBytes(b.Signer.Sia().Bytes())
+		EmbedBytes(b.Signature[:]).
+		EmbedBytes(b.Signer)
 }
 
 func (b *BroadcastAttestationPacket) FromBytes(payload []byte) *BroadcastAttestationPacket {
 	siaMessage := sia.NewFromBytes(payload)
 
 	b.Info.FromSia(siaMessage)
-	copy(b.Signature[:], siaMessage.ReadByteArray8())
-	b.Signer.FromSia(siaMessage)
+	copy(b.Signature[:], siaMessage.ReadByteArrayN(64))
+	b.Signer = ed25519.PublicKey(siaMessage.ReadByteArrayN(32))
 
 	return b
 }

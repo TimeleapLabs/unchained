@@ -19,7 +19,7 @@ func Broker() {
 		Info("Running Unchained")
 
 	crypto.InitMachineIdentity(
-		crypto.WithBlsIdentity(),
+		crypto.WithEd25519Identity(),
 		crypto.WithEvmSigner(),
 	)
 

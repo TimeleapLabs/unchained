@@ -28,7 +28,6 @@ func main() {
 	handler.WithBrokerCmd(root)
 	handler.WithConsumerCmd(root)
 	handler.WithWorkerCmd(root)
-	handler.WithPluginCmd(root)
 
 	err := root.Execute()
 	if err != nil {

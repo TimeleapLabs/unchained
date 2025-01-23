@@ -2,16 +2,17 @@ package crypto
 
 import (
 	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/crypto/bls"
+	"github.com/TimeleapLabs/unchained/internal/crypto/ed25519"
 	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
 	"github.com/TimeleapLabs/unchained/internal/model"
 	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/unchained/internal/utils/address"
 )
 
 // MachineIdentity holds machine identity and provide and manage keys.
 type MachineIdentity struct {
-	Bls *bls.Signer
-	Eth *ethereum.Signer
+	Ed25519 *ed25519.Signer
+	Eth     *ethereum.Signer
 }
 
 // Identity is a global variable that holds machine identity.
@@ -39,14 +40,10 @@ func InitMachineIdentity(options ...Option) {
 
 // ExportEvmSigner returns EVM signer from machine identity.
 func (i *MachineIdentity) ExportEvmSigner() *model.Signer {
-	publicKey := Identity.Bls.PublicKey.Bytes()
-	shortPublicKey := Identity.Bls.ShortPublicKey.Bytes()
-
 	return &model.Signer{
-		Name:           config.App.System.Name,
-		EvmAddress:     Identity.Eth.Address,
-		PublicKey:      publicKey[:],
-		ShortPublicKey: shortPublicKey[:],
+		Name:       config.App.System.Name,
+		EvmAddress: Identity.Eth.Address,
+		PublicKey:  i.Ed25519.PublicKey,
 	}
 }
 
@@ -64,14 +61,14 @@ func WithEvmSigner() func(machineIdentity *MachineIdentity) error {
 	}
 }
 
-// WithBlsIdentity initialize and will add Bls keys to machine identity.
-func WithBlsIdentity() func(machineIdentity *MachineIdentity) error {
+// WithEd25519Identity initialize and will add Ed25519 keys to machine identity.
+func WithEd25519Identity() func(machineIdentity *MachineIdentity) error {
 	return func(machineIdentity *MachineIdentity) error {
-		machineIdentity.Bls = bls.NewIdentity()
-		machineIdentity.Bls.WriteConfigs()
+		machineIdentity.Ed25519 = ed25519.NewIdentity()
+		machineIdentity.Ed25519.WriteConfigs()
 
 		utils.Logger.
-			With("Address", machineIdentity.Bls.ShortPublicKey.String()).
+			With("Address", address.Calculate(machineIdentity.Ed25519.PublicKey)).
 			Info("Unchained identity initialized")
 
 		return nil

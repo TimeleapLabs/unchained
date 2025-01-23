@@ -5,13 +5,9 @@ import "errors"
 // TODO: This is a mess
 // Error list of the project.
 var (
-	ErrInvalidKosk             = errors.New("kosk.invalid")
 	ErrInvalidConfig           = errors.New("conf.invalid")
-	ErrKosk                    = errors.New("kosk.error")
 	ErrMissingHello            = errors.New("hello.missing")
-	ErrMissingKosk             = errors.New("kosk.missing")
 	ErrInternalError           = errors.New("internal_error")
-	ErrCantVerifyBls           = errors.New("cant_verify_bls")
 	ErrInvalidSignature        = errors.New("signature.invalid")
 	ErrNotSupportedDataset     = errors.New("dataset not supported")
 	ErrNotSupportedInstruction = errors.New("instruction not supported")
@@ -39,4 +35,5 @@ var (
 	ErrOverloaded              = errors.New("worker overloaded")
 	ErrNoWorker                = errors.New("no worker")
 	ErrTimeout                 = errors.New("timeout")
+	ErrInvalidPacket           = errors.New("invalid packet")
 )

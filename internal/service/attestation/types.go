@@ -1,11 +1,8 @@
 package attestation
 
 import (
-	"math/big"
-
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 	"github.com/TimeleapLabs/unchained/internal/model"
-	bls12381 "github.com/consensys/gnark-crypto/ecc/bls12-381"
-	sia "github.com/pouya-eghbali/go-sia/v2/pkg"
 )
 
 type Key struct {
@@ -15,20 +12,18 @@ type Key struct {
 }
 
 type Signature struct {
-	Signature bls12381.G1Affine
+	Signature [64]byte
 	Signer    model.Signer
 }
 
 type SaveSignatureArgs struct {
-	Info      model.Attestation
-	Hash      bls12381.G1Affine
-	Consensus bool
-	Voted     *big.Int
+	Info model.Attestation
+	Hash [32]byte
 }
 
 func (s *Signature) Sia() sia.Sia {
 	return sia.New().
-		AddByteArray8(s.Signature.Marshal()).
+		AddByteArray8(s.Signature[:]).
 		EmbedBytes(s.Signer.Sia().Bytes())
 }
 
@@ -38,13 +33,9 @@ func (s *Signature) FromBytes(payload []byte) *Signature {
 }
 
 func (s *Signature) FromSia(sia sia.Sia) *Signature {
-	err := s.Signature.Unmarshal(sia.ReadByteArray8())
-
-	if err != nil {
-		s.Signature = bls12381.G1Affine{}
-	}
+	signature := sia.ReadByteArray8()
+	copy(s.Signature[:], signature)
 
 	s.Signer.FromSia(sia)
-
 	return s
 }

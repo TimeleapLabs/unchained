@@ -1,0 +1,36 @@
+system:
+  log: info                           # Log level               [debug, info, warn, error] (default: info)
+  name: Timeleap                      # System name
+
+network:
+  bind: 0.0.0.0:9123                  # Broker bind address (for brokers only)  (default: 0.0.0.0:9123)
+  broker:                             # Broker configuration (for workers only)
+    uri: <broker-uri>                 # Broker URI to connect to
+    publicKey: <broker-public-key>    # Broker public key for authentication
+
+rpc:
+  cpus: <cpu-units>                   # CPU units for RPC server (default: 1)
+  gpus: <gpu-units>                   # GPU units for RPC server (default: 0)
+  ram: <ram>                          # RAM for RPC server (default: 1024) (MB)
+
+pos:
+  rpc:
+    - <evm-rpc-uri>                   # EVM RPC URI (For both brokers and workers)
+
+plugins:                              # Plugin configuration (for workers only)
+  - name: <plugin-name>               # Plugin name        [e.g. swiss.timeleap.plugin]
+    endpoint: <plugin-endpoint>       # Plugin endpoint    [e.g. "ws://localhost:3000"]
+    type: websocket                   # Plugin type        [websocket]
+    functions:                        # Plugin functions
+      - name: <function-name>         # Function name
+        cpu: <cpu-units>              # Required CPU units
+        gpu: <gpu-units>              # Required GPU units
+        ram: <ram>                    # Required RAM (MB)
+        timeout: <timeout>            # Timeout (milliseconds)
+
+mongo:                                # MongoDB configuration (for consumers only)
+  url: <mongo-uri>                    # MongoDB connection URI
+  database: <mongo-database>          # MongoDB database name
+
+dataframes:                           # Dataframe configuration (for consumers and brokers)
+  - <dataframe-name>                  # Dataframe name

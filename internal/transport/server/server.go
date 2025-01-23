@@ -16,7 +16,7 @@ func New(options ...func()) {
 
 	server := &http.Server{
 		Addr:              config.App.Network.Bind,
-		ReadHeaderTimeout: config.App.Network.BrokerTimeout,
+		ReadHeaderTimeout: config.App.Network.Broker.Timeout,
 	}
 
 	if config.App.Network.CertFile != "" && config.App.Network.KeyFile != "" {

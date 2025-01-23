@@ -20,35 +20,35 @@ type proofRepo struct {
 	client database.MongoDatabase
 }
 
-func (s proofRepo) CreateProof(ctx context.Context, hash [48]byte, signers []model.Signer) error {
+func (s proofRepo) CreateProof(ctx context.Context, hash [32]byte, signers []model.Signature) error {
 	_, err := s.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
-		Collection("signer").
+		Collection("signatures").
 		UpdateOne(ctx, bson.M{
 			"hash": hash[:],
 		}, bson.M{
-			"$push": bson.M{
-				"signers": bson.M{
+			"$addToSet": bson.M{
+				"signatures": bson.M{
 					"$each": signers,
 				},
 			},
 		}, options.Update().SetUpsert(true))
 
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cannot create signers in database")
+		utils.Logger.With("err", err).Error("Cannot create signatures in database")
 		return consts.ErrInternalError
 	}
 
 	return nil
 }
 
-func (s proofRepo) Find(ctx context.Context, hash [48]byte) (model.Proof, error) {
+func (s proofRepo) Find(ctx context.Context, hash [32]byte) (model.Proof, error) {
 	var result model.Proof
 	err := s.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
-		Collection("signer").
+		Collection("signatures").
 		FindOne(ctx, bson.M{
 			"hash": hash[:],
 		}).Decode(&result)
@@ -58,19 +58,19 @@ func (s proofRepo) Find(ctx context.Context, hash [48]byte) (model.Proof, error)
 	}
 
 	if err != nil {
-		utils.Logger.With("err", err).Error("Cannot fetch signer record from database")
+		utils.Logger.With("err", err).Error("Cannot fetch signature record from database")
 		return model.Proof{}, consts.ErrInternalError
 	}
 
 	return result, nil
 }
 
-func (s proofRepo) GetSingerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
+func (s proofRepo) GetSignerIDsByKeys(ctx context.Context, keys [][]byte) ([]int, error) {
 	opt := options.Find().SetProjection(bson.M{"_id": 1})
 	cursor, err := s.client.
 		GetConnection().
 		Database(config.App.Mongo.Database).
-		Collection("signer").
+		Collection("signatures").
 		Find(ctx, bson.M{
 			"data.key": bson.M{"$in": keys},
 		}, opt)

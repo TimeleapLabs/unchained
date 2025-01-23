@@ -10,7 +10,6 @@ import (
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
 	"github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync/v3"
@@ -113,7 +112,7 @@ func (r *Coordinator) RegisterWorker(w *dto.RegisterWorker, conn *websocket.Conn
 			Plugins: pluginsMap,
 		},
 		Conn:   conn,
-		Writer: queue.NewWebSocketWriter(conn, 10),
+		Writer: queue.NewWebSocketWriter(conn, 100),
 	})
 }
 
@@ -135,11 +134,6 @@ func (r *Coordinator) GetWorkers(plugin string, function string, timeout int) []
 	for i := range r.Workers {
 		worker := &r.Workers[i] // Get a pointer to the actual slice element
 
-		if _, ok := store.Signers.Load(worker.Conn); !ok {
-			r.UnregisterWorker(worker.Conn)
-			continue
-		}
-
 		p, ok := worker.Plugins[plugin]
 		if !ok {
 			continue
@@ -150,7 +144,7 @@ func (r *Coordinator) GetWorkers(plugin string, function string, timeout int) []
 			continue
 		}
 
-		if f.Timeout < timeout {
+		if f.Timeout > timeout {
 			continue
 		}
 

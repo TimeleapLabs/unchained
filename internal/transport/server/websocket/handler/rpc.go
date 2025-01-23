@@ -38,6 +38,14 @@ func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
 	unchainedRPC.RegisterWorker(request, conn)
 }
 
+func UnregisterWorker(conn *websocket.Conn) {
+	utils.Logger.
+		With("IP", conn.RemoteAddr().String()).
+		Info("Worker unregistered")
+
+	unchainedRPC.UnregisterWorker(conn)
+}
+
 func WorkerOverload(_ context.Context, conn *websocket.Conn, payload []byte) {
 	overload := new(dto.WorkerOverload).
 		FromSiaBytes(payload)
@@ -93,7 +101,7 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 			With("WorkerRAM", worker.RAMUsage).
 			Info("RPC Request Sent to Worker")
 
-		worker.Writer.Send(consts.OpCodeRPCRequest, payload)
+		worker.Writer.SendSigned(consts.OpCodeRPCRequest, payload)
 	} else {
 		utils.Logger.
 			With("IP", wsQueue.Conn.RemoteAddr().String()).
@@ -102,7 +110,7 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 			With("Function", request.Method).
 			Error("Worker not found")
 
-		wsQueue.SendError(consts.OpCodeError, consts.ErrNoWorker)
+		wsQueue.SendErrorSigned(consts.OpCodeError, consts.ErrNoWorker)
 	}
 }
 
@@ -118,7 +126,7 @@ func ResponseFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload
 			With("ID", response.ID).
 			Info("RPC Response")
 
-		task.Client.Send(consts.OpCodeRPCResponse, payload)
+		task.Client.SendSigned(consts.OpCodeRPCResponse, payload)
 		unchainedRPC.UnregisterTask(response.ID)
 	} else {
 		utils.Logger.

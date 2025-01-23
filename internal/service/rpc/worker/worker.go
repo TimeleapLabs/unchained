@@ -73,7 +73,7 @@ func (w *Worker) RunFunction(ctx context.Context, pluginName string, params *dto
 			RAM:          w.RAMUsage,
 		}
 
-		conn.Send(consts.OpCodeWorkerOverload, overload.Sia().Bytes())
+		conn.SendSigned(consts.OpCodeWorkerOverload, overload.Sia().Bytes())
 		return consts.ErrOverloaded
 	}
 
@@ -119,7 +119,7 @@ func (w *Worker) RegisterWorker() {
 		payload.Plugins = append(payload.Plugins, p)
 	}
 
-	conn.Send(consts.OpCodeRegisterWorker, payload.Sia().Bytes())
+	conn.SendSigned(consts.OpCodeRegisterWorker, payload.Sia().Bytes())
 }
 
 // NewWorker creates a new worker.

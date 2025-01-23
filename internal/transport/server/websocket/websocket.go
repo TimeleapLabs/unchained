@@ -8,12 +8,12 @@ import (
 	"net/http"
 
 	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/handler"
 	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/store"
 	"github.com/gorilla/websocket"
 )
 
@@ -40,19 +40,27 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx, cancel := context.WithCancel(context.TODO())
-
-	defer store.Signers.Delete(conn)
-	defer store.Challenges.Delete(conn)
 	defer cancel()
+
+	isWorker := false
 
 	// register a close handler to stop the for loop
 	conn.SetCloseHandler(func(code int, text string) error {
-		utils.Logger.With("Code", code).With("Text", text).Info("Connection closed")
+		utils.Logger.
+			With("Code", code).
+			With("Text", text).
+			Info("Connection closed")
+
+		// if the connection is a worker, unregister it
+		if isWorker {
+			handler.UnregisterWorker(conn)
+		}
+
 		cancel()
 		return nil
 	})
 
-	writer := queue.NewWebSocketWriter(conn, 10)
+	writer := queue.NewWebSocketWriter(conn, 100)
 
 	for {
 		// stop the loop if the context is done
@@ -84,34 +92,24 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		switch consts.OpCode(payload[0]) {
-		case consts.OpCodeHello:
-			utils.Logger.With("IP", conn.RemoteAddr().String()).Info("New Client Registered")
-			result, err := handler.Hello(conn, payload[1:])
-			if err != nil {
-				writer.SendError(consts.OpCodeError, err)
-				continue
-			}
+		p := new(packet.Packet).FromBytes(payload)
 
-			writer.SendMessage(consts.OpCodeFeedback, "conf.ok")
-			writer.Send(consts.OpCodeKoskChallenge, result)
+		if !p.IsValid() {
+			utils.Logger.Error("Invalid Packet")
+			writer.SendError(consts.OpCodeError, consts.ErrInvalidPacket)
+			continue
+		}
+
+		switch consts.OpCode(p.Message[0]) {
 		case consts.OpCodeAttestation:
-			result, err := handler.AttestationRecord(conn, payload[1:])
+			result, err := handler.AttestationRecord(p.Message[1:], p.Signature, p.Signer)
 			if err != nil {
 				writer.SendError(consts.OpCodeError, err)
 				continue
 			}
 
-			pubsub.Publish(consts.ChannelAttestation, consts.OpCodeAttestationBroadcast, result)
+			pubsub.Publish(consts.ChannelAttestation, consts.OpCodeAttestation, result)
 			writer.SendMessage(consts.OpCodeFeedback, "signature.accepted")
-		case consts.OpCodeKoskResult:
-			err := handler.Kosk(conn, payload[1:])
-			if err != nil {
-				writer.SendError(consts.OpCodeError, err)
-				continue
-			}
-
-			writer.SendMessage(consts.OpCodeFeedback, "kosk.ok")
 		case consts.OpCodeRegisterConsumer:
 			utils.Logger.
 				With("IP", conn.RemoteAddr().String()).
@@ -121,6 +119,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			topic := string(payload[1:])
 			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
 		case consts.OpCodeRegisterWorker:
+			isWorker = true
 			go handler.RegisterWorker(ctx, conn, payload[1:])
 		case consts.OpCodeWorkerOverload:
 			go handler.WorkerOverload(ctx, conn, payload[1:])

@@ -2,6 +2,7 @@ package queue
 
 import (
 	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
 	"github.com/TimeleapLabs/unchained/internal/utils"
 	"github.com/gorilla/websocket"
 )
@@ -45,8 +46,17 @@ func (w *WebSocketWriter) SendRaw(payload []byte) {
 	case w.queue <- payload:
 		// Message enqueued successfully.
 	default:
+		// TODO!: Implement a proper queue overflow strategy.
+		// We should never reach this point.
+		// And if we do, we should NOT drop packets.
 		utils.Logger.Error("Write queue is full, dropping packet")
 	}
+}
+
+// SendRawSigned enqueues a signed message for writing.
+func (w *WebSocketWriter) SendRawSigned(payload []byte) {
+	signed := packet.New(payload).Sia().Bytes()
+	w.SendRaw(signed)
 }
 
 // Send enqueues a message for writing.
@@ -55,14 +65,30 @@ func (w *WebSocketWriter) Send(opCode consts.OpCode, payload []byte) {
 	w.SendRaw(message)
 }
 
+// Send enqueues a message for writing.
+func (w *WebSocketWriter) SendSigned(opCode consts.OpCode, payload []byte) {
+	message := append([]byte{byte(opCode)}, payload...)
+	signed := packet.New(message).Sia().Bytes()
+	w.SendRaw(signed)
+}
+
 // SendMessage sends a message to the client.
 func (w *WebSocketWriter) SendMessage(opCode consts.OpCode, message string) {
 	w.Send(opCode, []byte(message))
 }
 
+// SendMessage sends a message to the client.
+func (w *WebSocketWriter) SendMessageSigned(opCode consts.OpCode, message string) {
+	w.SendSigned(opCode, []byte(message))
+}
+
 // SendError sends an error message to the client.
 func (w *WebSocketWriter) SendError(opCode consts.OpCode, err error) {
 	w.SendMessage(opCode, err.Error())
+}
+
+func (w *WebSocketWriter) SendErrorSigned(opCode consts.OpCode, err error) {
+	w.SendMessageSigned(opCode, err.Error())
 }
 
 // Close shuts down the writer.
