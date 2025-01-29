@@ -1,4 +1,4 @@
-<img height="128px" src="https://timeleap.swiss/images/products/unchained.g100.svg" alt="Unchained">
+<img height="64px" src="https://timeleap.swiss/images/timeleap.svg" alt="Unchained">
 
 # Timeleap Unchained
 
@@ -7,9 +7,7 @@
 [![Open Collective backers and sponsors](https://img.shields.io/opencollective/all/unchained)](https://opencollective.com/unchained)
 [![Documentation](https://img.shields.io/badge/Documentation-brightgreen)](https://timeleap.swiss/docs/unchained)
 
-Unchained is a decentralized, federated network for data indexing, validation, analysis, processing, and delivery.
-
-[unchained.demo.webm](https://github.com/TimeleapLabs/unchained/assets/4604055/427740a2-799c-42e2-a863-f44cc6e74d46)
+Unchained is a distributed computing platform that allows you to run your applications on a global network of computers. It is designed to be fast, secure, and scalable.
 
 ## What are the use cases of Unchained?
 
@@ -22,8 +20,10 @@ Cryptographic signatures and a proof-of-stake consensus secure all computations 
 
 ## Read More
 
-- [QuickStart](./quickstart.md) for running a node
-- [Schema](./schema.md) of the Unchained network
+- [Docs]([./quickstart.md](https://timeleap.swiss/docs/products/unchained)) for working with Unchained
+- [Examples](https://github.com/TimeleapLabs/tep-examples) of implementing and executing plugins on Unchained
+- [TEPs](https://timeleap.swiss/docs/tep) (Timeleap Enhancement Proposals) for Unchained
+- [Specs](https://timeleap.swiss/docs/products/unchained/specs) of the Unchained network
 - [Changelog](./CHANGELOG.md) of Unchained
 - [Developer Guide](./Developer-Guide.md) if you are developer and wanna participate
 - [Contributing](./CONTRIBUTING.md) to Unchained
