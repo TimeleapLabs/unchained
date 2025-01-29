@@ -1,6 +1,21 @@
 ## Next [WIP]
 
 - Move EVM RPC under PoS in configuration file
+- Remove BLS12-381
+- Migrate all signatures to Ed25519
+- Improve Array serialization
+- Verify all messages between users, workers, plugins, consumers, and brokers
+- Remove Hello and KOSK opcodes
+- Make the broker stateless
+- Require signature and signer combo in all signed packets
+- Add PublicKey config option for plugins
+- Move Network.BrokerURI config option to Network.Broker.URI
+- Add Network.Broker.PublicKey config option
+- Keep track of worker resource usage
+- Add RPC call timeouts
+- Fix multiple concurrency issues
+- Reorder RPC request parameters
+- Add "Overloaded" opcode
 
 ## v0.14.0 (2025-01-07)
 
