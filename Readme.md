@@ -4,8 +4,6 @@
 
 [![Release](https://shields.io/github/v/release/timeleaplabs/unchained)](https://github.com/TimeleapLabs/unchained/releases)
 [![CLA assistant](https://cla-assistant.io/readme/badge/TimeleapLabs/unchained)](https://cla-assistant.io/TimeleapLabs/unchained)
-[![Image tags](https://ghcrbadge-1-y2886489.deta.app/timeleaplabs/unchained/tags?color=%2344cc11&ignore=latest&n=1&label=image+tags&trim=)](https://github.com/TimeleapLabs/unchained/pkgs/container/unchained)
-[![Image size](https://ghcrbadge-1-y2886489.deta.app/timeleaplabs/unchained/size?color=%2344cc11&tag=latest&label=image+size&trim=)](https://github.com/TimeleapLabs/unchained/pkgs/container/unchained)
 [![Open Collective backers and sponsors](https://img.shields.io/opencollective/all/unchained)](https://opencollective.com/unchained)
 [![Documentation](https://img.shields.io/badge/Documentation-brightgreen)](https://timeleap.swiss/docs/unchained)
 
