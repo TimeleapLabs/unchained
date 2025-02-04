@@ -20,7 +20,7 @@ Cryptographic signatures and a proof-of-stake consensus secure all computations 
 
 ## Read More
 
-- [Docs]([./quickstart.md](https://timeleap.swiss/docs/products/unchained)) for working with Unchained
+- [Docs](https://timeleap.swiss/docs/products/unchained) for working with Unchained
 - [Examples](https://github.com/TimeleapLabs/tep-examples) of implementing and executing plugins on Unchained
 - [TEPs](https://timeleap.swiss/docs/tep) (Timeleap Enhancement Proposals) for Unchained
 - [Specs](https://timeleap.swiss/docs/products/unchained/specs) of the Unchained network
