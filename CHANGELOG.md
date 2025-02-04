@@ -1,5 +1,7 @@
 ## Next [WIP]
 
+## v0.14.0-alpha.1 (2025-02-04)
+
 - Move EVM RPC under PoS in configuration file
 - Remove BLS12-381
 - Migrate all signatures to Ed25519
@@ -17,7 +19,7 @@
 - Reorder RPC request parameters
 - Add "Overloaded" opcode
 
-## v0.14.0 (2025-01-07)
+## v0.14.0-alpha.0 (2025-01-07)
 
 - Implement the initial version of TEP-1: Unchained Plugins
 - Remove Gitmoji
