@@ -4,7 +4,6 @@
 
 [![Release](https://shields.io/github/v/release/timeleaplabs/timeleap)](https://github.com/TimeleapLabs/timeleap/releases)
 [![CLA assistant](https://cla-assistant.io/readme/badge/TimeleapLabs/timeleap)](https://cla-assistant.io/TimeleapLabs/timeleap)
-[![Open Collective backers and sponsors](https://img.shields.io/opencollective/all/timeleap)](https://opencollective.com/timeleap)
 [![Documentation](https://img.shields.io/badge/Documentation-brightgreen)](https://timeleap.swiss/docs/timeleap)
 
 Timeleap is a distributed computing platform that allows you to run your applications on a global network of computers. It is designed to be fast, secure, and scalable.
@@ -40,11 +39,3 @@ Thank you to all the people who have already contributed to Timeleap!
 <a href="https://github.com/TimeleapLabs/timeleap/graphs/contributors">
   <img src="https://contributors-img.firebaseapp.com/image?repo=TimeleapLabs/timeleap" />
 </a>
-
-## Backers
-
-<a href="https://opencollective.com/timeleap">
-  <img src="https://opencollective.com/timeleap/backers.svg?width=890" />
-</a>
-
-Thank you all for supporting Timeleap!
