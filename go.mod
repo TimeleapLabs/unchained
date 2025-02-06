@@ -1,4 +1,4 @@
-module github.com/TimeleapLabs/unchained
+module github.com/TimeleapLabs/timeleap
 
 go 1.22.1
 

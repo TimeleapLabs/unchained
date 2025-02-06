@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/timeleap/internal/model"
 )
 
 // Proof interface represents the methods that can be used to interact with the Proof table in the database.

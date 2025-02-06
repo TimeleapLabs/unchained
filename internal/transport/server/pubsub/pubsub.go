@@ -4,7 +4,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
 )
 
 var topics = make(map[consts.Channels][]chan []byte)

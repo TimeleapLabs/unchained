@@ -3,7 +3,7 @@ package address
 import (
 	"fmt"
 
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/btcsuite/btcutil/base58"
 )
 

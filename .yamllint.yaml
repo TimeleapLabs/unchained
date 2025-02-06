@@ -7,7 +7,7 @@ yaml-files:
   - '.yamllint'
 
 ignore:
-  - k8s/charts/unchained-worker/*
+  - k8s/charts/timeleap-worker/*
   - '*.private/*'
   - '*.private.yaml'
 

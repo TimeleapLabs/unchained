@@ -6,12 +6,12 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/repository"
-	"github.com/TimeleapLabs/unchained/internal/transport/database/mongo"
-	"github.com/TimeleapLabs/unchained/internal/utils"
-	"github.com/TimeleapLabs/unchained/internal/utils/hash"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/model"
+	"github.com/TimeleapLabs/timeleap/internal/repository"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database/mongo"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/utils/hash"
 	"github.com/stretchr/testify/suite"
 	"github.com/tryvium-travels/memongo"
 )

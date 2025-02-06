@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/pubsub"
 
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/gorilla/websocket"
 )
 

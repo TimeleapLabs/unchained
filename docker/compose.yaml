@@ -1,22 +1,22 @@
 services:
-  #unchained_broker:
-  #  image: ghcr.io/timeleaplabs/unchained:latest
-  #  container_name: unchained_broker
-  #  hostname: unchained_broker
+  #timeleap_broker:
+  #  image: ghcr.io/timeleaplabs/timeleap:latest
+  #  container_name: timeleap_broker
+  #  hostname: timeleap_broker
   #  volumes:
   #    - ./conf.broker.yaml:/app/conf.yaml
   #  depends_on:
   #    postgres:
   #      condition: service_healthy
   #  environment:
-  #    - UNCHAINED_NODE_TYPE=broker
+  #    - TIMELEAP_NODE_TYPE=broker
   #  profiles: ["broker"]
   #  restart: always
 
-  unchained_standalone:
-    image: ghcr.io/timeleaplabs/unchained:latest
-    container_name: unchained_standalone
-    hostname: unchained_standalone
+  timeleap_standalone:
+    image: ghcr.io/timeleaplabs/timeleap:latest
+    container_name: timeleap_standalone
+    hostname: timeleap_standalone
     volumes:
       - ./conf:/app/conf
       - ./abi:/app/abi
@@ -25,8 +25,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - UNCHAINED_NODE_TYPE=standalone
-      - UNCHAINED_CMD=worker
+      - TIMELEAP_NODE_TYPE=standalone
+      - TIMELEAP_CMD=worker
     profiles: ["standalone"]
     restart: always
 
@@ -63,26 +63,26 @@ services:
   #    postgres:
   #      condition: service_healthy
 
-  unchained_worker:
-    image: ghcr.io/timeleaplabs/unchained:latest
-    container_name: unchained_worker
-    hostname: unchained_worker
+  timeleap_worker:
+    image: ghcr.io/timeleaplabs/timeleap:latest
+    container_name: timeleap_worker
+    hostname: timeleap_worker
     volumes:
       - ./conf:/app/conf
       - ./context:/app/context
     environment:
-      - UNCHAINED_NODE_TYPE=worker
-      - UNCHAINED_CMD=worker
+      - TIMELEAP_NODE_TYPE=worker
+      - TIMELEAP_CMD=worker
     profiles: ["worker"]
     restart: always
 
-  #unchained_remote:
-  #  image: ghcr.io/timeleaplabs/unchained:latest
-  #  container_name: unchained_remote
-  #  hostname: unchained_remote
+  #timeleap_remote:
+  #  image: ghcr.io/timeleaplabs/timeleap:latest
+  #  container_name: timeleap_remote
+  #  hostname: timeleap_remote
   #  volumes:
   #    - ./conf.remote.yaml:/app/conf.yaml
   #  environment:
-  #    - UNCHAINED_NODE_TYPE=broker
+  #    - TIMELEAP_NODE_TYPE=broker
   #  profiles: ["remote"]
   #  restart: always

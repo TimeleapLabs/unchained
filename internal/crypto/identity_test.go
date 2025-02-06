@@ -3,8 +3,8 @@ package crypto
 import (
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 

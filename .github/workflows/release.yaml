@@ -34,7 +34,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./bin/*
-          name: Unchained ${{ github.ref_name}}
+          name: Timeleap ${{ github.ref_name}}
           tag_name: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
 
@@ -82,8 +82,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/timeleaplabs/unchained:${{ steps.docker-tag.outputs.docker-tag }}
-            ghcr.io/timeleaplabs/unchained:${{ github.ref_name }}
+            ghcr.io/timeleaplabs/timeleap:${{ steps.docker-tag.outputs.docker-tag }}
+            ghcr.io/timeleaplabs/timeleap:${{ github.ref_name }}
           build-args: |
             "UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}"
-            "UNCHAINED_VERSION=${{ github.ref_name }}"
+            "TIMELEAP_VERSION=${{ github.ref_name }}"

@@ -25,7 +25,7 @@ windows: build
 build:
 	@for os in $(if $(OS),$(OS),$(OS_LIST)); do \
 		for arch in $(ARCHS); do \
-			output="$(BIN_DIR)/unchained.$$os.$$arch"; \
+			output="$(BIN_DIR)/timeleap.$$os.$$arch"; \
 			[ $$os = "windows" ] && output+=".exe"; \
 			echo "Building $$output $(if $(LD_FLAGS),with flags: $(LD_FLAGS),)"; \
 			GOOS=$$os GOARCH=$$arch go build $(LD_FLAGS) -o $$output $(CMD); \

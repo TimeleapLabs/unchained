@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/timeleap/internal/crypto/ethereum"
 
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -46,7 +46,7 @@ func (s *Signer) SignEip712Message(evmSigner *ethereum.Signer, data *apitypes.Ty
 func New(chainID *big.Int, verifyingContract string) *Signer {
 	return &Signer{
 		domain: apitypes.TypedDataDomain{
-			Name:              "Unchained",
+			Name:              "Timeleap",
 			Version:           "1.0.0",
 			ChainId:           math.NewHexOrDecimal256(chainID.Int64()),
 			VerifyingContract: verifyingContract,

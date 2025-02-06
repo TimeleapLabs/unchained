@@ -2,7 +2,7 @@ package attestation
 
 import (
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
-	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/timeleap/internal/model"
 )
 
 type Key struct {

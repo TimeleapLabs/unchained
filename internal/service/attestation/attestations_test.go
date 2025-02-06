@@ -4,11 +4,11 @@ import (
 	"crypto/ed25519"
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database/postgres"
 
-	"github.com/TimeleapLabs/unchained/internal/model"
-	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
-	"github.com/TimeleapLabs/unchained/internal/service/pos"
+	"github.com/TimeleapLabs/timeleap/internal/model"
+	postgresRepo "github.com/TimeleapLabs/timeleap/internal/repository/postgres"
+	"github.com/TimeleapLabs/timeleap/internal/service/pos"
 	"github.com/stretchr/testify/suite"
 )
 

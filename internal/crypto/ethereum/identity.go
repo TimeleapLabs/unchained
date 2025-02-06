@@ -3,8 +3,8 @@ package ethereum
 import (
 	"crypto/ecdsa"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 )

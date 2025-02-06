@@ -1,6 +1,6 @@
-# Contributing to Unchained
+# Contributing to Timeleap
 
-Thank you for your interest in contributing to Unchained! We value your
+Thank you for your interest in contributing to Timeleap! We value your
 contributions and want to make sure the process is easy and beneficial for
 everyone involved. Please take a moment to read these guidelines to ensure a
 smooth contribution process.
@@ -73,6 +73,6 @@ lefthook install
 Following these guidelines helps us maintain a high standard of quality for our
 project and makes the contribution process more efficient and effective. We look
 forward to your contributions and are excited to see what we can achieve
-together in Unchained!
+together in Timeleap!
 
 Thank you for contributing!

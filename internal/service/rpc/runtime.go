@@ -6,14 +6,14 @@ import (
 
 	"crypto/ed25519"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc/worker"
+	"github.com/TimeleapLabs/timeleap/internal/transport/client/conn"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/gorilla/websocket"
 )

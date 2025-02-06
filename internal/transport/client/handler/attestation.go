@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
-	"github.com/TimeleapLabs/unchained/internal/utils/hash"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
+	"github.com/TimeleapLabs/timeleap/internal/utils/hash"
 )
 
 // Attestation is a method that handles attestation report packets.

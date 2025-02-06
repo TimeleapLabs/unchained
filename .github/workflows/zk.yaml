@@ -32,4 +32,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./zk/bin/*
-          name: Unchained zk Tools v${{ steps.package-version.outputs.current-version }}
+          name: Timeleap zk Tools v${{ steps.package-version.outputs.current-version }}

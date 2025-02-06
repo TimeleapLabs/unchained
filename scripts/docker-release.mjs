@@ -3,14 +3,14 @@ import { dirname } from "path";
 import { execSync } from "child_process";
 
 const about = [
-  "Unchained is a decentralized, peer-to-peer network for data validation.",
-  "Unchained nodes work to validate data together and are rewarded in KNS tokens.",
+  "Timeleap is a decentralized, peer-to-peer network for data validation.",
+  "Timeleap nodes work to validate data together and are rewarded in KNS tokens.",
   "The validated data can then be queried by consumer in exchange for KNS tokens.",
-  "Learn more about Unchained [here](https://timeleap.swiss/docs/unchained).",
+  "Learn more about Timeleap [here](https://timeleap.swiss/docs/timeleap).",
 ].join(" ");
 
 const questions = [
-  "Have any questions? Ask in the [forum](https://forum.timeleap.swiss/c/unchained),",
+  "Have any questions? Ask in the [forum](https://forum.timeleap.swiss/c/timeleap),",
   "in our [chat](https://t.me/TimeleapTech/85602), or send us an",
   "[email](mailto:hi@timeleap.swiss).",
 ].join(" ");
@@ -29,7 +29,7 @@ const makeReleaseNotes = async () => {
 
 const makeReleaseFile = (name, files) => {
   const lastTag = process.argv[2];
-  const dirName = `unchained-${lastTag}-${name}`;
+  const dirName = `timeleap-${lastTag}-${name}`;
   mkdirSync(`release/${dirName}`, { recursive: true });
   for (const { source, target } of files) {
     const dirToMake = dirname(target);
@@ -48,7 +48,7 @@ mkdirSync("./release", { recursive: true });
 makeReleaseFile("docker", [
   { source: "docker/compose.yaml", target: "compose.yaml" },
   { source: "docker/Dockerfile", target: "Dockerfile" },
-  { source: "docker/unchained.sh", target: "unchained.sh" },
+  { source: "docker/timeleap.sh", target: "timeleap.sh" },
   { source: "conf.yaml.template", target: "conf.yaml.template" },
   { source: "LICENSE", target: "LICENSE" },
 ]);

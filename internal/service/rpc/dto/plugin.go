@@ -2,8 +2,8 @@ package dto
 
 import (
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
 	"github.com/gorilla/websocket"
 )
 

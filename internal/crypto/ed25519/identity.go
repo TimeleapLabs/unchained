@@ -3,9 +3,9 @@ package ed25519
 import (
 	"crypto/rand"
 
-	"github.com/TimeleapLabs/unchained/internal/utils/address"
+	"github.com/TimeleapLabs/timeleap/internal/utils/address"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/config"
 	"github.com/btcsuite/btcutil/base58"
 
 	"crypto/ed25519"

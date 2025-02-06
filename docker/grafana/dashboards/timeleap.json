@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Unchained Dashboard",
+  "description": "Timeleap Dashboard",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -41,7 +41,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<img width=\"240px\" src=\"https://timeleap.swiss/images/logo.typography.svg\">\n\n<p style=\"margin-top: 2em\">\n  Welcome to the Timeleap Unchained dashboard.\n</p>",
+        "content": "<img width=\"240px\" src=\"https://timeleap.swiss/images/logo.typography.svg\">\n\n<p style=\"margin-top: 2em\">\n  Welcome to the Timeleap dashboard.\n</p>",
         "mode": "html"
       },
       "pluginVersion": "10.2.3",
@@ -493,7 +493,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Unchained",
+  "title": "Timeleap",
   "uid": "f1ce9755-fe6d-4fbd-9a34-c50647114805",
   "version": 8,
   "weekStart": ""

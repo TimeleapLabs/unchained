@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/app"
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/app"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/spf13/cobra"
 )
 
 // broker represents the broker command.
 var broker = &cobra.Command{
 	Use:   "broker",
-	Short: "Run the Unchained client in broker mode",
-	Long:  `Run the Unchained client in broker mode`,
+	Short: "Run the Timeleap client in broker mode",
+	Long:  `Run the Timeleap client in broker mode`,
 
 	PreRun: func(cmd *cobra.Command, _ []string) {
 		config.App.Network.CertFile = cmd.Flags().Lookup("cert-file").Value.String()
@@ -39,7 +39,7 @@ func init() {
 		"broker",
 		"b",
 		"wss://shinobi.brokers.timeleap.swiss",
-		"Unchained broker to connect to",
+		"Timeleap broker to connect to",
 	)
 
 	broker.Flags().StringP(

@@ -1,4 +1,4 @@
-# Default values for unchained-worker.
+# Default values for timeleap-worker.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,7 +7,7 @@ podManagementPolicy: "Parallel"
 #podManagementPolicy: "OrderedReady"
 
 image:
-  repository: ghcr.io/timeleaplabs/unchained
+  repository: ghcr.io/timeleaplabs/timeleap
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"

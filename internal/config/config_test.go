@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 

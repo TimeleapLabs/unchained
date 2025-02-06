@@ -3,8 +3,8 @@ package mongo
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

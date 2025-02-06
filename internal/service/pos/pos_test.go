@@ -5,10 +5,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/crypto"
+	"github.com/TimeleapLabs/timeleap/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/stretchr/testify/suite"
 )
 

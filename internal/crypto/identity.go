@@ -1,12 +1,12 @@
 package crypto
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/crypto/ed25519"
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/utils"
-	"github.com/TimeleapLabs/unchained/internal/utils/address"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/crypto/ed25519"
+	"github.com/TimeleapLabs/timeleap/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/timeleap/internal/model"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/utils/address"
 )
 
 // MachineIdentity holds machine identity and provide and manage keys.
@@ -69,7 +69,7 @@ func WithEd25519Identity() func(machineIdentity *MachineIdentity) error {
 
 		utils.Logger.
 			With("Address", address.Calculate(machineIdentity.Ed25519.PublicKey)).
-			Info("Unchained identity initialized")
+			Info("Timeleap identity initialized")
 
 		return nil
 	}

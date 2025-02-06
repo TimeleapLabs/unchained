@@ -4,8 +4,8 @@ import "time"
 
 // System struct hold the internal system configuration.
 type System struct {
-	Name string `env:"SYSTEM_NAME" env-default:"Unchained" yaml:"name"`
-	Log  string `env:"SYSTEM_LOG"  env-default:"info"      yaml:"log"`
+	Name string `env:"SYSTEM_NAME" env-default:"Timeleap" yaml:"name"`
+	Log  string `env:"SYSTEM_LOG"  env-default:"info"     yaml:"log"`
 
 	ConfigPath           string
 	SecretsPath          string
@@ -57,7 +57,7 @@ type Network struct {
 	Bind              string `env:"BIND"               env-default:"0.0.0.0:9123" yaml:"bind"`
 	CertFile          string `env:"CERT_FILE"          env-default:""             yaml:"certFile"`
 	KeyFile           string `env:"KEY_FILE"           env-default:""             yaml:"keyFile"`
-	SubscribedChannel string `env:"SUBSCRIBED_CHANNEL" env-default:"unchained:"   yaml:"subscribedChannel"`
+	SubscribedChannel string `env:"SUBSCRIBED_CHANNEL" env-default:"timeleap:"    yaml:"subscribedChannel"`
 	Broker            Broker `yaml:"broker"`
 }
 

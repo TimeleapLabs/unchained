@@ -4,12 +4,12 @@ import (
 	"context"
 	"sync"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum/contracts"
+	"github.com/TimeleapLabs/timeleap/internal/crypto/ethereum/contracts"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/config"
 
 	"github.com/ethereum/go-ethereum/common"
 

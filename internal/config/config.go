@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 
 	pureLog "log"
 

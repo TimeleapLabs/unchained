@@ -1,9 +1,9 @@
 package queue
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/gorilla/websocket"
 )
 

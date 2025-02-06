@@ -1,30 +1,30 @@
 package app
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/crypto/ethereum"
-	"github.com/TimeleapLabs/unchained/internal/repository"
-	mongoRepo "github.com/TimeleapLabs/unchained/internal/repository/mongo"
-	postgresRepo "github.com/TimeleapLabs/unchained/internal/repository/postgres"
-	attestationService "github.com/TimeleapLabs/unchained/internal/service/attestation"
-	"github.com/TimeleapLabs/unchained/internal/service/pos"
-	"github.com/TimeleapLabs/unchained/internal/transport/client"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/handler"
-	"github.com/TimeleapLabs/unchained/internal/transport/database/mongo"
-	"github.com/TimeleapLabs/unchained/internal/transport/database/postgres"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/crypto"
+	"github.com/TimeleapLabs/timeleap/internal/crypto/ethereum"
+	"github.com/TimeleapLabs/timeleap/internal/repository"
+	mongoRepo "github.com/TimeleapLabs/timeleap/internal/repository/mongo"
+	postgresRepo "github.com/TimeleapLabs/timeleap/internal/repository/postgres"
+	attestationService "github.com/TimeleapLabs/timeleap/internal/service/attestation"
+	"github.com/TimeleapLabs/timeleap/internal/service/pos"
+	"github.com/TimeleapLabs/timeleap/internal/transport/client"
+	"github.com/TimeleapLabs/timeleap/internal/transport/client/conn"
+	"github.com/TimeleapLabs/timeleap/internal/transport/client/handler"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database/mongo"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database/postgres"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 )
 
-// Consumer starts the Unchained consumer and contains its DI.
+// Consumer starts the Timeleap consumer and contains its DI.
 func Consumer() {
 	utils.Logger.
 		With("Mode", "Consumer").
 		With("Version", consts.Version).
 		With("Protocol", consts.ProtocolVersion).
-		Info("Running Unchained")
+		Info("Running Timeleap")
 
 	crypto.InitMachineIdentity(
 		crypto.WithEvmSigner(),

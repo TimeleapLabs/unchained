@@ -4,7 +4,7 @@ type Channels string
 
 // Channels of broker to be watched for events.
 const (
-	ChannelPriceReport Channels = "unchained:price_report"
-	ChannelEventLog    Channels = "unchained:event_log"
-	ChannelAttestation Channels = "unchained:attestation_report"
+	ChannelPriceReport Channels = "timeleap:price_report"
+	ChannelEventLog    Channels = "timeleap:event_log"
+	ChannelAttestation Channels = "timeleap:attestation_report"
 )

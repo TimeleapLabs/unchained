@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/service/attestation"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/service/attestation"
+	"github.com/TimeleapLabs/timeleap/internal/transport/client/conn"
 )
 
 // consumer is a struct that holds the services required by the consumer handler.

@@ -3,10 +3,10 @@ package rpc
 import (
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/suite"

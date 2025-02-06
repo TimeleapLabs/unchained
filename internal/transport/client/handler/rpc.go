@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 
 	"github.com/ethereum/go-ethereum/common"
 )

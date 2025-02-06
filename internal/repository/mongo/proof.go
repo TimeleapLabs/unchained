@@ -6,12 +6,12 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/repository"
-	"github.com/TimeleapLabs/unchained/internal/transport/database"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/model"
+	"github.com/TimeleapLabs/timeleap/internal/repository"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

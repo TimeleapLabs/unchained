@@ -3,7 +3,7 @@ package ed25519
 import (
 	"testing"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/config"
 	"github.com/stretchr/testify/suite"
 )
 

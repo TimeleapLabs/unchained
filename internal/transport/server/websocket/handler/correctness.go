@@ -3,8 +3,8 @@ package handler
 import (
 	"crypto/ed25519"
 
-	"github.com/TimeleapLabs/unchained/internal/model"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
+	"github.com/TimeleapLabs/timeleap/internal/model"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
 )
 
 // AttestationRecord is a handler for attestation report.

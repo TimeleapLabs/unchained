@@ -21,7 +21,7 @@
 
 ## v0.14.0-alpha.0 (2025-01-07)
 
-- Implement the initial version of TEP-1: Unchained Plugins
+- Implement the initial version of TEP-1: Timeleap Plugins
 - Remove Gitmoji
 - Replace Commitizen with Lefthook
 - Add support for MongoDB
@@ -78,7 +78,7 @@
 
 ### 🔐🚧📈✏️ 💩👽️🍻💬🥚🌱🚩🥅🩺 Others
 
-- add unchained AI plugins
+- add timeleap AI plugins
 
 ### 🚨 Linting
 

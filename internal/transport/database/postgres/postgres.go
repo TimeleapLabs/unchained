@@ -3,11 +3,11 @@ package postgres
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/model"
+	"github.com/TimeleapLabs/timeleap/internal/model"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/transport/database"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

@@ -5,7 +5,7 @@ metadata:
 data:
   conf.worker.yaml: |
     log: info
-    name: unchained-worker-k8s-test-node
+    name: timeleap-worker-k8s-test-node
 
     plugins:
       uniswap:

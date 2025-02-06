@@ -3,12 +3,12 @@ package worker
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/runtime"
-	"github.com/TimeleapLabs/unchained/internal/transport/client/conn"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc/runtime"
+	"github.com/TimeleapLabs/timeleap/internal/transport/client/conn"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync/v3"
 )

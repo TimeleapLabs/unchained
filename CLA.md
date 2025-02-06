@@ -1,14 +1,14 @@
-# Contributor License Agreement for Timeleap Unchained
+# Contributor License Agreement for Timeleap
 
 ## Introduction
 
-This Contributor License Agreement ("Agreement") documents the rights granted by contributors to Timeleap, the owner and maintainer of Timeleap Unchained. This Agreement is intended to clarify the terms under which contributions are made to the project.
+This Contributor License Agreement ("Agreement") documents the rights granted by contributors to Timeleap, the owner and maintainer of Timeleap. This Agreement is intended to clarify the terms under which contributions are made to the project.
 
 ## 1. Definitions
 
 - "You" and "Your" means the individual or legal entity submitting a Contribution to the project.
 - "Contribution" means any source code, object code, patch, tool, sample, graphic, specification, manual, documentation, or any other material posted or submitted by You to the Project.
-- "Project" refers to the Timeleap Unchained project managed by Timeleap.
+- "Project" refers to the Timeleap project managed by Timeleap.
 
 ## 2. Grant of Rights
 

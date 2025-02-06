@@ -1,7 +1,7 @@
 apiVersion: 1
 
 providers:
-  - name: "Unchained"
+  - name: "Timeleap"
     orgId: 1
     folder: ""
     folderUid: ""

@@ -1,6 +1,6 @@
 package worker
 
-import "github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
+import "github.com/TimeleapLabs/timeleap/internal/service/rpc/dto"
 
 const (
 	Mock      dto.Runtime = "Mock"

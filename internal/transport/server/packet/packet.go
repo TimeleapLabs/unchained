@@ -4,8 +4,8 @@ import (
 	"crypto/ed25519"
 
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
-	"github.com/TimeleapLabs/unchained/internal/crypto"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/crypto"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 )
 
 type Packet struct {

@@ -1,5 +1,5 @@
 #!/bin/sh
 
-echo "Running a $UNCHAINED_NODE_TYPE node."
+echo "Running a $TIMELEAP_NODE_TYPE node."
 
-./unchained $UNCHAINED_CMD -c conf/conf.$UNCHAINED_NODE_TYPE.yaml -s conf/secrets.$UNCHAINED_NODE_TYPE.yaml -x context/$UNCHAINED_NODE_TYPE
+./timeleap $TIMELEAP_CMD -c conf/conf.$TIMELEAP_NODE_TYPE.yaml -s conf/secrets.$TIMELEAP_NODE_TYPE.yaml -x context/$TIMELEAP_NODE_TYPE

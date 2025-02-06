@@ -4,16 +4,16 @@ import (
 	"context"
 	"strings"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc"
-	"github.com/TimeleapLabs/unchained/internal/service/rpc/dto"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc"
+	"github.com/TimeleapLabs/timeleap/internal/service/rpc/dto"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/gorilla/websocket"
 )
 
-// unchainedRPC is a global variable that holds the rpc coordinator.
-var unchainedRPC = rpc.NewCoordinator()
+// timeleapRPC is a global variable that holds the rpc coordinator.
+var timeleapRPC = rpc.NewCoordinator()
 
 // RegisterWorker is a handler of network that registers a new worker.
 func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
@@ -35,7 +35,7 @@ func RegisterWorker(_ context.Context, conn *websocket.Conn, payload []byte) {
 		With("RAM", request.RAM).
 		Info("New Worker registered")
 
-	unchainedRPC.RegisterWorker(request, conn)
+	timeleapRPC.RegisterWorker(request, conn)
 }
 
 func UnregisterWorker(conn *websocket.Conn) {
@@ -43,7 +43,7 @@ func UnregisterWorker(conn *websocket.Conn) {
 		With("IP", conn.RemoteAddr().String()).
 		Info("Worker unregistered")
 
-	unchainedRPC.UnregisterWorker(conn)
+	timeleapRPC.UnregisterWorker(conn)
 }
 
 func WorkerOverload(_ context.Context, conn *websocket.Conn, payload []byte) {
@@ -58,10 +58,10 @@ func WorkerOverload(_ context.Context, conn *websocket.Conn, payload []byte) {
 		With("RAM", overload.RAM).
 		Error("Worker Overload")
 
-	task, ok := unchainedRPC.GetTask(overload.FailedTaskID)
+	task, ok := timeleapRPC.GetTask(overload.FailedTaskID)
 	if ok {
 		task.Client.SendError(consts.OpCodeError, consts.ErrOverloaded)
-		unchainedRPC.UnregisterTask(overload.FailedTaskID)
+		timeleapRPC.UnregisterTask(overload.FailedTaskID)
 	}
 }
 
@@ -77,10 +77,10 @@ func CallFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload []b
 		With("Function", request.Method).
 		Info("RPC Request")
 
-	worker, function := unchainedRPC.GetRandomWorker(request.Plugin, request.Method, request.Timeout)
+	worker, function := timeleapRPC.GetRandomWorker(request.Plugin, request.Method, request.Timeout)
 
 	if worker != nil && function != nil {
-		unchainedRPC.RegisterTask(
+		timeleapRPC.RegisterTask(
 			request.ID,
 			worker.Conn,
 			wsQueue,
@@ -119,7 +119,7 @@ func ResponseFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload
 	response := new(dto.RPCResponse).
 		FromSiaBytes(payload)
 
-	task, ok := unchainedRPC.GetTask(response.ID)
+	task, ok := timeleapRPC.GetTask(response.ID)
 	if ok {
 		utils.Logger.
 			With("IP", wsQueue.Conn.RemoteAddr().String()).
@@ -127,7 +127,7 @@ func ResponseFunction(_ context.Context, wsQueue *queue.WebSocketWriter, payload
 			Info("RPC Response")
 
 		task.Client.SendSigned(consts.OpCodeRPCResponse, payload)
-		unchainedRPC.UnregisterTask(response.ID)
+		timeleapRPC.UnregisterTask(response.ID)
 	} else {
 		utils.Logger.
 			With("IP", wsQueue.Conn.RemoteAddr().String()).

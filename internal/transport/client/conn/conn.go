@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/config"
 
 	"github.com/gorilla/websocket"
 )

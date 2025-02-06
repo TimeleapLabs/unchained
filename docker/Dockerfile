@@ -3,7 +3,7 @@ FROM ubuntu:${UBUNTU_VERSION}
 LABEL maintainer="hi@timeleap.swiss"
 ARG TARGETOS
 ARG TARGETARCH
-ARG UNCHAINED_VERSION
+ARG TIMELEAP_VERSION
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -13,8 +13,8 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install --no-install-recommends -y \
     curl ca-certificates && \
-    curl -sSL https://github.com/TimeleapLabs/unchained/releases/download/${UNCHAINED_VERSION}/unchained.${TARGETOS}.${TARGETARCH} -o unchained && \
-    chmod +x unchained && \
+    curl -sSL https://github.com/TimeleapLabs/timeleap/releases/download/${TIMELEAP_VERSION}/timeleap.${TARGETOS}.${TARGETARCH} -o timeleap && \
+    chmod +x timeleap && \
     apt-get remove -y --purge curl && \
     apt-get autoremove -y --purge && \
     apt-get clean && \

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	rpcWorker "github.com/TimeleapLabs/unchained/internal/service/rpc/worker"
+	rpcWorker "github.com/TimeleapLabs/timeleap/internal/service/rpc/worker"
 )
 
 type worker struct {

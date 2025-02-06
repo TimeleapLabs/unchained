@@ -3,9 +3,9 @@ package mongo
 import (
 	"context"
 
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/transport/database"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/newrelic/go-agent/v3/integrations/nrmongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

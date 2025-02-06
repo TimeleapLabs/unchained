@@ -7,13 +7,13 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/TimeleapLabs/unchained/internal/consts"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/packet"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/pubsub"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/pubsub"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/handler"
-	"github.com/TimeleapLabs/unchained/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/handler"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
 	"github.com/gorilla/websocket"
 )
 

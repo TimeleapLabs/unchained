@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"github.com/TimeleapLabs/unchained/internal/app"
-	"github.com/TimeleapLabs/unchained/internal/config"
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/app"
+	"github.com/TimeleapLabs/timeleap/internal/config"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"github.com/spf13/cobra"
 )
 
 // consumer represents the consumer command.
 var consumer = &cobra.Command{
 	Use:   "consumer",
-	Short: "Run the Unchained client in consumer mode",
-	Long:  `Run the Unchained client in consumer mode`,
+	Short: "Run the Timeleap client in consumer mode",
+	Long:  `Run the Timeleap client in consumer mode`,
 
 	PreRun: func(cmd *cobra.Command, _ []string) {
 		config.App.Network.Broker.URI = cmd.Flags().Lookup("broker").Value.String()
@@ -39,7 +39,7 @@ func init() {
 		"broker",
 		"b",
 		"wss://shinobi.brokers.timeleap.swiss",
-		"Unchained broker to connect to",
+		"Timeleap broker to connect to",
 	)
 
 	consumer.Flags().StringP(

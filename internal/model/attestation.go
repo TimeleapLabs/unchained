@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 
-	"github.com/TimeleapLabs/unchained/internal/utils"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
