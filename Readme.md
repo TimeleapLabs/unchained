@@ -36,6 +36,4 @@ See [License](./LICENSE) for more details.
 
 Thank you to all the people who have already contributed to Timeleap!
 
-<a href="https://github.com/TimeleapLabs/timeleap/graphs/contributors">
-  <img src="https://contributors-img.firebaseapp.com/image?repo=TimeleapLabs/timeleap" />
-</a>
+
