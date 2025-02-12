@@ -12,8 +12,7 @@ import (
 var TimeleapRPC = "https://devnet.timeleap.swiss/rpc"
 var CollectorAddress = common.HexToAddress("0xA2dEc4f8089f89F426e6beB76B555f3Cf9E7f499")
 
-// RPCRequest is not defined for consumer nodes.
-func (h *consumer) RPCRequest(_ context.Context, _ []byte) {}
+func (w *worker) Attestation(_ context.Context, _ []byte) {}
 
 // RPCRequest is a method that handles RPC request packets and call the corresponding function.
 func (w worker) RPCRequest(ctx context.Context, message []byte) {
@@ -47,6 +46,3 @@ func (w worker) RPCRequest(ctx context.Context, message []byte) {
 
 // RPCResponse is not defined for worker nodes.
 func (w worker) RPCResponse(_ context.Context, _ []byte) {}
-
-// RPCResponse is not defined for consumer nodes.
-func (h *consumer) RPCResponse(_ context.Context, _ []byte) {}

@@ -8,7 +8,6 @@ require (
 	github.com/ethereum/go-ethereum v1.14.9
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.1
-	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/lmittmann/tint v1.0.4
 	github.com/mattn/go-colorable v0.1.13
@@ -16,7 +15,6 @@ require (
 	github.com/puzpuzpuz/xsync/v3 v3.1.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tryvium-travels/memongo v0.12.0
 	github.com/zeebo/blake3 v0.2.4
 	go.mongodb.org/mongo-driver v1.15.1
 	golang.org/x/crypto v0.32.0
@@ -29,7 +27,6 @@ require (
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/VictoriaMetrics/fastcache v1.12.2 // indirect
-	github.com/acobaugh/osrelease v0.0.0-20181218015638-a93a0a55a249 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
@@ -92,7 +89,6 @@ require (
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/status-im/keycard-go v0.2.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect

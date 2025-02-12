@@ -3,7 +3,7 @@ package model
 import "time"
 
 type DataFrame struct {
-	Hash      []byte      `bson:"hash"      json:"hash"`
-	Timestamp time.Time   `bson:"timestamp" json:"timestamp"`
-	Data      interface{} `bson:"data"      json:"data"`
+	Hash      []byte
+	Timestamp time.Time
+	Data      interface{}
 }

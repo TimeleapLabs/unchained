@@ -4,17 +4,15 @@ import (
 	"encoding/json"
 
 	"github.com/TimeleapLabs/timeleap/internal/utils"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
 type AttestationDataFrame struct {
-	ID    uint               `bson:"-"`
-	DocID primitive.ObjectID `bson:"_id,omitempty"`
+	ID uint
 
-	Hash string      `bson:"hash" json:"hash"`
-	Data Attestation `bson:"data" json:"data"`
+	Hash string
+	Data Attestation
 }
 
 type Attestation struct {
