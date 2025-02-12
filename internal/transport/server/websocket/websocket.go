@@ -102,14 +102,8 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 		switch consts.OpCode(p.Message[0]) {
 		case consts.OpCodeMessage:
-			result, err := handler.ToBroadcastPacket(p.Message[1:], p.Signature, p.Signer)
-			if err != nil {
-				writer.SendError(consts.OpCodeError, err)
-				continue
-			}
-
-			pubsub.Publish(consts.ChannelSystem, consts.OpCodeMessage, result)
-			writer.SendMessage(consts.OpCodeFeedback, "signature.accepted")
+			// should we wrap this?
+			go pubsub.Publish(consts.ChannelSystem, payload)
 		case consts.OpCodeRegisterConsumer:
 			utils.Logger.
 				With("IP", conn.RemoteAddr().String()).

@@ -22,17 +22,18 @@ func getTopicsByPrefix(topic consts.Channels) map[consts.Channels][]chan []byte 
 	return keys
 }
 
-func Publish(destinationTopic consts.Channels, operation consts.OpCode, message []byte) {
+func writeToChannel(ch chan []byte, message []byte) {
+	ch <- message
+}
+
+func Publish(destinationTopic consts.Channels, message []byte) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	allSubTopics := getTopicsByPrefix(destinationTopic)
-
 	for _, subscribers := range allSubTopics {
 		for _, ch := range subscribers {
-			go func(ch chan []byte) {
-				ch <- append([]byte{byte(operation)}, message...)
-			}(ch)
+			go writeToChannel(ch, message)
 		}
 	}
 }
