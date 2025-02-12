@@ -7,20 +7,20 @@ import (
 	"github.com/TimeleapLabs/timeleap/internal/model"
 )
 
-type BroadcastAttestationPacket struct {
-	Info      model.Attestation
+type BroadcastMessagePacket struct {
+	Info      model.Message
 	Signature [64]byte
 	Signer    ed25519.PublicKey
 }
 
-func (b *BroadcastAttestationPacket) Sia() sia.Sia {
+func (b *BroadcastMessagePacket) Sia() sia.Sia {
 	return sia.New().
 		EmbedBytes(b.Info.Sia().Bytes()).
 		EmbedBytes(b.Signature[:]).
 		EmbedBytes(b.Signer)
 }
 
-func (b *BroadcastAttestationPacket) FromBytes(payload []byte) *BroadcastAttestationPacket {
+func (b *BroadcastMessagePacket) FromBytes(payload []byte) *BroadcastMessagePacket {
 	siaMessage := sia.NewFromBytes(payload)
 
 	b.Info.FromSia(siaMessage)

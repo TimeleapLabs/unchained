@@ -9,7 +9,7 @@ const (
 
 	OpCodeRegisterConsumer OpCode = 2
 
-	OpCodeAttestation OpCode = 3
+	OpCodeMessage OpCode = 3
 
 	OpCodeRegisterWorker OpCode = 4
 	OpCodeWorkerOverload OpCode = 5

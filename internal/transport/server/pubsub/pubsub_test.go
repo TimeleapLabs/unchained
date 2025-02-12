@@ -9,7 +9,7 @@ import (
 func TestSubscribeDirectly(t *testing.T) {
 	sub := Subscribe("a.b.c")
 
-	Publish("a.b.c", consts.OpCodeAttestation, []byte("Hello, world!"))
+	Publish("a.b.c", consts.OpCodeMessage, []byte("Hello, world!"))
 
 	msg := <-sub
 	if string(msg[1:]) != "Hello, world!" {
@@ -42,7 +42,7 @@ func TestGetTopicsByPrefix(t *testing.T) {
 func TestSubscribeWithPrefix(t *testing.T) {
 	sub := Subscribe("a")
 
-	Publish("a.b.c", consts.OpCodeAttestation, []byte("Hello, world!"))
+	Publish("a.b.c", consts.OpCodeMessage, []byte("Hello, world!"))
 
 	msg := <-sub
 
@@ -52,5 +52,5 @@ func TestSubscribeWithPrefix(t *testing.T) {
 }
 
 func TestPublishWithoutSubscriber(_ *testing.T) {
-	Publish("a.b.c", consts.OpCodeAttestation, []byte("Hello, world!"))
+	Publish("a.b.c", consts.OpCodeMessage, []byte("Hello, world!"))
 }

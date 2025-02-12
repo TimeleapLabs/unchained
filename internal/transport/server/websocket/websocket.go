@@ -101,14 +101,14 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch consts.OpCode(p.Message[0]) {
-		case consts.OpCodeAttestation:
-			result, err := handler.AttestationRecord(p.Message[1:], p.Signature, p.Signer)
+		case consts.OpCodeMessage:
+			result, err := handler.ToBroadcastPacket(p.Message[1:], p.Signature, p.Signer)
 			if err != nil {
 				writer.SendError(consts.OpCodeError, err)
 				continue
 			}
 
-			pubsub.Publish(consts.ChannelAttestation, consts.OpCodeAttestation, result)
+			pubsub.Publish(consts.ChannelSystem, consts.OpCodeMessage, result)
 			writer.SendMessage(consts.OpCodeFeedback, "signature.accepted")
 		case consts.OpCodeRegisterConsumer:
 			utils.Logger.

@@ -8,20 +8,13 @@ import (
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
 )
 
-type AttestationDataFrame struct {
-	ID uint
-
-	Hash string
-	Data Attestation
-}
-
-type Attestation struct {
+type Message struct {
 	Timestamp uint64
 	Topic     []byte
 	Meta      map[string]interface{}
 }
 
-func (c *Attestation) Sia() sia.Sia {
+func (c *Message) Sia() sia.Sia {
 	json, err := json.Marshal(c.Meta)
 	if err != nil {
 		utils.Logger.With("Err", err).Error("Cannot marshal meta")
@@ -34,12 +27,12 @@ func (c *Attestation) Sia() sia.Sia {
 		AddByteArray32(json)
 }
 
-func (c *Attestation) FromBytes(payload []byte) *Attestation {
+func (c *Message) FromBytes(payload []byte) *Message {
 	siaMessage := sia.NewFromBytes(payload)
 	return c.FromSia(siaMessage)
 }
 
-func (c *Attestation) FromSia(sia sia.Sia) *Attestation {
+func (c *Message) FromSia(sia sia.Sia) *Message {
 	c.Timestamp = sia.ReadUInt64()
 	c.Topic = sia.ReadByteArray8()
 	c.Meta = make(map[string]interface{})

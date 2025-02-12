@@ -7,11 +7,10 @@ import (
 	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
 )
 
-// AttestationRecord is a handler for attestation report.
-func AttestationRecord(payload []byte, signature [64]byte, signer ed25519.PublicKey) ([]byte, error) {
-	attestation := new(model.Attestation).FromBytes(payload)
+func ToBroadcastPacket(payload []byte, signature [64]byte, signer ed25519.PublicKey) ([]byte, error) {
+	attestation := new(model.Message).FromBytes(payload)
 
-	broadcastPacket := packet.BroadcastAttestationPacket{
+	broadcastPacket := packet.BroadcastMessagePacket{
 		Info:      *attestation,
 		Signature: signature,
 		Signer:    signer,
