@@ -10,8 +10,8 @@ import (
 type Signers []Signer
 
 type Signer struct {
-	ID    uint               `bson:"-"             gorm:"primarykey"`
-	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
+	ID    uint               `bson:"-"`
+	DocID primitive.ObjectID `bson:"_id,omitempty"`
 
 	Name       string            `json:"name"`
 	EvmAddress string            `json:"evm_address"`

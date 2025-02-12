@@ -9,13 +9,13 @@ import (
 )
 
 type Proof struct {
-	ID    uint               `bson:"-"             gorm:"primarykey"`
-	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
+	ID    uint               `bson:"-"`
+	DocID primitive.ObjectID `bson:"_id,omitempty"`
 
 	Hash      []byte    `bson:"hash"      json:"hash"`
 	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
 
-	Signatures []Signature `bson:"signatures" gorm:"many2many:proof_signatures;" json:"signers"`
+	Signatures []Signature `bson:"signatures" json:"signers"`
 }
 
 func (p *Proof) Sia() sia.Sia {

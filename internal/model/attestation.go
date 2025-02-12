@@ -10,16 +10,16 @@ import (
 )
 
 type AttestationDataFrame struct {
-	ID    uint               `bson:"-"             gorm:"primarykey"`
-	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
+	ID    uint               `bson:"-"`
+	DocID primitive.ObjectID `bson:"_id,omitempty"`
 
-	Hash string      `bson:"hash" gorm:"uniqueIndex:idx_topic_hash" json:"hash"`
-	Data Attestation `bson:"data" gorm:"embedded"                   json:"data"`
+	Hash string      `bson:"hash" json:"hash"`
+	Data Attestation `bson:"data" json:"data"`
 }
 
 type Attestation struct {
 	Timestamp uint64
-	Topic     []byte `gorm:"uniqueIndex:idx_topic_hash"`
+	Topic     []byte
 	Meta      map[string]interface{}
 }
 

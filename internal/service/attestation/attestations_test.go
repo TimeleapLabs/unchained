@@ -4,10 +4,10 @@ import (
 	"crypto/ed25519"
 	"testing"
 
-	"github.com/TimeleapLabs/timeleap/internal/transport/database/postgres"
+	"github.com/TimeleapLabs/timeleap/internal/transport/database/mongo"
 
 	"github.com/TimeleapLabs/timeleap/internal/model"
-	postgresRepo "github.com/TimeleapLabs/timeleap/internal/repository/postgres"
+	mongoRepo "github.com/TimeleapLabs/timeleap/internal/repository/mongo"
 	"github.com/TimeleapLabs/timeleap/internal/service/pos"
 	"github.com/stretchr/testify/suite"
 )
@@ -31,12 +31,12 @@ type AttestationTestSuite struct {
 }
 
 func (s *AttestationTestSuite) SetupTest() {
-	db := postgres.New()
+	db := mongo.New()
 
 	posService := new(pos.MockService)
 
-	signerRepo := postgresRepo.NewProof(db)
-	attestationRepo := postgresRepo.NewAttestation(db)
+	signerRepo := mongoRepo.NewProof(db)
+	attestationRepo := mongoRepo.NewAttestation(db)
 
 	s.service = New(posService, signerRepo, attestationRepo)
 }

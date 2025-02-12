@@ -7,14 +7,12 @@ import (
 	"github.com/TimeleapLabs/timeleap/internal/crypto/ethereum"
 	"github.com/TimeleapLabs/timeleap/internal/repository"
 	mongoRepo "github.com/TimeleapLabs/timeleap/internal/repository/mongo"
-	postgresRepo "github.com/TimeleapLabs/timeleap/internal/repository/postgres"
 	attestationService "github.com/TimeleapLabs/timeleap/internal/service/attestation"
 	"github.com/TimeleapLabs/timeleap/internal/service/pos"
 	"github.com/TimeleapLabs/timeleap/internal/transport/client"
 	"github.com/TimeleapLabs/timeleap/internal/transport/client/conn"
 	"github.com/TimeleapLabs/timeleap/internal/transport/client/handler"
 	"github.com/TimeleapLabs/timeleap/internal/transport/database/mongo"
-	"github.com/TimeleapLabs/timeleap/internal/transport/database/postgres"
 	"github.com/TimeleapLabs/timeleap/internal/utils"
 )
 
@@ -32,7 +30,7 @@ func Consumer() {
 	)
 
 	ethRPC := ethereum.New()
-	_posService := pos.New(ethRPC)
+	posService := pos.New(ethRPC)
 
 	var proofRepo repository.Proof
 	var attestationRepo repository.Attestation
@@ -44,15 +42,11 @@ func Consumer() {
 		proofRepo = mongoRepo.NewProof(db)
 		attestationRepo = mongoRepo.NewAttestation(db)
 	} else {
-		utils.Logger.Info("Postgresql configuration found, initializing...")
-		db := postgres.New()
-		db.Migrate()
-
-		proofRepo = postgresRepo.NewProof(db)
-		attestationRepo = postgresRepo.NewAttestation(db)
+		utils.Logger.Error("MongoDB configuration not found, exiting...")
+		return
 	}
 
-	_attestationService := attestationService.New(_posService, proofRepo, attestationRepo)
+	_attestationService := attestationService.New(posService, proofRepo, attestationRepo)
 
 	conn.Start()
 
