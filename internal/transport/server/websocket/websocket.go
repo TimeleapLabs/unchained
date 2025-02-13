@@ -101,14 +101,13 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch consts.OpCode(p.Message[0]) {
-		case consts.OpCodeSubscribe:
-			utils.Logger.
-				With("IP", conn.RemoteAddr().String()).
-				With("Channel", string(payload[1:])).
-				Info("New Consumer registered")
-
+		case consts.OpCodeUnSubscribe:
 			topic := string(payload[1:])
-			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
+			go pubsub.Unsubscribe(topic, writer)
+		case consts.OpCodeSubscribe:
+			topic := string(payload[1:])
+			subCtx, sub := pubsub.Subscribe(ctx, writer, topic)
+			go handler.BroadcastManager(ctx, subCtx, topic, sub)
 		case consts.OpCodeMessage:
 			go pubsub.PublishMessage(p.Message)
 		case consts.OpCodeRegisterWorker:

@@ -1,22 +1,32 @@
 package pubsub
 
 import (
+	"context"
 	"strings"
 	"sync"
 
 	"github.com/TimeleapLabs/timeleap/internal/consts"
 	"github.com/TimeleapLabs/timeleap/internal/model"
 	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
 )
 
-var topics = make(map[string][]chan []byte)
+type Subscriber struct {
+	Writer            *queue.WebSocketWriter
+	Channel           chan []byte
+	Context           *context.Context
+	ConnectionContext *context.Context
+	Unsubscribe       context.CancelFunc
+}
+
+var topics = make(map[string][]Subscriber)
 var mu sync.Mutex
 
-func getTopicsByPrefix(topic string) map[string][]chan []byte {
-	keys := make(map[string][]chan []byte)
+func getTopicsByPrefix(topic string) map[string][]Subscriber {
+	keys := make(map[string][]Subscriber)
 	for key := range topics {
 		if strings.HasPrefix(topic, key) {
-			keys[key] = make([]chan []byte, len(topics[key]))
+			keys[key] = make([]Subscriber, len(topics[key]))
 			copy(keys[key], topics[key])
 		}
 	}
@@ -42,31 +52,48 @@ func Publish(destinationTopic string, message []byte) {
 	payload := packet.New(broadcast).Sia().Bytes()
 
 	for _, subscribers := range allSubTopics {
-		for _, ch := range subscribers {
-			go writeToChannel(ch, payload)
+		for _, sub := range subscribers {
+			go writeToChannel(sub.Channel, payload)
 		}
 	}
 }
 
-func Unsubscribe(topic string, ch chan []byte) {
+func Unsubscribe(topic string, writer *queue.WebSocketWriter) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	for key, subscribers := range topics[topic] {
-		if subscribers == ch {
+	for key, sub := range topics[topic] {
+		if sub.Writer == writer {
 			topics[topic] = append(topics[topic][:key], topics[topic][key+1:]...)
+			sub.Unsubscribe()
+			close(sub.Channel)
 			break
 		}
 	}
-
-	close(ch)
 }
 
-func Subscribe(topic string) chan []byte {
+func IsSubscribed(topic string, writer *queue.WebSocketWriter) bool {
+	for _, sub := range topics[topic] {
+		if sub.Writer == writer {
+			return true
+		}
+	}
+
+	return false
+}
+
+func Subscribe(ctx context.Context, writer *queue.WebSocketWriter, topic string) (context.Context, Subscriber) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	ch := make(chan []byte)
-	topics[topic] = append(topics[topic], ch)
-	return ch
+	subCtx, cancel := context.WithCancel(ctx)
+
+	subscriber := Subscriber{
+		Writer:      writer,
+		Channel:     make(chan []byte),
+		Unsubscribe: cancel,
+	}
+
+	topics[topic] = append(topics[topic], subscriber)
+	return subCtx, subscriber
 }

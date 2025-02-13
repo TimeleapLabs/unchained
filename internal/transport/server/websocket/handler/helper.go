@@ -9,18 +9,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func BroadcastListener(ctx context.Context, conn *websocket.Conn, topic string, ch chan []byte) {
+func BroadcastManager(connCtx context.Context, subCtx context.Context, topic string, sub pubsub.Subscriber) {
 	for {
 		select {
-		case <-ctx.Done():
-			utils.Logger.Info("Closing connection")
-			pubsub.Unsubscribe(topic, ch)
+		case <-connCtx.Done():
+			pubsub.Unsubscribe(topic, sub.Writer)
 			return
-		case message := <-ch:
-			err := conn.WriteMessage(websocket.BinaryMessage, message)
-			if err != nil {
-				utils.Logger.Error(err.Error())
-			}
+		case <-subCtx.Done():
+			return
+		case message := <-sub.Channel:
+			sub.Writer.SendRaw(message)
 		}
 	}
 }

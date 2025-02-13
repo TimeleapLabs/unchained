@@ -7,13 +7,14 @@ const (
 	OpCodeFeedback OpCode = iota
 	OpCodeError    OpCode = 1
 
-	OpCodeSubscribe OpCode = 2
-	OpCodeMessage   OpCode = 3
-	OpCodeBroadcast OpCode = 4
+	OpCodeSubscribe   OpCode = 2
+	OpCodeUnSubscribe OpCode = 3
+	OpCodeMessage     OpCode = 4
+	OpCodeBroadcast   OpCode = 5
 
-	OpCodeRegisterWorker OpCode = 5
-	OpCodeWorkerOverload OpCode = 6
+	OpCodeRegisterWorker OpCode = 6
+	OpCodeWorkerOverload OpCode = 7
 
-	OpCodeRPCRequest  OpCode = 7
-	OpCodeRPCResponse OpCode = 8
+	OpCodeRPCRequest  OpCode = 8
+	OpCodeRPCResponse OpCode = 9
 )

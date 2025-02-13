@@ -1,11 +1,13 @@
 package pubsub
 
 import (
+	"context"
 	"testing"
 
 	"github.com/TimeleapLabs/timeleap/internal/config"
 	"github.com/TimeleapLabs/timeleap/internal/consts"
 	"github.com/TimeleapLabs/timeleap/internal/crypto"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
 	"github.com/TimeleapLabs/timeleap/internal/utils"
 )
 
@@ -21,11 +23,13 @@ func TestMain(m *testing.M) {
 }
 
 func TestSubscribeDirectly(t *testing.T) {
-	sub := Subscribe("a.b.c")
+	ctx := context.Background()
+	writer := queue.NewWebSocketWriter(nil, 1)
+	_, sub := Subscribe(ctx, writer, "a.b.c")
 
 	Publish("a.b.c", []byte("Hello, world!"))
 
-	msg := <-sub
+	msg := <-sub.Channel
 	opcode := msg[0]
 	if opcode != byte(consts.OpCodeBroadcast) {
 		t.Fatalf("Received unexpected opcode: %d", opcode)
@@ -44,10 +48,10 @@ func TestGetTopicsByPrefix(t *testing.T) {
 		third  string = "b.c.d"
 	)
 
-	topics = map[string][]chan []byte{
-		first:  make([]chan []byte, 0),
-		second: make([]chan []byte, 0),
-		third:  make([]chan []byte, 0),
+	topics = map[string][]Subscriber{
+		first:  {},
+		second: {},
+		third:  {},
 	}
 
 	trimmedTopics := getTopicsByPrefix(first)
@@ -60,11 +64,13 @@ func TestGetTopicsByPrefix(t *testing.T) {
 }
 
 func TestSubscribeWithPrefix(t *testing.T) {
-	sub := Subscribe("a")
+	ctx := context.Background()
+	writer := queue.NewWebSocketWriter(nil, 1)
+	_, sub := Subscribe(ctx, writer, "a")
 
 	Publish("a.b.c", []byte("Hello, world!"))
 
-	msg := <-sub
+	msg := <-sub.Channel
 	opcode := msg[0]
 	if opcode != byte(consts.OpCodeBroadcast) {
 		t.Fatalf("Received unexpected opcode: %d", opcode)
