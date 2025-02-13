@@ -10,7 +10,7 @@ import (
 
 type Message struct {
 	Timestamp uint64
-	Topic     []byte
+	Topic     string
 	Meta      map[string]interface{}
 }
 
@@ -23,7 +23,7 @@ func (c *Message) Sia() sia.Sia {
 
 	return sia.New().
 		AddUInt64(c.Timestamp).
-		AddByteArray8(c.Topic).
+		AddString16(c.Topic).
 		AddByteArray32(json)
 }
 
@@ -34,7 +34,7 @@ func (c *Message) FromBytes(payload []byte) *Message {
 
 func (c *Message) FromSia(sia sia.Sia) *Message {
 	c.Timestamp = sia.ReadUInt64()
-	c.Topic = sia.ReadByteArray8()
+	c.Topic = sia.ReadString16()
 	c.Meta = make(map[string]interface{})
 
 	jsonBytes := sia.ReadByteArray32()

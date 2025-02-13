@@ -110,7 +110,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 			topic := string(payload[1:])
 			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
 		case consts.OpCodeMessage:
-			go pubsub.Publish(consts.ChannelSystem, payload)
+			go pubsub.PublishMessage(p.Message)
 		case consts.OpCodeRegisterWorker:
 			isWorker = true
 			go handler.RegisterWorker(ctx, conn, payload[1:])

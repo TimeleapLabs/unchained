@@ -5,16 +5,17 @@ import (
 	"sync"
 
 	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/model"
 	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
 )
 
-var topics = make(map[consts.Channels][]chan []byte)
+var topics = make(map[string][]chan []byte)
 var mu sync.Mutex
 
-func getTopicsByPrefix(topic consts.Channels) map[consts.Channels][]chan []byte {
-	keys := make(map[consts.Channels][]chan []byte)
+func getTopicsByPrefix(topic string) map[string][]chan []byte {
+	keys := make(map[string][]chan []byte)
 	for key := range topics {
-		if strings.HasPrefix(string(topic), string(key)) {
+		if strings.HasPrefix(topic, key) {
 			keys[key] = make([]chan []byte, len(topics[key]))
 			copy(keys[key], topics[key])
 		}
@@ -27,7 +28,12 @@ func writeToChannel(ch chan []byte, message []byte) {
 	ch <- message
 }
 
-func Publish(destinationTopic consts.Channels, message []byte) {
+func PublishMessage(message []byte) {
+	msg := new(model.Message).FromBytes(message[1:])
+	Publish(msg.Topic, message)
+}
+
+func Publish(destinationTopic string, message []byte) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -46,9 +52,9 @@ func Unsubscribe(topic string, ch chan []byte) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	for key, subscribers := range topics[consts.Channels(topic)] {
+	for key, subscribers := range topics[topic] {
 		if subscribers == ch {
-			topics[consts.Channels(topic)] = append(topics[consts.Channels(topic)][:key], topics[consts.Channels(topic)][key+1:]...)
+			topics[topic] = append(topics[topic][:key], topics[topic][key+1:]...)
 			break
 		}
 	}
@@ -61,6 +67,6 @@ func Subscribe(topic string) chan []byte {
 	defer mu.Unlock()
 
 	ch := make(chan []byte)
-	topics[consts.Channels(topic)] = append(topics[consts.Channels(topic)], ch)
+	topics[topic] = append(topics[topic], ch)
 	return ch
 }

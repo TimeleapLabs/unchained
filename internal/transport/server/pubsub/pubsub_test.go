@@ -39,12 +39,12 @@ func TestSubscribeDirectly(t *testing.T) {
 
 func TestGetTopicsByPrefix(t *testing.T) {
 	const (
-		first  consts.Channels = "a.b.c"
-		second consts.Channels = "a"
-		third  consts.Channels = "b.c.d"
+		first  string = "a.b.c"
+		second string = "a"
+		third  string = "b.c.d"
 	)
 
-	topics = map[consts.Channels][]chan []byte{
+	topics = map[string][]chan []byte{
 		first:  make([]chan []byte, 0),
 		second: make([]chan []byte, 0),
 		third:  make([]chan []byte, 0),
