@@ -3,8 +3,22 @@ package pubsub
 import (
 	"testing"
 
+	"github.com/TimeleapLabs/timeleap/internal/config"
 	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/crypto"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 )
+
+func TestMain(m *testing.M) {
+	utils.SetupLogger("info")
+	config.App.System.AllowGenerateSecrets = true
+
+	crypto.InitMachineIdentity(
+		crypto.WithEd25519Identity(),
+	)
+
+	m.Run()
+}
 
 func TestSubscribeDirectly(t *testing.T) {
 	sub := Subscribe("a.b.c")
@@ -12,8 +26,14 @@ func TestSubscribeDirectly(t *testing.T) {
 	Publish("a.b.c", []byte("Hello, world!"))
 
 	msg := <-sub
-	if string(msg) != "Hello, world!" {
-		t.Fatalf("Received unexpected message: %s", msg)
+	opcode := msg[0]
+	if opcode != byte(consts.OpCodeBroadcast) {
+		t.Fatalf("Received unexpected opcode: %d", opcode)
+	}
+
+	str := string(msg[1 : len(msg)-96])
+	if str != "Hello, world!" {
+		t.Fatalf("Received unexpected message: '%s'", str)
 	}
 }
 
@@ -45,9 +65,14 @@ func TestSubscribeWithPrefix(t *testing.T) {
 	Publish("a.b.c", []byte("Hello, world!"))
 
 	msg := <-sub
+	opcode := msg[0]
+	if opcode != byte(consts.OpCodeBroadcast) {
+		t.Fatalf("Received unexpected opcode: %d", opcode)
+	}
 
-	if string(msg) != "Hello, world!" {
-		t.Fatalf("Received unexpected message: %s", msg)
+	str := string(msg[1 : len(msg)-96])
+	if str != "Hello, world!" {
+		t.Fatalf("Received unexpected message: '%s'", str)
 	}
 }
 

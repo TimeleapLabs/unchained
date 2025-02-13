@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/TimeleapLabs/timeleap/internal/consts"
+	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
 )
 
 var topics = make(map[consts.Channels][]chan []byte)
@@ -31,9 +32,12 @@ func Publish(destinationTopic consts.Channels, message []byte) {
 	defer mu.Unlock()
 
 	allSubTopics := getTopicsByPrefix(destinationTopic)
+	broadcast := append([]byte{byte(consts.OpCodeBroadcast)}, message...)
+	payload := packet.New(broadcast).Sia().Bytes()
+
 	for _, subscribers := range allSubTopics {
 		for _, ch := range subscribers {
-			go writeToChannel(ch, message)
+			go writeToChannel(ch, payload)
 		}
 	}
 }

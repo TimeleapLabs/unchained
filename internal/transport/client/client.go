@@ -55,9 +55,6 @@ func NewRPC(handler handler.Handler) {
 						With("Feedback", string(p.Message[1:])).
 						Info("Broker")
 
-				case consts.OpCodeMessage:
-					handler.Message(ctx, p.Message[1:])
-
 				case consts.OpCodeRPCRequest:
 					handler.RPCRequest(ctx, p.Message[1:])
 

@@ -101,10 +101,7 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch consts.OpCode(p.Message[0]) {
-		case consts.OpCodeMessage:
-			// should we wrap this?
-			go pubsub.Publish(consts.ChannelSystem, payload)
-		case consts.OpCodeRegisterConsumer:
+		case consts.OpCodeSubscribe:
 			utils.Logger.
 				With("IP", conn.RemoteAddr().String()).
 				With("Channel", string(payload[1:])).
@@ -112,6 +109,8 @@ func multiplexer(w http.ResponseWriter, r *http.Request) {
 
 			topic := string(payload[1:])
 			go handler.BroadcastListener(ctx, conn, topic, pubsub.Subscribe(topic))
+		case consts.OpCodeMessage:
+			go pubsub.Publish(consts.ChannelSystem, payload)
 		case consts.OpCodeRegisterWorker:
 			isWorker = true
 			go handler.RegisterWorker(ctx, conn, payload[1:])
