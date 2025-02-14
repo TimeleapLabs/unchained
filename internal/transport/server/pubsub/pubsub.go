@@ -9,6 +9,7 @@ import (
 	"github.com/TimeleapLabs/timeleap/internal/model"
 	"github.com/TimeleapLabs/timeleap/internal/transport/server/packet"
 	"github.com/TimeleapLabs/timeleap/internal/transport/server/websocket/queue"
+	"github.com/TimeleapLabs/timeleap/internal/utils"
 )
 
 type Subscriber struct {
@@ -62,6 +63,11 @@ func Unsubscribe(topic string, writer *queue.WebSocketWriter) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	utils.Logger.
+		With("IP", writer.Conn.RemoteAddr().String()).
+		With("Topic", topic).
+		Info("Unsubscribed")
+
 	for key, sub := range topics[topic] {
 		if sub.Writer == writer {
 			topics[topic] = append(topics[topic][:key], topics[topic][key+1:]...)
@@ -85,6 +91,14 @@ func IsSubscribed(topic string, writer *queue.WebSocketWriter) bool {
 func Subscribe(ctx context.Context, writer *queue.WebSocketWriter, topic string) (context.Context, Subscriber) {
 	mu.Lock()
 	defer mu.Unlock()
+
+	// TODO: This is a temporary fix to prevent a panic in the tests
+	if writer.Conn != nil {
+		utils.Logger.
+			With("IP", writer.Conn.RemoteAddr().String()).
+			With("Topic", topic).
+			Info("Subscribed")
+	}
 
 	subCtx, cancel := context.WithCancel(ctx)
 

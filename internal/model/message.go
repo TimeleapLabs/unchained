@@ -1,30 +1,23 @@
 package model
 
 import (
-	"encoding/json"
-
-	"github.com/TimeleapLabs/timeleap/internal/utils"
-
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
+	"github.com/google/uuid"
 )
 
 type Message struct {
+	ID        uuid.UUID
 	Timestamp uint64
 	Topic     string
-	Meta      map[string]interface{}
+	Meta      []byte
 }
 
 func (c *Message) Sia() sia.Sia {
-	json, err := json.Marshal(c.Meta)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Cannot marshal meta")
-		panic(err)
-	}
-
 	return sia.New().
+		AddByteArray8(c.ID[:]).
 		AddUInt64(c.Timestamp).
 		AddString16(c.Topic).
-		AddByteArray32(json)
+		AddByteArray32(c.Meta)
 }
 
 func (c *Message) FromBytes(payload []byte) *Message {
@@ -33,16 +26,9 @@ func (c *Message) FromBytes(payload []byte) *Message {
 }
 
 func (c *Message) FromSia(sia sia.Sia) *Message {
+	c.ID = uuid.UUID(sia.ReadByteArray8())
 	c.Timestamp = sia.ReadUInt64()
 	c.Topic = sia.ReadString16()
-	c.Meta = make(map[string]interface{})
-
-	jsonBytes := sia.ReadByteArray32()
-	err := json.Unmarshal(jsonBytes, &c.Meta)
-	if err != nil {
-		utils.Logger.With("Err", err).Error("Cannot unmarshal meta")
-		panic(err)
-	}
-
+	c.Meta = sia.ReadByteArray32()
 	return c
 }
