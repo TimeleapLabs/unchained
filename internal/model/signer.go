@@ -4,23 +4,20 @@ import (
 	"crypto/ed25519"
 
 	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Signers []Signer
 
 type Signer struct {
-	ID    uint               `bson:"-"             gorm:"primarykey"`
-	DocID primitive.ObjectID `bson:"_id,omitempty" gorm:"-"`
-
-	Name       string            `json:"name"`
-	EvmAddress string            `json:"evm_address"`
-	PublicKey  ed25519.PublicKey `json:"public_key"`
+	ID         uint
+	Name       string
+	EvmAddress string
+	PublicKey  ed25519.PublicKey
 }
 
 type Signature struct {
-	PublicKey ed25519.PublicKey `json:"public_key"`
-	Signature [64]byte          `json:"signature"`
+	PublicKey ed25519.PublicKey
+	Signature [64]byte
 }
 
 func (s *Signature) Sia() sia.Sia {

@@ -1,5 +1,20 @@
 ## Next [WIP]
 
+## v0.14.0-alpha.2 (2025-02-14)
+
+- Add a `Message` struct with fields for ID, Timestamp, Topic, and Meta
+- Add new Pub/Sub methods for managing subscribers with context and unsubscribe hooks
+- Add support for broadcast messages with `PublishMessage`
+- Add `OpCodeSubscribe`, `OpCodeUnSubscribe`, `OpCodeMessage`, and `OpCodeBroadcast` opcodes for Pub/Sub
+- Remove MongoDB and PostgreSQL database integrations
+- Remove legacy Attestation/Proof plugins
+- Remove database migrations and utility functions
+- Remove consumer mode and related handlers
+- Remove consumer registration and attestation OpCodes
+- Remove outdated Docker-related files and scripts
+- Remove outdated zero-knowledge release scripts
+- Clean up unused and redundant Go modules
+
 ## v0.14.0-alpha.1 (2025-02-04)
 
 - Move EVM RPC under PoS in configuration file
